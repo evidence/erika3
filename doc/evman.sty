@@ -1,0 +1,348 @@
+% ###*B*###
+% Erika Enterprise, version 3
+% 
+% Copyright (C) 2017 Evidence s.r.l.
+% 
+% This program is free software; you can redistribute it and/or modify
+% it under the terms of the GNU General Public License as published by
+% the Free Software Foundation; either version 2 of the License, or (at
+% your option) any later version.
+% 
+% This program is distributed in the hope that it will be useful, but
+% WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+% General Public License, version 2, for more details.
+% 
+% You should have received a copy of the GNU General Public License,
+% version 2, along with this program; if not, see
+% <https://www.gnu.org/licenses/old-licenses/gpl-2.0.html >.
+% 
+% This program is distributed to you subject to the following
+% clarifications and special exceptions to the GNU General Public
+% License, version 2.
+% 
+% THIRD PARTIES' MATERIALS
+% 
+% Certain materials included in this library are provided by third
+% parties under licenses other than the GNU General Public License. You
+% may only use, copy, link to, modify and redistribute this library
+% following the terms of license indicated below for third parties'
+% materials.
+% 
+% In case you make modified versions of this library which still include
+% said third parties' materials, you are obligated to grant this special
+% exception.
+% 
+% The complete list of Third party materials allowed with ERIKA
+% Enterprise version 3, together with the terms and conditions of each
+% license, is present in the file THIRDPARTY.TXT in the root of the
+% project.
+% ###*E*###
+%
+% Evidence Manual stylesheet for doxygen 1.8.13
+%
+% Author: 2016, Giuseppe Serano
+%         2016, PJ
+%
+
+% PJ: c'e' la possibilita' di mettere il numero dell'anno in modo automatico?
+% ad esempio potrebbe inserire automaticamente ``Copyright 2004-annocorrente''
+
+% PJ: come mai non � possibile fare dentro una description qualcosa del tipo
+% \item[\file{miofile}] ????
+
+% PJ: su PIC30 e' capitato di definire la stessa funzione 2 volte nello stesso
+% documento (sono due boards diverse). mi ha detto che il label era definito
+% due volte, ho dovuto usare function2. c'e' un altro modo?
+
+
+\NeedsTeXFormat{LaTeX2e}[1995/12/01]
+\ProvidesPackage{evman}[2005/08/01] \typeout{'Evidence Reference
+manual' style for Latex} \typeout{(c) Giuseppe Lipari, Pisa, Italy}
+\typeout{}
+
+\RequirePackage{makeidx}
+%\RequirePackage{fancyhdr}
+%\RequirePackage[colorlinks=true,linkcolor=blue]{hyperref}
+\RequirePackage{listings}
+\RequirePackage{framed}
+% rotating for having 90 degree rotated text
+\RequirePackage{rotating}
+
+% lyx clashes with this one
+%\RequirePackage[latin1]{inputenc}
+
+\lstset{% general command to set parameter(s)
+  basicstyle=\small\ttfamily, % print whole listing small
+  keywordstyle=\color{black}\bfseries,
+  identifierstyle=, % nothing happens
+  showstringspaces=false} % no special string spaces
+
+\makeindex
+
+%% TYPE
+\newcommand{\tp}[1]{\lstinline!#1!}
+
+%% Variable
+\newcommand{\vr}[1]{\lstinline!#1!}
+
+%% FUN
+\newcommand{\fn}[1]{\lstinline!#1!}
+
+%% FILE
+\newcommand{\file}[1]{\lstinline!#1!}
+
+%% FUN with hype reference
+\newcommand{\reffun}[1]{\hyperref[fun:#1]{\lstinline!#1!}}
+
+%% FUN with hype reference, but with label different from the text
+\newcommand{\reffuntwo}[2]{\hyperref[fun:#2]{\lstinline!#1!}}
+
+%% Type with hype reference
+\newcommand{\reftype}[1]{\hyperref[type:#1]{\lstinline!#1!}}
+
+%% Const with hype reference
+\newcommand{\refconst}[1]{\hyperref[con:#1]{\lstinline!#1!}}
+
+%% constant
+\newcommand{\const}[1]{\lstinline!#1!}
+
+%% OIL definition and reference
+\newcommand{\refoil}[1]{\hyperref[oil:#1]{#1}}
+\newcommand{\refoiltwo}[2]{\hyperref[oil:#2]{#1}}
+
+\newcommand{\oil}[1]{\index{#1}\label{oil:#1}{\lstinline!#1!}}
+\newcommand{\oiltwo}[2]{\index{#1}\label{oil:#2}{\lstinline!#1!}}
+
+\newcommand{\refoillst}[1]{\hyperref[oil:#1]{\lstinline!#1!}\lstinline!}
+\newcommand{\refoillsttwo}[2]{\hyperref[oil:#2]{\lstinline!#1!}\lstinline!}
+
+%-----------------------------------------------------%
+
+%% a subsection describing a constant
+\newenvironment{constant}[1]{
+  \subsection{#1}\label{con:#1}
+  \index{#1}}
+
+\newenvironment{constant2}[2]{
+  \subsection{#1}\label{con:#2}
+  \index{#1}}
+
+
+\newenvironment{constantdescription}{
+  \subsubsection*{Description}
+}{}
+
+%-----------------------------------------------------%
+
+%% a subsection describing a type
+\newenvironment{type}[1]{
+  \subsection{#1}\label{type:#1}
+  \index{#1}}
+
+
+\newenvironment{typedescription}{
+  \subsubsection*{Description}
+}{}
+
+%-----------------------------------------------------%
+
+%% a subsection describing a function
+%% (we could remove the pagebreak
+%% following: a list of elements for this section
+\newenvironment{function}[1]{
+  \subsection{#1}\label{fun:#1}
+  \index{#1}}
+{\pagebreak}
+
+\newenvironment{function2}[2]{
+  \subsection{#1}\label{fun:#2}
+  \index{#1}}
+{\pagebreak}
+
+%% similar to the function environment but:
+%% - without pagebreak
+%% - with support for ``_''
+\newenvironment{function_nopb}[1]{
+  \subsection{#1}\label{fun:#1}
+  \index{#1}}
+
+\newenvironment{function_nopb2}[2]{
+  \subsection{#1}\label{fun:#2}
+  \index{#1}}
+
+\newcommand{\synopsis}[1]{
+  \subsubsection*{Synopsis}
+  \lstinline!#1!}
+
+
+\newenvironment{fundescription}{
+  \subsubsection*{Description}
+}{}
+
+
+\newenvironment{funparameters}{
+  \subsubsection*{Parameters}
+  \begin{itemize}
+}
+{    
+  \end{itemize}
+}
+
+\newcommand{\fpar}[2]{\item {\bf \vr{#1}} #2}
+
+\newenvironment{funreturn}{
+  \subsubsection*{Return Values}
+  \begin{itemize}
+}
+{    
+  \end{itemize}
+}
+
+\newcommand{\fret}[2]{\item {\bf \vr{#1}} #2}
+
+\newenvironment{funconformance}{
+  \subsubsection*{Conformance}
+}
+{    
+}
+%-----------------------------------------------------%
+
+%% Nota bene: will be removed in the final version
+\newcommand{\nb}[1]{{\color{red}{\bf NOTA BENE: } #1}}
+
+%% a warning environment
+\newenvironment{warning}{\begin{framed}{\bf Warning:}}
+{\end{framed}}
+
+%% a note environment
+\newenvironment{note}{\begin{framed}{\bf Note:}}
+{\end{framed}}
+
+%% an indexed term.
+\newcommand{\myidx}[1]{#1\index{#1}}
+
+%% Title page with image
+
+%% #1   title
+%% #2   sub-title
+%% #3   version
+%% #4   reference tool
+
+%% cloud: fixme command
+\usepackage{color}
+\newcommand{\fixme}{\textcolor{red}{{\bf FIXME}}}
+
+%% cloud: version, title and subtitle
+\newcommand*{\version}[1]{\gdef\@version{#1}}
+\renewcommand*{\subtitle}[1]{\gdef\@subtitle{#1}}
+
+\newcommand*{\referencetool}[1]{\gdef\@referencetool{#1}}
+
+%% cloud: headers
+\newcommand*{\headertitle}{\@title --- \@subtitle}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+%% \fancyhead[OL,EL]{\textsc{Evidence Srl}}
+\fancyhead[OL,EL]{\includegraphics[width=3cm]{../html/LogoEvidence-new-2}}
+%% \fancyhead[OR,ER]{\footnotesize\itshape \headertitle }
+\fancyhead[OR,ER]{\footnotesize{\nouppercase{\itshape{\leftmark}}}}
+
+%% cloud: mynote
+\newcounter{mynotecounter}[section]
+\newcommand{\mycode}[1]{{{\tt {\color{blue} #1}}}}
+\newcommand{\mynote}[1]{{\addtocounter{mynotecounter} 1 
+\vskip2mm
+\noindent {\bf Note \thesection.\themynotecounter}: #1}}
+
+\def\LyX{L\kern-.2em% Define \LyX
+  {\sbox\z@ X%
+    \vbox to .9\ht\z@{\hbox{\check@mathfonts
+        \fontsize\sf@size\z@
+        \math@fontsfalse\selectfont
+        Y}%
+      \vss}%
+  }%
+\kern-.125emX\@}
+
+
+%% maketitle
+\renewcommand{\maketitle}{
+  \begin{titlepage}
+    \begin{flushright}
+      \null\vskip 4cm
+      {\includegraphics{../html/erika3}}\\
+      {\textsf \textbf \@title}\\[2cm]
+      {\Large \@subtitle}\\[3cm]
+      {\large Version: \@version}\\[5mm]
+      {\large \today}\\[5mm]
+      {\large \@referencetool}\\[55mm]
+      \begin{minipage}{3cm}
+	  \includegraphics[width=3cm]{../html/LogoEvidence-new-1}
+      \end{minipage}\\
+    \end{flushright}
+  \end{titlepage}
+  \pagebreak
+  \noindent {\Large \sffamily \sc \bf About Evidence S.r.l.}
+  \vskip5mm
+
+  \noindent Evidence is a company operating in the field of software for
+  embedded real-time systems. It started in 2002 as a spin-off company of
+  the Real-Time Systems (ReTiS) Lab of the Scuola Superiore Sant'Anna
+  (Pisa, Italy).
+  Today, Evidence is a dynamic company having collaborations in the field
+  of electronics, telecommunications, automotives, and industrial
+  automation.
+
+  People at Evidence are experts in the domain of embedded and real-time
+  systems, with a deep knowledge on the design and specification flow of
+  embedded software, especially for the embedded market.
+
+  Besides providing consultancy services, Evidence also provides: BSPs
+  based on Linux for embedded devices, evaluation boards featuring most
+  innovative 8, 16 and 32-bit microcontrollers for the embedded market,
+  development tools for making embedded software development easier, and
+  tools for the schedulability analysis of real-time tasks running on your
+  final product.
+
+  For more information see: \url{http://www.evidence.eu.com}
+  \vskip10mm
+  \noindent{\Large \sffamily \sc \bf Contact Info}
+  \vskip5mm
+  \noindent Evidence Srl, \\
+  Via Carducci 56 \\
+  Localit\`a Ghezzano \\
+  56010 S.Giuliano Terme\\
+  PISA Italy \\
+  \vskip2mm
+  \noindent Tel: +39 050 99 11 224\\
+  \noindent Fax: +39 050 99 10 812\\
+  \\
+  For more information about Evidence products, please send an e-mail to
+  the following address: \url{info@evidence.eu.com}.  Other information
+  about the Evidence product line can be found at the Evidence web
+  site at: \url{http://www.evidence.eu.com}.
+  \vfill
+%%   \begin{flushright}
+%%     %\includegraphics[width=4cm]{../html/LogoEvidence.eps}
+%% 	\includegraphics[width=8cm, bb=0 0 417 194]{../html/LogoEvidence.png}
+%%   \end{flushright}
+  \noindent {\footnotesize This document is Copyright 2011-2015
+    Evidence S.r.l.\\ Information and images contained within this
+    document are copyright and the property of Evidence S.r.l. All
+    trademarks are hereby acknowledged to be the properties of their
+    respective owners. The information, text and graphics contained in
+    this document are provided for information purposes only by
+    Evidence S.r.l. Evidence S.r.l. does not warrant the accuracy, or
+    completeness of the information, text, and other items contained
+    in this document.  Matlab, Simulink, Mathworks are registered
+    trademarks of Matworks Inc. Microsoft, Windows are registered
+    trademarks of Microsoft Inc. Java is a registered trademark of Sun
+    Microsystems. in the
+    USA. and other countries, and are used under license.  All other
+    trademarks used are properties of their respective owners. This
+    document has been written using \LaTeX\ and \LyX.}\pagebreak }
+
+\setkomafont{pagehead}{\normalfont\normalcolor\small}
+
+\endinput

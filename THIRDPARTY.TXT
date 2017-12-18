@@ -1,0 +1,49 @@
+THIRDPARTY.TXT
+--------------
+
+Preface
+-------
+
+This file is part of the License of ERIKA v3. This file lists the
+dependencies on third party source code that you may need to compile
+or link in order to build an ERIKA v3 executable. There are two kind
+of third party contents to be considered:
+
+- Third Party source code that is currently present inside the ERIKA
+  v3 repository
+
+- Third Party source code that you may need to link during the
+  compilation and linking process
+
+The ERIKA v3 License provides you an exception for the above mentioned
+cases. For the complete license text please check the file named
+LICENSE.TXT
+
+Full information about licensing of ERIKA v3 can be found at the
+address:
+http://www.erika-enterprise.com/index.php/erika3/licensing.html
+
+-------------------------------------------------------------------- 
+
+
+
+Third party source code included in the ERIKA v3 Repository
+-----------------------------------------------------------
+None.
+
+
+
+Third party source code that you may need to link
+-------------------------------------------------
+
+Platform: AVR8, Arduino
+(*) Arduino.cc - C/C++ microcontroller libraries
+    License: GNU Lesser General Public License as published by the
+             Free Software Foundation; either version 2.1 of the License,
+             or (at your option) any later version.
+    Website: https://www.arduino.cc
+
+Platform: MPPA
+(*) Kalray Inc. - MPPA AccessCore SDK
+    License: Contact Kalray Inc.
+    Website: http://www.kalrayinc.com/kalray/products/#software

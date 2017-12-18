@@ -1,0 +1,154 @@
+/* ###*B*###
+ * Erika Enterprise, version 3
+ * 
+ * Copyright (C) 2017 Evidence s.r.l.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or (at
+ * your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License, version 2, for more details.
+ * 
+ * You should have received a copy of the GNU General Public License,
+ * version 2, along with this program; if not, see
+ * <https://www.gnu.org/licenses/old-licenses/gpl-2.0.html >.
+ * 
+ * This program is distributed to you subject to the following
+ * clarifications and special exceptions to the GNU General Public
+ * License, version 2.
+ * 
+ * THIRD PARTIES' MATERIALS
+ * 
+ * Certain materials included in this library are provided by third
+ * parties under licenses other than the GNU General Public License. You
+ * may only use, copy, link to, modify and redistribute this library
+ * following the terms of license indicated below for third parties'
+ * materials.
+ * 
+ * In case you make modified versions of this library which still include
+ * said third parties' materials, you are obligated to grant this special
+ * exception.
+ * 
+ * The complete list of Third party materials allowed with ERIKA
+ * Enterprise version 3, together with the terms and conditions of each
+ * license, is present in the file THIRDPARTY.TXT in the root of the
+ * project.
+ * ###*E*### */
+
+/** \file  conf.oil
+ *  \brief  System Configuration.
+ *
+ *  This file contains the System Configuration for Erika Enterprise.
+ *
+ *  \author  Errico Guidieri
+ *  \date  2016
+ */
+
+CPU mySystem {
+
+  OS myOs {
+
+    /* EE_OPT = "OS_EE_VERBOSE"; */
+    EE_OPT = "OSEE_ASSERT";
+    EE_OPT = "OS_EE_APPL_BUILD_DEBUG";
+    EE_OPT = "OS_EE_BUILD_DEBUG";
+
+    CFLAGS = "-I../erika/src";
+
+    CPU_DATA = KALRAY_K1 {
+      ID = 0;
+      MULTI_STACK = TRUE;
+      COMPILER = GCC;
+    };
+
+    CPU_DATA = KALRAY_K1 {
+      ID = 1;
+    };
+
+    CPU_DATA = KALRAY_K1 {
+      ID = 2;
+    };
+
+    CPU_DATA = KALRAY_K1 {
+      ID = 3;
+    };
+
+    CPU_DATA = KALRAY_K1 {
+      ID = 4;
+    };
+
+    CPU_DATA = KALRAY_K1 {
+      ID = 5;
+    };
+
+    CPU_DATA = KALRAY_K1 {
+      ID = 6;
+    };
+
+    CPU_DATA = KALRAY_K1 {
+      ID = 7;
+    };
+
+    CPU_DATA = KALRAY_K1 {
+      ID = 8;
+    };
+
+    CPU_DATA = KALRAY_K1 {
+      ID = 9;
+    };
+
+    CPU_DATA = KALRAY_K1 {
+      ID = 10;
+    };
+
+    CPU_DATA = KALRAY_K1 {
+      ID = 11;
+    };
+
+    CPU_DATA = KALRAY_K1 {
+      ID = 12;
+    };
+
+    CPU_DATA = KALRAY_K1 {
+      ID = 13;
+    };
+
+    CPU_DATA = KALRAY_K1 {
+      ID = 14;
+    };
+
+    CPU_DATA = KALRAY_K1 {
+      ID = 15;
+    };
+
+    USERESSCHEDULER = FALSE;
+
+    USEDYNAMICAPI = TRUE {
+      TASK_ARRAY_SIZE     = 128;    /* 16 * 8 */
+      SN_ARRAY_SIZE       = 128;    /* 16 * 8 */
+      STACKS_MEMORY_SIZE  = 131072; /* 8192 * 16 */
+      MAX_NUM_JOB         = 2;
+    };
+
+    USEEXTENSIONAPI = TRUE {
+      /* SCHEDULER = PARTITIONED; */
+      SCHEDULER = GLOBAL;
+    };
+
+    KERNEL_TYPE = OSEK {
+      CLASS = BCC1;
+//      RQ    = MQ;
+    };
+  };
+
+  /* Workaround: FAKE TASK, just to have a place where declare APP_SRC */
+  TASK Fake_Task {
+    CPU_ID   = 0;
+    APP_SRC  = "test.c";
+    PRIORITY = 1; /* Always Needed */
+  };
+};

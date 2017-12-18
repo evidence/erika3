@@ -1,0 +1,213 @@
+% ###*B*###
+% Erika Enterprise, version 3
+% 
+% Copyright (C) 2017 Evidence s.r.l.
+% 
+% This program is free software; you can redistribute it and/or modify
+% it under the terms of the GNU General Public License as published by
+% the Free Software Foundation; either version 2 of the License, or (at
+% your option) any later version.
+% 
+% This program is distributed in the hope that it will be useful, but
+% WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+% General Public License, version 2, for more details.
+% 
+% You should have received a copy of the GNU General Public License,
+% version 2, along with this program; if not, see
+% <https://www.gnu.org/licenses/old-licenses/gpl-2.0.html >.
+% 
+% This program is distributed to you subject to the following
+% clarifications and special exceptions to the GNU General Public
+% License, version 2.
+% 
+% THIRD PARTIES' MATERIALS
+% 
+% Certain materials included in this library are provided by third
+% parties under licenses other than the GNU General Public License. You
+% may only use, copy, link to, modify and redistribute this library
+% following the terms of license indicated below for third parties'
+% materials.
+% 
+% In case you make modified versions of this library which still include
+% said third parties' materials, you are obligated to grant this special
+% exception.
+% 
+% The complete list of Third party materials allowed with ERIKA
+% Enterprise version 3, together with the terms and conditions of each
+% license, is present in the file THIRDPARTY.TXT in the root of the
+% project.
+% ###*E*###
+%
+% Latex header for doxygen 1.8.13
+%
+% Author: 2016, Giuseppe Serano
+%         2016, PJ
+%
+%\documentclass[twoside]{book}
+%PJ
+\documentclass[12pt,a4paper,american,normalheadings,titlepage]{scrreprt}
+
+
+% Packages required by doxygen
+\usepackage{fixltx2e}
+\usepackage{calc}
+\usepackage{doxygen}
+\usepackage[export]{adjustbox} % also loads graphicx
+\usepackage{graphicx}
+
+%PJ
+\usepackage[latin9]{inputenc}
+%\usepackage[utf8]{inputenc}
+
+\usepackage{makeidx}
+\usepackage{multicol}
+\usepackage{multirow}
+\PassOptionsToPackage{warn}{textcomp}
+\usepackage{textcomp}
+\usepackage[nointegrals]{wasysym}
+\usepackage[table]{xcolor}
+
+%PJ
+\usepackage{../evman}
+
+% Font selection
+%PJ \usepackage[T1]{fontenc}
+%PJ \usepackage[scaled=.90]{helvet}
+%PJ \usepackage{courier}
+%PJ \usepackage{amssymb}
+\usepackage{sectsty}
+%PJ \renewcommand{\familydefault}{\sfdefault}
+\allsectionsfont{%
+  \fontseries{bc}\selectfont%
+  \color{darkgray}%
+}
+\renewcommand{\DoxyLabelFont}{%
+  \fontseries{bc}\selectfont%
+  \color{darkgray}%
+}
+\newcommand{\+}{\discretionary{\mbox{\scriptsize$\hookleftarrow$}}{}{}}
+
+% Page & text layout
+\usepackage{geometry}
+\geometry{%
+  a4paper,%
+  top=2.5cm,%
+  bottom=2.5cm,%
+  left=2.5cm,%
+  right=2.5cm%
+}
+\tolerance=750
+\hfuzz=15pt
+\hbadness=750
+\setlength{\emergencystretch}{15pt}
+\setlength{\parindent}{0cm}
+\setlength{\parskip}{3ex plus 2ex minus 2ex}
+\makeatletter
+\renewcommand{\paragraph}{%
+  \@startsection{paragraph}{4}{0ex}{-1.0ex}{1.0ex}{%
+    \normalfont\normalsize\bfseries\SS@parafont%
+  }%
+}
+\renewcommand{\subparagraph}{%
+  \@startsection{subparagraph}{5}{0ex}{-1.0ex}{1.0ex}{%
+    \normalfont\normalsize\bfseries\SS@subparafont%
+  }%
+}
+\makeatother
+
+% Headers & footers
+\usepackage{fancyhdr}
+\pagestyle{fancyplain}
+\fancyhead[LE]{\fancyplain{}{\includegraphics[width=3cm]{../html/LogoEvidence-new-2}}}
+\fancyhead[CE]{\fancyplain{}{}}
+\fancyhead[RE]{\fancyplain{}{\includegraphics[width=3cm]{../html/erika3}}}
+\fancyhead[LO]{\fancyplain{}{\includegraphics[width=3cm]{../html/erika3}}}
+\fancyhead[CO]{\fancyplain{}{}}
+\fancyhead[RO]{\fancyplain{}{\includegraphics[width=3cm]{../html/LogoEvidence-new-2}}}
+\fancyfoot[LE]{\fancyplain{}{\bfseries\scriptsize Pag. \bfseries\thepage}}
+\fancyfoot[CE]{\fancyplain{}{}}
+\fancyfoot[RE]{\fancyplain{}{\bfseries\leftmark}}
+\fancyfoot[LO]{\fancyplain{}{\bfseries\rightmark}}
+\fancyfoot[CO]{\fancyplain{}{}}
+\fancyfoot[RO]{\fancyplain{}{\bfseries\scriptsize Pag. \bfseries\thepage}}
+\renewcommand{\footrulewidth}{0.4pt}
+\renewcommand{\chaptermark}[1]{%
+  \markboth{#1}{}%
+}
+\renewcommand{\sectionmark}[1]{%
+  \markright{\thesection\ #1}%
+}
+
+% Indices & bibliography
+\usepackage{natbib}
+\usepackage[titles]{tocloft}
+\setcounter{tocdepth}{3}
+\setcounter{secnumdepth}{5}
+\makeindex
+
+% Hyperlinks (required, but should be loaded last)
+\usepackage{ifpdf}
+\ifpdf
+  \usepackage[pdftex,pagebackref=true]{hyperref}
+\else
+  \usepackage[ps2pdf,pagebackref=true]{hyperref}
+\fi
+\hypersetup{%
+  colorlinks=true,%
+  linkcolor=blue,%
+  citecolor=blue,%
+  unicode%
+}
+
+\graphicspath{ {../} {../html/} }
+
+% Custom commands
+\newcommand{\clearemptydoublepage}{%
+  \newpage{\pagestyle{empty}\cleardoublepage}%
+}
+
+\usepackage{caption}
+\captionsetup{labelsep=space,justification=centering,font={bf},singlelinecheck=off,skip=4pt,position=top}
+
+%===== C O N T E N T S =====
+
+\begin{document}
+
+%PJ
+\title{a tiny RTOS for small microcontrollers}
+\subtitle{Reference Manual}
+%\version{1.0}
+\referencetool{Generated by Doxygen}
+\maketitle
+
+% Titlepage & ToC
+%\hypersetup{pageanchor=false,
+%             bookmarksnumbered=true,
+%             pdfencoding=unicode
+%            }
+%\pagenumbering{roman}
+%\begin{titlepage}
+%\begin{center}%
+%{\includegraphics{LogoEvidence-new-1.jpg}}\\
+%\vspace*{5cm}
+%{\includegraphics{erika3.png}}\\
+%\vspace*{0.1cm}
+%{\large a tiny RTOS for small microcontrollers}\\
+%\vspace*{0.1cm}
+%{\small VERSION 1.0}\\
+%\vspace*{2cm}
+%{\large Reference Manual}\\
+%\vspace*{7cm}
+%{\large Generated by}\\
+%{\includegraphics{doxygen.png}}\\
+%{\large 1.8.11}
+%\end{center}
+%\end{titlepage}
+\clearemptydoublepage
+\tableofcontents
+\clearemptydoublepage
+\pagenumbering{arabic}
+\hypersetup{pageanchor=true}
+
+%--- Begin generated contents ---
