@@ -26,3 +26,6 @@ http://www.erika-enterprise.com/index.php/erika3/licensing.html).
 
 More information about the ERIKA Enterprise RTOS is available at the official
 website: http://www.erika-enterprise.com
+
+Tutorials and board-specific information are available on the official wiki:
+http://www.erika-enterprise.com/wiki/
