@@ -1628,3 +1628,22 @@ FUNC(OsEE_api_param, OS_CODE)
   return osEE_get_curr_core()->p_ccb->api_param3;
 }
 #endif /* OSEE_USEPARAMETERACCESS */
+
+FUNC(ISRType, OS_CODE)
+  GetISRID
+(
+  void
+)
+{
+  VAR(ISRType, AUTOMATIC) isr_id;
+  CONSTP2CONST(OsEE_TDB, OS_APPL_DATA, AUTOMATIC)
+    p_tdb = osEE_get_curr_task();
+
+  if (p_tdb->task_type == OSEE_TASK_TYPE_ISR2) {
+    isr_id = p_tdb->tid;
+  } else {
+    isr_id = INVALID_ISR;
+  }
+
+  return isr_id;
+}

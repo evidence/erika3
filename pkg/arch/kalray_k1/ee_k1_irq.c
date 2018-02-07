@@ -563,7 +563,7 @@ OsEE_bool osEE_cpu_startos ( void ) {
   bsp_register_it(osEE_os_it_handler, BSP_IT_PE_14);
   bsp_register_it(osEE_os_it_handler, BSP_IT_PE_15);
 
-  for (i = 0U; i < (KDB.tdb_array_size - 1U); ++i)
+  for (i = 0U; i < (p_kdb->tdb_array_size - 1U); ++i)
   {
     /* ISR2 initialization */
     OsEE_TDB  * const p_tdb = (*p_kdb->p_tdb_ptr_array)[i];

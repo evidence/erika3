@@ -345,4 +345,11 @@ FUNC(OsEE_api_param, OS_CODE)
 #endif /* OSEE_HAS_EVENTS */
 
 #endif /* OSEE_USEPARAMETERACCESS */
+
+FUNC(ISRType, OS_CODE)
+  GetISRID
+(
+  void
+);
+
 #endif /* !OSEE_API_OSEK_H_ */

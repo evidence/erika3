@@ -67,9 +67,11 @@ typedef OSEE_APPMODE_TYPE                       AppModeType;
 #define OSEE_TASK_ID_TYPE                       VAR(OsEE_reg, TYPEDEF)
 #endif /* !OSEE_TASK_ID_TYPE */
 typedef OSEE_TASK_ID_TYPE                       TaskType;
+typedef OSEE_TASK_ID_TYPE                       ISRType;
 
 typedef P2VAR(TaskType, TYPEDEF, OS_APPL_DATA)  TaskRefType;
 #define INVALID_TASK                            ((TaskType)-1)
+#define INVALID_ISR                             INVALID_TASK
 
 #if (!defined(OSEE_TASK_PRIO_TYPE))
 #define OSEE_TASK_PRIO_TYPE                     VAR(unsigned char, TYPEDEF)

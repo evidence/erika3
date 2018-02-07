@@ -73,7 +73,7 @@ FUNC(void, OS_CODE)
 
 #if (defined(OSEE_API_DYNAMIC))
 /* All Core OS initialization: It SHALL be called in start-up code */
-FUNC(void, OS_CODE_INIT) osEE_os_init ( void );
+FUNC(void, OS_CODE_INIT) osEE_os_init(void);
 #endif /* OSEE_API_DYNAMIC */
 
 /* For each CORE Arch dependent StartOS procedure */
