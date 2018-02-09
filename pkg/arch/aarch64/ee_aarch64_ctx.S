@@ -1,4 +1,4 @@
-/*# ###*B*###
+/* ###*B*###
  * Erika Enterprise, version 3
  * 
  * Copyright (C) 2017 Evidence s.r.l.
@@ -37,8 +37,8 @@
  * Enterprise version 3, together with the terms and conditions of each
  * license, is present in the file THIRDPARTY.TXT in the root of the
  * project.
-  # ###*E*###
-*/
+ * ###*E*###
+ */
 
 /**
  * \file  ee_aarch64_ctx.S

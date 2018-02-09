@@ -1,4 +1,4 @@
-# ###*B*###
+/* ###*B*###
  * Erika Enterprise, version 3
  * 
  * Copyright (C) 2017 Evidence s.r.l.
@@ -37,45 +37,38 @@
  * Enterprise version 3, together with the terms and conditions of each
  * license, is present in the file THIRDPARTY.TXT in the root of the
  * project.
-# ###*E*###
+ * ###*E*###
+ */
 
-## \file  ee_aarch64_headers.S
-## \brief Jailhouse cell start-up code
-##
-## This file contains the functions to save and restore registers for
-## context switch.
-##
-## \author  Errico Guidieri
-## \date    2017
-
-#===============================================================================
-#                 ISR Handling (Only for AArch64 architecture)
-#===============================================================================
-
-#typedef struct OsEE_ISR_CTX_tag {
-#  OsEE_reg x0;
-#  OsEE_reg x1;
-#  OsEE_reg x2;
-#  OsEE_reg x3;
-#  OsEE_reg x4;
-#  OsEE_reg x5;
-#  OsEE_reg x6;
-#  OsEE_reg x7;
-#  OsEE_reg x8;
-#  OsEE_reg x9;
-#  OsEE_reg x10;
-#  OsEE_reg x11;
-#  OsEE_reg x12;
-#  OsEE_reg x13;
-#  OsEE_reg x14;
-#  OsEE_reg x15;
-#  OsEE_reg x16;
-#  OsEE_reg x17;
-#  OsEE_reg x18;
-#  OsEE_reg x30_lr;
-#  OsEE_reg elr_el1;
-#  OsEE_reg spsr_el1;
-#} OsEE_ISR_CTX;
+/*=============================================================================
+                   ISR Handling (Only for AArch64 architecture)
+ =============================================================================*/
+/*
+ * typedef struct OsEE_ISR_CTX_tag {
+ * OsEE_reg x0;
+ * OsEE_reg x1;
+ * OsEE_reg x2;
+ * OsEE_reg x3;
+ * OsEE_reg x4;
+ * OsEE_reg x5;
+ * OsEE_reg x6;
+ * OsEE_reg x7;
+ * OsEE_reg x8;
+ * OsEE_reg x9;
+ * OsEE_reg x10;
+ * OsEE_reg x11;
+ * OsEE_reg x12;
+ * OsEE_reg x13;
+ * OsEE_reg x14;
+ * OsEE_reg x15;
+ * OsEE_reg x16;
+ * OsEE_reg x17;
+ * OsEE_reg x18;
+ * OsEE_reg x30_lr;
+ * OsEE_reg elr_el1;
+ * OsEE_reg spsr_el1;
+ * } OsEE_ISR_CTX;
+ */
 
   .equ  OSEE_ISR_CTX_SIZE,176
 
@@ -119,22 +112,22 @@ osEE_aarch64_exception_entry:
   .globl __osEE_reset_entry
   .type __osEE_reset_entry, @function
 __osEE_reset_entry:
-# Populate vector base address registers for EL1
+/* Populate vector base address registers for EL1 */
   ldr x0, =osEE_aarch64_vectors
   msr	vbar_el1, x0
-# Initializate the Stack Pointer
+/* Initializate the Stack Pointer */
   ldr	x0, =stack_top
   mov	sp, x0
-# Enable the floating point and vector instructions in EL1 and EL0
+/* Enable the floating point and vector instructions in EL1 and EL0 */
   mov x0, #(3 << 20)
   msr cpacr_el1, x0
-# Enable all kind of "exceptions" but interrupts
-# (ERIKA's poilicy is doing it in StartOS)
-# msr daif, xzr
+/* Enable all kind of "exceptions" but interrupts
+  (ERIKA's poilicy is doing it in StartOS) */
+/* msr daif, xzr */
   msr daifclr, #0xD
-# Syncronize all the changes
+/* Syncronize all the changes */
   isb
-# Jump to C code
+/* Jump to C code */
   b osEE_c_start
   .size __osEE_reset_entry, .-__osEE_reset_entry
 
@@ -146,7 +139,7 @@ __osEE_reset_entry:
   b \jump
 .endm
 
-## ERIKA Exceptions Vector
+/* ERIKA Exceptions Vector */
   .globl osEE_aarch64_vectors
   .align 11
 osEE_aarch64_vectors:
@@ -170,7 +163,7 @@ osEE_aarch64_vectors:
   osEE_aarch64_ventry  osEE_aarch64_FiqA32 .
   osEE_aarch64_ventry  osEE_aarch64_SErrorA32 .
 #else
-## ERIKA Exceptions Vector
+/* ERIKA Exceptions Vector */
   .globl osEE_aarch64_vectors
   .align 11
 osEE_aarch64_vectors:
@@ -178,22 +171,22 @@ osEE_aarch64_vectors:
    * Current EL with SP0 : 0x0 - 0x200
    * -----------------------------------------------------
    */
-#1
+/* 1 */
   .globl osEE_aarch64_SynchronousExceptionSP0
   .align  7
 osEE_aarch64_SynchronousExceptionSP0:
   b .
-#2
+/* 2 */
   .globl osEE_aarch64_IrqSP0
   .align  7
 osEE_aarch64_IrqSP0:
   b .
-#3
+/* 3 */
   .align  7
   .globl osEE_aarch64_FiqSP0
 osEE_aarch64_FiqSP0:
   b .
-#4
+/* 4 */
   .globl osEE_aarch64_SErrorSP0
   .align  7
 osEE_aarch64_SErrorSP0:
@@ -202,22 +195,22 @@ osEE_aarch64_SErrorSP0:
    * Current EL with SPx: 0x200 - 0x400
    * -----------------------------------------------------
    */
-#5
+/* 5 */
   .globl osEE_aarch64_SynchronousExceptionSPx
   .align  7
 osEE_aarch64_SynchronousExceptionSPx:
   b .
-#6
+/* 6 */
   .globl osEE_aarch64_IrqSPx
   .align  7
 osEE_aarch64_IrqSPx:
   b osEE_aarch64_exception_entry
-#7
+/* 7 */
   .global osEE_aarch64_FiqSPx
   .align  7
 osEE_aarch64_FiqSPx:
   b .
-#8
+/* 8 */
   .global osEE_aarch64_SErrorSPx
   .align  7
 osEE_aarch64_SErrorSPx:
@@ -226,22 +219,22 @@ osEE_aarch64_SErrorSPx:
    * Lower EL using AArch64 : 0x400 - 0x600
    * -----------------------------------------------------
    */
-#9
+/* 9 */
   .global osEE_aarch64_SynchronousExceptionA64
   .align  7
 osEE_aarch64_SynchronousExceptionA64:
   b .
-#10
+/* 10 */
   .global osEE_aarch64_IrqA64
   .align  7
 osEE_aarch64_IrqA64:
   b osEE_aarch64_exception_entry
-#11
+/* 11 */
   .global osEE_aarch64_FiqA64
   .align  7
 osEE_aarch64_FiqA64:
   b .
-#12
+/* 12 */
   .global osEE_aarch64_SErrorA64
   .align  7
 osEE_aarch64_SErrorA64:
@@ -250,29 +243,30 @@ osEE_aarch64_SErrorA64:
    * Lower EL using AArch32 : 0x600 - 0x800
    * -----------------------------------------------------
    */
-#13
+/* 13 */
   .global osEE_aarch64_SynchronousExceptionA32
   .align  7
 osEE_aarch64_SynchronousExceptionA32:
   b .
-#14
+/* 14 */
   .global osEE_aarch64_IrqA32
   .align  7
 osEE_aarch64_IrqA32:
   b .
-#15
+/* 15 */
   .global osEE_aarch64_FiqA32
   .align  7
 osEE_aarch64_FiqA32:
   b .
-#16
+/* 16 */
   .global osEE_aarch64_SErrorA32
   .align  7
 osEE_aarch64_SErrorA32:
   b .
 #endif
 
-# XXX: Important (?)
-# Allocate a Litteral Pool here (to handle =symbol pseudo-instructions operands)
+/* XXX: Important (?)
+   Allocate a Litteral Pool here
+   (to handle =symbol pseudo-instructions operands) */
   .ltorg
 

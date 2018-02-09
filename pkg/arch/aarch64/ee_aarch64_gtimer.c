@@ -61,8 +61,9 @@
 static OsEE_reg osEE_system_timer_expected_ticks;
 
 void osEE_aarch64_system_timer_init(void) {
+  OsEE_reg const gtimer_freq = osEE_aarch64_gtimer_get_freq();
   osEE_system_timer_expected_ticks = osEE_aarch64_gtimer_get_ticks() +
-    OSEE_NANO_TO_TICKS(OSTICKDURATION, osEE_aarch64_gtimer_get_freq());
+    OSEE_NANO_TO_TICKS(OSTICKDURATION, gtimer_freq);
 
   osEE_aarch64_gtimer_start(osEE_system_timer_expected_ticks,
     OSEE_AARCH64_GTIMER_UPPERCOUNT);
@@ -70,16 +71,36 @@ void osEE_aarch64_system_timer_init(void) {
   return;
 }
 
+#if (!defined(OSEE_AARCH64_GTIMER_GUARD))
+/* TODO: Tie OSEE_AARCH64_GTIMER_GUARD to ratio cpu_freq/gtimer_freq */
+#define OSEE_AARCH64_GTIMER_GUARD (10U)
+#endif /* OSEE_AARCH64_GTIMER_GUARD */
+
 void osEE_aarch64_system_timer_handler(void)
 {
+  OsEE_reg   gtimer_ticks;
+  OsEE_reg   gtimer_latency;
+  OsEE_reg   const gtimer_freq  = osEE_aarch64_gtimer_get_freq();
+  OsEE_reg   const gitmer_delta =
+    OSEE_NANO_TO_TICKS(OSTICKDURATION, gtimer_freq);
+
   OsEE_CDB * const p_cdb = osEE_get_curr_core();
+
   osEE_counter_increment(p_cdb->p_sys_counter_db);
 
-  osEE_system_timer_expected_ticks +=
-    OSEE_NANO_TO_TICKS(OSTICKDURATION, osEE_aarch64_gtimer_get_freq());
+  gtimer_ticks = osEE_aarch64_gtimer_get_ticks();
+  gtimer_latency = (gtimer_ticks - osEE_system_timer_expected_ticks);
+
+  if (gtimer_latency < (gitmer_delta - OSEE_AARCH64_GTIMER_GUARD)) { 
+    osEE_system_timer_expected_ticks += gitmer_delta;
+  } else {
+    osEE_system_timer_expected_ticks  = gtimer_ticks + gitmer_delta
+      - OSEE_AARCH64_GTIMER_GUARD;
+  }
 
   osEE_aarch64_gtimer_start(osEE_system_timer_expected_ticks,
     OSEE_AARCH64_GTIMER_UPPERCOUNT);
+
   return;
 }
 

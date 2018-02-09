@@ -220,15 +220,9 @@ OSEE_STATIC_INLINE OsEE_isr_prio osEE_isr2_virt_to_hw_prio(TaskPrio virt_prio) {
                 GIC Distributor interface general definitions
  ******************************************************************************/
 /* Constants to categorise interrupts */
-#define OSEE_GIC_MIN_SGI_ID   0U
-#define OSEE_GIC_MIN_PPI_ID   16U
-#define OSEE_GIC_MIN_SPI_ID   32U
-
-#if (!defined(OSEE_GIC_ISR_NUM))
-/* 32 Private Peripheral Interrupt (PPI) + 256 bit bitmask
-   for 2 jailhouse_irqchip */
-#define OSEE_GIC_ISR_NUM      288U
-#endif /* OSEE_GIC_ISR_NUM */
+#define OSEE_GIC_MIN_SGI_ID   (0U)
+#define OSEE_GIC_MIN_PPI_ID   (16U)
+#define OSEE_GIC_MIN_SPI_ID   (32U)
 
 /* Constant to indicate a spurious interrupt in all GIC versions */
 #define OSEE_GIC_SPURIOUS_ISR (0x3ffU) /* 1023 */

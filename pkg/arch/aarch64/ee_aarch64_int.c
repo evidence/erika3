@@ -105,8 +105,9 @@ void osEE_aarch64_isr_wrapper(OsEE_ISR_CTX * p_isr_ctx)
   }
 }
 
-static void osEE_aarch64_configure_isr2(OsEE_TDB * p_tdb, ISRSource source_id)
+static StatusType osEE_aarch64_configure_isr2(OsEE_TDB * p_tdb, ISRSource source_id)
 {
+  StatusType              ev;
   /* Pointer to the ISR handler struct */
   OsEE_aarch64_hnd_type * p_hnd;
   /* HW priority mask */
@@ -118,22 +119,30 @@ static void osEE_aarch64_configure_isr2(OsEE_TDB * p_tdb, ISRSource source_id)
 
   if (source_id < OSEE_GIC_MIN_SPI_ID) {
     p_hnd = &osEE_aarch64_ppi_isr_vectors[osEE_get_curr_core_id()][source_id];
-  } else {
+  } else if (source_id < OSEE_GIC_ISR_NUM) {
     p_hnd = &osEE_aarch64_spi_isr_vectors[source_id - OSEE_GIC_MIN_SPI_ID];
     /* If the source_id is a SPI. Set Current CPU as target for the given
        source */
 #if (!defined(OSEE_PLATFORM_JAILHOUSE))
     osEE_gic_v2_set_itargetsr(source_id, osEE_gic_v2_get_cpuif_mask());
 #endif /* !OSEE_PLATFORM_JAILHOUSE */
+  } else {
+    p_hnd = NULL;
   }
 
-  /* Configure the handler struct */
-  p_hnd->cat     = OSEE_ISR_CAT_2;
-  p_hnd->hnd.tid = p_tdb->tid;
+  if (p_hnd != NULL) {
+    /* Configure the handler struct */
+    p_hnd->cat     = OSEE_ISR_CAT_2;
+    p_hnd->hnd.tid = p_tdb->tid;
 #if (!defined(OSEE_PLATFORM_JAILHOUSE))
-  osEE_gic_v2_set_hw_prio(source_id, hw_prio_mask);
+    osEE_gic_v2_set_hw_prio(source_id, hw_prio_mask);
 #endif /* !OSEE_PLATFORM_JAILHOUSE */
-  osEE_gic_v2_enable_irq(source_id);
+    osEE_gic_v2_enable_irq(source_id);
+    ev = E_OK;
+  } else {
+    ev = E_OS_SYS_INIT;
+  }
+  return ev;
 }
 
 FUNC(OsEE_bool, OS_CODE) osEE_cpu_startos(void)
@@ -179,10 +188,13 @@ StatusType osEE_hal_set_isr2_source
   VAR(ISRSource,  AUTOMATIC)                source_id
 )
 {
-  p_tdb->hdb.isr2_src = source_id;
 
-  osEE_aarch64_configure_isr2(p_tdb, source_id);
+  StatusType const ev = osEE_aarch64_configure_isr2(p_tdb, source_id);
 
-  return E_OK;
+  if (ev == E_OK) {
+    p_tdb->hdb.isr2_src = source_id;
+  }
+
+  return ev;
 }
 #endif /* OSEE_API_DYNAMIC */

@@ -62,12 +62,14 @@
 
 #include "ee_compiler.h"
 #include "ee_utils.h"
-#include <limits.h>
 #include <stddef.h>
-#include <stdint.h>
 #if (defined(OSEE_AARCH64_SOC))
 #include "ee_aarch64_gic.h"
-#endif /* OSEE_AARCH64_SOC */
+#elif (!defined(OSEE_GIC_ISR_NUM))
+/* 32 Private Peripheral Interrupt (PPI) + 256 bit bitmask
+   for 2 jailhouse_irqchip */
+#define OSEE_GIC_ISR_NUM      (288U)
+#endif /* OSEE_AARCH64_SOC && !OSEE_GIC_ISR_NUM */
 
 #if (!defined(OSEE_BOOL_TYPE))
 typedef enum {
@@ -85,6 +87,18 @@ typedef enum {
 #endif  /* C++ */
 #endif  /* NULL */
 
+#if (!defined(CHAR_BIT))
+#define CHAR_BIT    (8U)
+#endif /* !CHAR_BIT */
+
+/* If INTMAX_MIN is not defined means the stdint.h is not included */
+#if (!defined(INTMAX_MIN))
+typedef unsigned char         uint8_t;
+typedef unsigned short int    uint16_t;
+typedef unsigned int          uint32_t;
+typedef unsigned long int     uint64_t;
+#endif /* !INTMAX_MIN */
+
 /* Define HAL types */
 typedef void *                OsEE_addr;
 typedef uint64_t              OsEE_reg;
@@ -100,15 +114,8 @@ typedef uint8_t               OsEE_isr_src_id;
 #endif /* OSEE_GIC_ISR_NUM > 256 */
 #define OSEE_ISR_SOURCE_TYPE  OsEE_isr_src_id
 
-//typedef uint16_t              OsEE_task_prio;
-//#define OSEE_TASK_PRIO_TYPE   OsEE_task_prio
-
 typedef void (* OsEE_void_cb) ( void );
 
 typedef uint8_t               OsEE_isr_prio;
-
-/* Override default implementation for some Kernel Types */
-//typedef size_t                OsEE_mem_size;
-//#define OSEE_MEM_SIZE_TYPE    OsEE_mem_size
 
 #endif /* !OSEE_PLATFORM_TYPES_H */

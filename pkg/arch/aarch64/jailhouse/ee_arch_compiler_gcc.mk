@@ -103,8 +103,7 @@ EE_OBJCOPY ?= $(BINDIR)$(JAILHOUSE_AARCH64_GCCPREFIX)objcopy
 EE_SIZE ?= $(BINDIR)$(JAILHOUSE_AARCH64_GCCPREFIX)size
 
 ## OPT_CC are the options for AARCH64 C compiler invocation
-
-OPT_CC += -c -mlittle-endian -fno-pie -Wall -Wstrict-prototypes       \
+OPT_CC += -c -nostdinc -mlittle-endian -fno-pie -Wall -Wstrict-prototypes      \
 -Wtype-limits -Wmissing-declarations -Wmissing-prototypes -fno-strict-aliasing \
 -fomit-frame-pointer -fno-pic -fno-common -fno-stack-protector
 ifeq ($(or	\
@@ -120,7 +119,6 @@ endif
 OPT_CC += $(CFLAGS)
 
 ## OPT_CXX are the options for AARCH64 C++ compiler invocation
-# removed: -nostdinc
 OPT_CXX += -c -nostdinc -mlittle-endian -fno-pie -Wall -Wstrict-prototypes\
  -Wtype-limits -Wmissing-declarations -Wmissing-prototypes -fno-strict-aliasing\
  -fomit-frame-pointer -fno-pic -fno-common -fno-stack-protector
@@ -136,7 +134,7 @@ endif
 OPT_CXX += $(CFLAGS) $(CXXFLAGS)
 
 ## OS_EE_AS_OPT are the options for AARCH64 assembler invocation
-OS_EE_AS_OPT = -c -mlittle-endian -fno-pie -Wall -Wstrict-prototypes  \
+OS_EE_AS_OPT = -c -nostdinc -mlittle-endian -fno-pie -Wall -Wstrict-prototypes  \
 -Wtype-limits -Wmissing-declarations -Wmissing-prototypes -fno-strict-aliasing \
 -fomit-frame-pointer -fno-pic -fno-common -fno-stack-protector
 ifeq ($(or	\

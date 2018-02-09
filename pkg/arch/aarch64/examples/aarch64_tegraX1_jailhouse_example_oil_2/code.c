@@ -193,43 +193,6 @@ void idle_hook(void) {
 
 int main(void)
 {
-#if (defined(OSEE_API_DYNAMIC))
-  StatusType s = E_OK;
-
-  s |= CreateTask( &task1_id, OSEE_TASK_TYPE_BASIC, TASK_FUNC(Task1),
-      1U, 1U, 1U, 1024 );
-  s |= CreateTask( &task2_id, OSEE_TASK_TYPE_EXTENDED, TASK_FUNC(Task2),
-      2U, 2U, 1U, 1024 );
-  s |= CreateTask( &isr2_clock_id, OSEE_TASK_TYPE_ISR2, clock_handler,
-      1U, 1U, 1U, OSEE_SYSTEM_STACK );
-  s |= CreateTask( &task3_id, OSEE_TASK_TYPE_BASIC, TASK_FUNC(Task3),
-      1U, 1U, 1U, OSEE_SYSTEM_STACK );
-  s |= CreateTask( &task4_id, OSEE_TASK_TYPE_BASIC, TASK_FUNC(Task4),
-      1U, 1U, 1U, OSEE_SYSTEM_STACK );
-  s |= CreateTask( &task5_id, OSEE_TASK_TYPE_BASIC, TASK_FUNC(Task5),
-      2U, 2U, 1U, OSEE_SYSTEM_STACK );
-
-  printk("All TASKs created with result (0 is OK):%d\n", s);
-
-  /* Tie ISR2 With IRQ */
-  s = SetISR2Source(isr2_clock_id, OSEE_GTIMER_IRQ);
-
-  printk ("ISRs created and tied with TIMER_IRQ. "
-          "TIMER IRQ Is Enabled:<%d><%x>; Priority:<%d><%x>; IGROUP:<%d> "
-          "after SetISR2Source, Result (0 is OK):%d\n",
-          osEE_gic_v2_is_enabled_irq(OSEE_GTIMER_IRQ),
-          osEE_gic_v2_read_isenabler(OSEE_GTIMER_IRQ),
-          osEE_gic_v2_read_virt_prio_isr(OSEE_GTIMER_IRQ),
-          osEE_gic_v2_read_hw_prio_isr(OSEE_GTIMER_IRQ),
-          osEE_gicd_get_igroupr(OSEE_GTIMER_IRQ),
-          s
-  );
-
-  /* Initialization of the second semaphore of the example;
-   * the first semaphore is initialized inside the definition */
-  InitSem(&V, 0);
-#endif /* OSEE_API_DYNAMIC */
-
   printk("MAIN | Before | Call StartOS\n");
   printk("MAIN | Before | Interrupt Enabled? (0=No)<%d>, PMR:<%x>\n",
     osEE_hal_is_enabledIRQ(), osEE_gicc_read_pmr());

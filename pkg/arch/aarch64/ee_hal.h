@@ -111,7 +111,7 @@ OSEE_STATIC_INLINE uint32_t osEE_mmio_read32(OsEE_reg addr) {
         architecture dependent? */
 extern OsEE_core_id osEE_aarch64_vcore_id_offset;
 
-OSEE_STATIC_INLINE OsEE_core_id osEE_aarch64_get_vcore_id_raw( void ) {
+OSEE_STATIC_INLINE OsEE_core_id osEE_aarch64_get_vcore_id_raw(void) {
   OsEE_core_id vcore_id;
   OSEE_AARCH64_MRS(vcore_id,mpidr_el1);
   return vcore_id;
@@ -139,9 +139,9 @@ OSEE_STATIC_INLINE OsEE_core_id osEE_get_curr_core_id(void) {
  =============================================================================*/
 
 /* Context handling functions for Tasking */
-OSEE_STATIC_INLINE OsEE_addr osEE_get_SP ( void )
+OSEE_STATIC_INLINE OsEE_stack * osEE_get_SP(void)
 {
-  OsEE_addr sp;
+  OsEE_stack * sp;
   __asm__ volatile("mov %0, sp\n" : "=&r"(sp));
   return sp;
 }
@@ -180,10 +180,10 @@ enum osEE_aarch64_gtimer_mode {
   OSEE_AARCH64_GTIMER_UPPERCOUNT
 };
 
-OSEE_STATIC_INLINE void osEE_aarch64_gtimer_start( OsEE_reg timeout,
-  enum osEE_aarch64_gtimer_mode mode )
+OSEE_STATIC_INLINE void osEE_aarch64_gtimer_start(OsEE_reg timeout,
+  enum osEE_aarch64_gtimer_mode mode)
 {
-  if ( mode == OSEE_AARCH64_GTIMER_COUNTDOWN ) {
+  if (mode == OSEE_AARCH64_GTIMER_COUNTDOWN) {
     OSEE_AARCH64_MSR(cntv_tval_el0, timeout);
   } else {
     OSEE_AARCH64_MSR(cntv_cval_el0, timeout);
