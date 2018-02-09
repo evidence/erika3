@@ -1,11 +1,42 @@
 /* ###*B*###
- * ERIKA Enterprise - a tiny RTOS for small microcontrollers
- *
- * Copyright (C) 2002-2017 Evidence Srl
- *
- * This file is part of ERIKA Enterprise.
- *
- * See LICENSE file.
+ * Erika Enterprise, version 3
+ * 
+ * Copyright (C) 2017 Evidence s.r.l.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or (at
+ * your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License, version 2, for more details.
+ * 
+ * You should have received a copy of the GNU General Public License,
+ * version 2, along with this program; if not, see
+ * <https://www.gnu.org/licenses/old-licenses/gpl-2.0.html >.
+ * 
+ * This program is distributed to you subject to the following
+ * clarifications and special exceptions to the GNU General Public
+ * License, version 2.
+ * 
+ * THIRD PARTIES' MATERIALS
+ * 
+ * Certain materials included in this library are provided by third
+ * parties under licenses other than the GNU General Public License. You
+ * may only use, copy, link to, modify and redistribute this library
+ * following the terms of license indicated below for third parties'
+ * materials.
+ * 
+ * In case you make modified versions of this library which still include
+ * said third parties' materials, you are obligated to grant this special
+ * exception.
+ * 
+ * The complete list of Third party materials allowed with ERIKA
+ * Enterprise version 3, together with the terms and conditions of each
+ * license, is present in the file THIRDPARTY.TXT in the root of the
+ * project.
  * ###*E*### */
 
 /** \file   ee_hal_internal.h
@@ -189,15 +220,9 @@ OSEE_STATIC_INLINE OsEE_isr_prio osEE_isr2_virt_to_hw_prio(TaskPrio virt_prio) {
                 GIC Distributor interface general definitions
  ******************************************************************************/
 /* Constants to categorise interrupts */
-#define OSEE_GIC_MIN_SGI_ID   0U
-#define OSEE_GIC_MIN_PPI_ID   16U
-#define OSEE_GIC_MIN_SPI_ID   32U
-
-#if (!defined(OSEE_GIC_ISR_NUM))
-/* 32 Private Peripheral Interrupt (PPI) + 256 bit bitmask
-   for 2 jailhouse_irqchip */
-#define OSEE_GIC_ISR_NUM      288U
-#endif /* OSEE_GIC_ISR_NUM */
+#define OSEE_GIC_MIN_SGI_ID   (0U)
+#define OSEE_GIC_MIN_PPI_ID   (16U)
+#define OSEE_GIC_MIN_SPI_ID   (32U)
 
 /* Constant to indicate a spurious interrupt in all GIC versions */
 #define OSEE_GIC_SPURIOUS_ISR (0x3ffU) /* 1023 */

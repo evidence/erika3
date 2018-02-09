@@ -1,11 +1,42 @@
 # ###*B*###
-# ERIKA Enterprise - a tiny RTOS for small microcontrollers
-#
-# Copyright (C) 2002-2017 Evidence Srl
-#
-# This file is part of ERIKA Enterprise.
-#
-# See LICENSE file.
+# Erika Enterprise, version 3
+# 
+# Copyright (C) 2017 Evidence s.r.l.
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or (at
+# your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License, version 2, for more details.
+# 
+# You should have received a copy of the GNU General Public License,
+# version 2, along with this program; if not, see
+# <https://www.gnu.org/licenses/old-licenses/gpl-2.0.html >.
+# 
+# This program is distributed to you subject to the following
+# clarifications and special exceptions to the GNU General Public
+# License, version 2.
+# 
+# THIRD PARTIES' MATERIALS
+# 
+# Certain materials included in this library are provided by third
+# parties under licenses other than the GNU General Public License. You
+# may only use, copy, link to, modify and redistribute this library
+# following the terms of license indicated below for third parties'
+# materials.
+# 
+# In case you make modified versions of this library which still include
+# said third parties' materials, you are obligated to grant this special
+# exception.
+# 
+# The complete list of Third party materials allowed with ERIKA
+# Enterprise version 3, together with the terms and conditions of each
+# license, is present in the file THIRDPARTY.TXT in the root of the
+# project.
 # ###*E*###
 
 ## \file    ee_arch_compiler_gcc.mk
@@ -72,8 +103,7 @@ EE_OBJCOPY ?= $(BINDIR)$(JAILHOUSE_AARCH64_GCCPREFIX)objcopy
 EE_SIZE ?= $(BINDIR)$(JAILHOUSE_AARCH64_GCCPREFIX)size
 
 ## OPT_CC are the options for AARCH64 C compiler invocation
-
-OPT_CC += -c -mlittle-endian -fno-pie -Wall -Wstrict-prototypes       \
+OPT_CC += -c -nostdinc -mlittle-endian -fno-pie -Wall -Wstrict-prototypes      \
 -Wtype-limits -Wmissing-declarations -Wmissing-prototypes -fno-strict-aliasing \
 -fomit-frame-pointer -fno-pic -fno-common -fno-stack-protector
 ifeq ($(or	\
@@ -89,7 +119,6 @@ endif
 OPT_CC += $(CFLAGS)
 
 ## OPT_CXX are the options for AARCH64 C++ compiler invocation
-# removed: -nostdinc
 OPT_CXX += -c -nostdinc -mlittle-endian -fno-pie -Wall -Wstrict-prototypes\
  -Wtype-limits -Wmissing-declarations -Wmissing-prototypes -fno-strict-aliasing\
  -fomit-frame-pointer -fno-pic -fno-common -fno-stack-protector
@@ -105,7 +134,7 @@ endif
 OPT_CXX += $(CFLAGS) $(CXXFLAGS)
 
 ## OS_EE_AS_OPT are the options for AARCH64 assembler invocation
-OS_EE_AS_OPT = -c -mlittle-endian -fno-pie -Wall -Wstrict-prototypes  \
+OS_EE_AS_OPT = -c -nostdinc -mlittle-endian -fno-pie -Wall -Wstrict-prototypes  \
 -Wtype-limits -Wmissing-declarations -Wmissing-prototypes -fno-strict-aliasing \
 -fomit-frame-pointer -fno-pic -fno-common -fno-stack-protector
 ifeq ($(or	\

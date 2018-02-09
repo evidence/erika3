@@ -1,11 +1,42 @@
 /* ###*B*###
- * ERIKA Enterprise - a tiny RTOS for small microcontrollers
- *
- * Copyright (C) 2002-2017 Evidence Srl
- *
- * This file is part of ERIKA Enterprise.
- *
- * See LICENSE file.
+ * Erika Enterprise, version 3
+ * 
+ * Copyright (C) 2017 Evidence s.r.l.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or (at
+ * your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License, version 2, for more details.
+ * 
+ * You should have received a copy of the GNU General Public License,
+ * version 2, along with this program; if not, see
+ * <https://www.gnu.org/licenses/old-licenses/gpl-2.0.html >.
+ * 
+ * This program is distributed to you subject to the following
+ * clarifications and special exceptions to the GNU General Public
+ * License, version 2.
+ * 
+ * THIRD PARTIES' MATERIALS
+ * 
+ * Certain materials included in this library are provided by third
+ * parties under licenses other than the GNU General Public License. You
+ * may only use, copy, link to, modify and redistribute this library
+ * following the terms of license indicated below for third parties'
+ * materials.
+ * 
+ * In case you make modified versions of this library which still include
+ * said third parties' materials, you are obligated to grant this special
+ * exception.
+ * 
+ * The complete list of Third party materials allowed with ERIKA
+ * Enterprise version 3, together with the terms and conditions of each
+ * license, is present in the file THIRDPARTY.TXT in the root of the
+ * project.
  * ###*E*### */
 
 /** \file   code.c
@@ -162,43 +193,6 @@ void idle_hook(void) {
 
 int main(void)
 {
-#if (defined(OSEE_API_DYNAMIC))
-  StatusType s = E_OK;
-
-  s |= CreateTask( &task1_id, OSEE_TASK_TYPE_BASIC, TASK_FUNC(Task1),
-      1U, 1U, 1U, 1024 );
-  s |= CreateTask( &task2_id, OSEE_TASK_TYPE_EXTENDED, TASK_FUNC(Task2),
-      2U, 2U, 1U, 1024 );
-  s |= CreateTask( &isr2_clock_id, OSEE_TASK_TYPE_ISR2, clock_handler,
-      1U, 1U, 1U, OSEE_SYSTEM_STACK );
-  s |= CreateTask( &task3_id, OSEE_TASK_TYPE_BASIC, TASK_FUNC(Task3),
-      1U, 1U, 1U, OSEE_SYSTEM_STACK );
-  s |= CreateTask( &task4_id, OSEE_TASK_TYPE_BASIC, TASK_FUNC(Task4),
-      1U, 1U, 1U, OSEE_SYSTEM_STACK );
-  s |= CreateTask( &task5_id, OSEE_TASK_TYPE_BASIC, TASK_FUNC(Task5),
-      2U, 2U, 1U, OSEE_SYSTEM_STACK );
-
-  printk("All TASKs created with result (0 is OK):%d\n", s);
-
-  /* Tie ISR2 With IRQ */
-  s = SetISR2Source(isr2_clock_id, OSEE_GTIMER_IRQ);
-
-  printk ("ISRs created and tied with TIMER_IRQ. "
-          "TIMER IRQ Is Enabled:<%d><%x>; Priority:<%d><%x>; IGROUP:<%d> "
-          "after SetISR2Source, Result (0 is OK):%d\n",
-          osEE_gic_v2_is_enabled_irq(OSEE_GTIMER_IRQ),
-          osEE_gic_v2_read_isenabler(OSEE_GTIMER_IRQ),
-          osEE_gic_v2_read_virt_prio_isr(OSEE_GTIMER_IRQ),
-          osEE_gic_v2_read_hw_prio_isr(OSEE_GTIMER_IRQ),
-          osEE_gicd_get_igroupr(OSEE_GTIMER_IRQ),
-          s
-  );
-
-  /* Initialization of the second semaphore of the example;
-   * the first semaphore is initialized inside the definition */
-  InitSem(&V, 0);
-#endif /* OSEE_API_DYNAMIC */
-
   printk("MAIN | Before | Call StartOS\n");
   printk("MAIN | Before | Interrupt Enabled? (0=No)<%d>, PMR:<%x>\n",
     osEE_hal_is_enabledIRQ(), osEE_gicc_read_pmr());
