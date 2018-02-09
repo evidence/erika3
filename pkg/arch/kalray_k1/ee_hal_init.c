@@ -1,38 +1,38 @@
 /* ###*B*###
  * Erika Enterprise, version 3
- * 
+ *
  * Copyright (C) 2017 Evidence s.r.l.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or (at
  * your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License, version 2, for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License,
  * version 2, along with this program; if not, see
  * <https://www.gnu.org/licenses/old-licenses/gpl-2.0.html >.
- * 
+ *
  * This program is distributed to you subject to the following
  * clarifications and special exceptions to the GNU General Public
  * License, version 2.
- * 
+ *
  * THIRD PARTIES' MATERIALS
- * 
+ *
  * Certain materials included in this library are provided by third
  * parties under licenses other than the GNU General Public License. You
  * may only use, copy, link to, modify and redistribute this library
  * following the terms of license indicated below for third parties'
  * materials.
- * 
+ *
  * In case you make modified versions of this library which still include
  * said third parties' materials, you are obligated to grant this special
  * exception.
- * 
+ *
  * The complete list of Third party materials allowed with ERIKA
  * Enterprise version 3, together with the terms and conditions of each
  * license, is present in the file THIRDPARTY.TXT in the root of the
@@ -166,7 +166,7 @@ void osEE_os_init ( void ) {
   /* Initialize Kernel Descriptor block */
   KDB_WJ.p_kcb_wj             = &KCB_WJ;
   KDB_WJ.kdb.p_kcb            = &KCB_WJ.kcb;
-  KDB_WJ.kdb.p_tdb_ptr_array  = &KDB_WJ.tdb_ptr_array;
+  KDB_WJ.kdb.p_tdb_ptr_array  = (OsEE_TDB * const (*)[])&KDB_WJ.tdb_ptr_array;
   KDB_WJ.kdb.tdb_array_size   = OSEE_ARRAY_ELEMENT_COUNT(KDB_WJ.tdb_ptr_array);
   KDB_WJ.kdb.p_sn_array       = &KCB_WJ.sn_array;
   KDB_WJ.kdb.sn_array_size    = OSEE_ARRAY_ELEMENT_COUNT(KCB_WJ.sn_array);
@@ -187,7 +187,7 @@ void osEE_os_init ( void ) {
   /* Initialize the Task Description & Control Blocks (TDB & TCB) */
   for ( i = 0U; i < KDB_WJ.kdb.tdb_array_size; ++i ) {
     OsEE_TDB * const p_tdb            = &KDB_WJ.tdb_array[i];
-    (*KDB_WJ.kdb.p_tdb_ptr_array)[i]  = p_tdb;
+    KDB_WJ.tdb_ptr_array[i]           = p_tdb;
     p_tdb->p_tcb                      = &KCB_WJ.tcb_array[i];
     p_tdb->hdb.p_sdb                  = &osEE_pool.sdb_array[i];
     p_tdb->hdb.p_scb                  = &osEE_pool.scb_array[i];
@@ -237,7 +237,7 @@ void osEE_os_init (void) {
 
   /* Initialize Kernel Descriptor block */
   KDB.p_kcb           = &KCB;
-  KDB.p_tdb_ptr_array = &tdb_ptr_array;
+  KDB.p_tdb_ptr_array = (OsEE_TDB * const (*)[])&tdb_ptr_array;
   KDB.tdb_array_size  = OSEE_ARRAY_ELEMENT_COUNT(tdb_ptr_array);
   KDB.p_sn_array      = &sn_array;
   KDB.sn_array_size   = OSEE_ARRAY_ELEMENT_COUNT(sn_array);
@@ -250,7 +250,7 @@ void osEE_os_init (void) {
   /* Initialize the Task Description & Control Blocks (TDB & TCB) */
   for ( i = 0U; i < OSEE_ARRAY_ELEMENT_COUNT(tdb_array); ++i ) {
     OsEE_TDB * const p_tdb          = &tdb_array[i];
-    (*KDB.p_tdb_ptr_array)[i]       = p_tdb;
+    tdb_ptr_array[i]                = p_tdb;
     p_tdb->p_tcb                    = &tcb_array[i];
     p_tdb->hdb.p_sdb                = &osEE_pool.sdb_array[i];
     p_tdb->hdb.p_scb                = &osEE_pool.scb_array[i];
