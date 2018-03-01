@@ -43,23 +43,21 @@
   ###*E*###
   -->
 
-<evidence_example version="1" ID="aarch64_jailhouse_tegraX1_uart">
+<evidence_example version="1" ID="aarch64_jailhouse_dynamic_api">
 
- <category>aarch64/Jailhouse/TegraX1</category>
- <title>UART demo</title>
+ <category>aarch64/Jailhouse</category>
+ <title>Dynamic API demo</title>
 
  <small_descr>
-  Test a small UART driver.
+  Many Tasks, an ISR and a Semaphore.
  </small_descr>
 
  <long_descr>
-  Test a small UART driver. It requires a Jailhouse cell that assigns UART to the inmate cell.
+  In this demo there are many Tasks, an ISR and a Semaphore.
  </long_descr>
 
  <file_section>
-  <file     name="main.c"/>
-  <file     name="uart-driver.c"/>
-  <file     name="uart-driver.h"/>
+  <file     name="code.c"/>
   <!-- <file     name="appl.oil"/> -->
   <file     name="conf.oil"/>
   <!-- <file     name="os.oil"/> -->

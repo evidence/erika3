@@ -91,7 +91,7 @@ CPU mySystem {
     };
   };
 
-  TASK task1_id {
+  TASK Task1 {
     PRIORITY = 1;
     STACK = PRIVATE {
       SIZE = 1024;
@@ -100,7 +100,7 @@ CPU mySystem {
     APP_SRC = "code.c";
   };
 
-  TASK task2_id {
+  TASK Task2 {
     PRIORITY = 2;
     STACK = PRIVATE {
       SIZE = 1024;
@@ -109,17 +109,17 @@ CPU mySystem {
     SCHEDULE = FULL;
   };
 
-  TASK task3_id {
+  TASK Task3 {
     PRIORITY = 1;
     SCHEDULE = FULL;
   };
 
-  TASK task4_id {
+  TASK Task4 {
     PRIORITY = 1;
     SCHEDULE = FULL;
   };
 
-  TASK task5_id {
+  TASK Task5 {
     PRIORITY = 1;
     SCHEDULE = FULL;
   };
