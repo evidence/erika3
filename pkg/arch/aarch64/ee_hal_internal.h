@@ -438,6 +438,7 @@ OSEE_STATIC_INLINE uint32_t osEE_gicc_read_ack(void)
 
 /* We always use virtual priorities */
 OSEE_STATIC_INLINE void osEE_hal_set_ipl(TaskPrio virt_prio) {
+#if (defined(OSEE_GIC_PMR_HANDLING))
 #if (defined(OSEE_GIC_REQUIRE_CS))
   OsEE_reg const daif_flags = osEE_hal_suspendIRQ();
 #endif /* OSEE_GIC_REQUIRE_CS */
@@ -450,11 +451,13 @@ OSEE_STATIC_INLINE void osEE_hal_set_ipl(TaskPrio virt_prio) {
 #if (defined(OSEE_GIC_REQUIRE_CS))
   osEE_hal_resumeIRQ(daif_flags);
 #endif /* OSEE_GIC_REQUIRE_CS */
+#endif /* OSEE_GIC_PMR_HANDLING */
 }
 
 OSEE_STATIC_INLINE OsEE_reg
   osEE_hal_prepare_ipl(OsEE_reg flags, TaskPrio virt_prio)
 {
+#if (defined(OSEE_GIC_PMR_HANDLING))
   OsEE_reg ret_flags;
   /* Touch unused parameter */
   (void)flags;
@@ -464,6 +467,9 @@ OSEE_STATIC_INLINE OsEE_reg
     ret_flags = osEE_isr2_virt_to_hw_prio(virt_prio);
   }
   return ret_flags;
+#else /* OSEE_GIC_PMR_HANDLING */
+  return flags;
+#endif /* OSEE_GIC_PMR_HANDLING */
 }
 
 /*==============================================================================
@@ -493,6 +499,7 @@ OSEE_STATIC_INLINE MemSize osEE_hal_get_msb (OsEE_rq_mask mask) {
  * an IRQ and from within a task. */
 OSEE_STATIC_INLINE OsEE_reg osEE_hal_begin_nested_primitive(void)
 {
+#if (defined(OSEE_GIC_PMR_HANDLING))
   OsEE_isr_prio const max_isr2_hw_prio =
     osEE_isr2_virt_to_hw_prio(OSEE_ISR2_MAX_PRIO);
   OsEE_isr_prio const flags =
@@ -509,13 +516,20 @@ OSEE_STATIC_INLINE OsEE_reg osEE_hal_begin_nested_primitive(void)
 #endif /* OSEE_GIC_REQUIRE_CS */
   }
   return (OsEE_reg)flags;
+#else /* OSEE_GIC_PMR_HANDLING */
+  return osEE_hal_suspendIRQ();
+#endif /* OSEE_GIC_PMR_HANDLING */
 }
 
 /* Called as _last_ function of a primitive that can be called from
  * within an IRQ or a task. */
 OSEE_STATIC_INLINE void osEE_hal_end_nested_primitive(OsEE_reg flags)
 {
+#if (defined(OSEE_GIC_PMR_HANDLING))
   osEE_mmio_write32(OSEE_GICC_BASE + OSEE_GICC_PMR, (OsEE_isr_prio)flags);
+#else /* OSEE_GIC_PMR_HANDLING */
+  osEE_hal_resumeIRQ(flags);
+#endif /* OSEE_GIC_PMR_HANDLING */
 }
 
 /*==============================================================================
