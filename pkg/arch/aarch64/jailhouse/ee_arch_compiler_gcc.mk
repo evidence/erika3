@@ -68,19 +68,29 @@ BINDIR :=
 #ALLINCPATH += \
 #$(foreach d,$(INCLUDE_PATH),$(addprefix -I,$(call native_path,$d)))
 
-#/usr/lib/gcc/aarch64-linux-gnu/5/include
 INCLUDE_PATH += $(JAILHOUSE_DIR)/inmates/lib/arm64
+ifeq ($(JAILHOUSE_VERSION),0.7)
+#/usr/lib/gcc/aarch64-linux-gnu/5/include
 INCLUDE_PATH += $(JAILHOUSE_DIR)/hypervisor/arch/arm64/include
 INCLUDE_PATH += $(JAILHOUSE_DIR)/hypervisor/include
+JAILHOUSE_CONFIG_PATH := $(JAILHOUSE_DIR)/hypervisor/include/jailhouse
+else
+INCLUDE_PATH += $(JAILHOUSE_DIR)/include/arch/arm64
+INCLUDE_PATH += $(JAILHOUSE_DIR)/include
+JAILHOUSE_CONFIG_PATH := $(JAILHOUSE_DIR)/include/jailhouse
+endif
+
 INCLUDE_PATH += $(JAILHOUSE_DIR)/hypervisor/arch/arm-common/include
 INCLUDE_PATH += $(JAILHOUSE_DIR)/inmates/lib/arm64/include
 INCLUDE_PATH += $(JAILHOUSE_DIR)/inmates/lib/arm-common/include
 
-ALLINCPATH += -isystem /usr/lib/gcc/aarch64-linux-gnu/5/include\
- -include $(JAILHOUSE_DIR)/hypervisor/include/jailhouse/config.h\
-  $(foreach d,$(INCLUDE_PATH),$(addprefix -I,$d))
-
 JAILHOUSE_AARCH64_GCCPREFIX ?=
+
+JAILHOUSE_SYSTEM_HEADERS ?= $(shell $(JAILHOUSE_AARCH64_GCCPREFIX)gcc -print-file-name=include) # /usr/lib/gcc/aarch64-linux-gnu/5/include
+
+ALLINCPATH += -isystem $(JAILHOUSE_SYSTEM_HEADERS)\
+ -include $(JAILHOUSE_CONFIG_PATH)/config.h\
+ $(foreach d,$(INCLUDE_PATH),$(addprefix -I,$d))
 
 EE_OBJDUMP ?= $(BINDIR)$(JAILHOUSE_AARCH64_GCCPREFIX)objdump
 

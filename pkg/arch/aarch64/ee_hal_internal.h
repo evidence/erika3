@@ -60,9 +60,9 @@
 #include "ee_hal_internal_types.h"
 #include "ee_std_change_context.h"
 #include "ee_kernel_types.h"
-#if (defined(OSEE_SOC_DATA))
+#if (defined(OSEE_AARCH64_SOC))
 #include "ee_aarch64_gic.h"
-#endif /* OSEE_SOC_DATA */
+#endif /* OSEE_AARCH64_SOC */
 
 /*==============================================================================
                           Macros & Inline Functions

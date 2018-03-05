@@ -58,6 +58,4 @@
 #define OSEE_GICH_OFFSET  (0x4000U)
 #define OSEE_GICV_OFFSET  (0x6000U)
 
-#define OSEE_GIC_ISR_NUM  (190U)
-
 #endif /* OSEE_AARCH64_GIC_H */
