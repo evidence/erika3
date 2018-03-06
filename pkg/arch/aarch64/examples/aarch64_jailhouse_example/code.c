@@ -99,6 +99,7 @@ OsEE_addr volatile task4_sp;
 OsEE_addr volatile task5_sp;
 OsEE_addr volatile main_sp;
 
+#if (defined(OSEE_API_DYNAMIC))
 /* Task IDs */
 TaskType task1_id;
 TaskType task2_id;
@@ -106,6 +107,7 @@ TaskType task3_id;
 TaskType task4_id;
 TaskType task5_id;
 TaskType isr2_clock_id;
+#endif /* OSEE_API_DYNAMIC */
 
 /* This semaphore is initialized inside the Background Task */
 extern SemType V;
@@ -120,9 +122,39 @@ extern SemType V;
 static u64 ticks_per_beat;
 static volatile u64 expected_ticks;
 
-void free_task1(void);
-void free_task1(void) {
-  isr2_armed  = 0;
+void clock_handler(void);
+void clock_handler(void) {
+  static u64 min_delta = ~0ULL, max_delta = 0;
+  u64 delta;
+
+
+  delta = osEE_aarch64_gtimer_get_ticks() - expected_ticks;
+  if (delta < min_delta) {
+    min_delta = delta;
+  }
+  if (delta > max_delta) {
+    max_delta = delta;
+  }
+
+  printk("ISR | Timer fired, jitter: %6ld ns, min: %6ld ns, max: %6ld ns\n",
+         (long)timer_ticks_to_ns(delta),
+         (long)timer_ticks_to_ns(min_delta),
+         (long)timer_ticks_to_ns(max_delta));
+
+  ++isr2_fired;
+
+  if ( !isr2_armed  ) {
+    printk("ISR   | Before | Activate TASK1\n");
+    ActivateTask(task1_id);
+    printk("ISR   | After  | TASK1 activation\n");
+
+  } else {
+    isr2_armed = 0U;
+  }
+
+  expected_ticks = osEE_aarch64_gtimer_get_ticks() + ticks_per_beat;
+  osEE_aarch64_gtimer_start(ticks_per_beat, OSEE_AARCH64_GTIMER_COUNTDOWN);
+  return;
 }
 
 void idle_hook(void);
@@ -130,7 +162,7 @@ void idle_hook(void) {
   OsEE_addr volatile curr_sp, curr_sp_after;
 
   printk("MAIN | After  | We are in Idle LOOP\n");
-  printk("MAIN | After  | Interrupt Enabled? (0=No)<%d>, PMR:<%x>",
+  printk("MAIN | After  | Interrupt Enabled? (0=No)<%d>, PMR:<%x>\n",
     osEE_hal_is_enabledIRQ(), osEE_gicc_read_pmr());
 
   EE_assert(EE_ASSERT_INIT, OSEE_TRUE, EE_ASSERT_NIL);
@@ -171,7 +203,7 @@ void idle_hook(void) {
   osEE_aarch64_gtimer_start(ticks_per_beat, OSEE_AARCH64_GTIMER_COUNTDOWN);
 
   /* Forever loop: background activities (if any) should go here */
-  for (;result == 1;)
+  for (;;)
   {
     curr_sp = osEE_get_SP();
     if ( curr_sp != curr_sp_after ) {
@@ -193,6 +225,43 @@ void idle_hook(void) {
 
 int main(void)
 {
+#if (defined(OSEE_API_DYNAMIC))
+  StatusType s = E_OK;
+
+  s |= CreateTask( &task1_id, OSEE_TASK_TYPE_BASIC, TASK_FUNC(Task1),
+      1U, 1U, 1U, 1024 );
+  s |= CreateTask( &task2_id, OSEE_TASK_TYPE_EXTENDED, TASK_FUNC(Task2),
+      2U, 2U, 1U, 1024 );
+  s |= CreateTask( &isr2_clock_id, OSEE_TASK_TYPE_ISR2, clock_handler,
+      1U, 1U, 1U, OSEE_SYSTEM_STACK );
+  s |= CreateTask( &task3_id, OSEE_TASK_TYPE_BASIC, TASK_FUNC(Task3),
+      1U, 1U, 1U, OSEE_SYSTEM_STACK );
+  s |= CreateTask( &task4_id, OSEE_TASK_TYPE_BASIC, TASK_FUNC(Task4),
+      1U, 1U, 1U, OSEE_SYSTEM_STACK );
+  s |= CreateTask( &task5_id, OSEE_TASK_TYPE_BASIC, TASK_FUNC(Task5),
+      2U, 2U, 1U, OSEE_SYSTEM_STACK );
+
+  printk("All TASKs created with result (0 is OK):%d\n", s);
+
+  /* Tie ISR2 With IRQ */
+  s = SetISR2Source(isr2_clock_id, OSEE_GTIMER_IRQ);
+
+  printk ("ISRs created and tied with TIMER_IRQ. "
+          "TIMER IRQ Is Enabled:<%d><%x>; Priority:<%d><%x>; IGROUP:<%d> "
+          "after SetISR2Source, Result (0 is OK):%d\n",
+          osEE_gic_v2_is_enabled_irq(OSEE_GTIMER_IRQ),
+          osEE_gic_v2_read_isenabler(OSEE_GTIMER_IRQ),
+          osEE_gic_v2_read_virt_prio_isr(OSEE_GTIMER_IRQ),
+          osEE_gic_v2_read_hw_prio_isr(OSEE_GTIMER_IRQ),
+          osEE_gicd_get_igroupr(OSEE_GTIMER_IRQ),
+          s
+  );
+
+  /* Initialization of the second semaphore of the example;
+   * the first semaphore is initialized inside the definition */
+  InitSem(&V, 0);
+#endif /* OSEE_API_DYNAMIC */
+
   printk("MAIN | Before | Call StartOS\n");
   printk("MAIN | Before | Interrupt Enabled? (0=No)<%d>, PMR:<%x>\n",
     osEE_hal_is_enabledIRQ(), osEE_gicc_read_pmr());

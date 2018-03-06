@@ -52,11 +52,10 @@ CPU mySystem {
 
   OS myOs {
 
-    /* EE_OPT = "OS_EE_VERBOSE"; */
+    //EE_OPT = "OS_EE_VERBOSE";
     EE_OPT = "OSEE_DEBUG";
     EE_OPT = "OS_EE_APPL_BUILD_DEBUG";
     EE_OPT = "OS_EE_BUILD_DEBUG";
-    EE_OPT = "OSEE_ASSERT";
 
     /* Workaround to access ERIKA's internal */
     CFLAGS = "-I ../erika/src";
@@ -69,61 +68,23 @@ CPU mySystem {
       };
     };
 
-/*
+    SOC_DATA = NVIDIA_TEGRA_X1;
+
     USEDYNAMICAPI = TRUE {
       TASK_ARRAY_SIZE     = 8;
       SN_ARRAY_SIZE       = 8;
       STACKS_MEMORY_SIZE  = 8192;
     };
-*/
-
-    USEEXTENSIONAPI = TRUE {
-      SEMAPHORE = DEFAULT { NAME = "V"; };
-    };
 
     KERNEL_TYPE = OSEK {
-      CLASS = ECC1;
+      CLASS = ECC2;
 //      RQ    = MQ;
     };
   };
 
-  TASK Task1 {
+  TASK FakeTask1 {
     PRIORITY = 1;
-    STACK = PRIVATE {
-      SIZE = 1024;
-    };
-    SCHEDULE = FULL;
-    APP_SRC = "code.c";
-  };
-
-  TASK Task2 {
-    PRIORITY = 2;
-    STACK = PRIVATE {
-      SIZE = 1024;
-      EXTENDED = TRUE;
-    };
-    SCHEDULE = FULL;
-  };
-
-  TASK Task3 {
-    PRIORITY = 1;
-    SCHEDULE = FULL;
-  };
-
-  TASK Task4 {
-    PRIORITY = 1;
-    SCHEDULE = FULL;
-  };
-
-  TASK Task5 {
-    PRIORITY = 1;
-    SCHEDULE = FULL;
-  };
-
-  ISR TimerISR {
-    CATEGORY = 2;
-    SOURCE   = "27";
-    HANDLER  = "clock_handler";
-    PRIORITY = 1;
+    APP_SRC = "main.c";
+    APP_SRC = "uart-driver.c";
   };
 };

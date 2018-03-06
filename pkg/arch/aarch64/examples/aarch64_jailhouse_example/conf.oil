@@ -68,6 +68,10 @@ CPU mySystem {
         HOOKNAME = "idle_hook";
       };
     };
+    
+
+   SOC_DATA = NVIDIA_TEGRA_X1;
+   /* SOC_DATA = XILINX_ZYNQ_ULTRASCALE_PLUS */
 
 /*
     USEDYNAMICAPI = TRUE {
@@ -87,41 +91,7 @@ CPU mySystem {
     };
   };
 
-  COUNTER SystemTimer {
-    MINCYCLE = 1;
-    MAXALLOWEDVALUE = 2147483647;
-    TICKSPERBASE = 1;
-    TYPE = HARDWARE {
-      SYSTEM_TIMER = TRUE;
-      PRIORITY     = 1;
-      DEVICE       = "GTIMER";
-    };
-    SECONDSPERTICK = 0.001;
-  };
-
-  ALARM AlarmTask1 {
-    COUNTER = SystemTimer;
-    ACTION = ACTIVATETASK {
-      TASK = Task1;
-    };
-    AUTOSTART = TRUE {
-      ALARMTIME = 500;
-      CYCLETIME = 100;
-    };
-  };
-
-  ALARM AlarmFreeTask1 {
-    COUNTER = SystemTimer;
-    ACTION = ALARMCALLBACK {
-      ALARMCALLBACKNAME = "free_task1";
-    };
-    AUTOSTART = TRUE {
-      ALARMTIME = 1000;
-      CYCLETIME = 1000;
-    };
-  };
-
-  TASK Task1 {
+  TASK task1_id {
     PRIORITY = 1;
     STACK = PRIVATE {
       SIZE = 1024;
@@ -130,7 +100,7 @@ CPU mySystem {
     APP_SRC = "code.c";
   };
 
-  TASK Task2 {
+  TASK task2_id {
     PRIORITY = 2;
     STACK = PRIVATE {
       SIZE = 1024;
@@ -139,18 +109,25 @@ CPU mySystem {
     SCHEDULE = FULL;
   };
 
-  TASK Task3 {
+  TASK task3_id {
     PRIORITY = 1;
     SCHEDULE = FULL;
   };
 
-  TASK Task4 {
+  TASK task4_id {
     PRIORITY = 1;
     SCHEDULE = FULL;
   };
 
-  TASK Task5 {
+  TASK task5_id {
     PRIORITY = 1;
     SCHEDULE = FULL;
+  };
+
+  ISR TimerISR {
+    CATEGORY = 2;
+    SOURCE   = "27";
+    HANDLER  = "clock_handler";
+    PRIORITY = 1;
   };
 };

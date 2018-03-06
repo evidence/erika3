@@ -40,32 +40,28 @@
 # ###*E*###
 
 ## \file	makefile
-## \brief	Jailhouse x86_64 Inmates Makefile.
+## \brief	TriCore demos makefile.
 ##
-## Makefile for Jailhouse x86_64 inmates in Erika Enterprise.
+## Makefile for TriCore demos in Erika Enterprise.
 ##
-## \author	Michele Pes
+## \author	Errico Guidieri
 ## \date	2017
 # ###*E*###
 
 # Destination directories
 export OUTPUT_DIR = out
-export ERIKA_DIR = erika
-WS ?= ws
-
-ifndef  JAILHOUSE_DIR
-export JAILHOUSE_DIR = $(HOME)/jailhouse
-endif
+export ERIKA_DIR  = erika
+WS               ?= ws
 
 ifndef	ERIKA_FILES
-export ERIKA_FILES = $(abspath ../../ee3)
+export ERIKA_FILES = $(abspath ../../../../..)
 endif
 
 ifndef	RTDRUID_ECLIPSE_HOME
 ifeq	($(shell uname), Linux)
-export RTDRUID_ECLIPSE_HOME = $(HOME)/Evidence/eclipse
+export RTDRUID_ECLIPSE_HOME = ${HOME}/evidence/eclipse_ee3/eclipse
 else
-export RTDRUID_ECLIPSE_HOME = C:/Evidence/eclipse
+export RTDRUID_ECLIPSE_HOME = C:/Evidence/eclipse_ee3/eclipse
 endif
 endif
 
@@ -112,7 +108,7 @@ dist-clean: os-dist-clean appl-dist-clean
 
 os-dist-clean:
 	@echo os distribution cleaning...
-	@$(RM) -r $(ERIKA_DIR)
+	@$(RM) -r $(ERIKA_DIR) $(WS)
 
 appl-dist-clean:
 	@echo application distribution cleaning...
@@ -124,9 +120,21 @@ doc:	pull
 pdfdoc:	pull
 	$(MAKE) -C $(ERIKA_DIR)/doc $@
 
-ifneq (ok,$(shell test -d "$(RTDRUID_ECLIPSE_HOME)" && echo ok ))
-$(error The variable RTDRUID_ECLIPSE_HOME must point to a valid Eclipse RT-Druid installation)
-endif
+## TO BE Restored
+## Run RT-Druid
+#$(ERIKA_DIR): os.oil
+#	@echo "Running RT-Druid for os..."
+#	@ECLIPSE_HOME="$(RTDRUID_ECLIPSE_HOME)" ; \
+#	export ECLIPSE_HOME ; \
+#	exec sh $(RTDRUID_SCRIPT_DIR)/generate_code.sh \
+#	$(RTDRUID_ECLIPSE_HOME) $< $@
+#
+#$(OUTPUT_DIR): appl.oil
+#	@echo "Running RT-Druid for application..."
+#	@ECLIPSE_HOME="$(RTDRUID_ECLIPSE_HOME)" ; \
+#	export ECLIPSE_HOME ; \
+#	exec sh $(RTDRUID_SCRIPT_DIR)/generate_code.sh \
+#	$(RTDRUID_ECLIPSE_HOME) appl.oil $@
 
 # More Command Options
 #  --generateOS
