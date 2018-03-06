@@ -52,8 +52,6 @@
  */
 
 #include "ee_internal.h"
-#include <assert.h>
-#include <stdint.h>
 
 #if (defined(OSEE_API_DYNAMIC))
 
@@ -210,7 +208,7 @@ FUNC(OsEE_bool, OS_CODE)
 
   /* Initialize Idle TASK */
   /* System tos will be rewrittern by EE_hal_start_idle_task */
-  CONSTP2VAR(OsEE_CTX, AUTOMATIC, OS_APPL_DATA) p_tos = osEE_get_SP();
+  CONSTP2VAR(OsEE_CTX, AUTOMATIC, OS_APPL_DATA) p_tos = (OsEE_CTX *)osEE_get_SP();
 
   /* Tie Idle TASK with main Stack */
   p_hdb->p_sdb->p_bos       = p_tos;

@@ -65,11 +65,12 @@
 #include <stddef.h>
 #if (defined(OSEE_AARCH64_SOC))
 #include "ee_aarch64_gic.h"
-#elif (!defined(OSEE_GIC_ISR_NUM))
+#endif /* OSEE_AARCH64_SOC */
+#if (!defined(OSEE_GIC_ISR_NUM))
 /* 32 Private Peripheral Interrupt (PPI) + 256 bit bitmask
    for 2 jailhouse_irqchip */
 #define OSEE_GIC_ISR_NUM      (288U)
-#endif /* OSEE_AARCH64_SOC && !OSEE_GIC_ISR_NUM */
+#endif /* !OSEE_GIC_ISR_NUM */
 
 #if (!defined(OSEE_BOOL_TYPE))
 typedef enum {
