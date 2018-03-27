@@ -99,6 +99,7 @@ OsEE_addr volatile task4_sp;
 OsEE_addr volatile task5_sp;
 OsEE_addr volatile main_sp;
 
+#if (defined(OSEE_API_DYNAMIC))
 /* Task IDs */
 TaskType task1_id;
 TaskType task2_id;
@@ -106,6 +107,13 @@ TaskType task3_id;
 TaskType task4_id;
 TaskType task5_id;
 TaskType isr2_clock_id;
+#else /* OSEE_API_DYNAMIC */
+#define task1_id Task1
+#define task2_id Task2
+#define task3_id Task3
+#define task4_id Task4
+#define task5_id Task5
+#endif /* OSEE_API_DYNAMIC */
 
 /* This semaphore is initialized inside the Background Task */
 extern SemType V;
@@ -160,7 +168,7 @@ void idle_hook(void) {
   OsEE_addr volatile curr_sp, curr_sp_after;
 
   printk("MAIN | After  | We are in Idle LOOP\n");
-  printk("MAIN | After  | Interrupt Enabled? (0=No)<%d>, PMR:<%x>",
+  printk("MAIN | After  | Interrupt Enabled? (0=No)<%d>, PMR:<%x>\n",
     osEE_hal_is_enabledIRQ(), osEE_gicc_read_pmr());
 
   EE_assert(EE_ASSERT_INIT, OSEE_TRUE, EE_ASSERT_NIL);
@@ -201,7 +209,7 @@ void idle_hook(void) {
   osEE_aarch64_gtimer_start(ticks_per_beat, OSEE_AARCH64_GTIMER_COUNTDOWN);
 
   /* Forever loop: background activities (if any) should go here */
-  for (;result == 1;)
+  for (;;)
   {
     curr_sp = osEE_get_SP();
     if ( curr_sp != curr_sp_after ) {
@@ -315,7 +323,7 @@ TASK(Task1)
     EE_assert(EE_ASSERT_TASK3_NOT_FIRED, task3_fired == 0, EE_ASSERT_TASK1_ENDED);
   } else {
     printk("TASK1 | Before | Wait for release from ISR\n");
-    printk("TASK1 | Before | Interrupt Enabled? (0=No)<%d>\n, PMR:<%x>\n",
+    printk("TASK1 | Before | Interrupt Enabled? (0=No)<%d>, PMR:<%x>\n",
       osEE_hal_is_enabledIRQ(), osEE_gicc_read_pmr());
     while ( isr2_armed ) {
       ; /* Wait ISR2 release */

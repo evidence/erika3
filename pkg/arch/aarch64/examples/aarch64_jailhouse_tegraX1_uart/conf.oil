@@ -39,23 +39,52 @@
  * project.
  * ###*E*### */
 
-/** \file   ee_aarch64_gic.h
- *  \brief  GIC addresses for NVIDIA Tegrax1
+/** \file   conf.oil
+ *  \brief  System Configuration.
  *
- *  \note TO BE DOCUMENTED!!!
+ *  This file contains the System Configuration for Erika Enterprise.
  *
- *  \author Errico Guidieri
- *  \date   2017
+ *  \author  Errico Guidieri
+ *  \date    2017
  */
 
-#if (!defined(OSEE_AARCH64_GIC_H))
-#define OSEE_AARCH64_GIC_H
+CPU mySystem {
 
-/* GIC base address for NVIDIA TEGRA X1 */
-#define OSEE_GIC_BASE     (0x50040000U)
-#define OSEE_GICD_OFFSET  (0x1000U)
-#define OSEE_GICC_OFFSET  (0x2000U)
-#define OSEE_GICH_OFFSET  (0x4000U)
-#define OSEE_GICV_OFFSET  (0x6000U)
+  OS myOs {
 
-#endif /* OSEE_AARCH64_GIC_H */
+    //EE_OPT = "OS_EE_VERBOSE";
+    EE_OPT = "OSEE_DEBUG";
+    EE_OPT = "OS_EE_APPL_BUILD_DEBUG";
+    EE_OPT = "OS_EE_BUILD_DEBUG";
+
+    /* Workaround to access ERIKA's internal */
+    CFLAGS = "-I ../erika/src";
+
+    CPU_DATA = AARCH64 {
+      MULTI_STACK = TRUE;
+      COMPILER = GCC;
+      IDLEHOOK = TRUE {
+        HOOKNAME = "idle_hook";
+      };
+    };
+
+    SOC_DATA = NVIDIA_TEGRA_X1;
+
+    USEDYNAMICAPI = TRUE {
+      TASK_ARRAY_SIZE     = 8;
+      SN_ARRAY_SIZE       = 8;
+      STACKS_MEMORY_SIZE  = 8192;
+    };
+
+    KERNEL_TYPE = OSEK {
+      CLASS = ECC2;
+//      RQ    = MQ;
+    };
+  };
+
+  TASK FakeTask1 {
+    PRIORITY = 1;
+    APP_SRC = "main.c";
+    APP_SRC = "uart-driver.c";
+  };
+};

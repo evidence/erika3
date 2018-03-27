@@ -39,23 +39,94 @@
  * project.
  * ###*E*### */
 
-/** \file   ee_aarch64_gic.h
- *  \brief  GIC addresses for NVIDIA Tegrax1
+/** \file   conf.oil
+ *  \brief  System Configuration.
  *
- *  \note TO BE DOCUMENTED!!!
+ *  This file contains the System Configuration for Erika Enterprise.
  *
- *  \author Errico Guidieri
- *  \date   2017
+ *  \author  Claudio Scordino
+ *  \date    2018
  */
 
-#if (!defined(OSEE_AARCH64_GIC_H))
-#define OSEE_AARCH64_GIC_H
+CPU mySystem {
 
-/* GIC base address for NVIDIA TEGRA X1 */
-#define OSEE_GIC_BASE     (0x50040000U)
-#define OSEE_GICD_OFFSET  (0x1000U)
-#define OSEE_GICC_OFFSET  (0x2000U)
-#define OSEE_GICH_OFFSET  (0x4000U)
-#define OSEE_GICV_OFFSET  (0x6000U)
+  OS myOs {
 
-#endif /* OSEE_AARCH64_GIC_H */
+    /* EE_OPT = "OS_EE_VERBOSE"; */
+    EE_OPT = "OSEE_DEBUG";
+    EE_OPT = "OS_EE_APPL_BUILD_DEBUG";
+    EE_OPT = "OS_EE_BUILD_DEBUG";
+    EE_OPT = "OSEE_ASSERT";
+
+    CPU_DATA = AARCH64 {
+      MULTI_STACK = TRUE;
+      COMPILER = GCC;
+      IDLEHOOK = TRUE {
+        HOOKNAME = "idle_hook";
+      };
+    };
+
+    SOC_DATA = NVIDIA_TEGRA_X1;
+    /* SOC_DATA = XILINX_ZYNQ_ULTRASCALE_PLUS */
+
+    KERNEL_TYPE = OSEK {
+      CLASS = ECC1;
+    };
+  };
+
+  COUNTER SystemTimer {
+    MINCYCLE = 1;
+    MAXALLOWEDVALUE = 2147483647;
+    TICKSPERBASE = 1;
+    TYPE = HARDWARE {
+      SYSTEM_TIMER = TRUE;
+      PRIORITY     = 1;
+      DEVICE       = "GTIMER";
+    };
+    SECONDSPERTICK = 0.001;
+  };
+
+  ALARM AlarmTask1 {
+    COUNTER = SystemTimer;
+    ACTION = ACTIVATETASK {
+      TASK = Task1;
+    };
+    AUTOSTART = TRUE {
+      ALARMTIME = 500;
+      CYCLETIME = 100;
+    };
+  };
+
+  ALARM AlarmTask2 {
+    COUNTER = SystemTimer;
+    ACTION = ACTIVATETASK {
+      TASK = Task2;
+    };
+    AUTOSTART = TRUE {
+      ALARMTIME = 500;
+      CYCLETIME = 100;
+    };
+  };
+
+  TASK Task1 {
+    PRIORITY = 1;
+    STACK = PRIVATE {
+      SIZE = 1024;
+    };
+    SCHEDULE = FULL;
+    APP_SRC = "main.c";
+    RESOURCE = SharedUartResource;
+  };
+
+  TASK Task2 {
+    PRIORITY = 2;
+    STACK = PRIVATE {
+      SIZE = 1024;
+    };
+    SCHEDULE = FULL;
+    RESOURCE = SharedUartResource;
+  };
+
+  RESOURCE SharedUartResource { RESOURCEPROPERTY = STANDARD; };
+
+};

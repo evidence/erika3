@@ -1612,7 +1612,7 @@ FUNC(OsEE_api_param, OS_CODE)
   return osEE_get_curr_core()->p_ccb->api_param1;
 }
 FUNC(OsEE_api_param, OS_CODE)
-  osEE_get_api_param21
+  osEE_get_api_param2
 (
   void
 )

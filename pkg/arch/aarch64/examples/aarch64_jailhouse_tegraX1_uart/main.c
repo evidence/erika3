@@ -60,7 +60,7 @@ static void clock_handler ( void ) {
 /* Private callback which will be called everytime a char is received*/
 static void my_callback(char c)
 {
-	printk("%c\n",c);
+  printk("%c\n",c);
 }
 
 /******************************************************************************
@@ -80,10 +80,10 @@ int main(void){
   /* 1. Setup the UART */
   uint8_t result = UART_init(UART_C, UART_BAUD_38400);
   if(result > 0){
-	printk("UART driver init OK\n");
+    printk("UART driver init OK\n");
   }
   /* Set the Rx callback; this function will be called by the driver passing
-	the recived char */
+     the received char */
   UART_set_callback(UART_C, my_callback); 
 
   printk("Starting OS...\n");
@@ -97,7 +97,7 @@ int main(void){
   
   /* endless loop*/
   while(1) {
-      asm volatile("wfi": : : "memory");
+    __asm__ volatile("wfi": : : "memory");
   }
   return 0;
 }

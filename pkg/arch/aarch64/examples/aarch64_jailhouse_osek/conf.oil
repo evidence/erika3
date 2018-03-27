@@ -68,6 +68,10 @@ CPU mySystem {
         HOOKNAME = "idle_hook";
       };
     };
+    
+
+   SOC_DATA = NVIDIA_TEGRA_X1;
+   /* SOC_DATA = XILINX_ZYNQ_ULTRASCALE_PLUS */
 
 /*
     USEDYNAMICAPI = TRUE {

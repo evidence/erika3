@@ -85,7 +85,7 @@ OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/aarch64/ee_hal_internal.h
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/aarch64/ee_internal.h
 
 ifneq ($(OSEE_AARCH64_SOC),)
-OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/aarch64/soc/$(OSEE_AARCH64_SOC)/ee_aarch64_gic.h
+OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/aarch64/soc/$(OSEE_AARCH64_SOC)/ee_aarch64_gic.h
 endif # OSEE_AARCH64_SOC
 
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/std/arch/ee_std_hal_init.c
