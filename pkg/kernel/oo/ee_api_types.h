@@ -76,6 +76,30 @@ typedef P2VAR(TaskType, TYPEDEF, OS_APPL_DATA)  TaskRefType;
 #if (!defined(OSEE_TASK_PRIO_TYPE))
 #define OSEE_TASK_PRIO_TYPE                     VAR(unsigned char, TYPEDEF)
 #endif /* !OSEE_TASK_PRIO_TYPE */
+
+/**
+  It represent the priority of TASK and virtual priority for ISR2.
+  The priority is an integer number with higher values for higher priorities.
+  Choosen the dimension 'n' in bit of the type (usually n=8),
+  the priority space is partitioned in the following way:
+  0 Idle (Task) Priority,
+  1 .. 2^(n-1) - 1 Tasks priorities
+  2^(n-1) .. 2^n-2 ISR2 virtual priorities
+    (not all this space need to correspond to an hardware priority)
+  2^n - 1 Special value used to not reenable interrupts
+    (used for internal interrupts when we want prevent preemption,
+     like for system timer or for Scheduling Inter Core Interrupts).
+
+  Using priorities in this way we are able to make coesist in the same data
+  structures ISR2 and TASK out of the box.
+
+  ISR2 virtual priorities are mapped to hardware priorities by a hal porting
+  function in the following way:
+
+  Virtual priority 2^(n-1) == lowest_hardware priority
+  2^(n-1) + 1 == second_lowest_harware_priority
+  ...
+  and so on. */
 typedef OSEE_TASK_PRIO_TYPE                     TaskPrio;
 #define OSEE_ISR2_PRIO_BIT                 ((TaskPrio)(~(((TaskPrio)-1) >> 1U)))
 #define OSEE_ISR_ALL_PRIO                       ((TaskPrio)-1)
@@ -102,27 +126,42 @@ typedef OSEE_CORE_ID_TYPE                       CoreIdType;
 typedef OSEE_TASK_FUNC_TYPE(TaskFunc) ( void );
 
 /**
- * ISR2 un tipo di TASK e usa lo stesso schedulatore degli altri TASK -->
- * Risorse a comune ISR2/TASK nativamente
- * (E' possibile che IPL, vada lo stesso gestisto)
+ * \brief TASK types enumeration
  */
 typedef enum OsEE_task_type_tag {
+  /** \brief Basic Task Type, also known as Run-To-Completition (RTC) TASKs,
+             these TASKs cannot call blocking services. */
   OSEE_TASK_TYPE_BASIC,
+  /** \brief Extended Task Type, also known as threads. These TASKs own a
+             private stack so they can call blocking primitives.*/
   OSEE_TASK_TYPE_EXTENDED,
+  /** \brief ISR2 are handled as special kind of TASKs.
+             This allow us to share a lot of core for termination and protection
+             with other TASKs.*/
   OSEE_TASK_TYPE_ISR2,
+  /** \brief Idle Task is a special kind of TASK for Idle Time.
+             There's exactly one Idle Task for each core.*/
   OSEE_TASK_TYPE_IDLE
 } OsEE_task_type;
 
 typedef VAR(OsEE_task_type, TYPEDEF)                TaskExecutionType;
 
 typedef enum OsEE_task_status_tag {
+  /** \brief Status of a TASK that's is not activated yet */
   OSEE_TASK_SUSPENDED,
+  /** \brief Task activated and present in raeady, but the current activation
+             has not executed yet (never set at OSEE_TASK_RUNNING) */
   OSEE_TASK_READY,
-  /** Special value to handle Preemption and Unblocking */
+  /** \brief Task activated and present in ready queue,
+             but the current activation has already executed for a while.
+             Special value to handle Preemption and Unblocking */
   OSEE_TASK_READY_STACKED,
+  /** \brief Task blocked in the middle of execution waiting for events */
   OSEE_TASK_WAITING,
+  /** \brief Task currently in execution. At most only one task for each core
+             can be in this status */
   OSEE_TASK_RUNNING,
-  /** Special value to handle ChainTask service on the same TASK */
+  /** \brief Transient status to handle ChainTask service on the same Task */
   OSEE_TASK_CHAINED
 } OsEE_task_status;
 
