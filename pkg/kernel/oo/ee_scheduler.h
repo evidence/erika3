@@ -111,27 +111,30 @@ FUNC(void, OS_CODE)
   P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_tdb_to
 );
 
-FUNC(StatusType, OS_CODE)
+FUNC(OsEE_bool, OS_CODE)
   osEE_scheduler_task_activated
 (
   P2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)  p_kdb,
-  P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)  p_cdb,
-  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_tdb_act,
-  CONST(OsEE_bool, AUTOMATIC)               is_preemption_point
+  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_tdb_act
+);
+
+FUNC(OsEE_bool, OS_CODE)
+  osEE_scheduler_task_insert
+(
+  P2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)  p_kdb,
+  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_tdb_act
 );
 
 FUNC(OsEE_bool, OS_CODE)
   osEE_scheduler_task_preemption_point
 (
-  P2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)  p_kdb,
-  P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)  p_cdb
+  P2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)  p_kdb
 );
 
 FUNC_P2VAR(OsEE_TDB, OS_APPL_DATA, OS_CODE)
   osEE_scheduler_task_block_current
 (
   P2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)    p_kdb,
-  P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)    p_cdb,
   P2VAR(OsEE_SN *,  AUTOMATIC, OS_APPL_DATA)  p_sn_blocked
 );
 
@@ -139,7 +142,6 @@ FUNC(OsEE_bool, OS_CODE)
   osEE_scheduler_task_unblocked
 (
   P2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)  p_kdb,
-  P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)  p_cdb,
   P2VAR(OsEE_SN,  AUTOMATIC, OS_APPL_DATA)  p_sn_released
 );
 
@@ -147,15 +149,14 @@ FUNC(void, OS_CODE)
   osEE_scheduler_task_set_running
 (
   P2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)  p_kdb,
-  P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)  p_cdb,
-  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_tdb
+  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_tdb,
+  P2VAR(OsEE_SN,  AUTOMATIC, OS_APPL_DATA)  p_sn
 );
 
 FUNC_P2VAR(OsEE_TDB, OS_APPL_DATA, OS_CODE)
   osEE_scheduler_task_terminated
 (
-  P2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)  p_kdb,
-  P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)  p_cdb,
+  P2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)    p_kdb,
   P2VAR(OsEE_TDB *, AUTOMATIC, OS_APPL_DATA)  pp_tdb_from
 );
 

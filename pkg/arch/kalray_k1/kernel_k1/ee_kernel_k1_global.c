@@ -133,7 +133,7 @@ StatusType SignalValue (BlockableValueTypeRef BlockableValueRef,
   ValueType Value)
 {
   StatusType     status_type;
-  if ( BlockableValueRef == NULL ) {
+  if (BlockableValueRef == NULL) {
     status_type = E_OS_PARAM_POINTER;
   } else {
     __k1_uint32_t  p_bq_temp;
@@ -146,7 +146,7 @@ StatusType SignalValue (BlockableValueTypeRef BlockableValueRef,
     p_bq_temp       = __k1_umem_read32(&BlockableValueRef->blocked_queue);
     p_blocked_queue = (OsEE_SN *)p_bq_temp;
 
-    if ( p_blocked_queue != NULL ) {
+    if (p_blocked_queue != NULL) {
       OsEE_bool             cond_result;
       OsEE_wait_cond  const wait_cond =
         __k1_umem_read32(&BlockableValueRef->wait_cond);
@@ -155,22 +155,20 @@ StatusType SignalValue (BlockableValueTypeRef BlockableValueRef,
 
       status_type = CheckCondition(&cond_result, Value, wait_cond, right_value);
 
-      if ( (status_type == E_OK) && cond_result ) {
+      if ((status_type == E_OK) && cond_result) {
         OsEE_bool         is_preemption;
         OsEE_KDB  * const p_kdb = osEE_get_kernel();
-        OsEE_CDB  * const p_cdb = osEE_get_curr_core();
 
         /* Pop from the blocked queue */
         __k1_umem_write32(&BlockableValueRef->blocked_queue,
           (__k1_uint32_t)BlockableValueRef->blocked_queue->p_next);
 
         /* Release the TASK and (SN) */
-        is_preemption = osEE_scheduler_task_unblocked (
-          p_kdb, p_cdb, p_blocked_queue);
+        is_preemption = osEE_scheduler_task_unblocked(p_kdb, p_blocked_queue);
 
         __k1_fspinlock_unlock(&BlockableValueRef->lock);
 
-        if ( is_preemption ) {
+        if (is_preemption) {
           osEE_k1_optimized_task_preemption_point();
         }
       } else {

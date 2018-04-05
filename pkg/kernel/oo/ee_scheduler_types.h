@@ -97,12 +97,15 @@ LOCAL_INLINE FUNC(void, OS_CODE)
   (*pp_first)       = p_to_free;
 }
 
+
+
+
 FUNC(OsEE_bool, OS_CODE)
   osEE_sn_priority_insert
 (
   P2VAR(OsEE_SN *, AUTOMATIC, OS_APPL_DATA) pp_first,
   P2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA)   p_sn_new,
-  CONST(OsEE_bool, AUTOMATIC)               hnd_act
+  CONST(OsEE_bool, AUTOMATIC)               as_ready
 );
 
 /*==============================================================================

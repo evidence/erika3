@@ -179,7 +179,7 @@ static StatusType osEE_k1_signal_value ( OsEE_blockable_value *
   blockable_value_ref, OsEE_bool * is_preemption_ref )
 {
   StatusType     status_type;
-  if ( (blockable_value_ref == NULL) || (is_preemption_ref == NULL) ) {
+  if ((blockable_value_ref == NULL) || (is_preemption_ref == NULL)) {
     status_type = E_OS_PARAM_POINTER;
   } else {
     __k1_uint32_t  p_bq_temp;
@@ -189,19 +189,18 @@ static StatusType osEE_k1_signal_value ( OsEE_blockable_value *
     blocked_queue = (OsEE_SN *)p_bq_temp;
 
     /* check if the post on the semaphore wakes up someone */
-    if ( blocked_queue != NULL ) {
+    if (blocked_queue != NULL) {
       CoreIdType  const core_id  = blocked_queue->p_tdb->orig_core_id;
-      OsEE_CDB *  const p_cdb    = osEE_get_core(core_id);
 
       /* Pop from the blocked queue */
       __k1_umem_write32(&blockable_value_ref->blocked_queue,
         (__k1_uint32_t)blockable_value_ref->blocked_queue->p_next);
 
       /* Release the TASK (and the SN) */
-      (*is_preemption_ref) = osEE_scheduler_task_unblocked (
-        osEE_get_kernel(), p_cdb, blocked_queue);
+      (*is_preemption_ref) = osEE_scheduler_task_unblocked (osEE_get_kernel(),
+                              blocked_queue);
 
-      if ( (*is_preemption_ref) ) {
+      if ((*is_preemption_ref)) {
         osEE_hal_signal_core(core_id);
       }
       status_type = E_OK;

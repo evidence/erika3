@@ -61,6 +61,7 @@ endif	# EE_API_EXTENSION
 EE_SRCS += ee_oo_api_osek.c
 EE_SRCS += ee_oo_sched_entry_points.c
 EE_SRCS += ee_oo_scheduler.c
+EE_SRCS += ee_oo_kernel.c
 
 ifeq	($(call iseeopt, OSEE_SCHEDULER_GLOBAL), yes)
 EE_SRCS +=  ee_oo_sched_global.c

@@ -1,38 +1,38 @@
 /* ###*B*###
  * Erika Enterprise, version 3
- * 
+ *
  * Copyright (C) 2017 Evidence s.r.l.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or (at
  * your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License, version 2, for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License,
  * version 2, along with this program; if not, see
  * <https://www.gnu.org/licenses/old-licenses/gpl-2.0.html >.
- * 
+ *
  * This program is distributed to you subject to the following
  * clarifications and special exceptions to the GNU General Public
  * License, version 2.
- * 
+ *
  * THIRD PARTIES' MATERIALS
- * 
+ *
  * Certain materials included in this library are provided by third
  * parties under licenses other than the GNU General Public License. You
  * may only use, copy, link to, modify and redistribute this library
  * following the terms of license indicated below for third parties'
  * materials.
- * 
+ *
  * In case you make modified versions of this library which still include
  * said third parties' materials, you are obligated to grant this special
  * exception.
- * 
+ *
  * The complete list of Third party materials allowed with ERIKA
  * Enterprise version 3, together with the terms and conditions of each
  * license, is present in the file THIRDPARTY.TXT in the root of the
@@ -260,8 +260,8 @@ StatusType CommAndSchedule ( void ) {
   return E_OK;
 }
 
-static StatusType osEE_k1_block_on_value ( OsEE_blockable_value *
-  blockable_value_ref, OsEE_wait_cond wait_cond, OsEE_reg right_value )
+static StatusType osEE_k1_block_on_value(OsEE_blockable_value *
+  blockable_value_ref, OsEE_wait_cond wait_cond, OsEE_reg right_value)
 {
   StatusType        status_type;
   OsEE_KDB  * const p_kdb   = osEE_get_kernel();
@@ -270,28 +270,28 @@ static StatusType osEE_k1_block_on_value ( OsEE_blockable_value *
   OsEE_TDB  * const p_curr  = p_ccb->p_curr;
   OsEE_reg    const flags   = osEE_hal_begin_nested_primitive();
 
-  if ( p_curr->task_type != OSEE_TASK_TYPE_EXTENDED ) {
+  if (p_curr->task_type != OSEE_TASK_TYPE_EXTENDED) {
     status_type = E_OS_ACCESS;
   } else {
     OsEE_TDB * p_to;
 
     __k1_fspinlock_lock(&blockable_value_ref->lock);
 
-    if ( blockable_value_ref->blocked_queue == NULL ) {
+    if (blockable_value_ref->blocked_queue == NULL) {
       BoolType  cond_result;
       ValueType value = __k1_umem_read32(&blockable_value_ref->value);
 
       status_type = CheckCondition(&cond_result, value, wait_cond, right_value);
 
-      if ( (status_type == E_OK) && (cond_result == OSEE_FALSE) ) {
+      if ((status_type == E_OK) && (cond_result == OSEE_FALSE)) {
         blockable_value_ref->right_value = right_value;
         blockable_value_ref->wait_cond   = wait_cond;
 
         /* Prepare to put the TASK inside the BlockableValue queue...
          * It will be really done in EE_scheduler_task_wrapper calling
          * EE_scheduler_task_saving_available */
-        p_to = osEE_scheduler_task_block_current(p_kdb, p_cdb,
-          &blockable_value_ref->blocked_queue);
+        p_to = osEE_scheduler_task_block_current(p_kdb,
+                  &blockable_value_ref->blocked_queue);
 
 #if (defined(OSEE_SCHEDULER_GLOBAL)) && (!defined(OSEE_SINGLECORE))
         p_ccb->p_lock_to_be_released = &blockable_value_ref->lock;

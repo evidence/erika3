@@ -163,6 +163,7 @@ typedef struct OsEE_TCB_tag {
 #if (defined(OSEE_HAS_EVENTS))
   VAR(EventMaskType, TYPEDEF)               wait_mask;
   VAR(EventMaskType, TYPEDEF)               event_mask;
+  P2VAR(OsEE_SN, TYPEDEF, OS_APPL_DATA)     p_own_sn;
 #endif /* OSEE_HAS_EVENTS */
 #if (defined(OSEE_ALLOW_TASK_MIGRATION))
   VAR(CoreIdType, TYPEDEF)                  current_core_id;
@@ -250,16 +251,27 @@ typedef struct OsEE_action_tag {
 } OsEE_action;
 
 #if (defined(OSEE_COUNTER_TRIGGER_TYPES))
-typedef enum {
+typedef enum OsEE_trigger_type_tag {
   OSEE_TRIGGER_ALARM,
   OSEE_TRIGGER_SCHEDULE_TABLE
 } OsEE_trigger_type;
 #endif /* OSEE_COUNTER_TRIGGER_TYPES */
 
+/**
+ * I will handle concurrent updates for triggers thanks this status 
+ */
+typedef enum OsEE_trigger_status_tag {
+  OSEE_TRIGGER_INACTIVE,
+  OSEE_TRIGGER_CANCELED,
+  OSEE_TRIGGER_ACTIVE,
+  OSEE_TRIGGER_EXPIRED,
+  OSEE_TRIGGER_REENABLED
+} OsEE_trigger_status;
+
 typedef struct OsEE_TriggerCB_tag {
   P2VAR(struct OsEE_TriggerDB_tag OSEE_CONST, TYPEDEF, OS_APPL_DATA)  p_next;
   VAR(TickType, TYPEDEF)                                              when;
-  VAR(OsEE_bool, TYPEDEF)                                             active;
+  VAR(OsEE_trigger_status, TYPEDEF)                                   status;
 #if (!defined(OSEE_COUNTER_TRIGGER_TYPES))
 #if (defined(OSEE_HAS_ALARMS))
   VAR(TickType, TYPEDEF)                                              cycle;

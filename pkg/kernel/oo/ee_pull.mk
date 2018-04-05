@@ -72,5 +72,6 @@ OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/kernel/oo/ee_oo_sched_global.c
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/kernel/oo/ee_oo_sched_partitioned.c
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/kernel/oo/ee_oo_counter.c
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/kernel/oo/ee_oo_alarm.c
+OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/kernel/oo/ee_oo_kernel.c
 
 endif	#OS_EE_KERNEL_OSEK

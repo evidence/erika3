@@ -83,7 +83,6 @@ FUNC(void, OS_CODE)
     counter_value = p_counter_cb->value;
 
   /* Update Trigger Status */
-  p_trigger_db->p_trigger_cb->active = OSEE_TRUE;
   p_trigger_db->p_trigger_cb->when   = when;
 
   while (p_current != NULL) {
@@ -151,9 +150,6 @@ FUNC(void, OS_CODE)
       p_previous->p_trigger_cb->p_next = p_trigger_cb->p_next;
     }
   }
-
-  /* Turn Off the Trigger */
-  p_trigger_cb->active = OSEE_FALSE;
 }
 
 static FUNC(StatusType, OS_CODE)
@@ -167,62 +163,34 @@ static FUNC(StatusType, OS_CODE)
     case OSEE_ACTION_TASK:
     {
       CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
-        p_tdb = p_action->param.p_tdb;
+        p_tdb     = p_action->param.p_tdb;
 
-      ev = osEE_scheduler_task_activated(
-            osEE_get_kernel(),
-            osEE_get_task_curr_core(p_tdb),
-            p_tdb,
-            OSEE_FALSE);
+      ev = osEE_task_activated(p_tdb);
+      if (ev == E_OK) {
+        (void)osEE_scheduler_task_insert(osEE_get_kernel(), p_tdb);
+      }
     }
     break;
 #if (defined(OSEE_HAS_EVENTS))
     case OSEE_ACTION_EVENT:
     {
+      P2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA)
+        p_sn;
       CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
         p_tdb = p_action->param.p_tdb;
-      CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
-        p_tcb = p_tdb->p_tcb;
       CONST(EventMaskType, AUTOMATIC)
         mask = p_action->param.mask;
-      /* XXX: In case of multicore, I need at least reentrant spinlocks!!! */
-      CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
-        p_cdb_rel = osEE_get_task_curr_core(p_tdb);
 
-      osEE_lock_core(p_cdb_rel);
-#if (defined(OSEE_HAS_CHECKS))
-      if (p_tcb->status == OSEE_TASK_SUSPENDED) {
-        osEE_unlock_core(p_cdb_rel);
-        ev = E_OS_STATE;
-      } else
-#endif /* OSEE_HAS_CHECKS */
-      {
-        /* Set the event mask only if the task is not suspended */
+      p_sn = osEE_task_event_set_mask(p_tdb, mask, &ev);
 
-        p_tcb->event_mask |= mask;
-
-        if (((p_tcb->wait_mask & mask) != 0U) &&
-            (p_tcb->status == OSEE_TASK_WAITING))
-        {
-          CONSTP2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA)
-            p_sn = osEE_sn_alloc(&p_cdb_rel->p_ccb->p_free_sn);
-
-          p_sn->p_tdb = p_tdb;
-
-          /* Release the TASK (and the SN) */
-          (void)osEE_scheduler_task_unblocked(
-                  osEE_get_kernel(), p_cdb_rel, p_sn);
-        }
-
-        osEE_unlock_core(p_cdb_rel);
-
-        ev = E_OK;
+      if (p_sn != NULL) {
+        /* Release the TASK (and the SN) */
+        (void)osEE_scheduler_task_unblocked(osEE_get_kernel(), p_sn);
       }
     }
     break;
 #endif /* OSEE_HAS_EVENTS */
     case OSEE_ACTION_COUNTER:
-      /* XXX: In case of multicore, I need at least reentrant spinlocks!!! */
       osEE_counter_increment(p_action->param.p_counter_db);
       ev = E_OK;
     break;
@@ -245,43 +213,12 @@ static FUNC(StatusType, OS_CODE)
     }
     break;
     default:
-      /* TODO: Add some fault assertion here, unreacheable default switch clause */
+      /* TODO: Add some fault assertion here, unreachable default clause */
       ev = E_OK;
     break;
   }
   return ev;
 }
-
-#if (defined(OSEE_HAS_ALARMS))
-static FUNC(StatusType, OS_CODE)
-  osEE_trigger_alarm
-(
-  P2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_DATA)  p_counter_db,
-  P2VAR(OsEE_AlarmDB, AUTOMATIC, OS_APPL_DATA)    p_alarm_db
-)
-{
-  VAR(StatusType, AUTOMATIC) ev;
-  CONSTP2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_DATA)
-    p_trigger_db = osEE_alarm_get_trigger_db(p_alarm_db);
-  CONSTP2VAR(OsEE_TriggerCB, AUTOMATIC, OS_APPL_DATA)
-    p_trigger_cb = p_trigger_db->p_trigger_cb;
-  CONST(TickType, AUTOMATIC)
-    cycle = p_trigger_cb->cycle;
-
-  ev = osEE_handle_action(&p_alarm_db->action);
-
-  /* TODO: Add active check to let call CancelAlarm from callback... */
-  if (cycle > 0U) {
-    osEE_counter_insert_rel_trigger(
-      p_counter_db, p_trigger_db, cycle
-    );
-  } else {
-    p_trigger_cb->active = OSEE_FALSE;
-  }
-
-  return ev;
-}
-#endif /* OSEE_HAS_ALARMS */
 
 FUNC(void, OS_CODE)
   osEE_counter_increment
@@ -323,13 +260,12 @@ FUNC(void, OS_CODE)
       counter_value = ++p_counter_cb->value;
     }
 
-    /* XXX: Lock the counter core for all the duration of the service
-            otherwise races could happens during the handling of cycling
-            triggers.
-            Maybe we should find another solution, like having private lock for
-            the counters, whenever the locks are not limited resources for the
-            HW and falling back to use core locks only for those architectures
-            where this is not true. TBD. */
+    /* XXX: The counter core is locked here to get all the triggers expired at
+            this tick and when a cycling triggers is reinserted in queue.
+            When the action is actually performed the core have to be released
+            to not have nested critical sections.
+            To handle possible races due to cycling triggers a state
+            protocol have beenimplemented. */
     osEE_lock_core_id(counter_core_id);
 
     p_triggered_db = p_counter_cb->trigger_queue;
@@ -347,8 +283,12 @@ FUNC(void, OS_CODE)
 
         do {
           /* Now I will use previous to hold the previous checked alarm */
+          CONSTP2VAR(OsEE_TriggerCB, AUTOMATIC, OS_APPL_DATA)
+            p_current_cb = p_current->p_trigger_cb;
           p_previous = p_current;
-          p_current = p_current->p_trigger_cb->p_next;
+          /* Set this Trigger as Expired */
+          p_current_cb->status = OSEE_TRIGGER_EXPIRED;
+          p_current = p_current_cb->p_next;
         } while ((p_current != NULL) &&
           (p_current->p_trigger_cb->when == counter_value));
 
@@ -358,16 +298,19 @@ FUNC(void, OS_CODE)
            (maybe NULL) */
         p_counter_cb->trigger_queue = p_current;
 
-        /* XXX: Since we are preparing a sub-queue to handle the "tick", maybe we
-                could do a COPY of TriggerCB data to realese sooner the lock,
-                but handling the copies is still memory, timing and
-                configuration costly: we really have to think about this. */
+        /* Handle actions outside the critical sections, to not incur in
+           nested critical sections. */
+        osEE_unlock_core_id(counter_core_id);
 
+        /* Handle Actions */
         do {
           VAR(StatusType, AUTOMATIC)                      ev;
           CONSTP2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_DATA)
-            p_trigger_to_be_handled = p_triggered_db;
-
+            p_trigger_to_be_handled_db = p_triggered_db;
+          CONSTP2VAR(OsEE_TriggerCB, AUTOMATIC, OS_APPL_DATA)
+            p_trigger_to_be_handled_cb =
+              p_trigger_to_be_handled_db->p_trigger_cb;
+            
           /* Prepare next trigger to be handled here, before actually handle the
            * current one, otherwise cycling triggers will mess with the list of
            * triggers that have to be handled now */
@@ -378,9 +321,32 @@ FUNC(void, OS_CODE)
 #if (defined(OSEE_COUNTER_TRIGGER_TYPES))
           /* TODO */
 #elif (defined(OSEE_HAS_ALARMS))
-          ev = osEE_trigger_alarm(
-                p_counter_db,
-                p_trigger_to_be_handled);
+          ev = osEE_handle_action(&p_trigger_to_be_handled_db->action);
+          /* Re-enter in critical section to reinsert cycling triggers */
+          osEE_lock_core_id(counter_core_id);
+
+          if (p_trigger_to_be_handled_cb->status == OSEE_TRIGGER_EXPIRED) {
+            CONST(TickType, AUTOMATIC)
+              cycle = p_trigger_to_be_handled_cb->cycle;
+            if (cycle > 0U) {
+              p_trigger_to_be_handled_cb->status = OSEE_TRIGGER_ACTIVE;
+              osEE_counter_insert_rel_trigger(p_counter_db,
+                p_trigger_to_be_handled_db, cycle);
+            } else {
+              p_trigger_to_be_handled_cb->status = OSEE_TRIGGER_INACTIVE;
+            }
+          } else
+            if (p_trigger_to_be_handled_cb->status == OSEE_TRIGGER_REENABLED)
+          {
+            p_trigger_to_be_handled_cb->status = OSEE_TRIGGER_ACTIVE;
+            osEE_counter_insert_abs_trigger(p_counter_db,
+              p_trigger_to_be_handled_db, p_trigger_to_be_handled_cb->when);
+          } else {
+            p_trigger_to_be_handled_cb->status = OSEE_TRIGGER_INACTIVE;
+          }
+
+          /* Exit from critical section for the next action */
+          osEE_unlock_core_id(counter_core_id);
 #elif (defined(OSEE_HAS_SCHEDULE_TABLES))
           /* TODO */
 #endif
@@ -397,8 +363,5 @@ FUNC(void, OS_CODE)
         } while (p_triggered_db != NULL);
       }
     }
-    /* XXX: Unlock the core only at the End of The Service, to not incur in
-            races when handling cycling triggers. */
-    osEE_unlock_core_id(counter_core_id);
   }
 }

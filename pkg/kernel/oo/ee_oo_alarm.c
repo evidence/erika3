@@ -76,14 +76,25 @@ FUNC(StatusType, OS_CODE)
   osEE_lock_core_id(counter_core_id);
 #endif /* OSEE_SINGLECORE */
 
-  if (p_trigger_cb->active) {
+  if (p_trigger_cb->status > OSEE_TRIGGER_CANCELED) {
     ev = E_OS_STATE;
+  } else if (p_trigger_cb->status == OSEE_TRIGGER_CANCELED) {
+    p_alarm_cb->cycle = cycle;
+    /* Re-turn on the trigger, that is in handling, since is handling I'll set
+       'here' when based on increment */
+    p_trigger_cb->when   = osEE_counter_eval_when(p_counter_db, increment);
+    p_trigger_cb->status = OSEE_TRIGGER_REENABLED;
+
+    ev = E_OK;
   } else {
     p_alarm_cb->cycle = cycle;
-
+    /* Turn On the Trigger */
+    p_trigger_cb->status = OSEE_TRIGGER_ACTIVE;
+ 
     osEE_counter_insert_rel_trigger(
       p_counter_db, p_trigger_db, increment
     );
+ 
     ev = E_OK;
   }
 #if (!defined(OSEE_SINGLECORE))
@@ -109,16 +120,26 @@ FUNC(StatusType, OS_CODE)
   CONSTP2VAR(OsEE_TriggerCB, AUTOMATIC, OS_APPL_DATA)
     p_trigger_cb = p_trigger_db->p_trigger_cb;
 #if (!defined(OSEE_SINGLECORE))
-    CONST(CoreIdType, AUTOMATIC)
+  CONST(CoreIdType, AUTOMATIC)
     counter_core_id = p_counter_db->core_id;
 /* Lock the Core Lock to whom the counter is tied */
   osEE_lock_core_id(counter_core_id);
 #endif /* OSEE_SINGLECORE */
 
-  if (p_trigger_cb->active) {
+  if (p_trigger_cb->status > OSEE_TRIGGER_CANCELED) {
     ev = E_OS_STATE;
+  } else if (p_trigger_cb->status == OSEE_TRIGGER_CANCELED) {
+    p_alarm_cb->cycle = cycle;
+    /* Re-turn on the trigger, that is in handling, since is handling I'll set
+       here 'when' based on start */
+    p_trigger_cb->when   = start;
+    p_trigger_cb->status = OSEE_TRIGGER_REENABLED;
+
+    ev = E_OK;
   } else {
     p_alarm_cb->cycle = cycle;
+    /* Turn On the Trigger */
+    p_trigger_cb->status = OSEE_TRIGGER_ACTIVE;
 
     osEE_counter_insert_abs_trigger(
       p_counter_db, p_trigger_db, start
@@ -152,9 +173,13 @@ FUNC(StatusType, OS_CODE)
   osEE_lock_core_id(counter_core_id);
 #endif /* OSEE_SINGLECORE */
 
-  if (!p_trigger_cb->active) {
+  if (p_trigger_cb->status <= OSEE_TRIGGER_CANCELED) {
     ev = E_OS_NOFUNC;
+  } else if (p_trigger_cb->status >= OSEE_TRIGGER_EXPIRED) {
+    p_trigger_cb->status = OSEE_TRIGGER_CANCELED;
+    ev = E_OK;
   } else {
+    p_trigger_cb->status = OSEE_TRIGGER_INACTIVE;
     osEE_counter_cancel_trigger(p_counter_db, p_trigger_db);
     ev = E_OK;
   }
@@ -185,7 +210,7 @@ FUNC(StatusType, OS_CODE)
   osEE_lock_core_id(counter_core_id);
 #endif /* OSEE_SINGLECORE */
 
-  if (!p_trigger_cb->active) {
+  if (p_trigger_cb->status <= OSEE_TRIGGER_CANCELED) {
     ev = E_OS_NOFUNC;
   } else {
     *p_tick = osEE_counter_eval_delta(p_counter_db, p_trigger_cb->when);

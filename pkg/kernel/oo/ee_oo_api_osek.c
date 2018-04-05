@@ -175,7 +175,9 @@ FUNC(StatusType, OS_CODE)
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
   CONST(OsEE_reg, AUTOMATIC) flags = osEE_begin_primitive();
 
+#if (defined(OSEE_ALLOW_TASK_MIGRATION))
   osEE_lock_kernel();
+#endif /* OSEE_ALLOW_TASK_MIGRATION */
 
   if (p_ccb->os_status == OSEE_KERNEL_STOPPED) {
     if (osEE_cpu_startos()) {
@@ -280,8 +282,9 @@ FUNC(StatusType, OS_CODE)
       if (p_ccb->os_status == OSEE_KERNEL_STARTING) {
         p_ccb->os_status = OSEE_KERNEL_STARTED;
       }
-
+#if (defined(OSEE_ALLOW_TASK_MIGRATION))
       osEE_unlock_kernel();
+#endif /* OSEE_ALLOW_TASK_MIGRATION */
 
 #if (!defined(OSEE_STARTOS_RETURN)) && (!defined(OSEE_API_DYNAMIC))
       if (p_ccb->os_status == OSEE_KERNEL_STARTED) {
@@ -318,11 +321,15 @@ FUNC(StatusType, OS_CODE)
         osEE_hal_enableIRQ();
       }
     } else {
+#if (defined(OSEE_ALLOW_TASK_MIGRATION))
       osEE_unlock_kernel();
+#endif /* OSEE_ALLOW_TASK_MIGRATION */
       ev = E_OS_SYS_INIT;
     }
   } else {
+#if (defined(OSEE_ALLOW_TASK_MIGRATION))
     osEE_unlock_kernel();
+#endif /* OSEE_ALLOW_TASK_MIGRATION */
     ev = E_OS_ACCESS;
   }
 
@@ -367,13 +374,15 @@ FUNC(StatusType, OS_CODE)
   {
     CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
       p_tdb_act = (*p_kdb->p_tdb_ptr_array)[TaskID];
-    CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
-      p_cdb = osEE_get_task_curr_core(p_tdb_act);
 
     if (p_tdb_act->task_type <= OSEE_TASK_TYPE_EXTENDED) {
       CONST(OsEE_reg, AUTOMATIC)  flags = osEE_begin_primitive();
 
-      ev = osEE_scheduler_task_activated(p_kdb, p_cdb, p_tdb_act, OSEE_TRUE);
+      ev = osEE_task_activated(p_tdb_act);
+
+      if (ev == E_OK) {
+        (void)osEE_scheduler_task_activated(p_kdb, p_tdb_act);
+      }
 
       osEE_end_primitive(flags);
     } else {
@@ -400,7 +409,6 @@ FUNC(StatusType, OS_CODE)
   return ev;
 }
 
-
 FUNC(StatusType, OS_CODE)
   ChainTask
 (
@@ -415,8 +423,6 @@ FUNC(StatusType, OS_CODE)
   } else {
     CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
       p_tdb_act = (*p_kdb->p_tdb_ptr_array)[TaskID];
-    CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
-      p_cdb = osEE_get_task_curr_core(p_tdb_act);
     CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
       p_curr = osEE_get_curr_task();
 #if (defined(OSEE_HAS_CHECKS)) && (defined(OSEE_HAS_MUTEX))
@@ -448,7 +454,10 @@ FUNC(StatusType, OS_CODE)
         p_tdb_act->p_tcb->status = OSEE_TASK_CHAINED;
         ev = E_OK;
       } else {
-        ev = osEE_scheduler_task_activated(p_kdb, p_cdb, p_tdb_act, OSEE_FALSE);
+        ev = osEE_task_activated(p_tdb_act);
+        if (ev == E_OK) {
+          (void)osEE_scheduler_task_insert(p_kdb, p_tdb_act);
+        }
       }
       if (ev == E_OK) {
         /* The following do not return! */
@@ -584,7 +593,7 @@ FUNC(StatusType, OS_CODE)
     /* Release internal resources */
     p_tcb->current_prio = p_curr->ready_prio;
     /* Try preemption */
-    osEE_scheduler_task_preemption_point(osEE_get_kernel(), p_cdb);
+    osEE_scheduler_task_preemption_point(osEE_get_kernel());
     /* Restore internal resources */
     p_tcb->current_prio = p_curr->dispatch_prio;
 
@@ -688,7 +697,6 @@ FUNC(StatusType, OS_CODE)
 {
   VAR(StatusType, AUTOMATIC)                    ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA) p_kdb = osEE_get_kernel();
-  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb = osEE_get_curr_core();
 
   if (!osEE_is_valid_res_id(p_kdb, ResID)) {
     ev = E_OS_ID;
@@ -732,7 +740,7 @@ FUNC(StatusType, OS_CODE)
       p_mtx_mcb->locked = OSEE_FALSE;
 #endif /* OSEE_HAS_CHECKS */
       /* Preemption point */
-      (void)osEE_scheduler_task_preemption_point(p_kdb, p_cdb);
+      (void)osEE_scheduler_task_preemption_point(p_kdb);
 
       osEE_end_primitive(flags);
 
@@ -1268,7 +1276,6 @@ FUNC(StatusType, OS_CODE)
 #endif /* OSEE_HAS_CHECKS */
   /* Check if we have to wait */
   if ((p_curr_tcb->event_mask & Mask) == 0U) {
-    P2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA)   p_blocked_sn;
     P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_to;
     /* Start Critical Section */
     CONST(OsEE_reg, AUTOMATIC) flags = osEE_begin_primitive();
@@ -1276,17 +1283,8 @@ FUNC(StatusType, OS_CODE)
     /* Set the waiting mask */
     p_curr_tcb->wait_mask = Mask;
 
-    /* XXX: In case of multicore, I need at least reentrant spinlocks!!! */
-    osEE_lock_core(p_cdb);
-
-    p_to =  osEE_scheduler_task_block_current(osEE_get_kernel(),
-              p_cdb, &p_blocked_sn);
-
-    /* Release the SN, I will allocate a new one when the TASK will be
-     * reinserted into be reinserted in RQ */
-    osEE_sn_release(&p_ccb->p_free_sn, p_blocked_sn);
-
-    osEE_unlock_core(p_cdb);
+    p_to = osEE_scheduler_task_block_current(osEE_get_kernel(),
+              &p_curr_tcb->p_own_sn);
 
     osEE_change_context_from_running(p_curr, p_to);
 
@@ -1363,54 +1361,23 @@ FUNC(StatusType, OS_CODE)
   if (!osEE_is_valid_tid(p_kdb, TaskID)) {
     ev = E_OS_ID;
   } else {
+    P2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA)
+      p_sn;
     CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
       p_tdb_waking_up = (*p_kdb->p_tdb_ptr_array)[TaskID];
-    CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
-      p_tcb_waking_up = p_tdb_waking_up->p_tcb;
-    CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
-      p_cdb_waking_up = osEE_get_task_curr_core(p_tdb_waking_up);
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
 
-    /* XXX: In case of multicore, I need at least reentrant spinlocks!!! */
-    osEE_lock_core(p_cdb_waking_up);
+    p_sn = osEE_task_event_set_mask(p_tdb_waking_up, Mask, &ev);
 
-#if (defined(OSEE_HAS_CHECKS))
-    if (p_tdb_waking_up->task_type != OSEE_TASK_TYPE_EXTENDED) {
-      osEE_unlock_core(p_cdb_waking_up);
-      osEE_end_primitive(flags);
-      ev = E_OS_ACCESS;
-    } else
-    if (p_tcb_waking_up->status == OSEE_TASK_SUSPENDED) {
-      osEE_unlock_core(p_cdb_waking_up);
-      osEE_end_primitive(flags);
-      ev = E_OS_STATE;
-    } else
-#endif /* OSEE_HAS_CHECKS */
-    {
-      /* Set the event mask only if the task is not suspended */
-      p_tcb_waking_up->event_mask |= Mask;
-
-      if (((p_tcb_waking_up->wait_mask & Mask) != 0U) &&
-          (p_tcb_waking_up->status == OSEE_TASK_WAITING))
+    if (p_sn != NULL) {
+      /* Release the TASK (and the SN) */
+      if (osEE_scheduler_task_unblocked(p_kdb, p_sn))
       {
-        CONSTP2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA)
-          p_sn = osEE_sn_alloc(&p_cdb_waking_up->p_ccb->p_free_sn);
-
-        p_sn->p_tdb = p_tdb_waking_up;
-
-        /* Release the TASK (and the SN) */
-        if (osEE_scheduler_task_unblocked(p_kdb, p_cdb_waking_up, p_sn))
-        {
-          (void)osEE_scheduler_task_preemption_point(p_kdb, p_cdb_waking_up);
-        }
+        (void)osEE_scheduler_task_preemption_point(p_kdb);
       }
-
-      osEE_unlock_core(p_cdb_waking_up);
-      osEE_end_primitive(flags);
-
-      ev = E_OK;
     }
+    osEE_end_primitive(flags);
   }
 
 #if (defined(OSEE_HAS_ERRORHOOK))

@@ -72,7 +72,7 @@ FUNC(void, OS_CODE)
 #endif /* !OSEE_CPU_STARTOS_INLINE */
 
 #if (defined(OSEE_API_DYNAMIC))
-/* All Core OS initialization: It SHALL be called in start-up code */
+/* All Core OS initialization */
 FUNC(void, OS_CODE_INIT) osEE_os_init(void);
 #endif /* OSEE_API_DYNAMIC */
 
@@ -81,6 +81,12 @@ OSEE_CPU_STARTOS_INLINE FUNC(OsEE_bool, OS_CODE)
   osEE_cpu_startos
 (
   void
+);
+
+FUNC(StatusType, OS_CODE)
+  osEE_activate_isr2
+(
+  VAR(TaskType, AUTOMATIC) isr2_id
 );
 
 LOCAL_INLINE FUNC_P2VAR(OsEE_TDB, OS_APPL_DATA, OS_CODE)
@@ -92,39 +98,48 @@ LOCAL_INLINE FUNC_P2VAR(OsEE_TDB, OS_APPL_DATA, OS_CODE)
   return osEE_get_curr_core()->p_ccb->p_curr ;
 }
 
-LOCAL_INLINE FUNC_P2VAR(OsEE_CDB, OS_APPL_DATA, OS_CODE)
-  osEE_get_task_curr_core
+FUNC(StatusType, OS_CODE)
+  osEE_task_activated
 (
-  P2VAR(OsEE_TDB, OS_APPL_DATA, OS_CODE) p_tdb
+  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_tdb_act
+);
+
+LOCAL_INLINE FUNC(OsEE_bool, OS_CODE)
+  osEE_task_is_active
+(
+  P2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)  p_tcb
 )
 {
-#if (defined(OSEE_SINGLECORE))
-  ((void)p_tdb);
-  return osEE_get_curr_core();
-#elif (defined(OSEE_ALLOW_TASK_MIGRATION))
-  return osEE_get_core(p_tdb->p_tcb->current_core_id);
-#else
-  return osEE_get_core(p_tdb->orig_core_id);
-#endif
+  return (p_tcb->status > OSEE_TASK_READY);
 }
 
-LOCAL_INLINE FUNC(void, OS_CODE)
+FUNC(void, OS_CODE)
   osEE_task_end
 (
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA) p_tdb
+);
+
+#if (defined(OSEE_HAS_EVENTS))
+FUNC_P2VAR(OsEE_SN, OS_APPL_DATA, OS_CODE)
+  osEE_task_event_set_mask
+(
+  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)    p_tdb_waking_up,
+  VAR(EventMaskType, AUTOMATIC)               Mask,
+  P2VAR(StatusType, AUTOMATIC, OS_APPL_DATA)  p_ev  
+);
+#endif/* OSEE_HAS_EVENTS */
+
+LOCAL_INLINE FUNC(void, OS_CODE)
+  osEE_task_event_reset_mask
+(
+  P2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)  p_tcb
 )
 {
-  CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA) p_tcb = p_tdb->p_tcb;
-
-  p_tcb->current_prio = p_tdb->ready_prio;
-
-  --p_tcb->current_num_of_act;
-
-  if (p_tcb->current_num_of_act == 0U) {
-    p_tcb->status = OSEE_TASK_SUSPENDED;
-  } else {
-    p_tcb->status = OSEE_TASK_READY;
-  }
+#if (defined(OSEE_HAS_EVENTS))
+  p_tcb->event_mask = 0U;
+#else
+  (void)p_tcb;
+#endif /* OSEE_HAS_EVENTS */
 }
 
 LOCAL_INLINE FUNC(OsEE_reg, OS_CODE)
@@ -143,26 +158,6 @@ LOCAL_INLINE FUNC(void, OS_CODE)
 )
 {
   osEE_hal_end_nested_primitive(flags);
-}
-
-LOCAL_INLINE FUNC(StatusType, OS_CODE)
-  osEE_activate_isr2
-(
-  VAR(TaskType, AUTOMATIC) isr2_id
-)
-{
-  VAR(StatusType, AUTOMATIC) ret_val  = E_OK;
-  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA) p_kdb = osEE_get_kernel();
-  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
-    p_act_tdb = (*p_kdb->p_tdb_ptr_array)[isr2_id];
-
-  /* Mark the TASK as Activated */
-  ++p_act_tdb->p_tcb->current_num_of_act;
-
-  osEE_scheduler_task_set_running(p_kdb, p_cdb, p_act_tdb);
-
-  return ret_val;
 }
 
 LOCAL_INLINE FUNC(OsEE_bool, OS_CODE)
@@ -195,28 +190,6 @@ LOCAL_INLINE FUNC(OsEE_bool, OS_CODE)
 #endif /* OSEE_API_DYNAMIC */
 }
 #endif /* OSEE_HAS_RESOURCES */
-
-LOCAL_INLINE FUNC(OsEE_bool, OS_CODE)
-  osEE_is_active_task
-(
-  P2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)  p_tcb
-)
-{
-  return (p_tcb->status > OSEE_TASK_READY);
-}
-
-LOCAL_INLINE FUNC(void, OS_CODE)
-  osEE_event_reset_mask
-(
-  P2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)  p_tcb
-)
-{
-#if (defined(OSEE_HAS_EVENTS))
-  p_tcb->event_mask = 0U;
-#else
-  (void)p_tcb;
-#endif /* OSEE_HAS_EVENTS */
-}
 
 #if (defined(OSEE_HAS_CHECKS))
 LOCAL_INLINE FUNC(OsEE_bool, OS_CODE)
