@@ -643,9 +643,13 @@ FUNC(StatusType, OS_CODE)
       p_tcb     = p_tdb->p_tcb;
     CONST(TaskPrio, AUTOMATIC)
       mtx_prio  = p_mtx->mtx_prio;
+    VAR(OsEE_reg, AUTOMATIC)
+      flags = osEE_begin_primitive();
 
 #if (defined(OSEE_HAS_CHECKS))
     if ((p_mtx_mcb->locked) || (p_tdb->ready_prio > mtx_prio)) {
+      osEE_end_primitive(flags);
+
       ev = E_OS_ACCESS;
     } else
 #endif /* OSEE_HAS_CHECKS */
@@ -654,9 +658,8 @@ FUNC(StatusType, OS_CODE)
         current_prio = p_tcb->current_prio;
 
       if (current_prio < mtx_prio) {
-        /* XXX: This shall be ATOMIC: Increase the Ceiling */
-        osEE_hal_set_ipl(mtx_prio);
         p_tcb->current_prio = mtx_prio;
+        flags = osEE_hal_prepare_ipl(flags, mtx_prio);
       }
 
       p_mtx_mcb->p_next     = p_tcb->p_first_mtx;
@@ -665,6 +668,8 @@ FUNC(StatusType, OS_CODE)
       p_mtx_mcb->locked     = OSEE_TRUE;
 #endif /* OSEE_HAS_CHECKS */
       p_tcb->p_first_mtx    = p_mtx;
+
+      osEE_end_primitive(flags);
 
       ev = E_OK;
     }
@@ -722,7 +727,6 @@ FUNC(StatusType, OS_CODE)
       /* Pop the MTX head */
       p_tcb->p_first_mtx = p_tcb->p_first_mtx->p_mcb->p_next;
 
-      /* XXX: This shall be ATOMIC: Decrease the Ceiling */
       if (p_tcb->p_first_mtx != NULL) {
         CONST(TaskPrio, AUTOMATIC)
           prev_prio = p_mtx_mcb->prev_prio;
