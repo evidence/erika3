@@ -55,6 +55,10 @@
 # OS_EE_DBG_DIR is the directory used to generate debugger script files
 OS_EE_DBG_DIR := dbg
 
+# OS_EE_DBG_BASE_DIR is the base directory used to generate debugger script
+# files
+OS_EE_DBG_BASE_DIR := $(OS_EE_BASE_DIR)/$(OS_EE_DBG_DIR)
+
 # OS_EE_DOC_DIR is the directory used to generate documentation files
 OS_EE_DOC_DIR := doc
 
