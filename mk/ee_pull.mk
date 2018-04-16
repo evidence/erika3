@@ -181,18 +181,30 @@ clean::
 make_directories: $(OS_EE_PULL_DEST_DIRS)
 
 ## Directories are (re)created only when some of them don't exist already
-$(OS_EE_PULL_DEST_DIRS):
-	$(QUIET)mkdir -p $(OS_EE_PULL_DEST_DIRS)
-	$(QUIET)cp	$(OS_EE_PULL_MK_FILES) $(OS_EE_PULL_MK_DEST_DIR)
-	$(QUIET)cp	$(OS_EE_BASE_DIR)/$(OS_EE_PULL_DIR)/ee_oscfg_mk.txt	\
-			$(OS_EE_PULL_MK_DEST_DIR)/ee_oscfg.mk
-	$(QUIET)cp	$(OS_EE_PULL_INC_FILES) $(OS_EE_PULL_INC_DEST_DIR)
-	$(QUIET)cp	$(OS_EE_BASE_DIR)/$(OS_EE_PULL_DIR)/ee_oscfg_h.txt	\
+$(OS_EE_PULL_INC_DEST_DIR):
+	$(QUIET)mkdir -p $(OS_EE_PULL_INC_DEST_DIR)
+	$(QUIET)cp -f	$(OS_EE_PULL_INC_FILES) $(OS_EE_PULL_INC_DEST_DIR)
+	$(QUIET)cp -f	$(OS_EE_BASE_DIR)/$(OS_EE_PULL_DIR)/ee_oscfg_h.txt	\
 			$(OS_EE_PULL_INC_DEST_DIR)/ee_oscfg.h
+
+$(OS_EE_PULL_SRC_DEST_DIR):
+	$(QUIET)mkdir -p  $(OS_EE_PULL_SRC_DEST_DIR)
 	$(QUIET)cp	$(OS_EE_PULL_SRC_FILES) $(OS_EE_PULL_SRC_DEST_DIR)
 	$(QUIET)cp	$(OS_EE_BASE_DIR)/$(OS_EE_PULL_DIR)/ee_oscfg_c.txt	\
 			$(OS_EE_PULL_SRC_DEST_DIR)/ee_oscfg.c
+
+$(OS_EE_PULL_MK_DEST_DIR):
+	$(QUIET)mkdir -p  $(OS_EE_PULL_MK_DEST_DIR)
+	$(QUIET)cp	$(OS_EE_PULL_MK_FILES) $(OS_EE_PULL_MK_DEST_DIR)
+	$(QUIET)cp	$(OS_EE_BASE_DIR)/$(OS_EE_PULL_DIR)/ee_oscfg_mk.txt	\
+			$(OS_EE_PULL_MK_DEST_DIR)/ee_oscfg.mk
+
+$(OS_EE_PULL_DBG_DEST_DIR):
+	$(QUIET)mkdir -p  $(OS_EE_PULL_DBG_DEST_DIR)
 ifdef	OS_EE_PULL_DBG_FILES
 	$(QUIET)cp	$(OS_EE_PULL_DBG_FILES) $(OS_EE_PULL_DBG_DEST_DIR)
 endif
+
+$(OS_EE_PULL_DOC_DEST_DIR):
+	$(QUIET)mkdir -p  $(OS_EE_PULL_DOC_DEST_DIR)
 	$(QUIET)cp	$(OS_EE_PULL_DOC_FILES) $(OS_EE_PULL_DOC_DEST_DIR)
