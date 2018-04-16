@@ -57,6 +57,11 @@
 #endif /* !OSEE_ISR2_MAX_PRIO */
 
 #if (defined(OSEE_API_DYNAMIC))
+FUNC(void, OS_CODE) InitOS ( void )
+{
+  osEE_os_init();
+}
+
 FUNC(StatusType, OS_CODE)
   osEE_create_task
 (
