@@ -411,8 +411,16 @@ typedef struct OsEE_KDB_tag {
   P2VAR(OsEE_KCB, TYPEDEF, OS_APPL_DATA)          p_kcb;
   /* EG: No AUTOSAR Compiler Abstraction For Pointer To Array !!!
          ==> I need to invent one */
+/* [GS]: Avoid "warning: assignment from incompatible pointer type" in 
+ * 	 ee_std_hal_init.c:160 in A.P.I. DYNAMIC Environment.
+ */
+#if (!defined(OSEE_API_DYNAMIC))
   P2SYM_CONSTP2VAR(OsEE_TDB, OS_APPL_DATA,        p_tdb_ptr_array)
     [/*OSEE_TASK_ARRAY_SIZE + OSEE_USED_CORES*/];
+#else	/* OSEE_API_DYNAMIC */
+  P2SYM_P2VAR(OsEE_TDB, OS_APPL_DATA,             p_tdb_ptr_array)
+    [/*OSEE_TASK_ARRAY_SIZE + OSEE_USED_CORES*/];
+#endif	/* OSEE_API_DYNAMIC */
   P2SYM_VAR(OsEE_SN, OS_APPL_DATA,                p_sn_array)
     [/*OSEE_SN_ARRAY_SIZE*/];
   VAR(MemSize, TYPEDEF)                           tdb_array_size;
