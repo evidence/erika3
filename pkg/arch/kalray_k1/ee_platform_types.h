@@ -75,11 +75,11 @@
 #include "ee_compiler.h"
 #include "ee_utils.h"
 
-#if (defined(OSEE_SINGLECORE)) && (!defined(OSEE_USED_CORES))
-#define OSEE_USED_CORES (1U)
-#elif (!defined(OSEE_USED_CORES))
-#define OSEE_USED_CORES OSEE_K1_CORE_NUMBER
-#endif /* OSEE_SINGLECORE || !OSEE_USED_CORES */
+#if (defined(OSEE_SINGLECORE)) && (!defined(OsNumberOfCores))
+#define OsNumberOfCores (1U)
+#elif (!defined(OsNumberOfCores))
+#define OsNumberOfCores OSEE_K1_CORE_NUMBER
+#endif /* OSEE_SINGLECORE || !OsNumberOfCores */
 
 #if (!defined(OSEE_SINGLECORE)) &&\
   ((defined(OSEE_API_EXTENSION)) && defined(OSEE_API_DYNAMIC))

@@ -61,10 +61,10 @@ VAR(OsEE_CCB, OS_VAR_CLEARED) CCB;
 VAR(OsEE_KDB, OS_VAR_CLEARED) KDB;
 VAR(OsEE_CDB, OS_VAR_CLEARED) CDB;
 
-VAR(OsEE_TDB, OS_VAR_CLEARED) tdb_array[OSEE_TASK_ARRAY_SIZE + OSEE_USED_CORES];
-VAR(OsEE_TCB, OS_VAR_CLEARED) tcb_array[OSEE_TASK_ARRAY_SIZE + OSEE_USED_CORES];
+VAR(OsEE_TDB, OS_VAR_CLEARED) tdb_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
+VAR(OsEE_TCB, OS_VAR_CLEARED) tcb_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
 P2VAR(OsEE_TDB, OS_VAR_CLEARED, OS_APPL_DATA)
-                          tdb_ptr_array[OSEE_TASK_ARRAY_SIZE + OSEE_USED_CORES];
+                          tdb_ptr_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
 VAR(OsEE_SN, OS_VAR_CLEARED)  sn_array[OSEE_SN_ARRAY_SIZE];
 
 /* Stacks "space" array */
@@ -74,8 +74,8 @@ VAR(OsEE_stack, OS_STACK)
 typedef struct OsEE_HPB_tag {
   VAR(OsEE_addr, TYPEDEF)     pool_base;
   VAR(size_t, TYPEDEF)        residual_mem;
-  VAR(OsEE_SDB, TYPEDEF)      sdb_array[OSEE_TASK_ARRAY_SIZE + OSEE_USED_CORES];
-  VAR(OsEE_SCB, TYPEDEF)      scb_array[OSEE_TASK_ARRAY_SIZE + OSEE_USED_CORES];
+  VAR(OsEE_SDB, TYPEDEF)      sdb_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
+  VAR(OsEE_SCB, TYPEDEF)      scb_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
 } OsEE_HPB;
 
 VAR(OsEE_HPB, OS_VAR_INIT) osEE_pool = {
@@ -189,7 +189,7 @@ FUNC(void, OS_CODE_INIT)
   /* Initialize Core Data Structures */
   CCB.p_free_sn       = &(*KDB.p_sn_array)[0U];
   CCB.free_sn_counter = OSEE_ARRAY_ELEMENT_COUNT(sn_array);
-  CCB.os_status       = OSEE_KERNEL_STOPPED;
+  CCB.os_status       = OSEE_KERNEL_INITIALIZED;
 #else
   /* TODO: configure how partition the SN in between Cores and set the core as
            configured*/

@@ -170,7 +170,7 @@ LOCAL_INLINE FUNC(OsEE_bool, OS_CODE)
 #if (defined(OSEE_API_DYNAMIC))
   return (tid < p_kdb->p_kcb->free_task_index);
 #else
-  /* return (tid < p_kdb->tdb_array_size - OSEE_USED_CORES); */
+  /* return (tid < p_kdb->tdb_array_size - OsNumberOfCores); */
   return (tid < p_kdb->tdb_array_size);
 #endif /* OSEE_API_DYNAMIC */
 }

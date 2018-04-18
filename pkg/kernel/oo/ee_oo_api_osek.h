@@ -57,8 +57,11 @@
 #include "ee_api_types.h"
 
 #if (!defined(OSDEFAULTAPPMODE))
-#define OSDEFAULTAPPMODE 0U
+#define OSDEFAULTAPPMODE ((AppModeType)0U)
 #endif /* !OSDEFAULTAPPMODE */
+#if (!defined(DONOTCARE))
+#define DONOTCARE ((AppModeType)-1)
+#endif /* !DONOTCARE */
 
 FUNC(void, OS_CODE)
   DisableAllInterrupts
@@ -204,15 +207,6 @@ FUNC(StatusType, OS_CODE)
 
 #endif /* OSEE_HAS_ALARMS */
 
-LOCAL_INLINE FUNC(CoreIdType, OS_CODE)
-  GetCoreID
-(
-  void
-)
-{
-  return  osEE_get_curr_core_id();
-}
-
 #if (defined(OSEE_HAS_EVENTS))
 FUNC(StatusType, OS_CODE)
   WaitEvent
@@ -352,4 +346,40 @@ FUNC(ISRType, OS_CODE)
   void
 );
 
+#if (!defined(OSEE_SINGLECORE))
+LOCAL_INLINE FUNC(CoreIdType, OS_CODE)
+  GetCoreID
+(
+  void
+)
+{
+  /* [SWS_Os_00675] The function GetCoreID shall return the unique logical
+      CoreID of the core on which the function is called.
+      The mapping of physical cores to logical CoreIDs is implementation
+      specific. (SRS_Os_80001) */
+  return  osEE_get_curr_core_id();
+}
+
+/* FIXME: from specification return value should be uint32 */
+FUNC(CoreIdType, OS_CODE)
+  GetNumberOfActivatedCores
+(
+  void
+);
+
+FUNC(void, OS_CODE)
+  StartCore
+(
+  VAR(CoreIdType, AUTOMATIC)                  CoreID,
+  P2VAR(StatusType, AUTOMATIC, OS_APPL_DATA)  Status
+);
+
+FUNC(void, OS_CODE)
+  StartNonAutosarCore
+(
+  VAR(CoreIdType, AUTOMATIC)                  CoreID,
+  P2VAR(StatusType, AUTOMATIC, OS_APPL_DATA)  Status
+);
+
+#endif /* !OSEE_SINGLECORE */
 #endif /* !OSEE_API_OSEK_H_ */

@@ -209,10 +209,10 @@ extern OsEE_CDB CDB;
 #if (defined(OSEE_API_DYNAMIC))
 extern OsEE_KCB   KCB;
 extern OsEE_CCB   CCB;
-extern OsEE_TCB   tcb_array[OSEE_TASK_ARRAY_SIZE + OSEE_USED_CORES];
+extern OsEE_TCB   tcb_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
 extern OsEE_SN    sn_array[OSEE_SN_ARRAY_SIZE];
-extern OsEE_TDB   tdb_array[OSEE_TASK_ARRAY_SIZE + OSEE_USED_CORES];
-extern OsEE_TDB * tdb_ptr_array[OSEE_TASK_ARRAY_SIZE + OSEE_USED_CORES];
+extern OsEE_TDB   tdb_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
+extern OsEE_TDB * tdb_ptr_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
 #endif /* OSEE_API_DYNAMIC */
 
 OSEE_STATIC_INLINE OsEE_CDB * osEE_get_curr_core ( void ) {

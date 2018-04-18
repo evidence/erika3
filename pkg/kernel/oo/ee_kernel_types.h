@@ -112,9 +112,9 @@ typedef enum OsEE_os_context_tag{
 
 typedef enum {
 #if (defined(OSEE_API_DYNAMIC))
-  OSEE_KERNEL_UNITIALIZED,
+  OSEE_KERNEL_UNINITIALIZED,
 #endif /* OSEE_API_DYNAMIC */
-  OSEE_KERNEL_STOPPED,
+  OSEE_KERNEL_INITIALIZED,
   OSEE_KERNEL_STARTING,
   OSEE_KERNEL_STARTED,
   OSEE_KERNEL_SHUTDOWN
@@ -373,6 +373,9 @@ typedef struct OsEE_CCB_tag {
 
 typedef struct OsEE_CDB_tag {
   P2VAR(OsEE_CCB, TYPEDEF, OS_APPL_DATA)        p_ccb;
+#if (!defined(OSEE_SINGLECORE))
+  P2VAR(OsEE_spin_lock, TYPEDEF,OS_APPL_DATA)   p_lock;
+#endif /* !OSEE_SINGLECORE */
 #if (defined(OSEE_HAS_IDLEHOOK)) || (defined(OSEE_API_DYNAMIC))
   VAR(TaskFunc, TYPEDEF)                        p_idle_hook;
 #endif /* OSEE_HAS_IDLEHOOK || OSEE_API_DYNAMIC */
@@ -413,22 +416,38 @@ typedef struct OsEE_KCB_tag {
   VAR(MemSize, TYPEDEF)                   free_alarm_index;
 #endif /* OSEE_HAS_ALARMS */
 #endif /* OSEE_HAS_COUNTERS && OSEE_API_DYNAMIC */
-#if (!defined(OSEE_SCHEDULER_GLOBAL)) && (!defined(OSEE_API_DYNAMIC))
+#if (!defined(OSEE_SINGLECORE))
+  VAR(CoreMaskType, TYPEDEF)              ar_core_mask;
+  VAR(CoreMaskType, TYPEDEF)              not_ar_core_mask;
+  VAR(CoreIdType,   TYPEDEF)              ar_num_core_started;
+#endif /* !OSEE_SINGLECORE */
+#if (defined(OSEE_SINGLECORE)) && (!defined(OSEE_API_DYNAMIC))
   /* To not have an empty struct */
   VAR(OsEE_reg, TYPEDEF)                  dummy;
-#endif /* !OSEE_SCHEDULER_GLOBAL && !OSEE_API_DYNAMIC */
+#endif /* OSEE_SINGLECORE && !OSEE_API_DYNAMIC */
 } OsEE_KCB;
 
 typedef struct OsEE_KDB_tag {
   P2VAR(OsEE_KCB, TYPEDEF, OS_APPL_DATA)          p_kcb;
+#if (!defined(OSEE_SINGLECORE))
+  P2VAR(OsEE_spin_lock, TYPEDEF,OS_APPL_DATA)     p_lock;
+  P2VAR(OsEE_barrier, TYPEDEF,OS_APPL_DATA)       p_barrier;
+
+  VAR(OsEE_kernel_cb, TYPEDEF)                    core_startup_addr
+    [OS_CORE_ID_ARR_SIZE - 1U];
+#endif /* !OSEE_SINGLECORE */
   /* EG: No AUTOSAR Compiler Abstraction For Pointer To Array !!!
          ==> I need to invent one */
   P2SYM_CONSTP2VAR(OsEE_TDB, OS_APPL_DATA,        p_tdb_ptr_array)
-    [/*OSEE_TASK_ARRAY_SIZE + OSEE_USED_CORES*/];
+    [/*OSEE_TASK_ARRAY_SIZE + OsNumberOfCores*/];
+  VAR(MemSize, TYPEDEF)                           tdb_array_size;
+#if (defined(OSEE_ALLOW_TASK_MIGRATION))
   P2SYM_VAR(OsEE_SN, OS_APPL_DATA,                p_sn_array)
     [/*OSEE_SN_ARRAY_SIZE*/];
-  VAR(MemSize, TYPEDEF)                           tdb_array_size;
   VAR(MemSize, TYPEDEF)                           sn_array_size;
+#endif /* OSEE_ALLOW_TASK_MIGRATION */
+#if (defined(OSEE_ALLOW_TASK_MIGRATION))
+#endif /* OSEE_ALLOW_TASK_MIGRATION */
 #if (defined(OSEE_HAS_RESOURCES))
   P2SYM_CONSTP2VAR(OsEE_MDB, OS_APPL_DATA,        p_res_ptr_array)[];
   VAR(MemSize, TYPEDEF)                           res_array_size;

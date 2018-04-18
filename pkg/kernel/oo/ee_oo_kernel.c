@@ -122,7 +122,7 @@ FUNC_P2VAR(OsEE_SN, OS_APPL_DATA, OS_CODE)
 #if (!defined(OSEE_SINGLECORE))
 #if (!defined(OSEE_SCHEDULER_GLOBAL))
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
-    p_cdb = osEE_lock_and_get_core(p_tdb_act->orig_core_id);
+    p_cdb = osEE_lock_and_get_core(p_tdb_waking_up->orig_core_id);
 #else
   osEE_lock_kernel();
 #endif /* !OSEE_SCHEDULER_GLOBAL */

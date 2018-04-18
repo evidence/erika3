@@ -107,8 +107,8 @@ typedef struct OsEE_HDB_tag {
 typedef struct OsEE_HPB_tag {
   OsEE_addr     pool_base;
   size_t        residual_mem;
-  OsEE_SDB      sdb_array[OSEE_TASK_ARRAY_SIZE + OSEE_USED_CORES];
-  OsEE_SCB      scb_array[OSEE_TASK_ARRAY_SIZE + OSEE_USED_CORES];
+  OsEE_SDB      sdb_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
+  OsEE_SCB      scb_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
 } OsEE_HPB;
 #endif /* OSEE_API_DYNAMIC */
 

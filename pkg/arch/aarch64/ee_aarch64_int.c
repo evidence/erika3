@@ -52,7 +52,7 @@
 #include "ee_internal.h"
 
 OsEE_aarch64_hnd_type
-  osEE_aarch64_ppi_isr_vectors[OSEE_USED_CORES][OSEE_GIC_MIN_SPI_ID];
+  osEE_aarch64_ppi_isr_vectors[OsNumberOfCores][OSEE_GIC_MIN_SPI_ID];
   
 OsEE_aarch64_hnd_type
   osEE_aarch64_spi_isr_vectors[OSEE_GIC_ISR_NUM - OSEE_GIC_MIN_SPI_ID];

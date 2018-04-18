@@ -86,7 +86,7 @@ typedef struct OsEE_KCB_WJ_tag {
   OsEE_JOB        jobs[OSEE_MAX_NUM_JOB];
   OsEE_JOB  *     tid_to_job[OSEE_TASK_ARRAY_SIZE];
   MemSize         job_index;
-  OsEE_TCB        tcb_array[OSEE_TASK_ARRAY_SIZE + OSEE_USED_CORES];
+  OsEE_TCB        tcb_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
   OsEE_SN         sn_array[OSEE_SN_ARRAY_SIZE];
 } __attribute__ ((aligned(_K1_DCACHE_LINE_SIZE))) OsEE_KCB_WJ;
 
@@ -94,8 +94,8 @@ typedef struct OsEE_KDB_WJ_tag {
   OsEE_KDB        kdb;
   OsEE_KCB_WJ *   p_kcb_wj;
   OsEE_CDB        core_descriptors[OSEE_K1_CORE_NUMBER];
-  OsEE_TDB        tdb_array[OSEE_TASK_ARRAY_SIZE + OSEE_USED_CORES];
-  OsEE_TDB *      tdb_ptr_array[OSEE_TASK_ARRAY_SIZE + OSEE_USED_CORES];
+  OsEE_TDB        tdb_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
+  OsEE_TDB *      tdb_ptr_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
 } OSEE_CONST OsEE_KDB_WJ;
 
 extern OsEE_KCB_WJ KCB_WJ;

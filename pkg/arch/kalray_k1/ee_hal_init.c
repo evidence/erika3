@@ -66,10 +66,10 @@ OsEE_KDB_WJ KDB_WJ;
 OsEE_KCB_WL KCB_WL;
 OsEE_KDB_WL KDB_WL;
 #else
-OsEE_TCB    tcb_array[OSEE_TASK_ARRAY_SIZE + OSEE_USED_CORES];
+OsEE_TCB    tcb_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
 OsEE_SN     sn_array[OSEE_SN_ARRAY_SIZE];
-OsEE_TDB    tdb_array[OSEE_TASK_ARRAY_SIZE + OSEE_USED_CORES];
-OsEE_TDB *  tdb_ptr_array[OSEE_TASK_ARRAY_SIZE + OSEE_USED_CORES];
+OsEE_TDB    tdb_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
+OsEE_TDB *  tdb_ptr_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
 
 OsEE_KDB KDB;
 OsEE_CDB CDB;
@@ -181,7 +181,7 @@ void osEE_os_init ( void ) {
         &KDB_WJ.tdb_array[KDB_WJ.kdb.tdb_array_size - OSEE_K1_CORE_NUMBER + i];
     KDB_WJ.core_descriptors[i].p_idle_task->task_func = osEE_idle_hook_wrapper;
     KDB_WJ.core_descriptors[i].core_id = i;
-    KCB_WJ.core_ctrls[i].ccb.os_status = OSEE_KERNEL_STOPPED;
+    KCB_WJ.core_ctrls[i].ccb.os_status = OSEE_KERNEL_INITIALIZED;
   }
 
   /* Initialize the Task Description & Control Blocks (TDB & TCB) */
@@ -281,7 +281,7 @@ void osEE_os_init (void) {
       osEE_hal_set_isr2_source(p_tdb, p_tdb->hdb.isr_src);
     }
   }
-  CCB.os_status = OSEE_KERNEL_STOPPED;
+  CCB.os_status = OSEE_KERNEL_INITIALIZED;
 }
 #endif /* OSEE_HAS_JOBS */
 #endif /* OSEE_API_DYNAMIC */

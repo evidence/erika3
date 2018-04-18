@@ -50,10 +50,7 @@
  *  \author  Errico Guidieri
  *  \date  2016
  */
-#include "ee_cfg.h"
-#include "ee_hal_internal.h"
-#include "ee_kernel.h"
-#include "ee_get_kernel_and_core.h"
+#include "ee_internal.h"
 
 /* [SWS_Os_00299] The Operating System module shall provide the services
    DisableAllInterrupts(), EnableAllInterrupts(), SuspendAllInterrupts(),
@@ -171,6 +168,12 @@ FUNC(StatusType, OS_CODE)
 )
 {
   VAR(StatusType, AUTOMATIC)                       ev;
+  VAR(AppModeType, AUTOMATIC)               real_mode = Mode;
+#if (!defined(OSEE_SINGLECORE))
+  CONST(CoreIdType, AUTOMATIC)           curr_core_id = osEE_get_curr_core_id();
+  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA) p_kdb = osEE_get_kernel();
+  CONSTP2VAR(OsEE_KCB, AUTOMATIC, OS_APPL_DATA) p_kcb = p_kdb->p_kcb;
+#endif /* !OSEE_SINGLECORE */
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb = osEE_get_curr_core();
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
   CONST(OsEE_reg, AUTOMATIC) flags = osEE_begin_primitive();
@@ -179,158 +182,279 @@ FUNC(StatusType, OS_CODE)
   osEE_lock_kernel();
 #endif /* OSEE_ALLOW_TASK_MIGRATION */
 
-  if (p_ccb->os_status == OSEE_KERNEL_STOPPED) {
-    if (osEE_cpu_startos()) {
-#if (!defined(OSEE_STARTOS_RETURN))
-      CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
-        p_idle_tdb = p_cdb->p_idle_task;
-#endif /* !OSEE_STARTOS_RETURN */
+#if (!defined(OSEE_SINGLECORE)) && (!defined(OSEE_AR_BSW_STARTUP))
+/* Even thought not explicitly request by specification a synchronization point
+   is needed before attempting the Hardware dependent part of StartOs by
+   OS_CORE_ID_MASTER, to assure that all other cores have terminates their's
+   own start-up code, that could conflict with the hardware initialization done
+   by osEE_cpu_startos. (e.g. In TriCore AURIX environment trying to access to
+   SCU_PLL registers, at the same time that another core try to set ENDINIT
+   password on it's own SCU_CPU_WDT is a TRAP BUS peripheral fault).
+   All of this is true if only the OS is present in the system and not a full AR
+   BSW environment */
+  osEE_hal_sync_barrier(p_kdb->p_barrier, &p_kcb->ar_core_mask);
+#endif /* !OSEE_SINGLECORE && !OSEE_AR_BSW_STARTUP */
 
-#if (defined(OSEE_API_DYNAMIC))
-      CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
-        p_idle_tcb = p_idle_tdb->p_tcb;
-      /* Set Idle TASK as RUNNING */
-
-      /* Fill TCB */
-      p_idle_tcb->status              = OSEE_TASK_RUNNING;
-      p_idle_tcb->current_num_of_act  = 1U;
-#if (defined(OSEE_ALLOW_TASK_MIGRATION))
-      p_idle_tcb->current_core_id     = osEE_get_curr_core_id();
-#endif /* OSEE_ALLOW_TASK_MIGRATION */
-
-      /* Fill CCB */
-      p_ccb->p_curr                   = p_idle_tdb;
-#endif /* OSEE_API_DYNAMIC */
-
-      /* GetActiveApplicationMode can be called inside StartupHook */
-      p_ccb->os_status                = OSEE_KERNEL_STARTING;
-      p_ccb->app_mode                 = Mode;
-
-      osEE_call_startup_hook(p_ccb);
-
-#if (defined(OSEE_HAS_AUTOSTART_TRIGGER))
-      {
-        VAR(MemSize, AUTOMATIC) i;
-        CONSTP2VAR(OsEE_autostart_trigger, AUTOMATIC, OS_APPL_DATA)
-          p_auto_triggers  = &(*p_cdb->p_autostart_trigger_array)[Mode];
-
-        osEE_lock_core(p_cdb);
-
-        for (i = 0U; i < p_auto_triggers->trigger_array_size; ++i) {
-          CONSTP2VAR(OsEE_autostart_trigger_info, AUTOMATIC, OS_APPL_DATA)
-            p_trigger_to_act_info = &(*p_auto_triggers->p_trigger_ptr_array)[i];
-          CONSTP2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_DATA)
-            p_trigger_to_act_db   = p_trigger_to_act_info->p_trigger_db;
-
-          /* TODO: Handle trigger as alarm or as schedule table */
-          (void)osEE_alarm_set_rel(
-            p_trigger_to_act_db->p_counter_db,
-            p_trigger_to_act_db,
-            p_trigger_to_act_info->increment,
-            p_trigger_to_act_info->cycle
-          );
-        }
-
-        osEE_unlock_core(p_cdb);
-      }
-#endif /* OSEE_HAS_AUTOSTART_TRIGGER */
-
-#if (defined(OSEE_HAS_AUTOSTART_TASK))
-      {
-        VAR(MemSize, AUTOMATIC) i;
-        CONSTP2VAR(OsEE_autostart_tdb, AUTOMATIC, OS_APPL_DATA)
-          p_auto_tdb  = &(*p_cdb->p_autostart_tdb_array)[Mode];
-#if (!defined(OSEE_ALLOW_TASK_MIGRATION))
-        CONSTP2VAR(OsEE_RQ, AUTOMATIC, OS_APPL_DATA)
-          p_rq        = &p_ccb->rq;
-        CONSTP2VAR(OsEE_SN *, AUTOMATIC, OS_APPL_DATA)
-          pp_free_sn  = &p_ccb->p_free_sn;
-
-        osEE_lock_core(p_cdb);
-#else
-        CONSTP2VAR(OsEE_KCB, AUTOMATIC, OS_APPL_DATA)
-          p_kcb       = &osEE_get_kernel()->p_kcb;
-        CONSTP2VAR(OsEE_RQ, AUTOMATIC, OS_APPL_DATA)
-          p_rq        = &p_kcb->rq;
-        CONSTP2VAR(OsEE_SN *, AUTOMATIC, OS_APPL_DATA)
-          pp_free_sn  = &p_ccb->p_free_sn;
-#endif /* !OSEE_ALLOW_TASK_MIGRATION */
-
-        for (i = 0U; i < p_auto_tdb->tdb_array_size; ++i) {
-          CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
-            p_tdb_to_act = (*p_auto_tdb->p_tdb_ptr_array)[i];
-          CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
-            p_tcb_to_act = p_tdb_to_act->p_tcb;
-
-          /* Mark the autostart-TASK as Activated */
-          ++p_tcb_to_act->current_num_of_act;
-          p_tcb_to_act->status = OSEE_TASK_READY;
-
-          (void)osEE_scheduler_rq_insert(
-            p_rq,
-            osEE_sn_alloc(pp_free_sn),
-            p_tdb_to_act
-          );
-        }
-
-#if (!defined(OSEE_ALLOW_TASK_MIGRATION))
-        osEE_unlock_core(p_cdb);
-#endif /* !OSEE_ALLOW_TASK_MIGRATION */
-      }
-#endif /* OSEE_HAS_AUTOSTART_TASK */
-
-      if (p_ccb->os_status == OSEE_KERNEL_STARTING) {
-        p_ccb->os_status = OSEE_KERNEL_STARTED;
-      }
-#if (defined(OSEE_ALLOW_TASK_MIGRATION))
-      osEE_unlock_kernel();
-#endif /* OSEE_ALLOW_TASK_MIGRATION */
-
-#if (!defined(OSEE_STARTOS_RETURN)) && (!defined(OSEE_API_DYNAMIC))
-      if (p_ccb->os_status == OSEE_KERNEL_STARTED) {
-        osEE_idle_task_start(p_idle_tdb);
-      }
-#if (!defined(OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN))
-      osEE_hal_disableIRQ();
-      osEE_call_shutdown_hook(p_ccb, p_ccb->last_error);
-      while (1) {
-        ; /* Endless Loop */
-      }
-#endif /* !OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN */
-#elif (defined(OSEE_API_DYNAMIC))
-      if (p_ccb->os_status == OSEE_KERNEL_STARTED) {
-        if (p_cdb->p_idle_hook != NULL) {
-          osEE_idle_task_start(p_idle_tdb);
-        } /* No Autostart TASKs with dynamic API */
-      }
-#elif (defined(OSEE_HAS_AUTOSTART_TASK))
-      if (p_ccb->os_status == OSEE_KERNEL_STARTED) {
-        /* Schedule Here */
-        (void)osEE_scheduler_task_preemption_point(osEE_get_kernel(), p_cdb);
-      }
-#endif /* !OSEE_STARTOS_RETURN && !OSEE_API_DYNAMIC && !OSEE_HAS_AUTOSTART_TASK */
-
-      ev = E_OK;
-
-      if (p_ccb->os_status == OSEE_KERNEL_STARTED) {
-        /* Set-up IPL at Unmasked value in addition to IRQ enabling */
-        /* We always use abstract priorities. 0 is the lowest virtual priority,
-           this means ISR2 unmasked, for sure. */
-        osEE_hal_set_ipl(0U);
-        /* OS started correctly: Enable IRQ */
-        osEE_hal_enableIRQ();
-      }
-    } else {
-#if (defined(OSEE_ALLOW_TASK_MIGRATION))
-      osEE_unlock_kernel();
-#endif /* OSEE_ALLOW_TASK_MIGRATION */
-      ev = E_OS_SYS_INIT;
-    }
-  } else {
+  if (p_ccb->os_status != OSEE_KERNEL_INITIALIZED) {
 #if (defined(OSEE_ALLOW_TASK_MIGRATION))
     osEE_unlock_kernel();
 #endif /* OSEE_ALLOW_TASK_MIGRATION */
     ev = E_OS_ACCESS;
+  } else
+  if (
+#if (!defined(OSEE_SINGLECORE))
+    (curr_core_id == OS_CORE_ID_MASTER) &&
+    /* I rely in C shortcut for boolean expression */
+#endif /* !OSEE_SINGLECORE */
+    !osEE_cpu_startos()
+  )
+  {
+#if (defined(OSEE_ALLOW_TASK_MIGRATION))
+    osEE_unlock_kernel();
+#endif /* OSEE_ALLOW_TASK_MIGRATION */
+    ev = E_OS_SYS_INIT;
+  } else {
+#if (!defined(OSEE_STARTOS_RETURN))
+    CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
+      p_idle_tdb = p_cdb->p_idle_task;
+#endif /* !OSEE_STARTOS_RETURN */
+
+#if (defined(OSEE_API_DYNAMIC))
+    CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
+      p_idle_tcb = p_idle_tdb->p_tcb;
+      /* Set Idle TASK as RUNNING */
+
+    /* Fill TCB */
+    p_idle_tcb->status              = OSEE_TASK_RUNNING;
+    p_idle_tcb->current_num_of_act  = 1U;
+#if (defined(OSEE_ALLOW_TASK_MIGRATION))
+    p_idle_tcb->current_core_id     = osEE_get_curr_core_id();
+#endif /* OSEE_ALLOW_TASK_MIGRATION */
+
+    /* Fill CCB */
+    p_ccb->p_curr                   = p_idle_tdb;
+#endif /* OSEE_API_DYNAMIC */
+
+    /* GetActiveApplicationMode can be called inside StartupHook */
+    p_ccb->os_status                = OSEE_KERNEL_STARTING;
+    p_ccb->app_mode                 = real_mode;
+
+    /* Multicore Startup */
+#if (!defined(OSEE_SINGLECORE))
+/* [SWS_Os_00609] If StartOS is called with the AppMode "DONOTCARE" the
+    application mode of the other core(s) (differing from "DONOTCARE")
+    shall be used. (SRS_Os_80006) */
+/* [SWS_Os_00610] At least one core shall define an AppMode other than
+     "DONOTCARE". (SRS_Os_80006) */
+/* [SWS_Os_00611] If the IOC is configured, StartOS shall initialize the data
+     structures of the IOC. (SRS_Os_80020) */
+    if (!(p_kcb->ar_core_mask & ((CoreMaskType)1U << curr_core_id))) {
+      while (1) {
+        ; /* Endless Loop */
+      }
+    }
+/* [SWS_Os_00580] All cores that belong to the AUTOSAR system shall be
+    synchronized within the StartOS before the global StartupHook is called.
+    (SRS_Os_80006) */
+/* [SWS_Os_00581] The global StartupHook shall be called on all cores
+    immediately after the first synchronization point. (SRS_Os_80006) */
+      /* Synchronize Cores in Startup. Extracted from AUSTOSAR 4.3.1
+          Specification paragraph 7.9.4 Multi-Core start-up concept:
+          "This release of the AUTOSAR specification does not support timeouts
+          during the synchronization phase. Cores that are activated with
+          StartCore but do not call StartOS may cause the system to hang.
+          It is in the responsibility of the integrator to avoid such
+          behavior." */
+    osEE_hal_sync_barrier(p_kdb->p_barrier, &p_kcb->ar_core_mask);
+
+    /* Initialize Slaves Hardware after First synchronization point:
+       This assure that all the Master Initializations have been done. */
+    /* I rely in C shortcut for boolean expression */
+    if ((curr_core_id != OS_CORE_ID_MASTER) && !osEE_cpu_startos()) {
+      /* Enter in an endless loop if it happened */
+      while (1) {
+        ; 
+      }
+    }
+/* [SWS_Os_00608] If more than one core calls StartOS with an AppMode other
+    than "DONOTCARE", the AppModes shall be the same. StartOS shall check this
+    at the first synchronization point. In case of violation,
+    StartOS shall not start the scheduling, shall not call any StartupHooks,
+    and shall enter an endless loop on every core. (SRS_Os_80006) */
+    {
+      VAR(CoreIdType, AUTOMATIC)  i;
+
+      for (i = 0U; i < OSEE_CORE_ID_MAX; ++i) {
+        CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
+          p_local_cdb = osEE_get_core(i);
+        if (p_local_cdb != NULL) {
+          AppModeType current_mode = p_local_cdb->p_ccb->app_mode;
+
+          if (current_mode != DONOTCARE) {
+            if (real_mode == DONOTCARE) {
+              real_mode = current_mode;
+            } else if (real_mode != current_mode) {
+            /* Error condition specified by SWS_Os_00608 requirement: enter
+                in an endless loop */
+              while (1) {
+                ; 
+              }
+            } else {
+              /* Empty else statement to comply with MISRA 14.10 */
+            }
+          }
+        }
+      }
+
+      if (real_mode != DONOTCARE) {
+        /* Set mode for this core as real_mode */
+        if (Mode == DONOTCARE) {
+          p_ccb->app_mode = real_mode;
+        }
+      } else {
+        /* XXX: It is not specified how to handle the condition that no cores
+                defines an AppMode different from DONOTCARE.
+                I choose to handle it using OSDEFAULTAPPMODE */
+        p_ccb->app_mode = OSDEFAULTAPPMODE;
+        real_mode = OSDEFAULTAPPMODE;
+      }
+    }
+#endif /* OSEE_SINGLECORE */
+
+    osEE_call_startup_hook(p_ccb);
+
+#if (defined(OSEE_AS_OSAPPLICATIONS))
+/* [SWS_Os_00582] The OS-Application-specific StartupHooks shall be called
+    after the global StartupHook but only on the cores to which the
+    OS-Application is bound. (SRS_Os_80006, SRS_Os_80008) */
+/* TODO: Implement this when OS-Applications will be implemented */
+#endif /* OSEE_AS_OSAPPLICATIONS */
+
+#if (defined(OSEE_HAS_AUTOSTART_TRIGGER))
+    {
+      VAR(MemSize, AUTOMATIC) i;
+      CONSTP2VAR(OsEE_autostart_trigger, AUTOMATIC, OS_APPL_DATA)
+        p_auto_triggers  = &(*p_cdb->p_autostart_trigger_array)[real_mode];
+
+      osEE_lock_core(p_cdb);
+
+      for (i = 0U; i < p_auto_triggers->trigger_array_size; ++i) {
+        CONSTP2VAR(OsEE_autostart_trigger_info, AUTOMATIC, OS_APPL_DATA)
+          p_trigger_to_act_info = &(*p_auto_triggers->p_trigger_ptr_array)[i];
+        CONSTP2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_DATA)
+          p_trigger_to_act_db   = p_trigger_to_act_info->p_trigger_db;
+
+        /* TODO: Handle trigger as alarm or as schedule table */
+        (void)osEE_alarm_set_rel(
+          p_trigger_to_act_db->p_counter_db,
+          p_trigger_to_act_db,
+          p_trigger_to_act_info->increment,
+          p_trigger_to_act_info->cycle
+        );
+      }
+
+      osEE_unlock_core(p_cdb);
+    }
+#endif /* OSEE_HAS_AUTOSTART_TRIGGER */
+
+#if (defined(OSEE_HAS_AUTOSTART_TASK))
+    {
+      VAR(MemSize, AUTOMATIC) i;
+      CONSTP2VAR(OsEE_autostart_tdb, AUTOMATIC, OS_APPL_DATA)
+        p_auto_tdb  = &(*p_cdb->p_autostart_tdb_array)[real_mode];
+#if (!defined(OSEE_ALLOW_TASK_MIGRATION))
+      CONSTP2VAR(OsEE_RQ, AUTOMATIC, OS_APPL_DATA)
+        p_rq        = &p_ccb->rq;
+      CONSTP2VAR(OsEE_SN *, AUTOMATIC, OS_APPL_DATA)
+        pp_free_sn  = &p_ccb->p_free_sn;
+
+      osEE_lock_core(p_cdb);
+#else
+      CONSTP2VAR(OsEE_RQ, AUTOMATIC, OS_APPL_DATA)
+        p_rq        = &p_kcb->rq;
+      CONSTP2VAR(OsEE_SN *, AUTOMATIC, OS_APPL_DATA)
+        pp_free_sn  = &p_ccb->p_free_sn;
+#endif /* !OSEE_ALLOW_TASK_MIGRATION */
+
+      for (i = 0U; i < p_auto_tdb->tdb_array_size; ++i) {
+        CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
+          p_tdb_to_act = (*p_auto_tdb->p_tdb_ptr_array)[i];
+        CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
+          p_tcb_to_act = p_tdb_to_act->p_tcb;
+
+        /* Mark the autostart-TASK as Activated */
+        ++p_tcb_to_act->current_num_of_act;
+        p_tcb_to_act->status = OSEE_TASK_READY;
+
+        (void)osEE_scheduler_rq_insert(
+          p_rq,
+          osEE_sn_alloc(pp_free_sn),
+          p_tdb_to_act
+        );
+      }
+
+#if (!defined(OSEE_ALLOW_TASK_MIGRATION))
+      osEE_unlock_core(p_cdb);
+#endif /* !OSEE_ALLOW_TASK_MIGRATION */
+    }
+#endif /* OSEE_HAS_AUTOSTART_TASK */
+
+#if (!defined(OSEE_SINGLECORE))
+/* [SWS_Os_00579] All cores that belong to the AUTOSAR system shall be
+    synchronized within the StartOS function before the scheduling is started
+    and after the global StartupHook is called. (SRS_Os_80001, SRS_Os_80006) */
+/* Synchronize Cores in Startup. Extracted from AUSTOSAR 4.3.1
+    Specification paragraph 7.9.4 Multi-Core start-up concept:
+    "This release of the AUTOSAR specification does not support timeouts
+    during the synchronization phase. Cores that are activated with
+    StartCore but do not call StartOS may cause the system to hang.
+    It is in the responsibility of the integrator to avoid such behavior." */
+    osEE_hal_sync_barrier(p_kdb->p_barrier, &p_kcb->ar_core_mask);
+#endif /* OSEE_SINGLECORE */
+
+/* [SWS_Os_00607] StartOS shall start the OS on the core on which it is called.
+    (SRS_Os_80006, SRS_Os_80013) */
+    if (p_ccb->os_status == OSEE_KERNEL_STARTING) {
+      p_ccb->os_status = OSEE_KERNEL_STARTED;
+    }
+#if (defined(OSEE_ALLOW_TASK_MIGRATION))
+    osEE_unlock_kernel();
+#endif /* OSEE_ALLOW_TASK_MIGRATION */
+
+#if (!defined(OSEE_STARTOS_RETURN)) && (!defined(OSEE_API_DYNAMIC))
+    if (p_ccb->os_status == OSEE_KERNEL_STARTED) {
+      osEE_idle_task_start(p_idle_tdb);
+    }
+#if (!defined(OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN))
+    osEE_hal_disableIRQ();
+    osEE_call_shutdown_hook(p_ccb, p_ccb->last_error);
+    while (1) {
+      ; /* Endless Loop */
+    }
+#endif /* !OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN */
+#elif (defined(OSEE_API_DYNAMIC))
+    if (p_ccb->os_status == OSEE_KERNEL_STARTED) {
+      if (p_cdb->p_idle_hook != NULL) {
+        osEE_idle_task_start(p_idle_tdb);
+      } /* No Autostart TASKs with dynamic API */
+    }
+#elif (defined(OSEE_HAS_AUTOSTART_TASK))
+    if (p_ccb->os_status == OSEE_KERNEL_STARTED) {
+      /* Schedule Here */
+      (void)osEE_scheduler_task_preemption_point(osEE_get_kernel(), p_cdb);
+    }
+#endif /* !OSEE_STARTOS_RETURN && !OSEE_API_DYNAMIC && !OSEE_HAS_AUTOSTART_TASK */
+
+    ev = E_OK;
+
+    if (p_ccb->os_status == OSEE_KERNEL_STARTED) {
+      /* Set-up IPL at Unmasked value in addition to IRQ enabling */
+      /* We always use abstract priorities. 0 is the lowest virtual priority,
+         this means ISR2 unmasked, for sure. */
+      osEE_hal_set_ipl(0U);
+      /* OS started correctly: Enable IRQ */
+      osEE_hal_enableIRQ();
+    }
   }
 
   if (ev != E_OK) {
@@ -338,6 +462,7 @@ FUNC(StatusType, OS_CODE)
     osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
+
   return ev;
 }
 
@@ -426,7 +551,7 @@ FUNC(StatusType, OS_CODE)
     CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
       p_curr = osEE_get_curr_task();
 #if (defined(OSEE_HAS_CHECKS)) && (defined(OSEE_HAS_MUTEX))
-    CONSTP2VAR(OsEE_TCB, OS_APPL_DATA, AUTOMATIC)
+    CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
       p_curr_tcb  = p_curr->p_tcb;
 #endif /* OSEE_HAS_CHECKS && OSEE_HAS_CHECKS */
 #if (defined(OSEE_HAS_CHECKS))
@@ -437,7 +562,7 @@ FUNC(StatusType, OS_CODE)
     if (p_curr_tcb->p_first_mtx != NULL) {
 #if (!defined(OSEE_SINGLECORE))
     if (p_curr_tcb->p_first_mtx->mtx_type == OSEE_MUTEX_SPINLOCK) {
-      ev = E_OS_SPINLOCK
+      ev = E_OS_SPINLOCK;
     } else
 #endif /* !OSEE_SINGLECORE */
     {
@@ -496,15 +621,15 @@ FUNC(StatusType, OS_CODE)
 )
 {
   VAR(StatusType, AUTOMATIC)  ev;
-  CONSTP2VAR(OsEE_CDB, OS_APPL_DATA, AUTOMATIC)
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb       = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, OS_APPL_DATA, AUTOMATIC)
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb       = p_cdb->p_ccb;
-  CONSTP2VAR(OsEE_TDB, OS_APPL_DATA, AUTOMATIC)
+  CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
     p_curr      = p_ccb->p_curr;
 #if (defined(OSEE_HAS_CHECKS))
 #if (defined(OSEE_HAS_MUTEX))
-  CONSTP2VAR(OsEE_TCB, OS_APPL_DATA, AUTOMATIC)
+  CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
     p_curr_tcb  = p_curr->p_tcb;
 #endif /* OSEE_HAS_MUTEX */
   /*  [OS_SWS_088]: If an OS-Application makes a service call from the wrong
@@ -530,7 +655,7 @@ FUNC(StatusType, OS_CODE)
   if (p_curr_tcb->p_first_mtx != NULL) {
 #if (!defined(OSEE_SINGLECORE))
     if (p_curr_tcb->p_first_mtx->mtx_type == OSEE_MUTEX_SPINLOCK) {
-      ev = E_OS_SPINLOCK
+      ev = E_OS_SPINLOCK;
     } else
 #endif /* !OSEE_SINGLECORE */
     {
@@ -581,9 +706,12 @@ FUNC(StatusType, OS_CODE)
 #if (defined(OSEE_HAS_CHECKS))
   if (p_curr->task_type > OSEE_TASK_TYPE_EXTENDED) {
     ev = E_OS_CALLEVEL;
-  } else if (p_tcb->p_first_mtx != NULL) {
+  } else
+#if (defined(OSEE_HAS_RESOURCES))
+  if (p_tcb->p_first_mtx != NULL) {
     ev = E_OS_RESOURCE;
   } else
+#endif /* OSEE_HAS_RESOURCES */
 #endif /* OSEE_HAS_CHECKS */
   if (p_tcb->current_prio == p_curr->dispatch_prio)
   {
@@ -831,20 +959,20 @@ FUNC(StatusType, OS_CODE)
   } else {
     VAR(TaskType, AUTOMATIC)
       tid = INVALID_TASK;
-    CONSTP2CONST(OsEE_TDB, OS_APPL_DATA, AUTOMATIC)
+    CONSTP2CONST(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
       p_tdb = osEE_get_curr_task();
 
     if (p_tdb->task_type <= OSEE_TASK_TYPE_EXTENDED) {
       tid = p_tdb->tid;
     } else if (p_tdb->task_type == OSEE_TASK_TYPE_ISR2) {
-      CONSTP2VAR(OsEE_CCB, OS_APPL_DATA, AUTOMATIC)
+      CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
         p_ccb = osEE_get_curr_core()->p_ccb;
       /* In case of ISR2 search the first stacked that is not an ISR2 */
-      P2VAR(OsEE_SN, OS_APPL_DATA, AUTOMATIC)
+      P2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA)
         p_sn = p_ccb->p_stk_sn->p_next;
 
       while (p_sn != NULL) {
-        CONSTP2CONST(OsEE_TDB, OS_APPL_DATA, AUTOMATIC)
+        CONSTP2CONST(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
           p_searched_tdb = p_sn->p_tdb;
         if (p_searched_tdb->task_type <= OSEE_TASK_TYPE_EXTENDED) {
           tid = p_searched_tdb->tid;
@@ -1230,13 +1358,13 @@ FUNC(StatusType, OS_CODE)
 )
 {
   VAR(StatusType, AUTOMATIC)  ev;
-  CONSTP2VAR(OsEE_CDB, OS_APPL_DATA, AUTOMATIC)
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb       = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, OS_APPL_DATA, AUTOMATIC)
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb       = p_cdb->p_ccb;
-  CONSTP2VAR(OsEE_TDB, OS_APPL_DATA, AUTOMATIC)
+  CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
     p_curr      = p_ccb->p_curr;
-  CONSTP2VAR(OsEE_TCB, OS_APPL_DATA, AUTOMATIC)
+  CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
     p_curr_tcb  = p_curr->p_tcb;
 
 #if (defined(OSEE_HAS_CHECKS))
@@ -1266,7 +1394,7 @@ FUNC(StatusType, OS_CODE)
   if (p_curr_tcb->p_first_mtx != NULL) {
 #if (!defined(OSEE_SINGLECORE))
     if (p_curr_tcb->p_first_mtx->mtx_type == OSEE_MUTEX_SPINLOCK) {
-      ev = E_OS_SPINLOCK
+      ev = E_OS_SPINLOCK;
     } else
 #endif /* !OSEE_SINGLECORE */
     {
@@ -1330,12 +1458,12 @@ FUNC(StatusType, OS_CODE)
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
     p_kdb       = osEE_get_kernel();
 #if (defined(OSEE_HAS_CHECKS)) || (defined(OSEE_HAS_ERRORHOOK))
-  CONSTP2VAR(OsEE_CDB, OS_APPL_DATA, AUTOMATIC)
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_curr_cdb  = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, OS_APPL_DATA, AUTOMATIC)
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_curr_ccb  = p_curr_cdb->p_ccb;
 #if (defined(OSEE_HAS_CHECKS))
-  CONSTP2VAR(OsEE_TDB, OS_APPL_DATA, AUTOMATIC)
+  CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
     p_curr      = p_curr_ccb->p_curr;
   /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
    *    the Task/OsIsr calls any OS service (excluding the interrupt services)
@@ -1414,16 +1542,16 @@ FUNC(StatusType, OS_CODE)
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
     p_kdb       = osEE_get_kernel();
 #if (defined(OSEE_HAS_CHECKS)) || (defined(OSEE_HAS_ERRORHOOK))
-  CONSTP2VAR(OsEE_CDB, OS_APPL_DATA, AUTOMATIC)
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb       = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, OS_APPL_DATA, AUTOMATIC)
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb       = p_cdb->p_ccb;
 #if (defined(OSEE_SERVICE_PROTECTION))
   CONST(OsEE_os_context, AUTOMATIC)
     os_context  = p_ccb->os_context;
 #endif /* OSEE_SERVICE_PROTECTION */
 #if (defined(OSEE_HAS_CHECKS))
-  CONSTP2VAR(OsEE_TDB, OS_APPL_DATA, AUTOMATIC)
+  CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
     p_curr      = p_ccb->p_curr;
   /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
    *    the Task/OsIsr calls any OS service (excluding the interrupt services)
@@ -1505,13 +1633,13 @@ FUNC(StatusType, OS_CODE)
 )
 {
   VAR(StatusType, AUTOMATIC)  ev;
-  CONSTP2VAR(OsEE_CDB, OS_APPL_DATA, AUTOMATIC)
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb       = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, OS_APPL_DATA, AUTOMATIC)
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb       = p_cdb->p_ccb;
-  CONSTP2VAR(OsEE_TDB, OS_APPL_DATA, AUTOMATIC)
+  CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
     p_curr      = p_ccb->p_curr;
-  CONSTP2VAR(OsEE_TCB, OS_APPL_DATA, AUTOMATIC)
+  CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
     p_curr_tcb  = p_curr->p_tcb;
 
 #if (defined(OSEE_HAS_CHECKS))
@@ -1607,7 +1735,7 @@ FUNC(ISRType, OS_CODE)
 )
 {
   VAR(ISRType, AUTOMATIC) isr_id;
-  CONSTP2CONST(OsEE_TDB, OS_APPL_DATA, AUTOMATIC)
+  CONSTP2CONST(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
     p_tdb = osEE_get_curr_task();
 
   if (p_tdb->task_type == OSEE_TASK_TYPE_ISR2) {
@@ -1618,3 +1746,156 @@ FUNC(ISRType, OS_CODE)
 
   return isr_id;
 }
+
+#if (!defined(OSEE_SINGLECORE))
+
+/* FIXME: from specification return value should be uint32 */
+FUNC(CoreIdType, OS_CODE)
+  GetNumberOfActivatedCores
+(
+  void
+)
+{
+  /* [SWS_Os_00673] The return value of GetNumberOfActivatedCores shall be less
+      or equal to the configured value of "OsNumberOfCores". (SRS_Os_80001) */
+  return osEE_get_kernel()->p_kcb->ar_num_core_started;
+}
+
+FUNC(void, OS_CODE)
+  StartCore
+(
+  VAR(CoreIdType, AUTOMATIC)                  CoreID,
+  P2VAR(StatusType, AUTOMATIC, OS_APPL_DATA)  Status
+)
+{
+  /* Error Value */
+  VAR(StatusType, AUTOMATIC) ev;
+
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
+    p_cdb       = osEE_get_curr_core();
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+    p_ccb       = p_cdb->p_ccb;
+  CONST(OsEE_reg, AUTOMATIC)
+    flags = osEE_begin_primitive();
+  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
+    p_kdb = osEE_lock_and_get_kernel();
+  CONSTP2VAR(OsEE_KCB, AUTOMATIC, OS_APPL_DATA)
+    p_kcb = p_kdb->p_kcb;
+  /* Variable introduced to meet MISRA 12.1 in the next else if statement */
+  CONST(OSEE_CORE_MASK_TYPE, AUTOMATIC)
+    ar_core_mask = p_kcb->ar_core_mask;
+  CONST(OSEE_CORE_MASK_TYPE, AUTOMATIC)
+    core_id_mask =  (1U << CoreID);
+
+  if ((core_id_mask & OSEE_CORE_ID_VALID_MASK) == 0U) {
+      ev = E_OS_ID;
+  } else if (p_ccb->os_status != OSEE_KERNEL_INITIALIZED) {
+    /* [SWS_Os_00606] The AUTOSAR specification does not support the activation
+        of AUTOSAR cores after calling StartOS on that core.
+        If StartCore is called after StartOS it shall return with E_OS_ACCESS
+        in extended status. (SRS_Os_80001) */
+    /* [SWS_Os_00678] Calls to the StartCore function after StartOS()
+        shall return with E_OS_ACCESS and the core shall not be started.
+        (SRS_Os_80006, SRS_Os_80026, SRS_Os_80027) */
+      ev = E_OS_ACCESS;
+  } else if (((ar_core_mask | p_kcb->not_ar_core_mask) & core_id_mask) != 0U) {
+    /* [SWS_Os_00679] If the parameter CoreIDs refers to a core that was
+        already started by the function StartCore the related core is ignored
+        and E_OS_STATE shall be returned.
+        (SRS_Os_80006, SRS_Os_80026, SRS_Os_80027) */
+    /* [SWS_Os_00680] If the parameter CoreID refers to a core that was already
+        started by the function StartNonAutosarCore the related core is ignored
+        and E_OS_STATE shall be returned.
+        (SRS_Os_80006, SRS_Os_80026, SRS_Os_80027) */
+    ev = E_OS_STATE;
+  } else {
+    /* Really start the core if we are not in MASTER core */
+    if (CoreID != OS_CORE_ID_MASTER) {
+      /* [SWS_Os_00677] The function StartCore shall start one core that shall
+          run under the control of the AUTOSAR OS.
+          (SRS_Os_80006, SRS_Os_80026, SRS_Os_80027) */
+      /* Flag that core is started as Autosar core */
+      p_kcb->ar_core_mask |= core_id_mask;
+      /* Increment the Autosar Cores counter */
+      ++p_kcb->ar_num_core_started;
+
+      osEE_hal_start_core(CoreID, p_kdb->core_startup_addr[(CoreID - 1U)]);
+    }
+
+    ev = E_OK;
+  }
+
+  /* Restore the initial conditions */
+  osEE_unlock_kernel();
+
+  osEE_end_primitive(flags);
+
+  /* [SWS_Os_00681] There is no call to the ErrorHook() if an error occurs
+       during StartCore(); (SRS_Os_80006, SRS_Os_80026, SRS_Os_80027) */
+  if (Status != NULL) {
+    *Status = ev;
+  }
+
+  return;
+}
+
+FUNC(void, OS_CODE)
+  StartNonAutosarCore
+(
+  VAR(CoreIdType, AUTOMATIC)                  CoreID,
+  P2VAR(StatusType, AUTOMATIC, OS_APPL_DATA)  Status
+)
+{
+  /* Error Value */
+  VAR(StatusType, AUTOMATIC) ev;
+
+  CONST(OsEE_reg, AUTOMATIC)
+    flags = osEE_begin_primitive();
+  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
+    p_kdb = osEE_lock_and_get_kernel();
+  CONSTP2VAR(OsEE_KCB, AUTOMATIC, OS_APPL_DATA)
+    p_kcb = p_kdb->p_kcb;
+  /* Variable introduced to meet MISRA 12.1 in the next else if statement */
+  CONST(OSEE_CORE_MASK_TYPE, AUTOMATIC)
+    ar_core_mask = p_kcb->ar_core_mask;
+  CONST(OSEE_CORE_MASK_TYPE, AUTOMATIC)
+    core_id_mask =  (1U << CoreID);
+
+  if ((core_id_mask & OSEE_CORE_ID_VALID_MASK) == 0U) {
+    /* [SWS_Os_00685] If the parameter CoreID refers to an unknown core the
+        function StartNonAutosarCore has no effect and sets "Status" to E_OS_ID.
+        (SRS_Os_80006, SRS_Os_80026, SRS_Os_80027) */
+    ev = E_OS_ID;
+  } else if (((ar_core_mask | p_kcb->not_ar_core_mask) & core_id_mask) != 0U) {
+    /* [SWS_Os_00680] If the parameter CoreID refers to a core that was already
+        started by the function StartNonAutosarCore the related core is ignored
+        and E_OS_STATE shall be returned.
+        (SRS_Os_80006, SRS_Os_80026, SRS_Os_80027) */
+    ev = E_OS_STATE;
+  } else {
+    /* Really start the core if we are not in MASTER core */
+    if (CoreID != OS_CORE_ID_MASTER) {
+    /* [SWS_Os_00683] The function StartNonAutosarCore shall start a core that
+        is not controlled by the AUTOSAR OS.
+        (SRS_Os_80006, SRS_Os_80026, SRS_Os_80027) */
+      /* Flag that core is started as non Autosar core */
+      p_kcb->not_ar_core_mask |= core_id_mask;
+      osEE_hal_start_core(CoreID, p_kdb->core_startup_addr[(CoreID - 1U)]);
+    }
+
+    ev = E_OK;
+  }
+
+  /* Restore the initial conditions */
+  osEE_unlock_kernel();
+
+  osEE_end_primitive(flags);
+
+  if (Status != NULL) {
+    *Status = ev;
+  }
+
+  return;
+
+}
+#endif /* !OSEE_SINGLECORE */

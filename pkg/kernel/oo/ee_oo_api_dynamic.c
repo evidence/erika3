@@ -201,9 +201,9 @@ FUNC(StatusType, OS_CODE)
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb = osEE_get_curr_core();
 
-  if ( idleHook == NULL ) {
+  if (idleHook == NULL) {
     ev = E_OS_PARAM_POINTER;
-  } else if ( p_cdb->p_ccb->os_status != OSEE_KERNEL_STOPPED ) {
+  } else if (p_cdb->p_ccb->os_status != OSEE_KERNEL_INITIALIZED) {
     ev = E_OS_SYS_INIT;
   } else {
     p_cdb->p_idle_hook = idleHook;
