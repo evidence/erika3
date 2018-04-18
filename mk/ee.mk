@@ -95,7 +95,7 @@ endif
 
 else	# OS_EE_BUILD
 
-## include only if one libreary linking configuration file exists
+## include only if one library linking configuration file exists
 ifneq ($(strip $(wildcard $(OS_EE_MK_BASE_DIR)/*_linkcfg.mk)),)
 include $(wildcard $(OS_EE_MK_BASE_DIR)/*_linkcfg.mk)
 endif
@@ -141,34 +141,42 @@ LIBDEP += $(LDDEPS)
 # Boot code containing _start should stay outside of the library in
 # case of normal compilation
 
+# [GS]: Added %.s pattern to build not prerocessed assembly sources.
+
 LIBEESRCS	+= $(EE_SRCS) $(OS_EE_CFG_SRCS)
-LIBEEOBJS	:=							\
-	$(addprefix $(OS_EE_OBJ_DIR)/,					\
-		$(patsubst %.cpp,%.cpp.o,				\
-			$(patsubst %.c,%.c.o,				\
-				$(patsubst %.S,%.S.o,$(LIBEESRCS))	\
-			)						\
-		)							\
+LIBEEOBJS	:=							       \
+	$(addprefix $(OS_EE_OBJ_DIR)/,					       \
+		$(patsubst %.cpp,%.cpp.o,				       \
+			$(patsubst %.c,%.c.o,				       \
+				$(patsubst %.s,%.s.o,			       \
+					$(patsubst %.S,%.S.o,$(LIBEESRCS))     \
+				)					       \
+			)						       \
+		)							       \
 	)
 
 LIBSRCS		+= $(LIB_SRCS)
-LIBOBJS		:=							\
-	$(addprefix $(OS_EE_OBJ_DIR)/,					\
-		$(patsubst %.cpp,%.cpp.o,				\
-			$(patsubst %.c,%.c.o,				\
-				$(patsubst %.S,%.S.o,$(LIBSRCS))	\
-			)						\
-		)							\
+LIBOBJS		:=							       \
+	$(addprefix $(OS_EE_OBJ_DIR)/,					       \
+		$(patsubst %.cpp,%.cpp.o,				       \
+			$(patsubst %.c,%.c.o,				       \
+				$(patsubst %.s,%.s.o,			       \
+					$(patsubst %.S,%.S.o,$(LIBSRCS))       \
+				)					       \
+			)						       \
+		)							       \
 	)
 
 SRCS		+= $(sort $(OS_EE_APP_CFG_SRCS))
-OBJS		:=							\
-	$(addprefix $(OS_EE_OBJ_DIR)/,					\
-		$(patsubst %.cpp,%.cpp.o,				\
-			$(patsubst %.c,%.c.o,				\
-				$(patsubst %.S,%.S.o,$(SRCS))		\
-			)						\
-		)							\
+OBJS		:=							       \
+	$(addprefix $(OS_EE_OBJ_DIR)/,					       \
+		$(patsubst %.cpp,%.cpp.o,				       \
+			$(patsubst %.c,%.c.o,				       \
+				$(patsubst %.s,%.s.o,			       \
+					$(patsubst %.S,%.S.o,$(SRCS))	       \
+				)					       \
+			)						       \
+		)							       \
 	)
 
 # Variable used to import dependencies
@@ -199,7 +207,10 @@ EE_VPATH +=	$(call short_native_path,$(abspath $(OS_EE_APP_BASE_DIR))) \
 		$(call short_native_path,$(abspath $(OS_EE_APP_OUT_DIR)))
 endif	# OS_EE_BUILD
 
+# [GS]: Added %.s pattern to build not prerocessed assembly sources.
+
 vpath %.c	$(EE_VPATH)
+vpath %.s	$(EE_VPATH)
 vpath %.S	$(EE_VPATH)
 vpath %.cpp	$(EE_VPATH)
 
