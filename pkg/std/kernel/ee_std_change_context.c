@@ -60,11 +60,8 @@ FUNC(void, OS_CODE)
 )
 {
   CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA) p_to_tcb  = p_to->p_tcb;
-  CONST(TaskStateType, AUTOMATIC)     status_prev_running = p_to_tcb->status;
 
-  p_to_tcb->status = OSEE_TASK_RUNNING;
-
-  if (status_prev_running == OSEE_TASK_READY_STACKED) {
+  if (p_to_tcb->status == OSEE_TASK_READY_STACKED) {
     osEE_hal_save_ctx_and_restore_ctx(p_to, p_to->hdb.p_scb,
       p_from->hdb.p_scb);
   } else {
@@ -81,11 +78,8 @@ FUNC(void, OS_CODE)
 )
 {
   CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA) p_to_tcb  = p_to->p_tcb;
-  CONST(TaskStateType, AUTOMATIC)     status_prev_running = p_to_tcb->status;
 
-  p_to_tcb->status = OSEE_TASK_RUNNING;
-
-  if (status_prev_running == OSEE_TASK_READY_STACKED) {
+  if (p_to_tcb->status == OSEE_TASK_READY_STACKED) {
     osEE_hal_restore_ctx(p_to, p_to->hdb.p_scb);
   } else {
     osEE_hal_ready2stacked(p_to, p_to->hdb.p_scb);

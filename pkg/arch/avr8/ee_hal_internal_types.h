@@ -104,7 +104,7 @@ typedef struct OsEE_HDB_tag {
    in ee_kernel_types.h, that is not inlined */
 #define OSEE_ISR2_INLINE OSEE_STATIC_INLINE
 
-#if (defined(OSTICKDURATION))
+#if (defined(OSEE_HAS_SYSTEM_TIMER))
 extern void osEE_avr8_system_timer_handler(void);
-#endif /* OSTICKDURATION */
+#endif /* OSEE_HAS_SYSTEM_TIMER */
 #endif /* !OSEE_HAL_INTERNAL_TYPES_H */

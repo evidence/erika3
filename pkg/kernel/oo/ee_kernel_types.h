@@ -380,9 +380,9 @@ typedef struct OsEE_CDB_tag {
   VAR(TaskFunc, TYPEDEF)                        p_idle_hook;
 #endif /* OSEE_HAS_IDLEHOOK || OSEE_API_DYNAMIC */
   P2VAR(OsEE_TDB, TYPEDEF, OS_APPL_DATA)        p_idle_task;
-#if (defined(OSTICKDURATION))
+#if (defined(OSEE_HAS_SYSTEM_TIMER))
   P2VAR(OsEE_CounterDB, TYPEDEF, OS_APPL_DATA)  p_sys_counter_db;
-#endif /*  */
+#endif /* OSEE_HAS_SYSTEM_TIMER */
 #if (defined(OSEE_HAS_AUTOSTART_TASK))
   P2SYM_VAR(OsEE_autostart_tdb, OS_APPL_DATA,   p_autostart_tdb_array)[];
   VAR(MemSize, TYPEDEF)                         autostart_tdb_array_size;
@@ -432,9 +432,6 @@ typedef struct OsEE_KDB_tag {
 #if (!defined(OSEE_SINGLECORE))
   P2VAR(OsEE_spin_lock, TYPEDEF,OS_APPL_DATA)     p_lock;
   P2VAR(OsEE_barrier, TYPEDEF,OS_APPL_DATA)       p_barrier;
-
-  VAR(OsEE_kernel_cb, TYPEDEF)                    core_startup_addr
-    [OS_CORE_ID_ARR_SIZE - 1U];
 #endif /* !OSEE_SINGLECORE */
   /* EG: No AUTOSAR Compiler Abstraction For Pointer To Array !!!
          ==> I need to invent one */

@@ -172,9 +172,9 @@ FUNC(OsEE_bool, OS_CODE) osEE_cpu_startos(void)
         osEE_aarch64_configure_isr2(p_tdb, p_tdb->hdb.isr2_src);
       }
     }
-#if (defined(OSTICKDURATION))
+#if (defined(OSEE_HAS_SYSTEM_TIMER))
     osEE_aarch64_system_timer_init();
-#endif /* OSTICKDURATION */
+#endif /* OSEE_HAS_SYSTEM_TIMER */
   }
 #endif /* !OSEE_API_DYNAMIC */
 

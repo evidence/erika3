@@ -152,9 +152,9 @@ OSEE_STATIC_INLINE OsEE_stack * osEE_get_SP(void)
 #define OSEE_GTIMER_IRQ (27U)
 /* Macro used as System Timer device */
 #define OSEE_AARCH64_GTIMER OSEE_GTIMER_IRQ
-#if (defined(OSTICKDURATION))
+#if (defined(OSEE_HAS_SYSTEM_TIMER))
 extern void osEE_aarch64_system_timer_handler(void);
-#endif /* OSTICKDURATION */
+#endif /* OSEE_HAS_SYSTEM_TIMER */
 
 OSEE_STATIC_INLINE OsEE_reg osEE_aarch64_gtimer_get_freq(void)
 {

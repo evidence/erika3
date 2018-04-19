@@ -116,8 +116,8 @@ typedef struct OsEE_HPB_tag {
 #define OSEE_K1_BSP_IT_TIMER_0 (0U)
 #define OSEE_K1_BSP_IT_TIMER_1 (1U)
 
-#if (defined(OSTICKDURATION))
+#if (defined(OSEE_HAS_SYSTEM_TIMER))
 extern void osEE_kalray_k1_system_timer_handler(void);
-#endif /* OSTICKDURATION */
+#endif /* OSEE_HAS_SYSTEM_TIMER */
 
 #endif /* !OsEE_HAL_INTERNAL_TYPES_H */

@@ -361,7 +361,11 @@ FUNC(void, OS_CODE)
           (void)ev; /* TODO: Handle ErrorHook */
 #endif /* OSEE_HAS_ERRORHOOK */
         } while (p_triggered_db != NULL);
+      } else {
+        osEE_unlock_core_id(counter_core_id);
       }
+    } else {
+      osEE_unlock_core_id(counter_core_id);
     }
   }
 }

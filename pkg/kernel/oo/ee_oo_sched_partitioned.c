@@ -382,18 +382,19 @@ FUNC(OsEE_bool, OS_CODE)
 
   p_prev = osEE_scheduler_core_rq_preempt_stk(p_cdb, &p_ccb->rq);
 
+  /* Unlock the Scheduler (critical section terminated) */
+  osEE_unlock_core(p_cdb);
+
   if (p_prev != NULL) {
     CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA) p_curr = p_ccb->p_curr;
-
-    osEE_unlock_core(p_cdb);
 
     osEE_change_context_from_running(p_prev, p_curr);
 
     is_preemption = OSEE_TRUE;
   } else {
-    osEE_unlock_core(p_cdb);
     is_preemption = OSEE_FALSE;
   }
+
   return is_preemption;
 }
 

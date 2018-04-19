@@ -118,10 +118,10 @@ FUNC(void, OS_CODE)
     p_ccb->os_context = OSEE_IDLE_CTX;
   }
 #endif /* OSEE_HAS_CONTEXT */
-#else
-/* Touch unused parameter */
-(void)p_tdb_to;
 #endif /* OSEE_HAS_PRETASKHOOK || OSEE_HAS_CONTEXT */
+
+  /* Set the TASK status to RUNNING */
+  p_tdb_to->p_tcb->status = OSEE_TASK_RUNNING;
 
 #if (defined(OSEE_SCHEDULER_GLOBAL))
   CONSTP2VAR(OsEE_spin_lock, AUTOMATIC, OS_APPL_DATA)

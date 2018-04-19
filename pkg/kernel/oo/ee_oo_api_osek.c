@@ -66,7 +66,7 @@ FUNC(void, OS_CODE)
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
   /* Disable Immediately for Atomicity */
   osEE_hal_disableIRQ();
-  ++p_ccb->d_isr_all_cnt;
+  p_ccb->d_isr_all_cnt = 1U;
   return;
 }
 
@@ -83,13 +83,10 @@ FUNC(void, OS_CODE)
    * (SRS_Os_11009) */
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb = osEE_get_curr_core();
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
-  CONST(OsEE_reg, AUTOMATIC) flags = osEE_begin_primitive();
 
   if (p_ccb->d_isr_all_cnt > 0U) {
-    --p_ccb->d_isr_all_cnt;
+    p_ccb->d_isr_all_cnt = 0U;
     osEE_hal_enableIRQ();
-  } else {
-    osEE_end_primitive(flags);
   }
 }
 
@@ -181,19 +178,6 @@ FUNC(StatusType, OS_CODE)
 #if (defined(OSEE_ALLOW_TASK_MIGRATION))
   osEE_lock_kernel();
 #endif /* OSEE_ALLOW_TASK_MIGRATION */
-
-#if (!defined(OSEE_SINGLECORE)) && (!defined(OSEE_AR_BSW_STARTUP))
-/* Even thought not explicitly request by specification a synchronization point
-   is needed before attempting the Hardware dependent part of StartOs by
-   OS_CORE_ID_MASTER, to assure that all other cores have terminates their's
-   own start-up code, that could conflict with the hardware initialization done
-   by osEE_cpu_startos. (e.g. In TriCore AURIX environment trying to access to
-   SCU_PLL registers, at the same time that another core try to set ENDINIT
-   password on it's own SCU_CPU_WDT is a TRAP BUS peripheral fault).
-   All of this is true if only the OS is present in the system and not a full AR
-   BSW environment */
-  osEE_hal_sync_barrier(p_kdb->p_barrier, &p_kcb->ar_core_mask);
-#endif /* !OSEE_SINGLECORE && !OSEE_AR_BSW_STARTUP */
 
   if (p_ccb->os_status != OSEE_KERNEL_INITIALIZED) {
 #if (defined(OSEE_ALLOW_TASK_MIGRATION))
@@ -336,8 +320,6 @@ FUNC(StatusType, OS_CODE)
       CONSTP2VAR(OsEE_autostart_trigger, AUTOMATIC, OS_APPL_DATA)
         p_auto_triggers  = &(*p_cdb->p_autostart_trigger_array)[real_mode];
 
-      osEE_lock_core(p_cdb);
-
       for (i = 0U; i < p_auto_triggers->trigger_array_size; ++i) {
         CONSTP2VAR(OsEE_autostart_trigger_info, AUTOMATIC, OS_APPL_DATA)
           p_trigger_to_act_info = &(*p_auto_triggers->p_trigger_ptr_array)[i];
@@ -352,8 +334,6 @@ FUNC(StatusType, OS_CODE)
           p_trigger_to_act_info->cycle
         );
       }
-
-      osEE_unlock_core(p_cdb);
     }
 #endif /* OSEE_HAS_AUTOSTART_TRIGGER */
 
@@ -1728,6 +1708,252 @@ FUNC(OsEE_api_param, OS_CODE)
 }
 #endif /* OSEE_USEPARAMETERACCESS */
 
+#if (defined(OSEE_HAS_COUNTERS))
+FUNC(StatusType, OS_CODE)
+  GetCounterValue
+(
+  VAR(CounterType, AUTOMATIC) CounterID,
+  VAR(TickRefType, AUTOMATIC) Value
+)
+{
+  VAR(StatusType, AUTOMATIC)  ev;
+  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
+    p_kdb = osEE_get_kernel();
+/* [SWS_Os_00376] If the input parameter <CounterID> in a call of
+    GetCounterValue() is not valid, GetCounterValue() shall return E_OS_ID. */
+  if (!osEE_is_valid_counter_id(p_kdb, CounterID)) {
+    ev = E_OS_ID;
+  } else
+#if (defined(OSEE_HAS_CHECKS))
+  if (Value == NULL) {
+    ev = E_OS_PARAM_POINTER;
+  } else
+#endif /* OSEE_HAS_CHECKS */
+  {
+    CONSTP2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_DATA)
+      p_counter_db = (*p_kdb->p_counter_ptr_array)[CounterID];
+/* [SWS_Os_00589] All functions that are not allowed to operate cross core
+    shall return E_OS_CORE in extended status if called with parameters that
+    require a cross core operation. (SRS_Os_80013) */
+#if (!defined(OSEE_SINGLECORE))
+    if (p_counter_db->core_id != osEE_get_curr_core_id()) {
+      ev = E_OS_CORE;
+    } else
+#endif /* !OSEE_SINGLECORE */
+    {
+/* [SWS_Os_00377] If the input parameter <CounterID> in a call of
+    GetCounterValue() is valid, GetCounterValue() shall return the current tick
+    value of the counter via <Value> and return E_OK. (SRS_Frt_00033) */
+/* [SWS_Os_00531] Caveats of GetCounterValue(): Note that for counters of
+    OsCounterType = HARDWARE the real timer value
+   (the – possibly adjusted – hardware value, see SWS_Os_00384) is returned,
+   whereas for counters of OsCounterType = SOFTWARE the current "software"
+   tick value is returned. */
+/* [SWS_Os_00384] The Operating System module shall adjust the read out values
+    of hardware timers (which drive counters) in such that the lowest value is
+    zero and consecutive reads return an increasing count value until the timer
+    wraps at its modulus. (SRS_Frt_00030, SRS_Frt_00031) */
+/* EG  TODO: Add support for HARDWARE counters */
+
+      (*Value) = p_counter_db->p_counter_cb->value;
+
+      ev = E_OK;
+    }
+  }
+
+#if (defined(OSEE_HAS_ERRORHOOK))
+  if (ev != E_OK) {
+    VAR(OsEE_api_param, AUTOMATIC)
+      param;
+    CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+      p_ccb = osEE_get_curr_core()->p_ccb;
+    CONST(OsEE_reg, AUTOMATIC)
+      flags = osEE_begin_primitive();
+    osEE_set_service_id(p_ccb, OSServiceId_GetCounterValue);
+    param.num_param = CounterID;
+    osEE_set_api_param1(p_ccb, param);
+    param.p_param   = Value;
+    osEE_set_api_param2(p_ccb, param);
+    osEE_call_error_hook(p_ccb, ev);
+    osEE_end_primitive(flags);
+  }
+#endif /* OSEE_HAS_ERRORHOOK */
+
+  return ev;
+}
+
+FUNC(StatusType, OS_CODE)
+  GetElapsedValue
+(
+  VAR(CounterType, AUTOMATIC) CounterID,
+  VAR(TickRefType, AUTOMATIC) Value,
+  VAR(TickRefType, AUTOMATIC) ElapsedValue
+)
+{
+  VAR(StatusType, AUTOMATIC)  ev;
+  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
+    p_kdb = osEE_get_kernel();
+
+/* [SWS_Os_00381] If the input parameter <CounterID> in a call of
+    GetElapsedValue() is not valid GetElapsedValue() shall return E_OS_ID. */
+  if (!osEE_is_valid_counter_id(p_kdb, CounterID)) {
+    ev = E_OS_ID;
+  } else
+#if (defined(OSEE_HAS_CHECKS))
+  if ((Value == NULL) || (ElapsedValue == NULL)) {
+    ev = E_OS_PARAM_POINTER;
+  } else
+#endif /* OSEE_HAS_CHECKS */
+  {
+    CONSTP2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_DATA)
+      p_counter_db = (*p_kdb->p_counter_ptr_array)[CounterID];
+    CONST(TickType, AUTOMATIC)
+      local_value = (*Value);
+
+/* [SWS_Os_00589] All functions that are not allowed to operate cross core
+    shall return E_OS_CORE in extended status if called with parameters that
+    require a cross core operation. (SRS_Os_80013) */
+#if (!defined(OSEE_SINGLECORE))
+    if (p_counter_db->core_id != osEE_get_curr_core_id()) {
+      ev = E_OS_CORE;
+    } else
+#endif /* !OSEE_SINGLECORE */
+#if (defined(OSEE_HAS_CHECKS))
+/* [SWS_Os_00391] If the <Value> in a call of GetElapsedValue() is larger than
+    the max allowed value of the <CounterID>, GetElapsedValue() shall return
+    E_OS_VALUE. */
+    if (local_value > p_counter_db->info.maxallowedvalue) {
+      ev = E_OS_VALUE;
+    } else
+#endif /* OSEE_HAS_CHECKS */
+    {
+/* [SWS_Os_00382] If the input parameters in a call of GetElapsedValue()
+     are valid, GetElapsedValue() shall return the number of elapsed ticks
+     since the given <Value> value via <ElapsedValue> and shall return
+     E_OK. (SRS_Frt_00034) */
+      CONST(TickType, AUTOMATIC)
+        local_curr_value = p_counter_db->p_counter_cb->value;
+
+/* [SWS_Os_00533] Caveats of GetElapsedValue(): If the timer already passed the
+    <Value> value a second (or multiple) time, the result returned is wrong.
+    The reason is that the service can not detect such a relative overflow. */
+/* EG  TODO: Add support for HARDWARE counters */
+      (*ElapsedValue) = (local_curr_value >= local_value)?
+        /* Timer did not pass the <value> yet */
+        (local_curr_value - local_value):
+        /* Timer already passed the <value> */
+        ((p_counter_db->info.maxallowedvalue -
+          (local_value - local_curr_value)) + 1U);
+
+/* [SWS_Os_00460] GetElapsedValue() shall return the current tick value of the
+    counter in the <Value> parameter. */
+      (*Value) = local_curr_value;
+
+      ev = E_OK;
+    }
+  }
+
+#if (defined(OSEE_HAS_ERRORHOOK))
+  if (ev != E_OK) {
+    VAR(OsEE_api_param, AUTOMATIC)
+      param;
+    CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+      p_ccb = osEE_get_curr_core()->p_ccb;
+    CONST(OsEE_reg, AUTOMATIC)
+      flags = osEE_begin_primitive();
+    osEE_set_service_id(p_ccb, OSServiceId_GetElapsedValue);
+    param.num_param = CounterID;
+    osEE_set_api_param1(p_ccb, param);
+    param.p_param   = Value;
+    osEE_set_api_param2(p_ccb, param);
+    param.p_param   = ElapsedValue;
+    osEE_set_api_param3(p_ccb, param);
+    osEE_call_error_hook(p_ccb, ev);
+    osEE_end_primitive(flags);
+  }
+#endif /* OSEE_HAS_ERRORHOOK */
+
+  return ev;
+}
+
+
+FUNC(StatusType, OS_CODE)
+  IncrementCounter
+(
+  VAR(CounterType, AUTOMATIC) CounterID
+)
+{
+  VAR(StatusType, AUTOMATIC)  ev;
+  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
+    p_kdb = osEE_get_kernel();
+
+/* [SWS_Os_00285] If the input parameter <CounterID> in a call of
+    IncrementCounter() is not valid OR the counter is a hardware counter,
+    IncrementCounter() shall return E_OS_ID. */
+  if (!osEE_is_valid_counter_id(p_kdb, CounterID)) {
+    ev = E_OS_ID;
+  } else
+  {
+    CONSTP2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_DATA)
+      p_counter_db = (*p_kdb->p_counter_ptr_array)[CounterID];
+/* [SWS_Os_00589] All functions that are not allowed to operate cross core
+    shall return E_OS_CORE in extended status if called with parameters that
+    require a cross core operation. (SRS_Os_80013) */
+#if (!defined(OSEE_SINGLECORE))
+    if (p_counter_db->core_id != osEE_get_curr_core_id()) {
+      ev = E_OS_CORE;
+    } else
+#endif /* !OSEE_SINGLECORE */
+    {
+/* [SWS_Os_00286] If the input parameter of IncrementCounter() is valid,
+    IncrementCounter() shall increment the counter <CounterID> by one
+    (if any alarm connected to this counter expires, the given action,
+    e.g. task activation, is done) and shall return E_OK. (SRS_Os_11020) */
+/* [SWS_Os_00321] If in a call of IncrementCounter() an error happens during
+    the execution of an alarm action,
+    e.g. E_OS_LIMIT caused by a task activation, IncrementCounter() shall call
+    the error hook(s), but the IncrementCounter() service itself shall
+    return E_OK. */
+      CONST(OsEE_reg, AUTOMATIC) flags = osEE_begin_primitive();
+
+/* N.B. Multi-core critical sections are handled inside
+   TODO: Pass flags to osEE_counter_increment so it could re-enable
+         interrupts/lower IPL outside critical sections. */
+      osEE_counter_increment(p_counter_db);
+
+/* [SWS_Os_00529] Caveats of IncrementCounter(): If called from a task,
+    rescheduling may take place. */
+      if (osEE_get_curr_task()->task_type <= OSEE_TASK_TYPE_EXTENDED) {
+        (void)osEE_scheduler_task_preemption_point(p_kdb);
+      }
+
+      osEE_end_primitive(flags);
+
+      ev = E_OK;
+    }
+  }
+
+#if (defined(OSEE_HAS_ERRORHOOK))
+  if (ev != E_OK) {
+    VAR(OsEE_api_param, AUTOMATIC)
+      param;
+    CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+      p_ccb = osEE_get_curr_core()->p_ccb;
+    CONST(OsEE_reg, AUTOMATIC)
+      flags = osEE_begin_primitive();
+    osEE_set_service_id(p_ccb, OSServiceId_IncrementCounter);
+    param.num_param = CounterID;
+    osEE_set_api_param1(p_ccb, param);
+    osEE_call_error_hook(p_ccb, ev);
+    osEE_end_primitive(flags);
+  }
+#endif /* OSEE_HAS_ERRORHOOK */
+
+  return ev;
+}
+
+#endif /* OSEE_HAS_COUNTERS */
+
 FUNC(ISRType, OS_CODE)
   GetISRID
 (
@@ -1819,7 +2045,7 @@ FUNC(void, OS_CODE)
       /* Increment the Autosar Cores counter */
       ++p_kcb->ar_num_core_started;
 
-      osEE_hal_start_core(CoreID, p_kdb->core_startup_addr[(CoreID - 1U)]);
+      osEE_hal_start_core(CoreID);
     }
 
     ev = E_OK;
@@ -1880,7 +2106,7 @@ FUNC(void, OS_CODE)
         (SRS_Os_80006, SRS_Os_80026, SRS_Os_80027) */
       /* Flag that core is started as non Autosar core */
       p_kcb->not_ar_core_mask |= core_id_mask;
-      osEE_hal_start_core(CoreID, p_kdb->core_startup_addr[(CoreID - 1U)]);
+      osEE_hal_start_core(CoreID);
     }
 
     ev = E_OK;

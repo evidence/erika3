@@ -340,6 +340,30 @@ FUNC(OsEE_api_param, OS_CODE)
 
 #endif /* OSEE_USEPARAMETERACCESS */
 
+#if (defined(OSEE_HAS_COUNTERS))
+FUNC(StatusType, OS_CODE)
+  GetCounterValue
+(
+  VAR(CounterType, AUTOMATIC) CounterID,
+  VAR(TickRefType, AUTOMATIC) Value
+);
+
+FUNC(StatusType, OS_CODE)
+  GetElapsedValue
+(
+  VAR(CounterType, AUTOMATIC) CounterID,
+  VAR(TickRefType, AUTOMATIC) Value,
+  VAR(TickRefType, AUTOMATIC) ElapsedValue
+);
+
+FUNC(StatusType, OS_CODE)
+  IncrementCounter
+(
+  VAR(CounterType, AUTOMATIC) CounterID
+);
+
+#endif /* OSEE_HAS_COUNTERS */
+
 FUNC(ISRType, OS_CODE)
   GetISRID
 (

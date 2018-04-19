@@ -373,6 +373,20 @@ LOCAL_INLINE FUNC(void, OS_CODE)
 }
 
 #if (defined(OSEE_HAS_COUNTERS))
+LOCAL_INLINE FUNC(OsEE_bool, OS_CODE)
+  osEE_is_valid_counter_id
+(
+  P2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)  p_kdb,
+  VAR(AlarmType, AUTOMATIC)                 counter_id
+)
+{
+#if (defined(OSEE_API_DYNAMIC))
+  return (counter_id < p_kdb->p_kcb->free_counter_index);
+#else
+  return (counter_id < p_kdb->counter_array_size);
+#endif /* OSEE_API_DYNAMIC */
+}
+
 FUNC(void, OS_CODE)
   osEE_counter_insert_rel_trigger
 (

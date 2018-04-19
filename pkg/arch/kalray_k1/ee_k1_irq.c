@@ -502,7 +502,7 @@ OsEE_k1_hnd_type const
    *      cores */
 };
 
-#if (defined(OSTICKDURATION))
+#if (defined(OSEE_HAS_SYSTEM_TIMER))
 #if (!defined(OSEE_SYSTEM_TIMER_DEVICE))
 #error Unspecified System Timer Device!
 #endif /* !OSEE_SYSTEM_TIMER_DEVICE */
@@ -531,7 +531,7 @@ void osEE_kalray_k1_system_timer_handler(void) {
 #else
 #error Unsupported System Timer Device: OSEE_SYSTEM_TIMER_DEVICE!
 #endif /* OSEE_SYSTEM_TIMER_DEVICE */
-#endif /* OSTICKDURATION */
+#endif /* OSEE_HAS_SYSTEM_TIMER */
 
 OsEE_bool osEE_cpu_startos ( void ) {
   size_t i;
@@ -577,11 +577,11 @@ OsEE_bool osEE_cpu_startos ( void ) {
     }
   }
 
-#if (defined(OSTICKDURATION))
+#if (defined(OSEE_HAS_SYSTEM_TIMER))
   mOS_timer_general_setup();
   mOS_timer_setup_num(OSEE_SYSTEM_TIMER_DEVICE, OSEE_TICKDURATION,
     OSEE_TICKDURATION, OSEE_FALSE);
-#endif /* OSTICKDURATION */
+#endif /* OSEE_HAS_SYSTEM_TIMER */
 
   return OSEE_TRUE;
 }
