@@ -69,7 +69,7 @@ FUNC(void, OS_CODE)
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
   /* Disable Immediately for Atomicity */
   osEE_hal_disableIRQ();
-  ++p_ccb->d_isr_all_cnt;
+  p_ccb->d_isr_all_cnt = 1U;
   return;
 }
 
@@ -86,13 +86,10 @@ FUNC(void, OS_CODE)
    * (SRS_Os_11009) */
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb = osEE_get_curr_core();
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
-  CONST(OsEE_reg, AUTOMATIC) flags = osEE_begin_primitive();
 
   if (p_ccb->d_isr_all_cnt > 0U) {
-    --p_ccb->d_isr_all_cnt;
+    p_ccb->d_isr_all_cnt = 0U;
     osEE_hal_enableIRQ();
-  } else {
-    osEE_end_primitive(flags);
   }
 }
 
