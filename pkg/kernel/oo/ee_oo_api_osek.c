@@ -687,11 +687,11 @@ FUNC(StatusType, OS_CODE)
   if (p_curr->task_type > OSEE_TASK_TYPE_EXTENDED) {
     ev = E_OS_CALLEVEL;
   } else
-#if (defined(OSEE_HAS_RESOURCES))
+#if (defined(OSEE_HAS_MUTEX))
   if (p_tcb->p_first_mtx != NULL) {
     ev = E_OS_RESOURCE;
   } else
-#endif /* OSEE_HAS_RESOURCES */
+#endif /* OSEE_HAS_MUTEX */
 #endif /* OSEE_HAS_CHECKS */
   if (p_tcb->current_prio == p_curr->dispatch_prio)
   {
