@@ -237,6 +237,8 @@ LOCAL_INLINE FUNC(void, OS_CODE)
 #if (defined(OSEE_HAS_CONTEXT))
   VAR(OsEE_os_context, AUTOMATIC) prev_os_ctx = p_ccb->os_context;
   p_ccb->os_context = OSEE_PRETASKHOOK_CTX;
+#else
+  ((void)p_ccb);
 #endif /* OSEE_HAS_CONTEXT */
   PreTaskHook();
 #if (defined(OSEE_HAS_CONTEXT))
@@ -257,6 +259,8 @@ LOCAL_INLINE FUNC(void, OS_CODE)
 #if (defined(OSEE_HAS_CONTEXT))
   VAR(OsEE_os_context, AUTOMATIC) prev_os_ctx = p_ccb->os_context;
   p_ccb->os_context = OSEE_POSTTASKHOOK_CTX;
+#else
+  ((void)p_ccb);
 #endif /* OSEE_HAS_CONTEXT */
   PostTaskHook();
 #if (defined(OSEE_HAS_CONTEXT))
