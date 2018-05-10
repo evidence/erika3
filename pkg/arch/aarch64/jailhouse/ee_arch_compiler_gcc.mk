@@ -169,6 +169,7 @@ endif	# OS_EE_VERBOSE
 OSEE_LINKER_SCRIPT ?= $(OS_EE_MK_BASE_DIR)/ee_aarch64.lds
 #OPT_LINK += -Wl,-EL -Wl,--gc-sections -T $(OSEE_LINKER_SCRIPT) -Wl,-Map=$(TARGET_NAME).map
 OPT_LINK += -EL --gc-sections -T $(OSEE_LINKER_SCRIPT) -Map=$(TARGET_NAME).map
+OPT_LINK += $(LDFLAGS)
 ## OPT_LIBS is used to link additional libraries (e.g., for C++ support)
 # the EE library is built in the current directory
 ifeq ($(call iseeopt, OS_EE_BUILD), yes)

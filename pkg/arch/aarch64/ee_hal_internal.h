@@ -53,6 +53,14 @@
 
 #if (!defined(OSEE_HAL_INTERNAL_H))
 #define OSEE_HAL_INTERNAL_H
+/*==============================================================================
+                    Arch dependent Configuration Switches
+ =============================================================================*/
+
+/* Used to override default definition of osEE_hal_get_msb,
+   in ee_std_change_context.h that is not inlined */
+#define OSEE_GET_MSB_INLINE OSEE_STATIC_INLINE
+
 
 #include "ee_platform_types.h"
 #include "ee_utils.h"
@@ -481,11 +489,11 @@ OSEE_STATIC_INLINE MemSize osEE_hal_get_msb (OsEE_rq_mask mask) {
   MemSize msb;
   MemSize const bits = (MemSize)((sizeof(mask) * CHAR_BIT) - 1U);
   if (mask == 0U) {
-    msb = bits + 1U;
+    msb = OSEE_RQ_MASK_EMPTY;
   } else if (bits <= 31U) {
-    msb = bits - (MemSize)__builtin_clz(mask);
+    msb = (MemSize)(31 - __builtin_clz(mask));
   } else {
-    msb = bits - (MemSize)__builtin_clzl(mask);
+    msb = (MemSize)(63L - __builtin_clzl(mask));
   }
   return msb;
 }
