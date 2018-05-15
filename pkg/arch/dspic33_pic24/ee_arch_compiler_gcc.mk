@@ -178,6 +178,16 @@ endif	# OS_EE_VERBOSE
 ################################################################################
 OS_EE_OPT_LINK = -omf=elf
 
+ifeq ($(or	\
+  $(and $(call iseeopt, OS_EE_BUILD), $(call iseeopt, OS_EE_BUILD_DEBUG)),     \
+  $(and 								       \
+	$(call iseeopt, OS_EE_APPL_BUILD),				       \
+	$(call iseeopt, OS_EE_APPL_BUILD_DEBUG)				       \
+  )									       \
+), yes)
+OS_EE_OPT_LINK += -mreserve=data@0x1000:0x104F
+endif
+
 ifneq ($(call iseeopt, OS_EE_GCC_MINIMAL_OPTS), yes)
 OS_EE_OPT_LINK += -Wl,--gc-sections
 endif	# OS_EE_GCC_MINIMAL_OPTS

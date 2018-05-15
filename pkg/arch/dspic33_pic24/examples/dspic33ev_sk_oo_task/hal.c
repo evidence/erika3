@@ -51,9 +51,6 @@
 /* Header */
 #include "hal.h"
 
-/* Reserve RAM Memory for Debugger Support. */
-uint8_t OSEE_COMPILER_KEEP _ICD2RAM;
-
 /* Pragmas for Configuration Fuse Registers */
 
 /*
