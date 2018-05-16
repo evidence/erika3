@@ -94,25 +94,16 @@ OsEE_addr volatile task4_sp;
 OsEE_addr volatile task5_sp;
 OsEE_addr volatile main_sp;
 
-#if (defined(OSEE_API_DYNAMIC))
-TaskType Task1;
-TaskType Task2;
-TaskType Task3;
-TaskType Task4;
-TaskType Task5;
-TaskType isr2_clock_id;
-#endif /* OSEE_API_DYNAMIC */
-
 extern SemType V;
 
-#define	TIMER_PERIOD_MS 	1U
-#define	ISR_DIVISOR 		1000U
-#define	IDLE_CNT_MAX		100000U
+#define	TIMER_PERIOD_MS	1U
+#define	ISR_DIVISOR 	1000U
+#define	IDLE_CNT_MAX	100000U
 
-#define	IDLE_STR		(P2CONST(uint8_t, AUTOMATIC, OS_APPL_DATA))"Idle\r\n"
+#define	IDLE_STR	(P2CONST(uint8_t, AUTOMATIC, OS_APPL_DATA))"Idle\r\n"
 #define	IDLE_STR_LEN	6U
-#define	ISR_STR			(P2CONST(uint8_t, AUTOMATIC, OS_APPL_DATA))"ISR\r\n"
-#define	ISR_STR_LEN		5U
+#define	ISR_STR		(P2CONST(uint8_t, AUTOMATIC, OS_APPL_DATA))"ISR\r\n"
+#define	ISR_STR_LEN	5U
 
 void StartupHook(void)
 {
@@ -170,30 +161,6 @@ void idle_hook ( void ) {
 int main(void)
 {
   DemoHAL_Init();
-
-#if (defined(OSEE_API_DYNAMIC))
-  InitOS();
-  
-  CreateTask( &Task1, OSEE_TASK_TYPE_BASIC, TASK_FUNC(Task1),
-      1U, 1U, 1U, 512 );
-  CreateTask( &Task2, OSEE_TASK_TYPE_EXTENDED, TASK_FUNC(Task2),
-      2U, 2U, 1U, 512 );
-  CreateTask( &Task3, OSEE_TASK_TYPE_BASIC, TASK_FUNC(Task3),
-      1U, 1U, 1U, OSEE_SYSTEM_STACK );
-  CreateTask( &isr2_clock_id, OSEE_TASK_TYPE_ISR2, TimerISR,
-      1U, 1U, 1U, OSEE_SYSTEM_STACK );
-  CreateTask( &Task4, OSEE_TASK_TYPE_BASIC, TASK_FUNC(Task4),
-      1U, 1U, 1U, OSEE_SYSTEM_STACK );
-  CreateTask( &Task5, OSEE_TASK_TYPE_BASIC, TASK_FUNC(Task5),
-      2U, 2U, 1U, OSEE_SYSTEM_STACK );
-
-  /* Prio settate a 1 dalla BSP all'avvio */
-  SetISR2Source(isr2_clock_id, TIMER_ISR_ID);
-
-  InitSem(&V, 0);
-
-  SetIdleHook(idle_hook);
-#endif /* OSEE_API_DYNAMIC */
 
   StartOS(OSDEFAULTAPPMODE);
 

@@ -58,13 +58,6 @@ CPU mySystem {
     CPU_DATA = DSPIC33_PIC24 {
       MODEL = dsPIC33;
       MULTI_STACK = TRUE;
-      /* [GS]: IRQ STACK not supported for now!
-      MULTI_STACK = TRUE {
-        IRQ_STACK = TRUE {
-          SYS_SIZE=512;
-        };
-      };
-      */
       IDLEHOOK = TRUE {
         HOOKNAME = "idle_hook";
       };
@@ -76,12 +69,6 @@ CPU mySystem {
     };
 
     BOARD_DATA = dsPIC33EV_SK;
-
-//    USEDYNAMICAPI = TRUE {
-//      TASK_ARRAY_SIZE		= 6;
-//      SN_ARRAY_SIZE		= 6;
-//      STACKS_MEMORY_SIZE	= 2048;
-//    };
 
     STATUS = EXTENDED;
     STARTUPHOOK = TRUE;
@@ -96,9 +83,6 @@ CPU mySystem {
     KERNEL_TYPE = OSEK {
       CLASS = ECC1;
       RQ = MQ;
-      /* [GS]: For Dynamic API!!!
-      RQ = MQ { PRIORITIES = 10; };
-      */
     };
 
   };
@@ -109,7 +93,7 @@ CPU mySystem {
   };
 
   TASK Task1 {
-    PRIORITY = 0x01;
+    PRIORITY = 1;
     ACTIVATION = 1;
     SCHEDULE = FULL;
     AUTOSTART = TRUE;
@@ -121,7 +105,7 @@ CPU mySystem {
   };
 
   TASK Task2 {
-    PRIORITY = 0x02;
+    PRIORITY = 2;
     ACTIVATION = 1;
     SCHEDULE = FULL;
     AUTOSTART = FALSE;

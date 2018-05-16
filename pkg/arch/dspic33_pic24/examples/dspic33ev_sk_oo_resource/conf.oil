@@ -58,13 +58,6 @@ CPU mySystem {
     CPU_DATA = DSPIC33_PIC24 {
       MODEL = dsPIC33;
       MULTI_STACK = TRUE;
-      /* [GS]: IRQ STACK not supported for now!
-      MULTI_STACK = TRUE {
-        IRQ_STACK = TRUE {
-          SYS_SIZE=512;
-        };
-      };
-      */
       IDLEHOOK = TRUE {
         HOOKNAME = "idle_hook";
       };

@@ -63,7 +63,7 @@ extern void idle_hook(void);
 
 #define	IDLE_CNT_MAX	1U
 
-#define	IDLE_STR		(P2CONST(uint8_t, AUTOMATIC, OS_APPL_DATA))"Idle\r\n"
+#define	IDLE_STR	(P2CONST(uint8_t, AUTOMATIC, OS_APPL_DATA))"Idle\r\n"
 #define	IDLE_STR_LEN	6U
 
 #if (defined(OSEE_API_DYNAMIC))

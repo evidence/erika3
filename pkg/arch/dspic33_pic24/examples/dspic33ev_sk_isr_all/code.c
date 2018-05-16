@@ -84,12 +84,6 @@ OsEE_addr volatile task1_sp;
 OsEE_addr volatile task2_sp;
 OsEE_addr volatile main_sp;
 
-#if (defined(OSEE_API_DYNAMIC))
-TaskType Task1;
-TaskType Task2;
-TaskType isr2_clock_id;
-#endif /* OSEE_API_DYNAMIC */
-
 extern SemType V;
 
 #define	VECT_SIZE	100U
@@ -167,24 +161,6 @@ ISR1(StackISR)
 int main(void)
 {
   DemoHAL_Init();
-
-#if (defined(OSEE_API_DYNAMIC))
-  InitOS();
-  
-  CreateTask( &Task1, OSEE_TASK_TYPE_BASIC, TASK_FUNC(Task1),
-      1U, 1U, 1U, 128U );
-  CreateTask( &Task2, OSEE_TASK_TYPE_EXTENDED, TASK_FUNC(Task2),
-      2U, 2U, 1U, 128U );
-  CreateTask( &isr2_clock_id, OSEE_TASK_TYPE_ISR2, StackISR,
-      1U, 1U, 1U, OSEE_SYSTEM_STACK );
-
-  /* Prio settate a 1 dalla BSP all'avvio */
-  SetISR2Source(isr2_clock_id, TIMER_ISR_ID);
-
-  InitSem(&V, 0U);
-
-  SetIdleHook(idle_hook);
-#endif /* OSEE_API_DYNAMIC */
 
   StartOS(OSDEFAULTAPPMODE);
 

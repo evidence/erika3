@@ -70,12 +70,6 @@
 uint32_t volatile idle_cnt;
 OsEE_addr volatile old_sp;
 
-#if (defined(OSEE_API_DYNAMIC))
-TaskType Task1;
-TaskType Task2;
-TaskType IsrButtonsId;
-#endif /* OSEE_API_DYNAMIC */
-
 /* TASKs */
 DeclareTask(Task1);
 DeclareTask(Task2);
@@ -222,22 +216,6 @@ int main(void)
 {
 
   DemoHAL_Init();
-
-#if (defined(OSEE_API_DYNAMIC))
-  InitOS();
-  
-  CreateTask( &Task1, OSEE_TASK_TYPE_EXTENDED, TASK_FUNC(Task1),
-      1U, 1U, 1U, 512U );
-  CreateTask( &Task2, OSEE_TASK_TYPE_BASIC, TASK_FUNC(Task2),
-      2U, 2U, 1U, 512U );
-  CreateTask( &IsrButtonsId, OSEE_TASK_TYPE_ISR2, ButtonsISR,
-      1U, 1U, 1U, OSEE_SYSTEM_STACK );
-
-  /* Prio settate a 1 dalla BSP all'avvio */
-  SetISR2Source(IsrButtonsId, BUTTONS_ISR_ID);
-
-  SetIdleHook(idle_hook);
-#endif /* OSEE_API_DYNAMIC */
 
   StartOS(OSDEFAULTAPPMODE);
 

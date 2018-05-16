@@ -58,13 +58,6 @@ CPU mySystem {
     CPU_DATA = DSPIC33_PIC24 {
       MODEL = dsPIC33;
       MULTI_STACK = TRUE;
-      /* [GS]: IRQ STACK not supported for now!
-      MULTI_STACK = TRUE {
-        IRQ_STACK = TRUE {
-          SYS_SIZE=512;
-        };
-      };
-      */
       IDLEHOOK = TRUE {
         HOOKNAME = "idle_hook";
       };
@@ -101,7 +94,7 @@ CPU mySystem {
 
   /* this is the OIL part for the task displaying the christmas tree */
   TASK Task1 {
-    PRIORITY = 0x01;	/* Low priority */
+    PRIORITY = 1;	/* Low priority */
     AUTOSTART = FALSE;
     STACK = SHARED;
     ACTIVATION = 1;	/* only one pending activation */
@@ -109,7 +102,7 @@ CPU mySystem {
 
   /* this is the OIL part for the task activated by the button press */
   TASK Task2 {
-    PRIORITY = 0x02;	/* High priority */
+    PRIORITY = 2;	/* High priority */
     SCHEDULE = FULL;
     AUTOSTART = TRUE;
     STACK = SHARED;

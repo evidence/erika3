@@ -56,7 +56,7 @@
 
 #define	TIMER_DELAY_MS	2U
 
-#define	TASK_STR		(P2CONST(uint8_t, AUTOMATIC, OS_APPL_DATA))"Task1\r\n"
+#define	TASK_STR	(P2CONST(uint8_t, AUTOMATIC, OS_APPL_DATA))"Task1\r\n"
 #define	TASK_STR_LEN	7U
 
 DeclareTask(Task2);

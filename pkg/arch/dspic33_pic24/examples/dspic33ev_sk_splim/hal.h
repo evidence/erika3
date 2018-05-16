@@ -84,10 +84,6 @@ FUNC(void, APPL_CODE) DemoHAL_LedToggle( VAR(DemoHAL_Led, AUTOMATIC) led );
 
 /* Timer HAL */
 
-#if	(defined(OSEE_API_DYNAMIC))
-#define	TIMER_ISR_ID	OSEE_DSPIC33_PIC24_T3_ISR_ID
-#endif	/* OSEE_API_DYNAMIC */
-
 FUNC(void, APPL_CODE) DemoHAL_TimerInit( VAR(MemSize, AUTOMATIC) period );
 
 FUNC(void, APPL_CODE) DemoHAL_TimerDelay( VAR(MemSize, AUTOMATIC) interval );
