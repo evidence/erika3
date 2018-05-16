@@ -1,0 +1,488 @@
+/* ###*B*###
+ * Erika Enterprise, version 3
+ * 
+ * Copyright (C) 2018 Evidence s.r.l.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or (at
+ * your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License, version 2, for more details.
+ * 
+ * You should have received a copy of the GNU General Public License,
+ * version 2, along with this program; if not, see
+ * <https://www.gnu.org/licenses/old-licenses/gpl-2.0.html >.
+ * 
+ * This program is distributed to you subject to the following
+ * clarifications and special exceptions to the GNU General Public
+ * License, version 2.
+ * 
+ * THIRD PARTIES' MATERIALS
+ * 
+ * Certain materials included in this library are provided by third
+ * parties under licenses other than the GNU General Public License. You
+ * may only use, copy, link to, modify and redistribute this library
+ * following the terms of license indicated below for third parties'
+ * materials.
+ * 
+ * In case you make modified versions of this library which still include
+ * said third parties' materials, you are obligated to grant this special
+ * exception.
+ * 
+ * The complete list of Third party materials allowed with ERIKA
+ * Enterprise version 3, together with the terms and conditions of each
+ * license, is present in the file THIRDPARTY.TXT in the root of the
+ * project.
+ * ###*E*### */
+
+/** \file	conf.oil
+ *  \brief	System Configuration.
+ *
+ *  This file contains the System Configuration for Erika Enterprise.
+ *
+ *  \author	Giuseppe Serano
+ *  \date	2018
+ */
+
+CPU mySystem {
+
+  OS myOs {
+    EE_OPT = "OS_EE_APPL_BUILD_DEBUG";
+    EE_OPT = "OS_EE_BUILD_DEBUG";
+//    EE_OPT = "OS_EE_VERBOSE";
+
+    USERESSCHEDULER = FALSE;
+
+    CPU_DATA = DSPIC33_PIC24 {
+      MODEL = dsPIC33;
+      MULTI_STACK = TRUE;
+      IDLEHOOK = TRUE {
+        HOOKNAME = "idle_hook";
+      };
+      CPU_CLOCK = 16.00;
+    };
+
+    MCU_DATA = dsPIC33EV {
+      MODEL = dsPIC33EV256GM106;
+    };
+
+    BOARD_DATA = dsPIC33EV_SK;
+
+//    USEDYNAMICAPI = TRUE {	/* NOT SUPPORTED FOR NOW! */
+//      TASK_ARRAY_SIZE		= 6;
+//      SN_ARRAY_SIZE		= 6;
+//      STACKS_MEMORY_SIZE	= 1024;
+//    };
+
+    USEEXTENSIONAPI = TRUE {
+      SEMAPHORE = DEFAULT { NAME = "V"; COUNT=0; };
+    };
+
+    KERNEL_TYPE = OSEK {
+      CLASS = ECC1;
+      RQ = MQ { PRIORITIES = 10; };
+    };
+
+    STARTUPHOOK = TRUE;
+
+  };
+
+  APPDATA myApp {
+    APP_SRC  = "hal.c";
+    APP_SRC  = "code.c";
+    APP_SRC  = "isrs.c";
+  };
+
+  COUNTER SystemTimer {
+    MINCYCLE = 1;
+    MAXALLOWEDVALUE = 65535;
+    TICKSPERBASE = 1;
+    TYPE = HARDWARE {
+      SYSTEM_TIMER = TRUE;
+      PRIORITY     = 1;
+      DEVICE       = "T1";
+    };
+    SECONDSPERTICK = 0.001;
+  };
+
+  ALARM AlarmTask1 {
+    COUNTER = SystemTimer;
+    ACTION = ACTIVATETASK {
+      TASK = Task1;
+    };
+    AUTOSTART = TRUE {
+      ALARMTIME = 500;
+      CYCLETIME = 100;
+    };
+  };
+
+  ALARM AlarmFreeTask1 {
+    COUNTER = SystemTimer;
+    ACTION = ALARMCALLBACK {
+      ALARMCALLBACKNAME = "free_task1";
+    };
+    AUTOSTART = TRUE {
+      ALARMTIME = 1000;
+      CYCLETIME = 1000;
+    };
+  };
+
+  TASK Task1 {
+    PRIORITY = 1;
+    STACK = PRIVATE {
+      SIZE = 512;
+    };
+    SCHEDULE = FULL;
+  };
+
+  TASK Task2 {
+    PRIORITY = 2;
+    STACK = PRIVATE {
+      SIZE = 512;
+      EXTENDED = TRUE;
+    };
+    SCHEDULE = FULL;
+  };
+
+  ISR OscISR {
+    TRAP = TRUE;
+    SOURCE = "OSCFAIL";
+  };
+
+  ISR AddrISR {
+    TRAP = TRUE;
+    SOURCE = "ADDRERR";
+  };
+
+  ISR SghtISR {
+    TRAP = TRUE;
+    SOURCE = "SGHT";
+  };
+
+  ISR StackISR {
+    TRAP = TRUE;
+    SOURCE = "STKERR";
+  };
+
+  ISR MathISR {
+    TRAP = TRUE;
+    SOURCE = "MATHERR";
+  };
+
+  ISR DmaISR {
+    TRAP = TRUE;
+    SOURCE = "DMACERR";
+  };
+
+  ISR SoftISR {
+    TRAP = TRUE;
+    SOURCE = "SGST";
+  };
+
+  ISR Int0ISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "INT0";
+  };
+
+  ISR Ic1ISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "IC1";
+  };
+
+  ISR Oc1ISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "OC1";
+  };
+
+  ISR Dma0ISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "DMA0";
+  };
+
+  ISR Ic2ISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "IC2";
+  };
+
+  ISR Oc2ISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "OC2";
+  };
+
+  ISR Timer2ISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "T2";
+  };
+
+  ISR Timer3ISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "T3";
+  };
+
+  ISR Spi1ErrISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "SPI1E";
+  };
+
+  ISR Spi1ISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "SPI1";
+  };
+
+  ISR Uart1RxISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "U1RX";
+  };
+
+  ISR Uart1TxISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "U1TX";
+  };
+
+  ISR Adc1ISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "AD1";
+  };
+
+  ISR Dma1ISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "DMA1";
+  };
+
+  ISR Nvm1ISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "NVM";
+  };
+
+  ISR SlaveI2C1ISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "SI2C1";
+  };
+
+  ISR MasterI2C1ISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "MI2C1";
+  };
+
+  ISR Cmp1ISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "CMP1";
+  };
+
+  ISR CnISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "CN";
+  };
+
+  ISR Int1ISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "INT1";
+  };
+
+  ISR Dma2ISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "DMA2";
+  };
+
+  ISR Oc3ISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "OC3";
+  };
+
+  ISR Oc4ISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "OC4";
+  };
+
+  /*
+  ISR Timer4ISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "T4";
+  };
+  */
+
+  ISR Timer5ISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "T5";
+  };
+
+  ISR Int2ISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "INT2";
+  };
+
+  ISR Uart2RxISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "U2RX";
+  };
+
+  ISR Uart2TxISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "U2TX";
+  };
+
+  ISR Spi2ErrISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "SPI2E";
+  };
+
+  ISR Spi2ISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "SPI2";
+  };
+
+  ISR Can1RxISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "C1RX";
+  };
+
+  ISR Can1ISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "C1";
+  };
+
+  ISR Dma3ISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "DMA3";
+  };
+
+  ISR Ic3ISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "IC3";
+  };
+
+  ISR Ic4ISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "IC4";
+  };
+
+  ISR PsemISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "PSEM";
+  };
+
+  ISR Uart1ErrISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "U1E";
+  };
+
+  ISR Uart2ErrISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "U2E";
+  };
+
+  ISR Can1TxISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "C1TX";
+  };
+
+  ISR CtmuISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "CTMU";
+  };
+
+  ISR Pwm1ISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "PWM1";
+  };
+
+  ISR Pwm2ISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "PWM2";
+  };
+
+  ISR Pwm3ISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "PWM3";
+  };
+
+  ISR IcdISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "ICD";
+  };
+
+  ISR I2c1ISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "I2C1";
+  };
+
+  ISR Sent1ErrISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "SENT1ERR";
+  };
+
+  ISR Sent1ISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "SENT1";
+  };
+
+  ISR Sent2ErrISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "SENT2ERR";
+  };
+
+  ISR Sent2ISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "SENT2";
+  };
+
+  ISR EccsbeISR {
+    CATEGORY = 2;
+    PRIORITY = 1;
+    SOURCE = "ECCSBE";
+  };
+
+};
