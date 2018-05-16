@@ -62,7 +62,6 @@
   <file     name="isrs.c"/>
   <file     name="hal.h"/>
   <file     name="hal.c"/>
-  <file     name="task.c"/>
   <!-- <file     name="appl.oil"/> -->
   <file     name="conf.oil"/>
   <!-- <file     name="os.oil"/> -->
