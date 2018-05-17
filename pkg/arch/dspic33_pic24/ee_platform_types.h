@@ -67,7 +67,7 @@
 )
 
 #define	OSEE_GET_STACK_POINTER(pool)	(				\
-	(OsEE_stack *)(							\
+	(							\
 		(uint8_t *)(pool) + (ptrdiff_t)(			\
 			(						\
 				(OSEE_STACK_GUARD_AREA) +		\

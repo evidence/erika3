@@ -276,8 +276,8 @@
 
 #if (!defined(OSEE_GET_STACK_POINTER))
 #define OSEE_GET_STACK_POINTER(pool)\
-  ((OsEE_stack *)((char *)(pool) - (ptrdiff_t)(((OSEE_STACK_GUARD_AREA) + \
-      (OSEE_STACK_ALIGN_SIZE - 1U)) & OSEE_STACK_ALIGN)))
+  ((OsEE_addr)((char *)(pool) - (ptrdiff_t)(((OSEE_STACK_GUARD_AREA) + \
+    (OSEE_STACK_ALIGN_SIZE - 1U)) & OSEE_STACK_ALIGN)))
 #endif /* !OSEE_GET_STACK_POINTER */
 
 #if (!defined(OSEE_ADJUST_POOL_BASE))

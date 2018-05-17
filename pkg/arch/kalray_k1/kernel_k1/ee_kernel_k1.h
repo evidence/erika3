@@ -60,12 +60,6 @@
 #include "ee_api_k1.h"
 #include "ee_kernel_types.h"
 
-/* For the following structures I use C single inheritance idiom */
-typedef struct OsEE_CCB_WL_tag {
-  OsEE_CCB        ccb;
-  OsEE_spin_lock  lock;
-} OsEE_CCB_WL;
-
 #if (defined(OSEE_HAS_JOBS))
 
 typedef struct OsEE_JOB_tag {
@@ -81,8 +75,7 @@ typedef struct OsEE_JOB_tag {
 
 typedef struct OsEE_KCB_WJ_tag {
   OsEE_KCB        kcb;
-  OsEE_spin_lock  lock;
-  OsEE_CCB_WL     core_ctrls[OSEE_K1_CORE_NUMBER];
+  OsEE_CCB        core_ctrls[OSEE_K1_CORE_NUMBER];
   OsEE_JOB        jobs[OSEE_MAX_NUM_JOB];
   OsEE_JOB  *     tid_to_job[OSEE_TASK_ARRAY_SIZE];
   MemSize         job_index;
@@ -98,14 +91,14 @@ typedef struct OsEE_KDB_WJ_tag {
   OsEE_TDB *      tdb_ptr_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
 } OSEE_CONST OsEE_KDB_WJ;
 
-extern OsEE_KCB_WJ KCB_WJ;
-extern OsEE_KDB_WJ KDB_WJ;
+extern OsEE_KCB_WJ osEE_kcb_wj;
+extern OsEE_KDB_WJ osEE_kdb_wj;
 
 #define INVALID_PARAM ((uintptr_t)-1)
 
 void osEE_job_wrapper ( void );
 
-StatusType osEE_k1_activate_job ( OsEE_job_id job_id, mOS_vcore_set_t core_mask,
+StatusType osEE_k1_activate_job(OsEE_job_id job_id, mOS_vcore_set_t core_mask,
   CoreIdType requiring_core
 #if (defined(OSEE_K1_FULL_PREEMPTION))
   , OsEE_bool preemption_point
@@ -113,14 +106,14 @@ StatusType osEE_k1_activate_job ( OsEE_job_id job_id, mOS_vcore_set_t core_mask,
   );
 
 #if (defined(OSEE_HAS_COMM_HOOK))
-extern int isPendingOffload ( void );
-extern void CommunicationHook ( void );
+extern int isPendingOffload(void);
+extern void CommunicationHook(void);
 extern OsEE_spin_lock comm_lock;
 #endif
 
-void osEE_k1_optimized_task_preemption_point ( void );
+void osEE_k1_optimized_task_preemption_point(void);
 
-static OsEE_bool osEE_k1_umem_data_priority_insert ( OsEE_SN ** p_head,
+static OsEE_bool osEE_k1_umem_data_priority_insert (OsEE_SN ** p_head,
   OsEE_SN * p_sn_new)
 {
   OsEE_bool   head_changed  = OSEE_FALSE;
@@ -154,24 +147,6 @@ static OsEE_bool osEE_k1_umem_data_priority_insert ( OsEE_SN ** p_head,
   osEE_k1_wmb();
   return head_changed;
 }
-#else
-/* For the following structures I use C single inheritance idiom */
-typedef struct OsEE_KCB_WL_tag {
-  OsEE_KCB          kcb;
-  OsEE_spin_lock    lock;
-  OsEE_CCB_WL       core_ctrls[OSEE_K1_CORE_NUMBER];
-} /* __attribute__ ((aligned(_K1_DCACHE_LINE_SIZE))) */ OsEE_KCB_WL;
-
-/* For the following structures I use C single inheritance idiom */
-typedef struct OsEE_KDB_WL_tag {
-  OsEE_KDB          kdb;
-  OsEE_KCB_WL *     p_kcb_wl;
-  OsEE_CDB          core_descriptors[OSEE_K1_CORE_NUMBER];
-} /* __attribute__ ((aligned(_K1_DCACHE_LINE_SIZE))) */ OSEE_CONST OsEE_KDB_WL;
-
-extern OsEE_KDB_WL KDB_WL;
-extern OsEE_KCB_WL KCB_WL;
-
 #endif /* OSEE_HAS_JOBS */
 #endif /* !OSEE_SINGLECORE */
 #endif /* OSEE_KERNEL_K1_H */

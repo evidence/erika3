@@ -59,204 +59,251 @@
 
 #if (defined(OSEE_HAS_JOBS))
 
-OSEE_STATIC_INLINE OsEE_CDB * osEE_get_curr_core ( void ) {
-  return &KDB_WJ.core_descriptors[osEE_get_curr_core_id()];
+OSEE_STATIC_INLINE OsEE_CDB * OSEE_ALWAYS_INLINE osEE_get_curr_core(void) {
+  return &osEE_kdb_wj.core_descriptors[osEE_get_curr_core_id()];
 }
 
-OSEE_STATIC_INLINE OsEE_CDB * osEE_get_core ( CoreIdType  core_id ) {
-  return &KDB_WJ.core_descriptors[core_id];
+OSEE_STATIC_INLINE OsEE_CDB * OSEE_ALWAYS_INLINE
+  osEE_get_core(CoreIdType  core_id)
+{
+  return &osEE_kdb_wj.core_descriptors[core_id];
 }
 
-OSEE_STATIC_INLINE OsEE_KDB * osEE_get_kernel ( void ) {
-  return &KDB_WJ.kdb;
+OSEE_STATIC_INLINE OsEE_KDB * OSEE_ALWAYS_INLINE osEE_get_kernel(void) {
+  return &osEE_kdb_wj.kdb;
 }
 
-OSEE_STATIC_INLINE void osEE_lock_kernel ( void ) {
-  osEE_hal_spin_lock(&KCB_WJ.lock);
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_lock_kernel(void) {
+  osEE_hal_spin_lock(osEE_kdb_wj.kdb.p_lock);
 }
 
-OSEE_STATIC_INLINE OsEE_KDB * osEE_lock_and_get_kernel ( void ) {
+OSEE_STATIC_INLINE OsEE_KDB * OSEE_ALWAYS_INLINE osEE_lock_and_get_kernel(void)
+{
   osEE_lock_kernel();
   return osEE_get_kernel();
 }
 
-OSEE_STATIC_INLINE void osEE_unlock_kernel ( void ) {
-  osEE_hal_spin_unlock(&KCB_WJ.lock);
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_unlock_kernel(void)
+{
+  osEE_hal_spin_unlock(osEE_kdb_wj.kdb.p_lock);
 }
 
-OSEE_STATIC_INLINE CoreIdType osEE_lock_and_get_curr_core_id ( void ) {
-  CoreIdType    const core_id   = osEE_get_curr_core_id();
-  OsEE_CCB_WL * const p_ccb_wl  = &KCB_WJ.core_ctrls[core_id];
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_lock_core_id(CoreIdType core_id)
+{
+  osEE_hal_spin_lock(osEE_kcb_wj.core_descriptors[core_id]->p_lock);
+}
 
-  osEE_hal_spin_lock(&p_ccb_wl->lock);
+OSEE_STATIC_INLINE CoreIdType OSEE_ALWAYS_INLINE
+  osEE_lock_and_get_curr_core_id(void)
+{
+  CoreIdType  const core_id = osEE_get_curr_core_id();
+
+  osEE_lock_core_id(core_id);
 
   return core_id;
 }
 
-OSEE_STATIC_INLINE void  osEE_lock_core_id ( CoreIdType core_id ) {
-  osEE_hal_spin_lock(&KCB_WJ.core_ctrls[core_id].lock);
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
+  osEE_lock_core(OsEE_CDB * const p_cdb)
+{
+  osEE_hal_spin_lock(p_cdb->p_lock);
 }
 
-OSEE_STATIC_INLINE void  osEE_lock_core ( OsEE_CDB * const p_cdb ) {
-  /* C single inheritance */
-  osEE_hal_spin_lock(&((OsEE_CCB_WL *)p_cdb->p_ccb)->lock);
-}
+OSEE_STATIC_INLINE OsEE_CDB * osEE_lock_and_get_core(CoreIdType core_id) {
+  OsEE_CDB * const p_cdb = &osEE_kcb_wj.core_descriptors[core_id];
 
-OSEE_STATIC_INLINE OsEE_CDB * osEE_lock_and_get_core ( CoreIdType core_id ) {
-  OsEE_CDB *    const p_cdb     = &KDB_WJ.core_descriptors[core_id];
-  OsEE_CCB_WL * const p_ccb_wl  = &KCB_WJ.core_ctrls[core_id];
-
-  osEE_hal_spin_lock(&p_ccb_wl->lock);
+  osEE_lock_core(p_cdb);
 
   return p_cdb;
 }
 
-OSEE_STATIC_INLINE OsEE_CDB * osEE_lock_and_get_curr_core ( void ) {
+OSEE_STATIC_INLINE OsEE_CDB * OSEE_ALWAYS_INLINE
+  osEE_lock_and_get_curr_core(void)
+{
   return osEE_lock_and_get_core(osEE_get_curr_core_id());
 }
 
-OSEE_STATIC_INLINE void osEE_unlock_core_id ( CoreIdType core_id ) {
-  OsEE_CCB_WL * const p_ccb_wl = &KCB_WJ.core_ctrls[core_id];
-
-  osEE_hal_spin_unlock(&p_ccb_wl->lock);
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
+  osEE_unlock_core(OsEE_CDB * const p_cdb)
+{
+  osEE_hal_spin_unlock(p_cdb->p_lock);
 }
 
-OSEE_STATIC_INLINE void  osEE_unlock_core ( OsEE_CDB * const p_cdb ) {
-  /* C single inheritance */
-  osEE_hal_spin_unlock(&((OsEE_CCB_WL *)p_cdb->p_ccb)->lock);
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
+  osEE_unlock_core_id(CoreIdType core_id)
+{
+  OsEE_CDB * const p_cdb = &osEE_kcb_wj.core_descriptors[core_id];
+
+  osEE_unlock_core(p_cdb);
 }
 
-OSEE_STATIC_INLINE void osEE_unlock_curr_core ( void ) {
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_unlock_curr_core(void)
+{
   osEE_unlock_core_id(osEE_get_curr_core_id());
 }
-#elif (!defined(OSEE_SINGLECORE))
+#else /* OSEE_HAS_JOBS */
 
-OSEE_STATIC_INLINE OsEE_CDB * osEE_get_curr_core ( void ) {
-  return &KDB_WL.core_descriptors[osEE_get_curr_core_id()];
+extern OsEE_KDB osEE_kdb;
+extern OsEE_KCB osEE_kcb;
+
+OSEE_STATIC_INLINE OsEE_KDB * OSEE_ALWAYS_INLINE osEE_get_kernel(void) {
+  return &osEE_kdb;
 }
 
-OSEE_STATIC_INLINE OsEE_CDB * osEE_get_core ( CoreIdType core_id ) {
-  return &KDB_WL.core_descriptors[core_id];
+#if (defined(OSEE_SINGLECORE))
+extern OsEE_CDB osEE_cdb;
+extern OsEE_CCB osEE_ccb;
+
+#if (defined(OSEE_API_DYNAMIC))
+extern OsEE_TCB   osEE_tcb_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
+extern OsEE_SN    osEE_sn_array[OSEE_SN_ARRAY_SIZE];
+extern OsEE_TDB   osEE_tdb_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
+extern OsEE_TDB * osEE_tdb_ptr_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
+#endif /* OSEE_API_DYNAMIC */
+
+OSEE_STATIC_INLINE OsEE_CDB * OSEE_ALWAYS_INLINE osEE_get_curr_core(void) {
+  return &osEE_cdb;
 }
 
-OSEE_STATIC_INLINE OsEE_KDB * osEE_get_kernel ( void ) {
-  return &KDB_WL.kdb;
+OSEE_STATIC_INLINE OsEE_CDB * OSEE_ALWAYS_INLINE
+  osEE_get_core(CoreIdType core_id)
+{
+  return &osEE_cdb;
 }
 
-OSEE_STATIC_INLINE void osEE_lock_kernel ( void ) {
-  osEE_k1_spin_lock(&KCB_WL.lock);
+OSEE_STATIC_INLINE OsEE_KDB * OSEE_ALWAYS_INLINE osEE_get_kernel(void) {
+  return &osEE_kdb;
 }
 
-OSEE_STATIC_INLINE OsEE_KDB * osEE_lock_and_get_kernel ( void ) {
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_lock_kernel(void) {}
+
+OSEE_STATIC_INLINE OsEE_KDB * OSEE_ALWAYS_INLINE
+  osEE_lock_and_get_kernel(void)
+{
   osEE_lock_kernel();
   return osEE_get_kernel();
 }
 
-OSEE_STATIC_INLINE void osEE_unlock_kernel ( void ) {
-  osEE_k1_spin_unlock( &KCB_WL.lock );
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_unlock_kernel(void) {}
+
+OSEE_STATIC_INLINE CoreIdType OSEE_ALWAYS_INLINE
+  osEE_lock_and_get_curr_core_id(void)
+{
+  return 0U;
 }
 
-OSEE_STATIC_INLINE CoreIdType osEE_lock_and_get_curr_core_id ( void ) {
-  CoreIdType    const core_id   = osEE_get_curr_core_id();
-  OsEE_CCB_WL * const p_ccb_wl  = &KCB_WL.core_ctrls[core_id];
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
+  osEE_lock_core_id(CoreIdType core_id) {}
 
-  osEE_k1_spin_lock(&p_ccb_wl->lock);
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
+  osEE_lock_core(OsEE_CDB * const p_cdb) {}
+
+OSEE_STATIC_INLINE OsEE_CDB * OSEE_ALWAYS_INLINE
+  osEE_lock_and_get_core(CoreIdType  core_id)
+{
+  return osEE_get_curr_core();
+}
+
+OSEE_STATIC_INLINE OsEE_CDB * OSEE_ALWAYS_INLINE
+  osEE_lock_and_get_curr_core(void)
+{
+  return osEE_get_curr_core();
+}
+
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
+  osEE_unlock_core_id(CoreIdType core_id) {}
+
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
+  osEE_unlock_core(OsEE_CDB * const p_cdb) {}
+
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_unlock_curr_core(void) {}
+
+#else
+
+extern OsEE_CDB * osEE_core_db_ptr_array[OSEE_K1_CORE_NUMBER];
+
+OSEE_STATIC_INLINE OsEE_CDB * OSEE_ALWAYS_INLINE osEE_get_curr_core(void) {
+  return osEE_core_db_ptr_array[osEE_get_curr_core_id()];
+}
+
+OSEE_STATIC_INLINE OsEE_CDB * OSEE_ALWAYS_INLINE
+  osEE_get_core(CoreIdType core_id)
+{
+  return osEE_core_db_ptr_array[core_id];
+}
+
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_lock_kernel(void) {
+  osEE_k1_spin_lock(osEE_kdb.p_lock);
+}
+
+OSEE_STATIC_INLINE OsEE_KDB * OSEE_ALWAYS_INLINE
+  osEE_lock_and_get_kernel(void)
+{
+  osEE_lock_kernel();
+  return osEE_get_kernel();
+}
+
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_unlock_kernel(void) {
+  osEE_k1_spin_unlock(osEE_kdb.p_lock);
+}
+
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
+  osEE_lock_core_id(CoreIdType core_id)
+{
+  osEE_k1_spin_lock(osEE_core_db_ptr_array[core_id]->p_lock);
+}
+
+OSEE_STATIC_INLINE CoreIdType OSEE_ALWAYS_INLINE
+  osEE_lock_and_get_curr_core_id(void)
+{
+  CoreIdType  const core_id = osEE_get_curr_core_id();
+
+  osEE_lock_core_id(core_id);
 
   return core_id;
 }
 
-OSEE_STATIC_INLINE void  osEE_lock_core_id ( CoreIdType core_id ) {
-  osEE_k1_spin_lock(&KCB_WL.core_ctrls[core_id].lock);
-}
-
-OSEE_STATIC_INLINE void  osEE_lock_core ( OsEE_CDB * const p_cdb ) {
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
+  osEE_lock_core(OsEE_CDB * const p_cdb) {
   /* C single inheritance */
-  osEE_k1_spin_lock(&((OsEE_CCB_WL *)p_cdb->p_ccb)->lock);
+  osEE_k1_spin_lock(p_cdb->p_lock);
 }
 
-OSEE_STATIC_INLINE OsEE_CDB * osEE_lock_and_get_core ( CoreIdType core_id ) {
-  OsEE_CDB *    const p_cdb    = &KDB_WL.core_descriptors[core_id];
-  OsEE_CCB_WL * const p_ccb_wl = &KCB_WL.core_ctrls[core_id];
+OSEE_STATIC_INLINE OsEE_CDB * OSEE_ALWAYS_INLINE
+  osEE_lock_and_get_core(CoreIdType core_id)
+{
+  OsEE_CDB *    const p_cdb    = osEE_core_db_ptr_array[core_id];
 
-  osEE_k1_spin_lock(&p_ccb_wl->lock);
+  osEE_lock_core(p_cdb);
 
   return p_cdb;
 }
 
-OSEE_STATIC_INLINE OsEE_CDB * osEE_lock_and_get_curr_core ( void ) {
-  return osEE_lock_and_get_core( osEE_get_curr_core_id() );
+OSEE_STATIC_INLINE OsEE_CDB * OSEE_ALWAYS_INLINE
+  osEE_lock_and_get_curr_core(void)
+{
+  return osEE_lock_and_get_core(osEE_get_curr_core_id());
 }
 
-OSEE_STATIC_INLINE void osEE_unlock_core_id ( CoreIdType  core_id ) {
-  OsEE_CCB_WL * const p_ccb_wl = &KCB_WL.core_ctrls[core_id];
-
-  osEE_k1_spin_unlock(&p_ccb_wl->lock);
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
+  osEE_unlock_core(OsEE_CDB * const p_cdb)
+{
+  osEE_k1_spin_unlock(p_cdb->p_lock);
 }
 
-OSEE_STATIC_INLINE void osEE_unlock_core ( OsEE_CDB * const p_cdb ) {
-  /* C single inheritance */
-  osEE_k1_spin_unlock(&((OsEE_CCB_WL *)p_cdb->p_ccb)->lock);
+
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
+  osEE_unlock_core_id(CoreIdType  core_id)
+{
+  osEE_unlock_core(osEE_core_db_ptr_array[core_id]);
 }
 
-OSEE_STATIC_INLINE void osEE_unlock_curr_core ( void ) {
-  osEE_unlock_core_id ( osEE_get_curr_core_id() );
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
+  osEE_unlock_curr_core(void)
+{
+  osEE_unlock_core_id(osEE_get_curr_core_id());
 }
-#else
-
-extern OsEE_KDB KDB;
-extern OsEE_CDB CDB;
-
-#if (defined(OSEE_API_DYNAMIC))
-extern OsEE_KCB   KCB;
-extern OsEE_CCB   CCB;
-extern OsEE_TCB   tcb_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
-extern OsEE_SN    sn_array[OSEE_SN_ARRAY_SIZE];
-extern OsEE_TDB   tdb_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
-extern OsEE_TDB * tdb_ptr_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
-#endif /* OSEE_API_DYNAMIC */
-
-OSEE_STATIC_INLINE OsEE_CDB * osEE_get_curr_core ( void ) {
-  return &CDB;
-}
-
-OSEE_STATIC_INLINE OsEE_CDB * osEE_get_core ( CoreIdType core_id ) {
-  return &CDB;
-}
-
-OSEE_STATIC_INLINE OsEE_KDB * osEE_get_kernel ( void ) {
-  return &KDB;
-}
-
-OSEE_STATIC_INLINE void osEE_lock_kernel ( void ) {}
-
-OSEE_STATIC_INLINE OsEE_KDB * osEE_lock_and_get_kernel ( void ) {
-  osEE_lock_kernel ();
-  return osEE_get_kernel ();
-}
-
-OSEE_STATIC_INLINE void osEE_unlock_kernel ( void ) {}
-
-OSEE_STATIC_INLINE CoreIdType osEE_lock_and_get_curr_core_id ( void ) {
-  return 0U;
-}
-
-OSEE_STATIC_INLINE void osEE_lock_core_id ( CoreIdType core_id ) {}
-
-OSEE_STATIC_INLINE void  osEE_lock_core ( OsEE_CDB * const p_cdb ) {}
-
-OSEE_STATIC_INLINE OsEE_CDB * osEE_lock_and_get_core ( CoreIdType  core_id ) {
-  return osEE_get_curr_core();
-}
-
-OSEE_STATIC_INLINE OsEE_CDB * osEE_lock_and_get_curr_core ( void ) {
-  return osEE_get_curr_core();
-}
-
-OSEE_STATIC_INLINE void osEE_unlock_core_id ( CoreIdType core_id ) {}
-
-OSEE_STATIC_INLINE void osEE_unlock_core ( OsEE_CDB * const p_cdb ) {}
-
-OSEE_STATIC_INLINE void osEE_unlock_curr_core ( void ) {}
 #endif /* OSEE_SINGLECORE */
+#endif /* OSEE_HAS_JOBS */
 
 #endif /* OSEE_GET_CURRENT_CORE_H */

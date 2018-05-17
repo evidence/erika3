@@ -61,9 +61,10 @@ extern OsEE_KCB KCB;
 extern OsEE_CCB CCB;
 
 #if (defined(EE_API_DYNAMIC))
-extern OsEE_TCB tcb_array[OSEE_TASK_ARRAY_SIZE + OSEE_USED_CORES];
-extern OsEE_SN  sn_array[OSEE_SN_ARRAY_SIZE];
-extern OsEE_TDB tdb_array[OSEE_TASK_ARRAY_SIZE + OSEE_USED_CORES];
+extern OsEE_TCB   osEE_tcb_array[OSEE_TASK_ARRAY_SIZE + OSEE_USED_CORES];
+extern OsEE_SN    osEE_sn_array[OSEE_SN_ARRAY_SIZE];
+extern OsEE_TDB   osEE_tdb_array[OSEE_TASK_ARRAY_SIZE + OSEE_USED_CORES];
+extern OsEE_TDB * osEE_tdb_ptr_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
 #endif /* EE_API_DYNAMIC */
 
 OSEE_STATIC_INLINE OsEE_CDB * osEE_get_curr_core ( void ) {
