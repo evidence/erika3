@@ -56,7 +56,7 @@
 
 #define	HAL_DELAY_MS	1000U
 
-#define	TASK_STR		(P2CONST(uint8_t, AUTOMATIC, OS_APPL_DATA))"Task2\r\n"
+#define	TASK_STR	(P2CONST(uint8_t, AUTOMATIC, OS_APPL_DATA))"Task2\r\n"
 #define	TASK_STR_LEN	7U
 
 uint16_t volatile Task2_count;

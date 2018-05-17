@@ -72,12 +72,6 @@ CPU mySystem {
 
     BOARD_DATA = dsPIC33EV_SK;
 
-//    USEDYNAMICAPI = TRUE {	/* NOT SUPPORTED FOR NOW!!! */
-//      TASK_ARRAY_SIZE		= 6;
-//      SN_ARRAY_SIZE		= 6;
-//      STACKS_MEMORY_SIZE	= 2048;
-//    };
-
     USEEXTENSIONAPI = TRUE {
       SEMAPHORE = DEFAULT { NAME = "V"; COUNT=0; };
     };

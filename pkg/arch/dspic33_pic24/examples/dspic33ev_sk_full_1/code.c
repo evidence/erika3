@@ -104,14 +104,14 @@ TaskType isr2_clock_id;
 
 extern SemType V;
 
-#define	TIMER_PERIOD_MS 	1U
-#define	ISR_DIVISOR 		1000U
-#define	IDLE_CNT_MAX		100000U
+#define	TIMER_PERIOD_MS	1U
+#define	ISR_DIVISOR 	1000U
+#define	IDLE_CNT_MAX	100000U
 
-#define	IDLE_STR		(P2CONST(uint8_t, AUTOMATIC, OS_APPL_DATA))"Idle\r\n"
+#define	IDLE_STR	(P2CONST(uint8_t, AUTOMATIC, OS_APPL_DATA))"Idle\r\n"
 #define	IDLE_STR_LEN	6U
-#define	ISR_STR			(P2CONST(uint8_t, AUTOMATIC, OS_APPL_DATA))"ISR\r\n"
-#define	ISR_STR_LEN		5U
+#define	ISR_STR		(P2CONST(uint8_t, AUTOMATIC, OS_APPL_DATA))"ISR\r\n"
+#define	ISR_STR_LEN	5U
 
 void StartupHook(void)
 {

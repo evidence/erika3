@@ -64,7 +64,7 @@ void idle_hook (void);
 
 #define	IDLE_CNT_MAX	100000U
 
-#define	IDLE_STR		(P2CONST(uint8_t, AUTOMATIC, OS_APPL_DATA))"Idle\r\n"
+#define	IDLE_STR	(P2CONST(uint8_t, AUTOMATIC, OS_APPL_DATA))"Idle\r\n"
 #define	IDLE_STR_LEN	6U
 
 #if (defined(OSEE_API_DYNAMIC))
@@ -111,7 +111,7 @@ int main(void)
 		1U,			/* readyPrio */
 		1U,			/* dispatchPrio */
 		1U,			/* maxNumOfAct */
-		OSEE_SYSTEM_STACK		/* stackSize */
+		OSEE_SYSTEM_STACK	/* stackSize */
 	);
 	CreateTask(
 		&Task2,		/* taskIdRef */
@@ -120,7 +120,7 @@ int main(void)
 		2U,			/* readyPrio */
 		2U,			/* dispatchPrio */
 		1U,			/* maxNumOfAct */
-		OSEE_SYSTEM_STACK		/* stackSize */
+		OSEE_SYSTEM_STACK	/* stackSize */
 	);
 
 	SetIdleHook(idle_hook);

@@ -65,6 +65,7 @@
   <!-- <file     name="os.oil"/> -->
   <!-- <file     name="makefile"/> -->
   <!-- <file     name="rtd.properties"/> -->
+  <file     name="README.txt"/>
  </file_section>
 
 </evidence_example>

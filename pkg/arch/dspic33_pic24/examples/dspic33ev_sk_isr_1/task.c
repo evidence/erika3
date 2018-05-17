@@ -54,7 +54,7 @@
 /* HAL */
 #include "hal.h"
 
-#define	TASK_STR		(P2CONST(uint8_t, AUTOMATIC, OS_APPL_DATA))"Task\r\n"
+#define	TASK_STR	(P2CONST(uint8_t, AUTOMATIC, OS_APPL_DATA))"Task\r\n"
 #define	TASK_STR_LEN	6U
 
 uint16_t volatile TaskISR_count;
