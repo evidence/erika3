@@ -56,12 +56,12 @@
 
 extern OsEE_HPB osEE_pool;
 
-StatusType CreateJob ( JobRefType JobIdRef, CoreMask JobAttendeeMask,
+StatusType CreateJob(JobRefType JobIdRef, CoreMask JobAttendeeMask,
   TaskPrio JobPrio, JobTaskFunc JobFunc, JobTaskParam JobParam,
-  MemSize StackSize )
+  MemSize StackSize)
 {
   StatusType status_type;
-  if ( (JobIdRef == NULL) || (JobFunc == NULL) ) {
+  if ((JobIdRef == NULL) || (JobFunc == NULL)) {
     status_type = E_OS_PARAM_POINTER;
   } else {
     OsEE_reg  const JobAttendeeCount = __k1_cbs(JobAttendeeMask);
@@ -70,23 +70,23 @@ StatusType CreateJob ( JobRefType JobIdRef, CoreMask JobAttendeeMask,
     /* Enter in the critical section to create the Job */
     osEE_lock_kernel();
 
-    if ( (KDB_WJ.p_kcb_wj->job_index < OSEE_MAX_NUM_JOB) &&
+    if ((osEE_kdb_wj.p_kcb_wj->job_index < OSEE_MAX_NUM_JOB) &&
       (osEE_pool.residual_mem >=
-        (JobAttendeeCount * (StackSize + OSEE_STACK_GUARD_AREA))) )
+        (JobAttendeeCount * (StackSize + OSEE_STACK_GUARD_AREA))))
     {
-      if ( JobAttendeeMask != 0U ) {
+      if (JobAttendeeMask != 0U) {
         /* Check if it's possible to create the Job, and lock the cores that
            attends to the job */
         /* Actually Task Core allocation rule is "First found is used" */
-        if ( KDB_WJ.kdb.p_kcb->free_task_index <
-            (OSEE_TASK_ARRAY_SIZE - JobAttendeeCount) )
+        if (osEE_kdb_wj.kdb.p_kcb->free_task_index <
+            (OSEE_TASK_ARRAY_SIZE - JobAttendeeCount))
         {
           OsEE_reg     i;
           /* Allocate New Job */
           OsEE_JOB *   p_alloc_job;
 
-          (*JobIdRef) = KDB_WJ.p_kcb_wj->job_index++;
-          p_alloc_job = &KDB_WJ.p_kcb_wj->jobs[(*JobIdRef)];
+          (*JobIdRef) = osEE_kdb_wj.p_kcb_wj->job_index++;
+          p_alloc_job = &osEE_kdb_wj.p_kcb_wj->jobs[(*JobIdRef)];
 
           /* Fill the Job */
           p_alloc_job->job_func             = JobFunc;
@@ -98,29 +98,29 @@ StatusType CreateJob ( JobRefType JobIdRef, CoreMask JobAttendeeMask,
           /* Check if it will possible to reserve SN for each TASKs */
           status_type = E_OK;
 #if (!defined(OSEE_SCHEDULER_GLOBAL))
-          for ( i = 0U; i < OSEE_K1_CORE_NUMBER; ++i ) {
-            if ( (JobAttendeeMask & OSEE_BIT(CoreMask,i)) != 0 ) {
+          for (i = 0U; i < OSEE_K1_CORE_NUMBER; ++i) {
+            if ((JobAttendeeMask & OSEE_BIT(CoreMask,i)) != 0) {
               OsEE_CDB * const p_cdb = osEE_get_core(i);
               if (p_cdb->p_ccb->free_sn_counter == 0U) {
                 status_type = E_OS_LIMIT;
                 break;
               }
-           }
+            }
           }
 #else
-          if ( KCB_WJ.kcb.free_sn_counter < JobAttendeeCount) {
+          if (osEE_kcb_wj.kcb.free_sn_counter < JobAttendeeCount) {
             status_type = E_OS_LIMIT;
           }
 #endif
-          if ( status_type == E_OK ) {
-            for ( i = 0U; i < OSEE_K1_CORE_NUMBER; ++i ) {
+          if (status_type == E_OK) {
+            for (i = 0U; i < OSEE_K1_CORE_NUMBER; ++i) {
               /* Fill the Job */
-              if ( (JobAttendeeMask & OSEE_BIT(CoreMask,i)) != 0 ) {
+              if ((JobAttendeeMask & OSEE_BIT(CoreMask,i)) != 0) {
                 TaskType  task_id;
-                StatusType const create_status = osEE_create_task (i, &task_id,
+                StatusType const create_status = osEE_create_task(i, &task_id,
                   OSEE_TASK_TYPE_EXTENDED, osEE_job_wrapper, JobPrio,
-                    JobPrio, 1U, StackSize );
-                if ( create_status == E_OK ) {
+                    JobPrio, 1U, StackSize);
+                if (create_status == E_OK) {
                   p_alloc_job->task_attendees_id[i] = task_id;
                   p_alloc_job->attendee_mask |= OSEE_BIT(CoreMask,i);
                 } else {
@@ -153,7 +153,7 @@ StatusType CreateJob ( JobRefType JobIdRef, CoreMask JobAttendeeMask,
 
 StatusType ReadyJob ( JobType JobId, CoreMask JobAttendeeMask ) {
   StatusType status_type;
-  if ( JobId < KDB_WJ.p_kcb_wj->job_index ) {
+  if (JobId < osEE_kdb_wj.p_kcb_wj->job_index ) {
     CoreIdType core_id = osEE_get_curr_core_id();
     /* Activate all the JOB TASKs */
     OsEE_reg   flags = osEE_hal_begin_nested_primitive();
@@ -173,7 +173,7 @@ StatusType ReadyJob ( JobType JobId, CoreMask JobAttendeeMask ) {
 
 StatusType ActivateJob ( JobType JobId, CoreMask JobAttendeeMask ) {
   StatusType status_type;
-  if ( JobId < KDB_WJ.p_kcb_wj->job_index ) {
+  if (JobId < osEE_kdb_wj.p_kcb_wj->job_index) {
     CoreIdType core_id  = osEE_get_curr_core_id();
     /* Activate all the JOB TASKs */
     OsEE_reg flags      = osEE_hal_begin_nested_primitive();
@@ -196,16 +196,15 @@ StatusType ActivateJob ( JobType JobId, CoreMask JobAttendeeMask ) {
 
 StatusType JoinJob ( JobType JobId ) {
   StatusType  status_type;
-  MemSize     job_index = __k1_umem_read32(&KDB_WJ.p_kcb_wj->job_index);
-  if ( JobId < job_index ) {
-    OsEE_JOB  * const p_job   = &KDB_WJ.p_kcb_wj->jobs[JobId];
+  MemSize     job_index = __k1_umem_read32(&osEE_kdb_wj.p_kcb_wj->job_index);
+  if (JobId < job_index) {
+    OsEE_JOB  * const p_job   = &osEE_kdb_wj.p_kcb_wj->jobs[JobId];
     OsEE_TDB  * const p_curr  = osEE_get_curr_task();
     /* Invalidate the Job line */
     /* __k1_dcache_invalidate_mem_area((uintptr_t)p_JOB, sizeof(*p_JOB)); */
-    if ( p_curr->p_tcb->current_prio < p_job->job_prio) {
-      while (
-        __k1_umem_read32(&p_job->attendee_mask) !=
-          __k1_umem_read32(&p_job->terminated_task_mask) )
+    if (p_curr->p_tcb->current_prio < p_job->job_prio) {
+      while (__k1_umem_read32(&p_job->attendee_mask) !=
+        __k1_umem_read32(&p_job->terminated_task_mask))
       {
 #if (!defined(OSEE_K1_FULL_PREEMPTION))
         osEE_k1_optimized_task_preemption_point();
@@ -231,7 +230,7 @@ StatusType GetJobID ( JobRefType JobIdRef ) {
   } else {
     OsEE_CDB  * const p_cdb   = osEE_get_curr_core();
     OsEE_TDB  * const p_curr  = p_cdb->p_ccb->p_curr;
-    OsEE_JOB  * const p_job   = KCB_WJ.tid_to_job[p_curr->tid];
+    OsEE_JOB  * const p_job   = osEE_kcb_wj.tid_to_job[p_curr->tid];
 
     if ( p_job != NULL ) {
       (*JobIdRef) = p_job->job_id;
@@ -363,15 +362,19 @@ void osEE_job_wrapper ( void ) {
   /* C Single inheritance */
   OsEE_CDB  * const p_cdb   = osEE_get_curr_core();
   OsEE_TDB  * const p_curr  = p_cdb->p_ccb->p_curr;
-  OsEE_JOB  * const p_job   = KCB_WJ.tid_to_job[p_curr->tid];
+  OsEE_JOB  * const p_job   = osEE_kcb_wj.tid_to_job[p_curr->tid];
 
   p_job->job_func(p_job->job_param);
 
   __k1_fspinlock_lock(&p_job->lock);
+
   terminated_mask = (__k1_umem_read32(&p_job->terminated_task_mask) |
-      OSEE_BIT(CoreMask, p_curr->orig_core_id));
-  __k1_umem_write32(&p_job->terminated_task_mask, terminated_mask );
-  KCB_WJ.tid_to_job[p_curr->tid] = NULL;
+    OSEE_BIT(CoreMask, p_curr->orig_core_id));
+
+  __k1_umem_write32(&p_job->terminated_task_mask, terminated_mask);
+
+  osEE_kcb_wj.tid_to_job[p_curr->tid] = NULL;
+
   __k1_fspinlock_unlock(&p_job->lock);
 
   TerminateTask();

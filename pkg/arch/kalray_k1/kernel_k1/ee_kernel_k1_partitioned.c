@@ -1,38 +1,38 @@
 /* ###*B*###
  * Erika Enterprise, version 3
- * 
+ *
  * Copyright (C) 2017 Evidence s.r.l.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or (at
  * your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License, version 2, for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License,
  * version 2, along with this program; if not, see
  * <https://www.gnu.org/licenses/old-licenses/gpl-2.0.html >.
- * 
+ *
  * This program is distributed to you subject to the following
  * clarifications and special exceptions to the GNU General Public
  * License, version 2.
- * 
+ *
  * THIRD PARTIES' MATERIALS
- * 
+ *
  * Certain materials included in this library are provided by third
  * parties under licenses other than the GNU General Public License. You
  * may only use, copy, link to, modify and redistribute this library
  * following the terms of license indicated below for third parties'
  * materials.
- * 
+ *
  * In case you make modified versions of this library which still include
  * said third parties' materials, you are obligated to grant this special
  * exception.
- * 
+ *
  * The complete list of Third party materials allowed with ERIKA
  * Enterprise version 3, together with the terms and conditions of each
  * license, is present in the file THIRDPARTY.TXT in the root of the
@@ -71,7 +71,7 @@ StatusType osEE_k1_activate_job ( OsEE_job_id job_id, mOS_vcore_set_t core_mask,
   } local_task_attendee[OSEE_K1_CORE_NUMBER] =
     { [0U ... (OSEE_K1_CORE_NUMBER -1U)] = { INVALID_TASK, OSEE_FALSE } };
 
-  OsEE_JOB  * const p_curr_job  = &KCB_WJ.jobs[job_id];
+  OsEE_JOB  * const p_curr_job  = &osEE_kcb_wj.jobs[job_id];
 
   /* Lock All the Cores that attend to a Job and check preconditions */
   for ( i = core_counts = 0U; i < OSEE_K1_CORE_NUMBER; ++i ) {
@@ -79,9 +79,9 @@ StatusType osEE_k1_activate_job ( OsEE_job_id job_id, mOS_vcore_set_t core_mask,
       TaskType task_id  = p_curr_job->task_attendees_id[i];
       if ( task_id != INVALID_TASK ) {
         OsEE_TDB *         p_act;
-        __k1_fspinlock_lock( &KCB_WJ.core_ctrls[i].lock );
+        __k1_fspinlock_lock(&osEE_kcb_wj.core_locks[i]);
 
-        p_act = &KDB_WJ.tdb_array[task_id];
+        p_act = &osEE_kdb_wj.tdb_array[task_id];
         if ( p_act->p_tcb->current_num_of_act < p_act->max_num_of_act ) {
           ++core_counts;
           local_task_attendee[i].tid = task_id;
@@ -98,14 +98,14 @@ StatusType osEE_k1_activate_job ( OsEE_job_id job_id, mOS_vcore_set_t core_mask,
     for ( i = 0U; (i < OSEE_K1_CORE_NUMBER) && (core_mask_bs > 0U); ++i ) {
       TaskType task_id = local_task_attendee[i].tid;
       if ( task_id != INVALID_TASK ) {
-        OsEE_CCB  * const p_ccb = &KCB_WJ.core_ctrls[i].ccb;
-        OsEE_TDB  * const p_act = &KDB_WJ.tdb_array[task_id];
+        OsEE_CCB  * const p_ccb = &osEE_kcb_wj.core_ctrls[i];
+        OsEE_TDB  * const p_act = &osEE_kdb_wj.tdb_array[task_id];
 
         /* Got a TASK*/
         --core_mask_bs;
 
         /* Register the TASK as belonging to the JOB */
-        KCB_WJ.tid_to_job[task_id] = p_curr_job;
+        osEE_kcb_wj.tid_to_job[task_id] = p_curr_job;
         p_curr_job->attendee_mask |= OSEE_BIT(OsEE_reg,i);
 
         /* Prepare TASK */
@@ -137,18 +137,18 @@ StatusType osEE_k1_activate_job ( OsEE_job_id job_id, mOS_vcore_set_t core_mask,
   }
 
   /* Free All the Cores that attend to a Job And Notify each attendee core */
-  for ( i = 0U; (i < OSEE_K1_CORE_NUMBER) && (core_counts > 0U) ; ++i ) {
-    if ( local_task_attendee[i].tid != INVALID_TASK ) {
+  for (i = 0U; (i < OSEE_K1_CORE_NUMBER) && (core_counts > 0U) ; ++i) {
+    if (local_task_attendee[i].tid != INVALID_TASK) {
       --core_counts;
-      __k1_fspinlock_unlock( &KCB_WJ.core_ctrls[i].lock );
+      __k1_fspinlock_unlock(&osEE_kcb_wj.core_locks[i]);
       /* Raise an interrupt on the receiving core if:
        * * The job activation has been successful
        * * The interrupt receiving core is no the activation requiring core.
        * * The job activation has preempted the actual execution TASK in
        *   receiving core (otherwise the interrupt is just waste of time).
        */
-      if ( (status_type == E_OK) && (i != requiring_core) &&
-         local_task_attendee[i].preemption )
+      if ((status_type == E_OK) && (i != requiring_core) &&
+         local_task_attendee[i].preemption)
       {
         signalAttendeeMask |= (1U << i);
       }
@@ -160,11 +160,11 @@ StatusType osEE_k1_activate_job ( OsEE_job_id job_id, mOS_vcore_set_t core_mask,
    * * The job activation has preempted the actual execution TASK in
    *   receiving core (otherwise the interrupt is just waste of time).
    */
-  if ( status_type == E_OK ) {
+  if (status_type == E_OK) {
 #if (!defined(OSEE_K1_FULL_PREEMPTION))
     bsp_inter_pe_event_notify(signalAttendeeMask, BSP_IT_LINE);
 #else
-    if ( preemption_point ) {
+    if (preemption_point) {
       bsp_inter_pe_interrupt_raise(signalAttendeeMask, BSP_IT_LINE);
     } else {
       bsp_inter_pe_event_notify(signalAttendeeMask, BSP_IT_LINE);
@@ -276,12 +276,12 @@ void osEE_k1_optimized_task_preemption_point ( void )
   OsEE_rq_queue   *       p_rq_queue;
 
   OsEE_CDB        * const p_cdb     = osEE_get_curr_core();
-  OsEE_CCB_WL     * const p_ccb     = (OsEE_CCB_WL *)p_cdb->p_ccb;
+  OsEE_CCB        * const p_ccb     = p_cdb->p_ccb;
 
   /* Lock the Scheduler */
-  __k1_fspinlock_lock(&p_ccb->lock);
+  __k1_fspinlock_lock(p_cdb->p_lock);
 
-  p_rq        = &p_ccb->ccb.rq;
+  p_rq        = &p_ccb->rq;
   rq_msk      = __k1_umem_read32(&p_rq->mask);
   max_queue   = osEE_hal_get_msb(rq_msk);
   p_rq_queue  = (max_queue != OSEE_RQ_MASK_EMPTY)?
@@ -298,7 +298,7 @@ void osEE_k1_optimized_task_preemption_point ( void )
     OsEE_TCB * const  p_rq_first_tcb  = p_rq_first_tdb->p_tcb;
 
     OsEE_TDB * const  p_curr          =
-      (OsEE_TDB *)__k1_umem_read32(&p_ccb->ccb.p_curr);
+      (OsEE_TDB *)__k1_umem_read32(&p_ccb->p_curr);
 
     TaskPrio   const  rq_current_prio =
       __k1_umem_read32(&p_rq_first_tcb->current_prio);
@@ -310,7 +310,7 @@ void osEE_k1_optimized_task_preemption_point ( void )
     /* If there'is preemption: schedule */
     if ( is_preemption ) {
       OsEE_SN * const  p_stk_sn =
-        (OsEE_SN *)__k1_umem_read32(&p_ccb->ccb.p_stk_sn);
+        (OsEE_SN *)__k1_umem_read32(&p_ccb->p_stk_sn);
       OsEE_SN * const  p_rq_tail =
         (OsEE_SN *)__k1_umem_read32(&p_rq_queue->p_tail);
 
@@ -331,40 +331,40 @@ void osEE_k1_optimized_task_preemption_point ( void )
       }
 
       /* Set as current. In partitioned scheduler the TASK are stacked */
-      p_rq_first->p_next                 = p_stk_sn;
-      p_ccb->ccb.p_stk_sn                = p_rq_first;
-      p_ccb->ccb.p_curr                  = p_rq_first_tdb;
+      p_rq_first->p_next             = p_stk_sn;
+      p_ccb->p_stk_sn                = p_rq_first;
+      p_ccb->p_curr                  = p_rq_first_tdb;
 
       /* Adjust actual priority with dispatch priority: if needed */
-      if ( rq_current_prio < p_rq_first_tdb->dispatch_prio ) {
+      if (rq_current_prio < p_rq_first_tdb->dispatch_prio) {
         p_rq_first_tcb->current_prio = p_rq_first_tdb->dispatch_prio;
       }
 
       /* Full memory barrier: commit data in memory + cache invalidation */
       osEE_k1_mb();
-      __k1_fspinlock_unlock(&p_ccb->lock);
+      __k1_fspinlock_unlock(p_cdb->p_lock);
 
       osEE_change_context_from_running(p_curr, p_rq_first_tdb);
     } else {
-      __k1_fspinlock_unlock(&p_ccb->lock);
+      __k1_fspinlock_unlock(p_cdb->p_lock);
     }
   } else {
-    __k1_fspinlock_unlock(&p_ccb->lock);
+    __k1_fspinlock_unlock(p_cdb->p_lock);
   }
 }
 #else
 void osEE_k1_optimized_task_preemption_point ( void )
 {
-  OsEE_SN         *        p_rq_first;
-  OsEE_CDB        * const  p_cdb  = osEE_get_curr_core();
-  OsEE_CCB_WL     * const  p_ccb  = (OsEE_CCB_WL *)p_cdb->p_ccb;
+  OsEE_SN     *        p_rq_first;
+  OsEE_CDB    * const  p_cdb  = osEE_get_curr_core();
+  OsEE_CCB    * const  p_ccb  = p_cdb->p_ccb;
 
   /* Lock the Scheduler */
-  __k1_fspinlock_lock(&p_ccb->lock);
+  __k1_fspinlock_lock(&p_cdb->p_lock);
 
-  p_rq_first      = (OsEE_SN *)__k1_umem_read32(&p_ccb->ccb.rq);
+  p_rq_first      = (OsEE_SN *)__k1_umem_read32(&p_ccb->rq);
 
-  if ( p_rq_first != NULL ) {
+  if (p_rq_first != NULL) {
     OsEE_TDB * const  p_rq_first_tdb  =
       (OsEE_TDB *)__k1_umem_read32(&p_rq_first->p_tdb);
 

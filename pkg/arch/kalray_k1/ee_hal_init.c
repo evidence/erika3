@@ -56,24 +56,24 @@
 
 #if (defined(OSEE_API_DYNAMIC))
 /* Define Control Blocks in any case */
-OsEE_KCB KCB;
-OsEE_CCB CCB;
+OsEE_KCB osEE_kcb;
+OsEE_CCB osEE_ccb;
 
 #if (defined(OSEE_HAS_JOBS))
-OsEE_KCB_WJ KCB_WJ;
-OsEE_KDB_WJ KDB_WJ;
-#elif (!defined(OSEE_SINGLECORE))
-OsEE_KCB_WL KCB_WL;
-OsEE_KDB_WL KDB_WL;
+OsEE_KCB_WJ osEE_kcb_wj;
+OsEE_KDB_WJ osEE_kdb_wj;
 #else
-OsEE_TCB    tcb_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
-OsEE_SN     sn_array[OSEE_SN_ARRAY_SIZE];
-OsEE_TDB    tdb_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
-OsEE_TDB *  tdb_ptr_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
+OsEE_TCB    osEE_tcb_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
+OsEE_SN     osEE_sn_array[OSEE_SN_ARRAY_SIZE];
+OsEE_TDB    osEE_tdb_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
+OsEE_TDB *  osEE_tdb_ptr_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
 
-OsEE_KDB KDB;
-OsEE_CDB CDB;
-
+OsEE_KDB osEE_kdb;
+#if (defined(OSEE_SINGLECORE))
+  OsEE_CDB osEE_cdb;
+#else
+  /* TODO */
+#endif /* OSEE_SINGLECORE */
 #endif /* OSEE_HAS_JOBS */
 
 #define OSEE_STACKS_WORDS OSEE_STACK_WORD_LENGHT(OSEE_STACKS_SIZE)
@@ -164,68 +164,78 @@ OsEE_bool osEE_hal_hdb_init ( CoreIdType core_id, OsEE_HDB * p_hdb,
 void osEE_os_init ( void ) {
   size_t i;
   /* Initialize Kernel Descriptor block */
-  KDB_WJ.p_kcb_wj             = &KCB_WJ;
-  KDB_WJ.kdb.p_kcb            = &KCB_WJ.kcb;
-  KDB_WJ.kdb.p_tdb_ptr_array  = (OsEE_TDB * const (*)[])&KDB_WJ.tdb_ptr_array;
-  KDB_WJ.kdb.tdb_array_size   = OSEE_ARRAY_ELEMENT_COUNT(KDB_WJ.tdb_ptr_array);
-  KDB_WJ.kdb.p_sn_array       = &KCB_WJ.sn_array;
-  KDB_WJ.kdb.sn_array_size    = OSEE_ARRAY_ELEMENT_COUNT(KCB_WJ.sn_array);
+  osEE_kdb_wj.p_kcb_wj             = &osEE_kcb_wj;
+  osEE_kdb_wj.kdb.p_kcb            = &osEE_kcb_wj.kcb;
+  osEE_kdb_wj.kdb.p_tdb_ptr_array  = (OsEE_TDB * const (*)[])&osEE_kdb_wj.tdb_ptr_array;
+  osEE_kdb_wj.kdb.tdb_array_size   = OSEE_ARRAY_ELEMENT_COUNT(osEE_kdb_wj.tdb_ptr_array);
 
-  osEE_hal_spin_init_lock(&KCB_WJ.lock);
+  osEE_hal_spin_init_lock(&osEE_kcb_wj.kernel_lock);
+  osEE_kdb_wj.kdb.p_lock = &osEE_kcb_wj.kernel_lock;
+
+  osEE_hal_spin_init_lock(&osEE_kcb_wj.kernel_barrier.barrier_lock);
+  osEE_kdb_wj.kdb.p_barrier = &osEE_kcb_wj.kernel_barrier;
 
   /* Initialize Core Data Structures */
-  for ( i = 0U; i < OSEE_K1_CORE_NUMBER; ++i ) {
-    osEE_hal_spin_init_lock(&KCB_WJ.core_ctrls[i].lock);
-    KDB_WJ.core_descriptors[i].p_ccb = &KCB_WJ.core_ctrls[i].ccb;
-    KDB_WJ.core_descriptors[i].p_idle_task =
-        &KDB_WJ.tdb_array[KDB_WJ.kdb.tdb_array_size - OSEE_K1_CORE_NUMBER + i];
-    KDB_WJ.core_descriptors[i].p_idle_task->task_func = osEE_idle_hook_wrapper;
-    KDB_WJ.core_descriptors[i].core_id = i;
-    KCB_WJ.core_ctrls[i].ccb.os_status = OSEE_KERNEL_INITIALIZED;
+  for (i = 0U; i < OSEE_K1_CORE_NUMBER; ++i) {
+    osEE_kdb_wj.core_descriptors[i].p_ccb = &osEE_kcb_wj.core_ctrls[i];
+    osEE_hal_spin_init_lock(&osEE_kcb_wj.core_locks[i]);
+    osEE_kdb_wj.core_descriptors[i].p_lock = &osEE_kcb_wj.core_locks[i];
+
+    osEE_kdb_wj.core_descriptors[i].p_idle_task =
+      &osEE_kdb_wj.
+        tdb_array[osEE_kdb_wj.kdb.tdb_array_size - OSEE_K1_CORE_NUMBER + i];
+    osEE_kdb_wj.core_descriptors[i].
+      p_idle_task->task_func = osEE_idle_hook_wrapper;
+    osEE_kdb_wj.core_descriptors[i].core_id = i;
+    osEE_kcb_wj.core_ctrls[i].os_status = OSEE_KERNEL_INITIALIZED;
   }
 
   /* Initialize the Task Description & Control Blocks (TDB & TCB) */
-  for ( i = 0U; i < KDB_WJ.kdb.tdb_array_size; ++i ) {
-    OsEE_TDB * const p_tdb            = &KDB_WJ.tdb_array[i];
-    KDB_WJ.tdb_ptr_array[i]           = p_tdb;
-    p_tdb->p_tcb                      = &KCB_WJ.tcb_array[i];
+  for (i = 0U; i < osEE_kdb_wj.kdb.tdb_array_size; ++i) {
+    OsEE_TDB * const p_tdb            = &osEE_kdb_wj.tdb_array[i];
+    osEE_kdb_wj.tdb_ptr_array[i]           = p_tdb;
+    p_tdb->p_tcb                      = &osEE_kcb_wj.tcb_array[i];
     p_tdb->hdb.p_sdb                  = &osEE_pool.sdb_array[i];
     p_tdb->hdb.p_scb                  = &osEE_pool.scb_array[i];
   }
 
   /* Initialize the Scheduler Nodes (SN) Free Linked List */
-  for ( i = 1U; i < OSEE_ARRAY_ELEMENT_COUNT(KCB_WJ.sn_array); ++i ) {
-    KCB_WJ.sn_array[(i - 1U)].p_next = &KCB_WJ.sn_array[i];
+  for ( i = 1U; i < OSEE_ARRAY_ELEMENT_COUNT(osEE_kcb_wj.sn_array); ++i ) {
+    osEE_kcb_wj.sn_array[(i - 1U)].p_next = &osEE_kcb_wj.sn_array[i];
   }
+/* EG: Temporary bypass of StartCore procedure */
+  osEE_kcb_wj.kcb.ar_core_mask        = OSEE_CORE_ID_VALID_MASK;
+  osEE_kcb_wj.kcb.ar_num_core_started = OsNumberOfCores;
+
 #if (defined(OSEE_SCHEDULER_GLOBAL))
-  KCB_WJ.kcb.p_free_sn        = &KCB_WJ.sn_array[0U];
-  KCB_WJ.kcb.free_sn_counter  = OSEE_ARRAY_ELEMENT_COUNT(KCB_WJ.sn_array);
+  osEE_kcb_wj.kcb.p_free_sn        = &osEE_kcb_wj.sn_array[0U];
+  osEE_kcb_wj.kcb.free_sn_counter  = OSEE_ARRAY_ELEMENT_COUNT(osEE_kcb_wj.sn_array);
 #else
   {
     /* XXX: Arbitrary choice to try allocate allocate the same amount of
             Scheduler data for Each core */
-    size_t const core_sn_size = OSEE_ARRAY_ELEMENT_COUNT(KCB_WJ.sn_array);
+    size_t const core_sn_size = OSEE_ARRAY_ELEMENT_COUNT(osEE_kcb_wj.sn_array);
     size_t const per_core_sn_size  = (core_sn_size / OSEE_K1_CORE_NUMBER);
     size_t const sn_offset_modulus = (core_sn_size % OSEE_K1_CORE_NUMBER);
 
     for ( i = (OSEE_K1_CORE_NUMBER - 1U); i > 0U; --i ) {
-      KCB_WJ.core_ctrls[i].ccb.p_free_sn =
-        &KCB_WJ.sn_array[(i * per_core_sn_size) + sn_offset_modulus];
+      osEE_kcb_wj.core_ctrls[i].p_free_sn =
+        &osEE_kcb_wj.sn_array[(i * per_core_sn_size) + sn_offset_modulus];
 
       /* Initialize The Last element of the array associated to an array */
-      KCB_WJ.core_ctrls[i].ccb.p_free_sn[per_core_sn_size - 1U].
+      osEE_kcb_wj.core_ctrls[i].p_free_sn[per_core_sn_size - 1U].
         p_next = NULL;
       /* Save the per_core_sn_size as free sn counter */
-      KCB_WJ.core_ctrls[i].ccb.free_sn_counter = per_core_sn_size;
+      osEE_kcb_wj.core_ctrls[i].free_sn_counter = per_core_sn_size;
     }
     /* I assign eventual offset to core 0 */
-    KCB_WJ.core_ctrls[0].ccb.p_free_sn = &KCB_WJ.sn_array[0];
+    osEE_kcb_wj.core_ctrls[0].p_free_sn = &osEE_kcb_wj.sn_array[0];
     /* Initialize The Last element of the array associated to an array */
-    KCB_WJ.core_ctrls[0].ccb.
+    osEE_kcb_wj.core_ctrls[0].
       p_free_sn[per_core_sn_size - 1U + sn_offset_modulus].p_next = NULL;
     /* Since I assigned the offset to core 0, even the size has to be changed
      * accordingly */
-    KCB_WJ.core_ctrls[0].ccb.
+    osEE_kcb_wj.core_ctrls[0].
       free_sn_counter = (per_core_sn_size + sn_offset_modulus);
   }
 #endif /* !OSEE_SCHEDULER_GLOBAL */
@@ -236,42 +246,40 @@ void osEE_os_init (void) {
   size_t i = 0;
 
   /* Initialize Kernel Descriptor block */
-  KDB.p_kcb           = &KCB;
-  KDB.p_tdb_ptr_array = (OsEE_TDB * const (*)[])&tdb_ptr_array;
-  KDB.tdb_array_size  = OSEE_ARRAY_ELEMENT_COUNT(tdb_ptr_array);
-  KDB.p_sn_array      = &sn_array;
-  KDB.sn_array_size   = OSEE_ARRAY_ELEMENT_COUNT(sn_array);
+  osEE_kdb.p_kcb           = &osEE_kcb;
+  osEE_kdb.p_tdb_ptr_array = (OsEE_TDB * const (*)[])&osEE_tdb_ptr_array;
+  osEE_kdb.tdb_array_size  = OSEE_ARRAY_ELEMENT_COUNT(osEE_tdb_ptr_array);
 
   /* Initialize Core Data Structures */
-  CDB.p_ccb                   = &CCB;
-  CDB.p_idle_task             = &tdb_array[OSEE_TASK_ARRAY_SIZE];
-  CDB.p_idle_task->task_func  = osEE_idle_hook_wrapper;
+  osEE_cdb.p_ccb                   = &osEE_ccb;
+  osEE_cdb.p_idle_task             = &osEE_tdb_array[OSEE_TASK_ARRAY_SIZE];
+  osEE_cdb.p_idle_task->task_func  = osEE_idle_hook_wrapper;
 
   /* Initialize the Task Description & Control Blocks (TDB & TCB) */
-  for ( i = 0U; i < OSEE_ARRAY_ELEMENT_COUNT(tdb_array); ++i ) {
-    OsEE_TDB * const p_tdb          = &tdb_array[i];
-    tdb_ptr_array[i]                = p_tdb;
-    p_tdb->p_tcb                    = &tcb_array[i];
+  for ( i = 0U; i < OSEE_ARRAY_ELEMENT_COUNT(osEE_tdb_array); ++i ) {
+    OsEE_TDB * const p_tdb          = &osEE_tdb_array[i];
+    osEE_tdb_ptr_array[i]           = p_tdb;
+    p_tdb->p_tcb                    = &osEE_tcb_array[i];
     p_tdb->hdb.p_sdb                = &osEE_pool.sdb_array[i];
     p_tdb->hdb.p_scb                = &osEE_pool.scb_array[i];
   }
 
   /* Initialize the Scheduler Nodes (SN) Free Linked List */
-  for ( i = 1U; i < KDB.sn_array_size; ++i ) {
-    (*KDB.p_sn_array)[(i - 1U)].p_next = &(*KDB.p_sn_array)[i];
+  for ( i = 1U; i < OSEE_ARRAY_ELEMENT_COUNT(osEE_sn_array); ++i ) {
+    osEE_sn_array[(i - 1U)].p_next = &osEE_sn_array[i];
   }
 
   /* TODO configure how partition the SN in between Cores*/
 
   /* Initialize Core Data Structures */
-  CCB.p_free_sn       = &(*KDB.p_sn_array)[0U];
-  CCB.free_sn_counter = OSEE_ARRAY_ELEMENT_COUNT(sn_array);
+  osEE_ccb.p_free_sn       = &osEE_sn_array[0U];
+  osEE_ccb.free_sn_counter = OSEE_ARRAY_ELEMENT_COUNT(osEE_sn_array);
 
   /* Initialize TCBs */
-  for (i = 0; i < (KDB.tdb_array_size - 1U); ++i)
+  for (i = 0; i < (osEE_kdb.tdb_array_size - 1U); ++i)
   {
     /* ISR2 initialization */
-    OsEE_TDB  * const p_tdb = (*KDB.p_tdb_ptr_array)[i];
+    OsEE_TDB  * const p_tdb = (*osEE_kdb.p_tdb_ptr_array)[i];
     OsEE_TCB  * const p_tcb = p_tdb->p_tcb;
 
     /* Set starting priority for TASKs */
@@ -281,7 +289,7 @@ void osEE_os_init (void) {
       osEE_hal_set_isr2_source(p_tdb, p_tdb->hdb.isr_src);
     }
   }
-  CCB.os_status = OSEE_KERNEL_INITIALIZED;
+  osEE_ccb.os_status = OSEE_KERNEL_INITIALIZED;
 }
 #endif /* OSEE_HAS_JOBS */
 #endif /* OSEE_API_DYNAMIC */

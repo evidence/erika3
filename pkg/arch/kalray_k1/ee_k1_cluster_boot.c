@@ -215,9 +215,8 @@ void __attribute__((section(TARGET_TEXT)))
 
   /* Synchronize with the startup of the other cores */
   for (unsigned int i = 1U; i < OSEE_K1_CORE_NUMBER; ++i ) {
-    while (
-      __k1_umem_read32(&KCB_WJ.core_ctrls[i].ccb.os_status) !=
-         OSEE_KERNEL_STARTED )
+    while (__k1_umem_read32(&osEE_kcb_wj.core_ctrls[i].
+      os_status) != OSEE_KERNEL_STARTED)
     {
       ; /* Wait for the start of i */
     }
@@ -255,9 +254,8 @@ void __attribute__((section(TARGET_TEXT)))
 
 #if (!defined(OSEE_SINGLECORE))
   mOS_set_it_level(0);
-  while (
-    __k1_umem_read32(&KCB_WJ.core_ctrls[OSEE_K1_MAIN_CORE].ccb.os_status) !=
-      OSEE_KERNEL_STARTED )
+  while (__k1_umem_read32(&osEE_kcb_wj.core_ctrls[OSEE_K1_MAIN_CORE].
+    os_status) != OSEE_KERNEL_STARTED)
   {
     ; /* cycle until master pe has done what he needs */
   }
@@ -419,3 +417,14 @@ int osEE_os_scall(int r0, int r1, int r2, int r3 __attribute__((unused)),
   return ret;
 }
 
+#if (!defined(OSEE_SINGLECORE))
+void osEE_hal_sync_barrier(
+  OsEE_barrier * p_barrier, OsEE_reg volatile * p_wait_mask)
+{
+  /* To Be done */
+}
+
+void osEE_hal_start_core(CoreIdType core_id) {
+  /* To Be done */
+}
+#endif /* !OSEE_SINGLECORE */
