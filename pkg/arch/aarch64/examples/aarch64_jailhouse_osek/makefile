@@ -40,9 +40,9 @@
 # ###*E*###
 
 ## \file	makefile
-## \brief	TriCore demos makefile.
+## \brief	AArch64 demos makefile.
 ##
-## Makefile for TriCore demos in Erika Enterprise.
+## Makefile for AArch64 demos in Erika Enterprise.
 ##
 ## \author	Errico Guidieri
 ## \date	2017
@@ -51,7 +51,7 @@
 # Destination directories
 export OUTPUT_DIR = out
 export ERIKA_DIR  = erika
-WS               ?= ws
+WS               ?= workspace
 
 ifndef	ERIKA_FILES
 export ERIKA_FILES = $(abspath ../../../../..)
@@ -143,9 +143,10 @@ pdfdoc:	pull
 #                   enable the generation of Application
 #                   configuration files
 $(ERIKA_DIR) $(OUTPUT_DIR): conf.oil
-	@echo "Generating configuration with RT-Druid"
-	@java -jar ${RTDRUID_ECLIPSE_HOME}/plugins/org.eclipse.equinox.launcher_1.3.201.v20161025-1711.jar\
-			-data $(WS)\
-			-application com.eu.evidence.rtdruid3.oil.ee.core.generator\
-				--inputFile conf.oil\
-				--outputDir .
+#	@echo "Generating configuration with RT-Druid"
+#	@java -jar ${RTDRUID_ECLIPSE_HOME}/plugins/org.eclipse.equinox.launcher_1.3.201.v20161025-1711.jar\
+#			-data $(WS)\
+#			-application com.eu.evidence.rtdruid3.oil.ee.core.generator\
+#				--inputFile conf.oil\
+#				--outputDir .
+	@${RTDRUID_ECLIPSE_HOME}/evidence/generate_code.sh ${RTDRUID_ECLIPSE_HOME} conf.oil .

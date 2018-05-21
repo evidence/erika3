@@ -82,13 +82,16 @@ CPU mySystem {
     };
   };
 
+  APPDATA kalray_k1_osek_full_1 {
+    APP_SRC = "code.c";
+  };
+
   TASK Task1 {
     PRIORITY = 1;
     STACK = PRIVATE {
       SIZE = 1024;
     };
     SCHEDULE = FULL;
-    APP_SRC = "code.c";
   };
 
   TASK Task2 {

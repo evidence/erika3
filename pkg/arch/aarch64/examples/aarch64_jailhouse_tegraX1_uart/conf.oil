@@ -82,8 +82,7 @@ CPU mySystem {
     };
   };
 
-  TASK FakeTask1 {
-    PRIORITY = 1;
+  APPDATA aarch64_jailhouse_tegraX1_uart {
     APP_SRC = "main.c";
     APP_SRC = "uart-driver.c";
   };

@@ -108,13 +108,16 @@ CPU mySystem {
     };
   };
 
+  APPDATA aarch64_jailhouse_hello_world {
+    APP_SRC = "main.c";
+  };
+
   TASK Task1 {
     PRIORITY = 1;
     STACK = PRIVATE {
       SIZE = 1024;
     };
     SCHEDULE = FULL;
-    APP_SRC = "main.c";
     RESOURCE = SharedUartResource;
   };
 

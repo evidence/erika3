@@ -150,10 +150,11 @@ endif
 #                   enable the generation of Application
 #                   configuration files
 $(ERIKA_DIR) $(OUTPUT_DIR): conf.oil
-	${RTDRUID_JAVA_HOME}/bin/java\
-		-jar ${RTDRUID_ECLIPSE_HOME}/plugins/org.eclipse.equinox.launcher_1.3.201.v20161025-1711.jar\
-			-application com.eu.evidence.rtdruid3.oil.ee.core.generator\
-				--preferenceFile rtd.properties\
-				--inputFile conf.oil\
-				--outputDir .
+#	${RTDRUID_JAVA_HOME}/bin/java\
+#		-jar ${RTDRUID_ECLIPSE_HOME}/plugins/org.eclipse.equinox.launcher_1.3.201.v20161025-1711.jar\
+#			-application com.eu.evidence.rtdruid3.oil.ee.core.generator\
+#				--preferenceFile rtd.properties\
+#				--inputFile conf.oil\
+#				--outputDir .
+	@${RTDRUID_ECLIPSE_HOME}/evidence/generate_code.sh ${RTDRUID_ECLIPSE_HOME} conf.oil .
 

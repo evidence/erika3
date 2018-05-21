@@ -90,43 +90,7 @@ CPU mySystem {
     };
   };
 
-  TASK Task1 {
-    PRIORITY = 1;
-    STACK = PRIVATE {
-      SIZE = 1024;
-    };
-    SCHEDULE = FULL;
+  APPDATA aarch64_jailhouse_dynamic_api {
     APP_SRC = "code.c";
-  };
-
-  TASK Task2 {
-    PRIORITY = 2;
-    STACK = PRIVATE {
-      SIZE = 1024;
-      EXTENDED = TRUE;
-    };
-    SCHEDULE = FULL;
-  };
-
-  TASK Task3 {
-    PRIORITY = 1;
-    SCHEDULE = FULL;
-  };
-
-  TASK Task4 {
-    PRIORITY = 1;
-    SCHEDULE = FULL;
-  };
-
-  TASK Task5 {
-    PRIORITY = 1;
-    SCHEDULE = FULL;
-  };
-
-  ISR TimerISR {
-    CATEGORY = 2;
-    SOURCE   = "27";
-    HANDLER  = "clock_handler";
-    PRIORITY = 1;
   };
 };
