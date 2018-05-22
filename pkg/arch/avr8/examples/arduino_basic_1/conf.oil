@@ -93,9 +93,12 @@ CPU mySystem {
 
   };
 
-  TASK TaskL1 {
+  APPDATA myApp {
     APP_SRC  = "code.cpp";
     APP_SRC  = "task.c";
+  };
+
+  TASK TaskL1 {
     PRIORITY = 1;
     STACK = PRIVATE {
       SIZE = 128;

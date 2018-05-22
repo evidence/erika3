@@ -99,6 +99,10 @@ CPU mySystem {
 
   };
 
+  APPDATA myApp {
+    APP_SRC = "code.cpp";
+  };
+
   COUNTER SystemTimer {
     MINCYCLE = 1;
     MAXALLOWEDVALUE = 65535;
@@ -139,7 +143,6 @@ CPU mySystem {
       SIZE = 128;
     };
     SCHEDULE = FULL;
-    APP_SRC = "code.cpp";
   };
 
   TASK Task2 {

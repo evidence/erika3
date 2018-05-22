@@ -94,12 +94,15 @@ CPU mySystem {
 
 	};
 
+	APPDATA myApp {
+		APP_SRC = "code.cpp";
+		APP_SRC = "tasks.cpp";
+	};
+
 	TASK TaskL1 {
 		PRIORITY = 1;
 		STACK = SHARED;
 		SCHEDULE = FULL;
-		APP_SRC = "code.cpp";
-		APP_SRC = "tasks.cpp";
 	};
 
 	TASK TaskL2 {
