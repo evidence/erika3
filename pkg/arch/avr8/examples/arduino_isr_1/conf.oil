@@ -93,14 +93,17 @@ CPU mySystem {
 
 	};
 
+	APPDATA myApp {
+		APP_SRC = "code.cpp";
+		APP_SRC = "task.cpp";
+	};
+
 	TASK TaskL1 {
 		PRIORITY = 1;
 		STACK = PRIVATE {
 			SIZE = 128;
 		};
 		SCHEDULE = FULL;
-		APP_SRC = "code.cpp";
-		APP_SRC = "task.cpp";
 	};
 
 	ISR TimerISR {

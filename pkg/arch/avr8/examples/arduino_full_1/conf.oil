@@ -98,6 +98,10 @@ CPU mySystem {
 
   };
 
+  APPDATA myApp {
+    APP_SRC = "code.cpp";
+  };
+
   TASK Task1 {
     PRIORITY = 1;
     STACK = PRIVATE {
@@ -105,7 +109,6 @@ CPU mySystem {
     };
     SCHEDULE = FULL;
     AUTOSTART = TRUE;
-    APP_SRC = "code.cpp";
   };
 
   TASK Task2 {
