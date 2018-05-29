@@ -770,12 +770,15 @@ FUNC(StatusType, OS_CODE)
         flags = osEE_hal_prepare_ipl(flags, mtx_prio);
       }
 
-      p_mtx_mcb->p_next     = p_tcb->p_first_mtx;
-      p_mtx_mcb->prev_prio  = current_prio;
+      p_mtx_mcb->p_next       = p_tcb->p_first_mtx;
+      p_mtx_mcb->prev_prio    = current_prio;
 #if (defined(OSEE_HAS_CHECKS))
-      p_mtx_mcb->locked     = OSEE_TRUE;
+      p_mtx_mcb->locked       = OSEE_TRUE;
 #endif /* OSEE_HAS_CHECKS */
-      p_tcb->p_first_mtx    = p_mtx;
+#if (!defined(OSEE_SINGLECORE)) ||(defined(OSEE_HAS_ORTI))
+      p_mtx_mcb->p_mtx_owner  = p_tdb;
+#endif /* !OSEE_SINGLECORE || OSEE_HAS_ORTI */
+      p_tcb->p_first_mtx      = p_mtx;
 
       osEE_end_primitive(flags);
 
@@ -849,8 +852,12 @@ FUNC(StatusType, OS_CODE)
         flags = osEE_hal_prepare_ipl(flags, dispatch_prio);
       }
 #if (defined(OSEE_HAS_CHECKS))
-      p_mtx_mcb->locked = OSEE_FALSE;
+      p_mtx_mcb->locked       = OSEE_FALSE;
 #endif /* OSEE_HAS_CHECKS */
+#if (!defined(OSEE_SINGLECORE)) || (defined(OSEE_HAS_ORTI))
+      p_mtx_mcb->p_mtx_owner  = NULL;
+#endif /* !OSEE_SINGLECORE || OSEE_HAS_ORTI */
+
       /* Preemption point */
       (void)osEE_scheduler_task_preemption_point(p_kdb);
 

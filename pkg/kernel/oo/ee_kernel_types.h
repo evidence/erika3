@@ -121,8 +121,12 @@ typedef enum {
 } OsEE_kernel_status;
 
 #if (defined(OSEE_HAS_MUTEX))
-/* Forward declaration of MDB, needed for MCB p_next field. */
+/* Forward declaration of MDB & TDB, needed for MCB p_next and p_mtx_owner
+   fields. */
 struct OsEE_MDB_tag;
+#if (!defined(OSEE_SINGLECORE)) || (defined(OSEE_HAS_ORTI))
+struct OsEE_TDB_tag;
+#endif /* !OSEE_SINGLECORE || OSEE_HAS_ORTI */
 
 typedef struct OsEE_MCB_tag {
   P2VAR(struct OsEE_MDB_tag OSEE_CONST, TYPEDEF, OS_APPL_DATA)  p_next;
@@ -130,9 +134,9 @@ typedef struct OsEE_MCB_tag {
 #if (defined(OSEE_HAS_CHECKS))
   VAR(OsEE_bool, TYPEDEF)                                       locked;
 #endif /* OSEE_HAS_CHECKS */
-#if (!defined(OSEE_SINGLECORE))
-  VAR(TaskType, TYPEDEF)                                        mtx_owner;
-#endif /* !OSEE_SINGLECORE */
+#if (!defined(OSEE_SINGLECORE)) || (defined(OSEE_HAS_ORTI))
+  P2VAR(struct OsEE_TDB_tag OSEE_CONST, TYPEDEF, OS_APPL_DATA)  p_mtx_owner;
+#endif /* !OSEE_SINGLECORE || OSEE_HAS_ORTI */
 } OsEE_MCB;
 
 #if (!defined(OSEE_SINGLECORE))
@@ -350,7 +354,7 @@ typedef struct OsEE_CCB_tag {
   VAR(StatusType, TYPEDEF)                      last_error;
 #if (defined(OSEE_USEPARAMETERACCESS)) || (defined(OSEE_HAS_ORTI))
   VAR(OSServiceIdType, TYPEDEF)                 service_id;
-#endif /*OSEE_USEPARAMETERACCESS || OSEE_HAS_ORTI */
+#endif /* OSEE_USEPARAMETERACCESS || OSEE_HAS_ORTI */
 #if (defined(OSEE_USEPARAMETERACCESS))
   VAR(OsEE_api_param, TYPEDEF)                  api_param1;
   VAR(OsEE_api_param, TYPEDEF)                  api_param2;
@@ -372,6 +376,9 @@ typedef struct OsEE_CCB_tag {
 } OsEE_CCB;
 
 typedef struct OsEE_CDB_tag {
+#if (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
+  VAR(OsEE_CHDB, TYPEDEF)                       chdb;
+#endif /* OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
   P2VAR(OsEE_CCB, TYPEDEF, OS_APPL_DATA)        p_ccb;
 #if (!defined(OSEE_SINGLECORE))
   P2VAR(OsEE_spin_lock, TYPEDEF,OS_APPL_DATA)   p_lock;
