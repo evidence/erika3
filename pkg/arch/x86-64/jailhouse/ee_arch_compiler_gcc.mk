@@ -164,9 +164,10 @@ else	# OS_EE_VERBOSE
 OS_EE_AR_OPT = $(subst v,,$(subst $(OS_EE_SPACE),,cs $(ARFLAGS)))
 endif	# OS_EE_VERBOSE
 
+# OPT_LINK represents the options for the linker invocation
+OPT_LINK += -Wl,-Map=$(TARGET_NAME).map -Os -Wl,--gc-sections \
+-T $(JAILHOUSE_DIR)/inmates/lib/x86/inmate.lds -no-pie -Wl,--no-dynamic-linker
 
-# OPT_LINK represents the options for avr linker invocation
-OPT_LINK += -Wl,-Map=$(TARGET_NAME).map -Os -Wl,--gc-sections -T $(JAILHOUSE_DIR)/inmates/lib/x86/inmate.lds
 ifeq ($(call iseeopt, OS_EE_BUILD), yes)
 OS_EE_DEFS_AS	+= -DOS_EE_BUILD
 OS_EE_DEFS_CC	+= -DOS_EE_BUILD
