@@ -772,10 +772,10 @@ FUNC(StatusType, OS_CODE)
 
       p_mtx_mcb->p_next       = p_tcb->p_first_mtx;
       p_mtx_mcb->prev_prio    = current_prio;
-#if (defined(OSEE_HAS_CHECKS))
+#if (defined(OSEE_HAS_CHECKS)) || (defined(OSEE_HAS_ORTI))
       p_mtx_mcb->locked       = OSEE_TRUE;
-#endif /* OSEE_HAS_CHECKS */
-#if (!defined(OSEE_SINGLECORE)) ||(defined(OSEE_HAS_ORTI))
+#endif /* OSEE_HAS_CHECKS || OSEE_HAS_ORTI */
+#if (!defined(OSEE_SINGLECORE)) || (defined(OSEE_HAS_ORTI))
       p_mtx_mcb->p_mtx_owner  = p_tdb;
 #endif /* !OSEE_SINGLECORE || OSEE_HAS_ORTI */
       p_tcb->p_first_mtx      = p_mtx;
@@ -851,9 +851,9 @@ FUNC(StatusType, OS_CODE)
         p_tcb->current_prio = dispatch_prio;
         flags = osEE_hal_prepare_ipl(flags, dispatch_prio);
       }
-#if (defined(OSEE_HAS_CHECKS))
+#if (defined(OSEE_HAS_CHECKS)) || (defined(OSEE_HAS_ORTI))
       p_mtx_mcb->locked       = OSEE_FALSE;
-#endif /* OSEE_HAS_CHECKS */
+#endif /* OSEE_HAS_CHECKS || (defined(OSEE_HAS_ORTI)) */
 #if (!defined(OSEE_SINGLECORE)) || (defined(OSEE_HAS_ORTI))
       p_mtx_mcb->p_mtx_owner  = NULL;
 #endif /* !OSEE_SINGLECORE || OSEE_HAS_ORTI */

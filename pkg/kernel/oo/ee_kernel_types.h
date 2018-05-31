@@ -131,9 +131,9 @@ struct OsEE_TDB_tag;
 typedef struct OsEE_MCB_tag {
   P2VAR(struct OsEE_MDB_tag OSEE_CONST, TYPEDEF, OS_APPL_DATA)  p_next;
   VAR(TaskPrio, TYPEDEF)                                        prev_prio;
-#if (defined(OSEE_HAS_CHECKS))
+#if (defined(OSEE_HAS_CHECKS)) || (defined(OSEE_HAS_ORTI))
   VAR(OsEE_bool, TYPEDEF)                                       locked;
-#endif /* OSEE_HAS_CHECKS */
+#endif /* OSEE_HAS_CHECKS || OSEE_HAS_ORTI */
 #if (!defined(OSEE_SINGLECORE)) || (defined(OSEE_HAS_ORTI))
   P2VAR(struct OsEE_TDB_tag OSEE_CONST, TYPEDEF, OS_APPL_DATA)  p_mtx_owner;
 #endif /* !OSEE_SINGLECORE || OSEE_HAS_ORTI */
