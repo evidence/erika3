@@ -652,9 +652,12 @@ FUNC(StatusType, OS_CODE)
 
       p_mtx_mcb->p_next     = p_tcb->p_first_mtx;
       p_mtx_mcb->prev_prio  = current_prio;
-#if (defined(OSEE_HAS_CHECKS))
+#if (defined(OSEE_HAS_CHECKS)) || (defined(OSEE_HAS_ORTI))
       p_mtx_mcb->locked     = OSEE_TRUE;
-#endif /* OSEE_HAS_CHECKS */
+#endif /* OSEE_HAS_CHECKS || OSEE_HAS_ORTI */
+#if (!defined(OSEE_SINGLECORE)) || (defined(OSEE_HAS_ORTI))
+      p_mtx_mcb->mtx_owner  = p_tdb->tid;
+#endif /* !OSEE_SINGLECORE || OSEE_HAS_ORTI */
       p_tcb->p_first_mtx    = p_mtx;
 
       ev = E_OK;
@@ -728,9 +731,13 @@ FUNC(StatusType, OS_CODE)
         p_tcb->current_prio = dispatch_prio;
         flags = osEE_hal_prepare_ipl(flags, dispatch_prio);
       }
-#if (defined(OSEE_HAS_CHECKS))
-      p_mtx_mcb->locked = OSEE_FALSE;
-#endif /* OSEE_HAS_CHECKS */
+#if (defined(OSEE_HAS_CHECKS)) || (defined(OSEE_HAS_ORTI))
+      p_mtx_mcb->locked     = OSEE_FALSE;
+#endif /* OSEE_HAS_CHECKS || OSEE_HAS_ORTI */
+#if (!defined(OSEE_SINGLECORE)) || (defined(OSEE_HAS_ORTI))
+      p_mtx_mcb->mtx_owner  = INVALID_TASK;
+#endif /* !OSEE_SINGLECORE || OSEE_HAS_ORTI */
+
       /* Preemption point */
       (void)osEE_scheduler_task_preemption_point(p_kdb, p_cdb);
 

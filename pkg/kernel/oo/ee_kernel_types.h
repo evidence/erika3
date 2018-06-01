@@ -127,12 +127,12 @@ struct OsEE_MDB_tag;
 typedef struct OsEE_MCB_tag {
   P2VAR(struct OsEE_MDB_tag OSEE_CONST, TYPEDEF, OS_APPL_DATA)  p_next;
   VAR(TaskPrio, TYPEDEF)                                        prev_prio;
-#if (defined(OSEE_HAS_CHECKS))
+#if (defined(OSEE_HAS_CHECKS)) || (defined(OSEE_HAS_ORTI))
   VAR(OsEE_bool, TYPEDEF)                                       locked;
-#endif /* OSEE_HAS_CHECKS */
-#if (!defined(OSEE_SINGLECORE))
+#endif /* OSEE_HAS_CHECKS  || OSEE_HAS_ORTI */
+#if (!defined(OSEE_SINGLECORE))|| (defined(OSEE_HAS_ORTI))
   VAR(TaskType, TYPEDEF)                                        mtx_owner;
-#endif /* !OSEE_SINGLECORE */
+#endif /* !OSEE_SINGLECORE || OSEE_HAS_ORTI */
 } OsEE_MCB;
 
 #if (!defined(OSEE_SINGLECORE))
@@ -250,7 +250,7 @@ typedef struct OsEE_action_tag {
 } OsEE_action;
 
 #if (defined(OSEE_COUNTER_TRIGGER_TYPES))
-typedef enum {
+typedef enum OsEE_trigger_type_tag {
   OSEE_TRIGGER_ALARM,
   OSEE_TRIGGER_SCHEDULE_TABLE
 } OsEE_trigger_type;
@@ -338,7 +338,7 @@ typedef struct OsEE_CCB_tag {
   VAR(StatusType, TYPEDEF)                      last_error;
 #if (defined(OSEE_USEPARAMETERACCESS)) || (defined(OSEE_HAS_ORTI))
   VAR(OSServiceIdType, TYPEDEF)                 service_id;
-#endif /*OSEE_USEPARAMETERACCESS || OSEE_HAS_ORTI */
+#endif /* OSEE_USEPARAMETERACCESS || OSEE_HAS_ORTI */
 #if (defined(OSEE_USEPARAMETERACCESS))
   VAR(OsEE_api_param, TYPEDEF)                  api_param1;
   VAR(OsEE_api_param, TYPEDEF)                  api_param2;
@@ -360,14 +360,17 @@ typedef struct OsEE_CCB_tag {
 } OsEE_CCB;
 
 typedef struct OsEE_CDB_tag {
+#if (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
+  VAR(OsEE_CHDB, TYPEDEF)                       chdb;
+#endif /* OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
   P2VAR(OsEE_CCB, TYPEDEF, OS_APPL_DATA)        p_ccb;
 #if (defined(OSEE_HAS_IDLEHOOK)) || (defined(OSEE_API_DYNAMIC))
   VAR(TaskFunc, TYPEDEF)                        p_idle_hook;
 #endif /* OSEE_HAS_IDLEHOOK || OSEE_API_DYNAMIC */
   P2VAR(OsEE_TDB, TYPEDEF, OS_APPL_DATA)        p_idle_task;
-#if (defined(OSTICKDURATION))
+#if (defined(OSEE_HAS_SYSTEM_TIMER))
   P2VAR(OsEE_CounterDB, TYPEDEF, OS_APPL_DATA)  p_sys_counter_db;
-#endif /*  */
+#endif /* OSEE_HAS_SYSTEM_TIMER */
 #if (defined(OSEE_HAS_AUTOSTART_TASK))
   P2SYM_VAR(OsEE_autostart_tdb, OS_APPL_DATA,   p_autostart_tdb_array)[];
   VAR(MemSize, TYPEDEF)                         autostart_tdb_array_size;
