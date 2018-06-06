@@ -130,7 +130,7 @@ typedef struct OsEE_MCB_tag {
 #if (defined(OSEE_HAS_CHECKS)) || (defined(OSEE_HAS_ORTI))
   VAR(OsEE_bool, TYPEDEF)                                       locked;
 #endif /* OSEE_HAS_CHECKS  || OSEE_HAS_ORTI */
-#if (!defined(OSEE_SINGLECORE))|| (defined(OSEE_HAS_ORTI))
+#if (!defined(OSEE_SINGLECORE)) || (defined(OSEE_HAS_ORTI))
   VAR(TaskType, TYPEDEF)                                        mtx_owner;
 #endif /* !OSEE_SINGLECORE || OSEE_HAS_ORTI */
 } OsEE_MCB;

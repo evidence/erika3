@@ -145,6 +145,38 @@ LOCAL_INLINE FUNC(void, OS_CODE)
   osEE_hal_end_nested_primitive(flags);
 }
 
+LOCAL_INLINE FUNC(void, OS_CODE)
+  osEE_orti_trace_service_entry
+(
+  P2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb,
+  CONST(OSServiceIdType, AUTOMATIC) service_id
+)
+{
+#if (defined(OSEE_HAS_ORTI))
+    p_ccb->service_id = (service_id + 1U);
+#else
+/* Touch Unused parameters */
+  (void)p_ccb;
+  (void)service_id;
+#endif
+}
+
+LOCAL_INLINE FUNC(void, OS_CODE)
+  osEE_orti_trace_service_exit
+(
+  P2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb,
+  CONST(OSServiceIdType, AUTOMATIC) service_id
+)
+{
+#if (defined(OSEE_HAS_ORTI))
+    p_ccb->service_id = service_id;
+#else
+/* Touch Unused parameters */
+  (void)p_ccb;
+  (void)service_id;
+#endif
+}
+
 LOCAL_INLINE FUNC(StatusType, OS_CODE)
   osEE_activate_isr2
 (
@@ -350,12 +382,14 @@ LOCAL_INLINE FUNC(void, OS_CODE)
   VAR(OSServiceIdType, AUTOMATIC)           service_id
 )
 {
-#if (defined(OSEE_USEPARAMETERACCESS))
+#if (defined(OSEE_USEPARAMETERACCESS)) && (!defined(OSEE_HAS_ORTI))
   p_ccb->service_id = service_id;
 #else
   ((void)p_ccb);
   ((void)service_id);
-#endif /* OSEE_USEPARAMETERACCESS */
+#endif /* OSEE_USEPARAMETERACCESS && !OSEE_HAS_ORTI
+  (with ORTI enabled service_id is already set for Tracing,
+   no need to set it twice) */
 }
 
 LOCAL_INLINE FUNC(void, OS_CODE)

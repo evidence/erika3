@@ -69,7 +69,9 @@ FUNC(void, OS_CODE)
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
   /* Disable Immediately for Atomicity */
   osEE_hal_disableIRQ();
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_DisableAllInterrupts);
   p_ccb->d_isr_all_cnt = 1U;
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_DisableAllInterrupts);
   return;
 }
 
@@ -87,10 +89,16 @@ FUNC(void, OS_CODE)
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb = osEE_get_curr_core();
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
 
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_EnableAllInterrupts);
+
   if (p_ccb->d_isr_all_cnt > 0U) {
     p_ccb->d_isr_all_cnt = 0U;
     osEE_hal_enableIRQ();
   }
+
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_EnableAllInterrupts);
+
+  return;
 }
 
 FUNC(void, OS_CODE)
@@ -102,6 +110,8 @@ FUNC(void, OS_CODE)
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb = osEE_get_curr_core();
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
 
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_SuspendAllInterrupts);
+
   if (p_ccb->s_isr_all_cnt == 0U) {
     CONST(OsEE_reg, AUTOMATIC) flags = osEE_hal_suspendIRQ();
     p_ccb->prev_s_isr_all_status = flags;
@@ -109,6 +119,10 @@ FUNC(void, OS_CODE)
   } else if (p_ccb->s_isr_all_cnt < OSEE_MAX_BYTE) {
     ++p_ccb->s_isr_all_cnt;
   }
+
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_SuspendAllInterrupts);
+
+  return;
 }
 
 FUNC(void, OS_CODE)
@@ -120,11 +134,17 @@ FUNC(void, OS_CODE)
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb = osEE_get_curr_core();
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
 
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_ResumeAllInterrupts);
+
   if (p_ccb->s_isr_all_cnt > 0U) {
     if (--p_ccb->s_isr_all_cnt == 0U) {
       osEE_hal_resumeIRQ(p_ccb->prev_s_isr_all_status);
     }
   }
+
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_ResumeAllInterrupts);
+
+  return;
 }
 
 FUNC(void, OS_CODE)
@@ -136,6 +156,8 @@ FUNC(void, OS_CODE)
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb = osEE_get_curr_core();
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
 
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_SuspendOSInterrupts);
+
   if (p_ccb->s_isr_os_cnt == 0U) {
     CONST(OsEE_reg, AUTOMATIC) flags = osEE_hal_begin_nested_primitive();
     p_ccb->prev_s_isr_os_status = flags;
@@ -143,6 +165,10 @@ FUNC(void, OS_CODE)
   } else if (p_ccb->s_isr_os_cnt < OSEE_MAX_BYTE) {
     ++p_ccb->s_isr_os_cnt;
   }
+
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_SuspendOSInterrupts);
+
+  return;
 }
 
 FUNC(void, OS_CODE)
@@ -154,11 +180,17 @@ FUNC(void, OS_CODE)
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb = osEE_get_curr_core();
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
 
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_ResumeOSInterrupts);
+
   if (p_ccb->s_isr_os_cnt > 0U) {
     if (--p_ccb->s_isr_os_cnt == 0U) {
       osEE_hal_end_nested_primitive(p_ccb->prev_s_isr_os_status);
     }
   }
+
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_ResumeOSInterrupts);
+
+  return;
 }
 
 FUNC(StatusType, OS_CODE)
@@ -171,6 +203,8 @@ FUNC(StatusType, OS_CODE)
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb = osEE_get_curr_core();
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
   CONST(OsEE_reg, AUTOMATIC) flags = osEE_begin_primitive();
+
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_StartOS);
 
   osEE_lock_kernel();
 
@@ -280,6 +314,8 @@ FUNC(StatusType, OS_CODE)
 
       osEE_unlock_kernel();
 
+      osEE_orti_trace_service_exit(p_ccb, OSServiceId_StartOS);
+
 #if (!defined(OSEE_STARTOS_RETURN)) && (!defined(OSEE_API_DYNAMIC))
       if (p_ccb->os_status == OSEE_KERNEL_STARTED) {
         osEE_idle_task_start(p_idle_tdb);
@@ -326,8 +362,10 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     osEE_set_service_id(p_ccb, OSServiceId_StartOS);
     osEE_call_error_hook(p_ccb, ev);
+    osEE_orti_trace_service_exit(p_ccb, OSServiceId_StartOS);
     osEE_end_primitive(flags);
   }
+
   return ev;
 }
 
@@ -341,11 +379,16 @@ FUNC(AppModeType, OS_CODE)
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb = osEE_get_curr_core()->p_ccb;
 
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetActiveApplicationMode);
+
   if (p_ccb->os_status >= OSEE_KERNEL_STARTING) {
     app_mode = p_ccb->app_mode;
   } else {
     app_mode = INVALID_APPMODE;
   }
+
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_GetActiveApplicationMode);
+
   return app_mode;
 }
 
@@ -357,6 +400,11 @@ FUNC(StatusType, OS_CODE)
 {
   VAR(StatusType, AUTOMATIC)                    ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA) p_kdb = osEE_get_kernel();
+#if (defined(OSEE_HAS_ORTI))
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+    p_ccb = osEE_get_curr_core()->p_ccb;
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_ActivateTask);
+#endif /* OSEE_HAS_ORTI */
 
   if (!osEE_is_valid_tid(p_kdb, TaskID)) {
     ev = E_OS_ID;
@@ -382,8 +430,10 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     VAR(OsEE_api_param, AUTOMATIC)
       param;
+#if (!defined(OSEE_HAS_ORTI))
     CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
       p_ccb = osEE_get_curr_core()->p_ccb;
+#endif /* !OSEE_HAS_ORTI */
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_ActivateTask);
@@ -393,6 +443,9 @@ FUNC(StatusType, OS_CODE)
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
+#if (defined(OSEE_HAS_ORTI))
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_ActivateTask);
+#endif /* OSEE_HAS_ORTI */
 
   return ev;
 }
@@ -406,6 +459,11 @@ FUNC(StatusType, OS_CODE)
 {
   VAR(StatusType, AUTOMATIC)                    ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA) p_kdb = osEE_get_kernel();
+#if (defined(OSEE_HAS_ORTI))
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+    p_ccb = osEE_get_curr_core()->p_ccb;
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_ChainTask);
+#endif /* OSEE_HAS_ORTI */
 
   if (!osEE_is_valid_tid(p_kdb, TaskID)) {
     ev = E_OS_ID;
@@ -462,8 +520,10 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     VAR(OsEE_api_param, AUTOMATIC)
       param;
+#if (!defined(OSEE_HAS_ORTI))
     CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
       p_ccb = osEE_get_curr_core()->p_ccb;
+#endif /* !OSEE_HAS_ORTI */
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_ChainTask);
@@ -473,6 +533,9 @@ FUNC(StatusType, OS_CODE)
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
+#if (defined(OSEE_HAS_ORTI))
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_ChainTask);
+#endif /* OSEE_HAS_ORTI */
 
   return ev;
 }
@@ -495,6 +558,9 @@ FUNC(StatusType, OS_CODE)
   CONSTP2VAR(OsEE_TCB, OS_APPL_DATA, AUTOMATIC)
     p_curr_tcb  = p_curr->p_tcb;
 #endif /* OSEE_HAS_MUTEX */
+
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_TerminateTask);
+
   /*  [OS_SWS_088]: If an OS-Application makes a service call from the wrong
    *  context AND is currently not inside a Category 1 ISR the Operating
    *  System module shall not perform the requested action
@@ -551,6 +617,8 @@ FUNC(StatusType, OS_CODE)
   }
 #endif /* OSEE_HAS_ERRORHOOK */
 
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_TerminateTask);
+
   return ev;
 }
 
@@ -565,6 +633,8 @@ FUNC(StatusType, OS_CODE)
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb   = p_cdb->p_ccb;
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA) p_curr  = p_ccb->p_curr;
   CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA) p_tcb   = p_curr->p_tcb;
+
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_Schedule);
 
 #if (defined(OSEE_HAS_CHECKS))
   if (p_curr->task_type > OSEE_TASK_TYPE_EXTENDED) {
@@ -607,6 +677,8 @@ FUNC(StatusType, OS_CODE)
   }
 #endif /* OSEE_HAS_ERRORHOOK */
 
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_Schedule);
+
   return ev;
 }
 
@@ -619,6 +691,11 @@ FUNC(StatusType, OS_CODE)
 {
   VAR(StatusType, AUTOMATIC)                    ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA) p_kdb = osEE_get_kernel();
+#if (defined(OSEE_HAS_ORTI))
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+    p_ccb = osEE_get_curr_core()->p_ccb;
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetResource);
+#endif /* OSEE_HAS_ORTI */
 
   if (!osEE_is_valid_res_id(p_kdb, ResID)) {
     ev = E_OS_ID;
@@ -668,8 +745,10 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     VAR(OsEE_api_param, AUTOMATIC)
       param;
+#if (!defined(OSEE_HAS_ORTI))
     CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
       p_ccb = osEE_get_curr_core()->p_ccb;
+#endif /* !OSEE_HAS_ORTI */
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_GetResource);
@@ -679,6 +758,9 @@ FUNC(StatusType, OS_CODE)
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
+#if (defined(OSEE_HAS_ORTI))
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_GetResource);
+#endif /* OSEE_HAS_ORTI */
 
   return ev;
 }
@@ -692,6 +774,10 @@ FUNC(StatusType, OS_CODE)
   VAR(StatusType, AUTOMATIC)                    ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA) p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb = osEE_get_curr_core();
+#if (defined(OSEE_HAS_ORTI))
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_ReleaseResource);
+#endif /* OSEE_HAS_ORTI */
 
   if (!osEE_is_valid_res_id(p_kdb, ResID)) {
     ev = E_OS_ID;
@@ -751,8 +837,10 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     VAR(OsEE_api_param, AUTOMATIC)
       param;
+#if (!defined(OSEE_HAS_ORTI))
     CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-      p_ccb = osEE_get_curr_core()->p_ccb;
+      p_ccb = p_cdb->p_ccb;
+#endif /* !OSEE_HAS_ORTI */
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_ReleaseResource);
@@ -762,7 +850,9 @@ FUNC(StatusType, OS_CODE)
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
-
+#if (defined(OSEE_HAS_ORTI))
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_ReleaseResource);
+#endif /* OSEE_HAS_ORTI */
   return ev;
 }
 #endif /* OSEE_HAS_RESOURCES */
@@ -778,6 +868,8 @@ FUNC(StatusType, OS_CODE)
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
   CONST(OsEE_reg, AUTOMATIC)  flags = osEE_begin_primitive();
   CONST(OsEE_kernel_status, AUTOMATIC) os_status = p_ccb->os_status;
+
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_ShutdownOS);
 
   if ((os_status == OSEE_KERNEL_STARTED) || (os_status == OSEE_KERNEL_STARTING))
   {
@@ -805,7 +897,9 @@ FUNC(StatusType, OS_CODE)
     osEE_call_error_hook(p_ccb, ev);
   }
 
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_ShutdownOS);
   osEE_end_primitive(flags);
+
   return ev;
 }
 
@@ -816,11 +910,17 @@ FUNC(StatusType, OS_CODE)
 )
 {
   VAR(StatusType, AUTOMATIC) ev;
+#if (defined(OSEE_HAS_ORTI))
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+    p_ccb = osEE_get_curr_core()->p_ccb;
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetTaskID);
+#endif /* OSEE_HAS_ORTI */
   /* [OS566]: The Operating System API shall check in extended mode all pointer
       argument for NULL pointer and return OS_E_PARAMETER_POINTER
       if such argument is NULL.
       +
       MISRA dictate NULL check for pointers always. */
+
   if (TaskID == NULL) {
     ev = E_OS_PARAM_POINTER;
   } else {
@@ -869,6 +969,9 @@ FUNC(StatusType, OS_CODE)
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
+#if (defined(OSEE_HAS_ORTI))
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_GetTaskID);
+#endif /* OSEE_HAS_ORTI */
 
   return ev;
 }
@@ -882,6 +985,11 @@ FUNC(StatusType, OS_CODE)
 {
   VAR(StatusType, AUTOMATIC)                    ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA) p_kdb = osEE_get_kernel();
+#if (defined(OSEE_HAS_ORTI))
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+    p_ccb = osEE_get_curr_core()->p_ccb;
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetTaskState);
+#endif /* OSEE_HAS_ORTI */
 
   /* [OS566]: The Operating System API shall check in extended mode all pointer
      argument for NULL pointer and return OS_E_PARAMETER_POINTER
@@ -926,8 +1034,10 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     VAR(OsEE_api_param, AUTOMATIC)
       param;
+#if (!defined(OSEE_HAS_ORTI))
     CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
       p_ccb = osEE_get_curr_core()->p_ccb;
+#endif /* !OSEE_HAS_ORTI */
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_GetTaskState);
@@ -939,6 +1049,9 @@ FUNC(StatusType, OS_CODE)
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
+#if (defined(OSEE_HAS_ORTI))
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_GetTaskState);
+#endif /* OSEE_HAS_ORTI */
 
   return ev;
 }
@@ -955,6 +1068,11 @@ FUNC(StatusType, OS_CODE)
   VAR(StatusType, AUTOMATIC)  ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
     p_kdb = osEE_get_kernel();
+#if (defined(OSEE_HAS_ORTI))
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+    p_ccb = osEE_get_curr_core()->p_ccb;
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_SetRelAlarm);
+#endif /* OSEE_HAS_ORTI */
 
   if (!osEE_is_valid_alarm_id(p_kdb, AlarmID)) {
     ev = E_OS_ID;
@@ -1005,6 +1123,9 @@ FUNC(StatusType, OS_CODE)
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
+#if (defined(OSEE_HAS_ORTI))
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_SetRelAlarm);
+#endif /* OSEE_HAS_ORTI */
 
   return ev;
 }
@@ -1020,6 +1141,11 @@ FUNC(StatusType, OS_CODE)
   VAR(StatusType, AUTOMATIC)  ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
     p_kdb = osEE_get_kernel();
+#if (defined(OSEE_HAS_ORTI))
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+    p_ccb = osEE_get_curr_core()->p_ccb;
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_SetAbsAlarm);
+#endif /* OSEE_HAS_ORTI */
 
   if (!osEE_is_valid_alarm_id(p_kdb, AlarmID)) {
     ev = E_OS_ID;
@@ -1054,8 +1180,10 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     VAR(OsEE_api_param, AUTOMATIC)
       param;
+#if (!defined(OSEE_HAS_ORTI))
     CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
       p_ccb = osEE_get_curr_core()->p_ccb;
+#endif /* OSEE_HAS_ORTI */
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_SetAbsAlarm);
@@ -1069,6 +1197,9 @@ FUNC(StatusType, OS_CODE)
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
+#if (defined(OSEE_HAS_ORTI))
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_SetAbsAlarm);
+#endif /* OSEE_HAS_ORTI */
 
   return ev;
 }
@@ -1082,6 +1213,11 @@ FUNC(StatusType, OS_CODE)
   VAR(StatusType, AUTOMATIC)  ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
     p_kdb = osEE_get_kernel();
+#if (defined(OSEE_HAS_ORTI))
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+    p_ccb = osEE_get_curr_core()->p_ccb;
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_CancelAlarm);
+#endif /* OSEE_HAS_ORTI */
 
   if (!osEE_is_valid_alarm_id(p_kdb, AlarmID)) {
     ev = E_OS_ID;
@@ -1100,8 +1236,10 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     VAR(OsEE_api_param, AUTOMATIC)
       param;
+#if (!defined(OSEE_HAS_ORTI))
     CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
       p_ccb = osEE_get_curr_core()->p_ccb;
+#endif /* !OSEE_HAS_ORTI */
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_CancelAlarm);
@@ -1111,6 +1249,9 @@ FUNC(StatusType, OS_CODE)
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
+#if (defined(OSEE_HAS_ORTI))
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_CancelAlarm);
+#endif /* OSEE_HAS_ORTI */
 
   return ev;
 }
@@ -1125,6 +1266,11 @@ FUNC(StatusType, OS_CODE)
   VAR(StatusType, AUTOMATIC)  ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
     p_kdb = osEE_get_kernel();
+#if (defined(OSEE_HAS_ORTI))
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+    p_ccb = osEE_get_curr_core()->p_ccb;
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetAlarm);
+#endif /* OSEE_HAS_ORTI */
 
   if (!osEE_is_valid_alarm_id(p_kdb, AlarmID)) {
     ev = E_OS_ID;
@@ -1147,8 +1293,10 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     VAR(OsEE_api_param, AUTOMATIC)
       param;
+#if (!defined(OSEE_HAS_ORTI))
     CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
       p_ccb = osEE_get_curr_core()->p_ccb;
+#endif /* OSEE_HAS_ORTI */
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_GetAlarm);
@@ -1160,6 +1308,9 @@ FUNC(StatusType, OS_CODE)
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
+#if (defined(OSEE_HAS_ORTI))
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_GetAlarm);
+#endif /* OSEE_HAS_ORTI */
 
   return ev;
 }
@@ -1174,6 +1325,11 @@ FUNC(StatusType, OS_CODE)
   VAR(StatusType, AUTOMATIC)  ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
     p_kdb = osEE_get_kernel();
+#if (defined(OSEE_HAS_ORTI))
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+    p_ccb = osEE_get_curr_core()->p_ccb;
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetAlarmBase);
+#endif /* OSEE_HAS_ORTI */
 
   if (!osEE_is_valid_alarm_id(p_kdb, AlarmID)) {
     ev = E_OS_ID;
@@ -1198,8 +1354,10 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     VAR(OsEE_api_param, AUTOMATIC)
       param;
+#if (!defined(OSEE_HAS_ORTI))
     CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
       p_ccb = osEE_get_curr_core()->p_ccb;
+#endif /* !OSEE_HAS_ORTI */
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_GetAlarmBase);
@@ -1211,6 +1369,9 @@ FUNC(StatusType, OS_CODE)
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
+#if (defined(OSEE_HAS_ORTI))
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_GetAlarmBase);
+#endif /* OSEE_HAS_ORTI */
 
   return ev;
 }
@@ -1233,6 +1394,8 @@ FUNC(StatusType, OS_CODE)
     p_curr      = p_ccb->p_curr;
   CONSTP2VAR(OsEE_TCB, OS_APPL_DATA, AUTOMATIC)
     p_curr_tcb  = p_curr->p_tcb;
+
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_WaitEvent);
 
 #if (defined(OSEE_HAS_CHECKS))
   /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
@@ -1321,6 +1484,8 @@ FUNC(StatusType, OS_CODE)
   }
 #endif /* OSEE_HAS_ERRORHOOK */
 
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_WaitEvent);
+
   return ev;
 }
 
@@ -1334,7 +1499,8 @@ FUNC(StatusType, OS_CODE)
   VAR(StatusType, AUTOMATIC)  ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
     p_kdb       = osEE_get_kernel();
-#if (defined(OSEE_HAS_CHECKS)) || (defined(OSEE_HAS_ERRORHOOK))
+#if (defined(OSEE_HAS_CHECKS)) || (defined(OSEE_HAS_ERRORHOOK)) ||\
+    (defined(OSEE_HAS_ORTI))
   CONSTP2VAR(OsEE_CDB, OS_APPL_DATA, AUTOMATIC)
     p_curr_cdb  = osEE_get_curr_core();
   CONSTP2VAR(OsEE_CCB, OS_APPL_DATA, AUTOMATIC)
@@ -1366,7 +1532,9 @@ FUNC(StatusType, OS_CODE)
     ev = E_OS_CALLEVEL;
   } else
 #endif /* OSEE_HAS_CHECKS */
-#endif /* OSEE_HAS_CHECKS || OSEE_HAS_ERRORHOOK */
+
+  osEE_orti_trace_service_entry(p_curr_ccb, OSServiceId_SetEvent);
+#endif /* OSEE_HAS_CHECKS || OSEE_HAS_ERRORHOOK || OSEE_HAS_ORTI */
   if (!osEE_is_valid_tid(p_kdb, TaskID)) {
     ev = E_OS_ID;
   } else {
@@ -1435,6 +1603,9 @@ FUNC(StatusType, OS_CODE)
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
+#if (defined(OSEE_HAS_ORTI))
+  osEE_orti_trace_service_exit(p_curr_ccb, OSServiceId_SetEvent);
+#endif /* OSEE_HAS_ORTI */
 
   return ev;
 }
@@ -1449,7 +1620,8 @@ FUNC(StatusType, OS_CODE)
   VAR(StatusType, AUTOMATIC)  ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
     p_kdb       = osEE_get_kernel();
-#if (defined(OSEE_HAS_CHECKS)) || (defined(OSEE_HAS_ERRORHOOK))
+#if (defined(OSEE_HAS_CHECKS)) || (defined(OSEE_HAS_ERRORHOOK)) ||\
+    (defined(OSEE_HAS_ORTI))
   CONSTP2VAR(OsEE_CDB, OS_APPL_DATA, AUTOMATIC)
     p_cdb       = osEE_get_curr_core();
   CONSTP2VAR(OsEE_CCB, OS_APPL_DATA, AUTOMATIC)
@@ -1486,7 +1658,8 @@ FUNC(StatusType, OS_CODE)
     ev = E_OS_CALLEVEL;
   } else
 #endif /* OSEE_HAS_CHECKS */
-#endif /* OSEE_HAS_CHECKS || OSEE_HAS_ERRORHOOK */
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetEvent);
+#endif /* OSEE_HAS_CHECKS || OSEE_HAS_ERRORHOOK || OSEE_HAS_ORTI */
   if (!osEE_is_valid_tid(p_kdb, TaskID)) {
     ev = E_OS_ID;
   } else
@@ -1530,6 +1703,9 @@ FUNC(StatusType, OS_CODE)
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
+#if (defined(OSEE_HAS_ORTI))
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_GetEvent);
+#endif /* OSEE_HAS_ORTI */
 
   return ev;
 }
@@ -1549,6 +1725,8 @@ FUNC(StatusType, OS_CODE)
     p_curr      = p_ccb->p_curr;
   CONSTP2VAR(OsEE_TCB, OS_APPL_DATA, AUTOMATIC)
     p_curr_tcb  = p_curr->p_tcb;
+
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_ClearEvent);
 
 #if (defined(OSEE_HAS_CHECKS))
   /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
@@ -1596,6 +1774,9 @@ FUNC(StatusType, OS_CODE)
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
+
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_ClearEvent);
+
   return ev;
 }
 #endif /* OSEE_HAS_EVENTS */
