@@ -83,6 +83,38 @@ OSEE_CPU_STARTOS_INLINE FUNC(OsEE_bool, OS_CODE)
   void
 );
 
+LOCAL_INLINE FUNC(void, OS_CODE)
+  osEE_orti_trace_service_entry
+(
+  P2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb,
+  CONST(OSServiceIdType, AUTOMATIC) service_id
+)
+{
+#if (defined(OSEE_HAS_ORTI))
+    p_ccb->service_id = (service_id + 1U);
+#else
+/* Touch Unused parameters */
+  (void)p_ccb;
+  (void)service_id;
+#endif
+}
+
+LOCAL_INLINE FUNC(void, OS_CODE)
+  osEE_orti_trace_service_exit
+(
+  P2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb,
+  CONST(OSServiceIdType, AUTOMATIC) service_id
+)
+{
+#if (defined(OSEE_HAS_ORTI))
+    p_ccb->service_id = service_id;
+#else
+/* Touch Unused parameters */
+  (void)p_ccb;
+  (void)service_id;
+#endif
+}
+
 FUNC(StatusType, OS_CODE)
   osEE_activate_isr2
 (
