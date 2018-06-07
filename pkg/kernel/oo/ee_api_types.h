@@ -281,86 +281,86 @@ typedef union OsEE_api_param_tag {
  */
 typedef enum OsEE_service_id_type_tag {
   OSServiceId_ActivateTask,                         /*  (0) */
-  OSServiceId_ActivateTask_Exit,                    /*  (1) */
+  OSServiceId_ActivateTask_Entry,                   /*  (1) */
   OSServiceId_TerminateTask,                        /*  (2) */
-  OSServiceId_TerminateTask_Exit,                   /*  (3) */
+  OSServiceId_TerminateTask_Entry,                  /*  (3) */
   OSServiceId_ChainTask,                            /*  (4) */
-  OSServiceId_ChainTask_Exit,                       /*  (5) */
+  OSServiceId_ChainTask_Entry,                      /*  (5) */
   OSServiceId_Schedule,                             /*  (6) */
-  OSServiceId_Schedule_Exit,                        /*  (7) */
+  OSServiceId_Schedule_Entry,                       /*  (7) */
   OSServiceId_GetTaskID,                            /*  (8) */
-  OSServiceId_GetTaskID_Exit,                       /*  (9) */
+  OSServiceId_GetTaskID_Entry,                      /*  (9) */
   OSServiceId_GetTaskState,                         /* (10) */
-  OSServiceId_GetTaskState_Exit,                    /* (11) */
+  OSServiceId_GetTaskState_Entry,                   /* (11) */
   OSServiceId_DisableAllInterrupts,                 /* (12) */
-  OSServiceId_DisableAllInterrupts_Exit,            /* (13) */
+  OSServiceId_DisableAllInterrupts_Entry,           /* (13) */
   OSServiceId_EnableAllInterrupts,                  /* (14) */
-  OSServiceId_EnableAllInterrupts_Exit,             /* (15) */
+  OSServiceId_EnableAllInterrupts_Entry,            /* (15) */
   OSServiceId_SuspendAllInterrupts,                 /* (16) */
-  OSServiceId_SuspendAllInterrupts_Exit,            /* (17) */
+  OSServiceId_SuspendAllInterrupts_Entry,           /* (17) */
   OSServiceId_ResumeAllInterrupts,                  /* (18) */
-  OSServiceId_ResumeAllInterrupts_Exit,             /* (19) */
+  OSServiceId_ResumeAllInterrupts_Entry,            /* (19) */
   OSServiceId_SuspendOSInterrupts,                  /* (20) */
-  OSServiceId_SuspendOSInterrupts_Exit,             /* (21) */
+  OSServiceId_SuspendOSInterrupts_Entry,            /* (21) */
   OSServiceId_ResumeOSInterrupts,                   /* (22) */
-  OSServiceId_ResumeOSInterrupts_Exit,              /* (23) */
+  OSServiceId_ResumeOSInterrupts_Entry,             /* (23) */
 #if (defined(OSEE_HAS_RESOURCES))
   OSServiceId_GetResource,                          /* (24) */
-  OSServiceId_GetResource_Exit,                     /* (25) */
+  OSServiceId_GetResource_Entry,                    /* (25) */
   OSServiceId_ReleaseResource,                      /* (26) */
-  OSServiceId_ReleaseResource_Exit,                 /* (27) */
+  OSServiceId_ReleaseResource_Entry,                /* (27) */
 #endif /* OSEE_HAS_RESOURCES */
 #if (defined(OSEE_HAS_EVENTS))
   OSServiceId_SetEvent,                             /* (28) */
-  OSServiceId_SetEvent_Exit,                        /* (29) */
+  OSServiceId_SetEvent_Entry,                       /* (29) */
   OSServiceId_ClearEvent,                           /* (30) */
-  OSServiceId_ClearEvent_Exit,                      /* (31) */
+  OSServiceId_ClearEvent_Entry,                     /* (31) */
   OSServiceId_GetEvent,                             /* (32) */
-  OSServiceId_GetEvent_Exit,                        /* (33) */
+  OSServiceId_GetEvent_Entry,                       /* (33) */
   OSServiceId_WaitEvent,                            /* (34) */
-  OSServiceId_WaitEvent_Exit,                       /* (35) */
+  OSServiceId_WaitEvent_Entry,                      /* (35) */
 #endif /* OSEE_HAS_EVENTS */
 #if (defined(OSEE_HAS_ALARMS))
   OSServiceId_GetAlarmBase,                         /* (36) */
-  OSServiceId_GetAlarmBase_Exit,                    /* (37) */
+  OSServiceId_GetAlarmBase_Entry,                   /* (37) */
   OSServiceId_GetAlarm,                             /* (38) */
-  OSServiceId_GetAlarm_Exit,                        /* (39) */
+  OSServiceId_GetAlarm_Entry,                       /* (39) */
   OSServiceId_SetRelAlarm,                          /* (40) */
-  OSServiceId_SetRelAlarm_Exit,                     /* (41) */
+  OSServiceId_SetRelAlarm_Entry,                    /* (41) */
   OSServiceId_SetAbsAlarm,                          /* (42) */
-  OSServiceId_SetAbsAlarm_Exit,                     /* (43) */
+  OSServiceId_SetAbsAlarm_Entry,                    /* (43) */
   OSServiceId_CancelAlarm,                          /* (44) */
-  OSServiceId_CancelAlarm_Exit,                     /* (45) */
+  OSServiceId_CancelAlarm_Entry,                    /* (45) */
 #endif /* OSEE_HAS_ALARMS */
 #if (defined(OSEE_HAS_COUNTERS))
   OSServiceId_IncrementCounter,                     /* (46) */
-  OSServiceId_IncrementCounter_Exit,                /* (47) */
+  OSServiceId_IncrementCounter_Entry,               /* (47) */
   OSServiceId_GetCounterValue,                      /* (48) */
-  OSServiceId_GetCounterValue_Exit,                 /* (49) */
+  OSServiceId_GetCounterValue_Entry,                /* (49) */
   OSServiceId_GetElapsedValue,                      /* (50) */
-  OSServiceId_GetElapsedValue_Exit,                 /* (51) */
+  OSServiceId_GetElapsedValue_Entry,                /* (51) */
 #endif /* OSEE_HAS_COUNTERS */
   OSServiceId_GetActiveApplicationMode,             /* (52) */
-  OSServiceId_GetActiveApplicationMode_Exit,        /* (53) */
+  OSServiceId_GetActiveApplicationMode_Entry,       /* (53) */
   OSServiceId_ShutdownOS,                           /* (54) */
-  OSServiceId_ShutdownOS_Exit,                      /* (55) */
+  OSServiceId_ShutdownOS_Entry,                     /* (55) */
   OSServiceId_StartOS,                              /* (56) */
-  OSServiceId_StartOS_Exit,                         /* (57) */
+  OSServiceId_StartOS_Entry,                        /* (57) */
 /** Special value to flag an error happened in the Task body
     needed for AR requirement [SWS_Os_00069] */
   OSId_TaskBody,                                    /* (58) */
 /* Not needed, only added to not explicitly assign the value to the
  * next label */
-  OSId_TaskBody_Exit,                               /* (59) */
+  OSId_TaskBody_Entry,                              /* (59) */
 /* Special value to flag an error happened in the ISR2 body
    needed for AS requirement [SWS_Os_00368] */
   OSId_ISR2Body,                                    /* (60) */
 /* As above */
-  OSId_ISR2Body_Exit,                               /* (61) */
+  OSId_ISR2Body_Entry,                              /* (61) */
 /* Special value to flag an error happened in a Alarm or Schedule Table
    action */
   OSId_Action,                                      /* (62) */
-  OSId_Action_Exit,                                 /* (63) */
+  OSId_Action_Entry,                                /* (63) */
 /* Special value to flag an error happened in a Kernel internal service */
   OSId_Kernel,                                      /* (64) */
   OsId_Invalid  = (-1)

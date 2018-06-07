@@ -93,11 +93,14 @@ FUNC(void, OS_CODE)
 )
 {
 #if (defined(OSEE_HAS_PRETASKHOOK)) || (defined(OSEE_SCHEDULER_GLOBAL)) ||\
-    (defined(OSEE_HAS_CONTEXT))
+    (defined(OSEE_HAS_CONTEXT)) || (defined(OSEE_HAS_ORTI))
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb = osEE_get_curr_core();
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
-#endif /* OSEE_HAS_PRETASKHOOK || OSEE_SCHEDULER_GLOBAL || OSEE_HAS_CONTEXT */
-
+#endif /* OSEE_HAS_PRETASKHOOK || OSEE_SCHEDULER_GLOBAL || OSEE_HAS_CONTEXT ||
+          OSEE_HAS_ORTI */
+#if (defined(OSEE_HAS_ORTI))
+  p_ccb->service_id = OsId_Invalid;
+#endif /* OSEE_HAS_ORTI */
   /* Call PreTaskHook only if I'm scheduling a real TASK not an ISR2 or the
    * Idle TASK */
 #if (defined(OSEE_HAS_PRETASKHOOK)) || (defined(OSEE_HAS_CONTEXT))
