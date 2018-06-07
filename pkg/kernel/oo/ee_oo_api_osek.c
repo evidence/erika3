@@ -1076,8 +1076,10 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     VAR(OsEE_api_param, AUTOMATIC)
       param;
+#if (!defined(OSEE_HAS_ORTI))
     CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
       p_ccb = osEE_get_curr_core()->p_ccb;
+#endif /* !OSEE_HAS_ORTI */
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_GetTaskID);
@@ -1226,8 +1228,10 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     VAR(OsEE_api_param, AUTOMATIC)
       param;
+#if (!defined(OSEE_HAS_ORTI))
     CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
       p_ccb = osEE_get_curr_core()->p_ccb;
+#endif /* !OSEE_HAS_ORTI */
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_SetRelAlarm);
@@ -1301,7 +1305,7 @@ FUNC(StatusType, OS_CODE)
 #if (!defined(OSEE_HAS_ORTI))
     CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
       p_ccb = osEE_get_curr_core()->p_ccb;
-#endif /* OSEE_HAS_ORTI */
+#endif /* !OSEE_HAS_ORTI */
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_SetAbsAlarm);
@@ -1616,6 +1620,9 @@ FUNC(StatusType, OS_CODE)
 #if (defined(OSEE_HAS_CHECKS))
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
     p_curr      = p_curr_ccb->p_curr;
+
+  osEE_orti_trace_service_entry(p_curr_ccb, OSServiceId_SetEvent);
+
   /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
    *    the Task/OsIsr calls any OS service (excluding the interrupt services)
    *    then the Operating System shall ignore the service AND shall return  */
@@ -1639,9 +1646,9 @@ FUNC(StatusType, OS_CODE)
   {
     ev = E_OS_CALLEVEL;
   } else
-#endif /* OSEE_HAS_CHECKS */
-
+#elif (defined(OSEE_HAS_ORTI))
   osEE_orti_trace_service_entry(p_curr_ccb, OSServiceId_SetEvent);
+#endif /* OSEE_HAS_CHECKS elif OSEE_HAS_ORTI */
 #endif /* OSEE_HAS_CHECKS || OSEE_HAS_ERRORHOOK || OSEE_HAS_ORTI */
   if (!osEE_is_valid_tid(p_kdb, TaskID)) {
     ev = E_OS_ID;
@@ -1710,6 +1717,9 @@ FUNC(StatusType, OS_CODE)
 #if (defined(OSEE_HAS_CHECKS))
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
     p_curr      = p_ccb->p_curr;
+
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetEvent);
+
   /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
    *    the Task/OsIsr calls any OS service (excluding the interrupt services)
    *    then the Operating System shall ignore the service AND shall return */
@@ -1734,8 +1744,9 @@ FUNC(StatusType, OS_CODE)
   {
     ev = E_OS_CALLEVEL;
   } else
-#endif /* OSEE_HAS_CHECKS */
+#elif (defined(OSEE_HAS_ORTI))
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetEvent);
+#endif /* OSEE_HAS_CHECKS elif OSEE_HAS_ORTI */
 #endif /* OSEE_HAS_CHECKS || OSEE_HAS_ERRORHOOK || OSEE_HAS_ORTI */
   if (!osEE_is_valid_tid(p_kdb, TaskID)) {
     ev = E_OS_ID;
@@ -2150,7 +2161,7 @@ FUNC(StatusType, OS_CODE)
 #if (!defined(OSEE_HAS_ORTI))
     CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
       p_ccb = osEE_get_curr_core()->p_ccb;
-#endif /* OSEE_HAS_ORTI */
+#endif /* !OSEE_HAS_ORTI */
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_IncrementCounter);
