@@ -1876,7 +1876,11 @@ FUNC(OSServiceIdType, OS_CODE)
   void
 )
 {
+#if (defined(OSEE_HAS_ORTI))
+  return osEE_get_curr_core()->p_ccb->service_id & (~((OSServiceIdType)0x1U));
+#else
   return osEE_get_curr_core()->p_ccb->service_id;
+#endif /* OSEE_HAS_ORTI */
 }
 
 FUNC(OsEE_api_param, OS_CODE)
