@@ -592,7 +592,9 @@ FUNC(StatusType, OS_CODE)
     }
   } else
 #endif /* OSEE_HAS_MUTEX */
-#endif /* OSEE_HAS_CHECKS */
+#elif (defined(OSEE_HAS_ORTI))
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_TerminateTask);
+#endif /* OSEE_HAS_CHECKS elif OSEE_HAS_ORTI */
   {
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();

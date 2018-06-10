@@ -357,6 +357,9 @@ typedef struct OsEE_CCB_tag {
   VAR(OsEE_byte, TYPEDEF)                       s_isr_all_cnt;
   VAR(OsEE_byte, TYPEDEF)                       s_isr_os_cnt;
   VAR(OsEE_byte, TYPEDEF)                       d_isr_all_cnt;
+#if (defined(OSEE_HAS_ORTI))
+  VAR(OsEE_bool, TYPEDEF)                       orti_service_id_valid;
+#endif /* OSEE_HAS_ORTI */
 } OsEE_CCB;
 
 typedef struct OsEE_CDB_tag {

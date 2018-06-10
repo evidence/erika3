@@ -153,7 +153,8 @@ LOCAL_INLINE FUNC(void, OS_CODE)
 )
 {
 #if (defined(OSEE_HAS_ORTI))
-    p_ccb->service_id = (service_id + 1U);
+  p_ccb->service_id = (service_id + 1U);
+  p_ccb->orti_service_id_valid = OSEE_TRUE;
 #else
 /* Touch Unused parameters */
   (void)p_ccb;
@@ -169,7 +170,10 @@ LOCAL_INLINE FUNC(void, OS_CODE)
 )
 {
 #if (defined(OSEE_HAS_ORTI))
-    p_ccb->service_id = service_id;
+  if (p_ccb->orti_service_id_valid == OSEE_TRUE) {
+    p_ccb->service_id            = service_id;
+    p_ccb->orti_service_id_valid = OSEE_FALSE;
+  }
 #else
 /* Touch Unused parameters */
   (void)p_ccb;

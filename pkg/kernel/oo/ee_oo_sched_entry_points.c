@@ -99,9 +99,14 @@ FUNC(void, OS_CODE)
 #endif /* OSEE_HAS_PRETASKHOOK || OSEE_SCHEDULER_GLOBAL || OSEE_HAS_CONTEXT ||
           OSEE_HAS_ORTI */
 #if (defined(OSEE_HAS_ORTI))
+  if (p_ccb->orti_service_id_valid == OSEE_TRUE) {
 /* Reset last bit of service_id to mark OS service exit */
-  p_ccb->service_id = (OSServiceIdType)
-    (((OsEE_reg)p_ccb->service_id) & (~((OsEE_reg)0x1U)));
+    p_ccb->service_id = (OSServiceIdType)
+      (((OsEE_reg)p_ccb->service_id) & (~((OsEE_reg)0x1U)));
+
+    p_ccb->orti_service_id_valid = OSEE_FALSE;
+  }
+
 #endif /* OSEE_HAS_ORTI */
   /* Call PreTaskHook only if I'm scheduling a real TASK not an ISR2 or the
    * Idle TASK */
