@@ -1,0 +1,169 @@
+/* ###*B*###
+ * Erika Enterprise, version 3
+ * 
+ * Copyright (C) 2018 Evidence s.r.l.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or (at
+ * your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License, version 2, for more details.
+ * 
+ * You should have received a copy of the GNU General Public License,
+ * version 2, along with this program; if not, see
+ * <https://www.gnu.org/licenses/old-licenses/gpl-2.0.html >.
+ * 
+ * This program is distributed to you subject to the following
+ * clarifications and special exceptions to the GNU General Public
+ * License, version 2.
+ * 
+ * THIRD PARTIES' MATERIALS
+ * 
+ * Certain materials included in this library are provided by third
+ * parties under licenses other than the GNU General Public License. You
+ * may only use, copy, link to, modify and redistribute this library
+ * following the terms of license indicated below for third parties'
+ * materials.
+ * 
+ * In case you make modified versions of this library which still include
+ * said third parties' materials, you are obligated to grant this special
+ * exception.
+ * 
+ * The complete list of Third party materials allowed with ERIKA
+ * Enterprise version 3, together with the terms and conditions of each
+ * license, is present in the file THIRDPARTY.TXT in the root of the
+ * project.
+ * ###*E*### */
+
+/** \file	conf.oil
+ *  \brief	System Configuration.
+ *
+ *  This file contains the System Configuration for Erika Enterprise.
+ *
+ *  \author	Giuseppe Serano
+ *  \date	2018
+ */
+
+CPU mySystem {
+
+  OS myOs {
+    EE_OPT = "OS_EE_APPL_BUILD_DEBUG";
+    EE_OPT = "OS_EE_BUILD_DEBUG";
+//    EE_OPT = "OS_EE_VERBOSE";
+
+    USERESSCHEDULER = FALSE;
+
+    CPU_DATA = CORTEX_M {
+      MODEL = M4;
+      MULTI_STACK = TRUE;
+      IDLEHOOK = TRUE {
+        HOOKNAME = "idle_hook";
+      };
+      EXECUTE_FROM_RAM = TRUE;
+      TRACER = OFFCHIP;
+      CPU_CLOCK = 48.00;
+    };
+
+    MCU_DATA = S32K1XX {
+      MODEL = S32K148;
+    };
+
+    BOARD_DATA = S32K148EVB_Q144_Q176;
+
+    USEEXTENSIONAPI = TRUE {
+      SEMAPHORE = DEFAULT { NAME = "V"; COUNT=0; };
+    };
+
+    LIB = S32_SDK {
+      /* Used to select Board: S32K148EVB-Q144-Q176 */
+      BOARD = S32K148EVB_Q144_Q176;
+      /* Used to select library version. */
+      VERSION = "0.8.4 EAR";
+      /* Create libstm32cubef4.a */
+      STAND_ALONE = TRUE;
+    };
+
+    KERNEL_TYPE = OSEK {
+      CLASS = ECC1;
+      RQ = MQ { PRIORITIES = 10; };
+    };
+
+    STARTUPHOOK = TRUE;
+
+  };
+
+  APPDATA myApp {
+    APP_SRC  = "code.c";
+    APP_SRC  = "hal.c";
+  };
+
+  COUNTER SystemTimer {
+    MINCYCLE = 1;
+    MAXALLOWEDVALUE = 65535;
+    TICKSPERBASE = 1;
+    TYPE = HARDWARE {
+      SYSTEM_TIMER = TRUE;
+      PRIORITY     = 1;
+      DEVICE       = "SYSTICK";
+    };
+    SECONDSPERTICK = 0.001;
+  };
+
+  ALARM AlarmTask1 {
+    COUNTER = SystemTimer;
+    ACTION = ACTIVATETASK {
+      TASK = Task1;
+    };
+    AUTOSTART = TRUE {
+      ALARMTIME = 500;
+      CYCLETIME = 100;
+    };
+  };
+
+  ALARM AlarmFreeTask1 {
+    COUNTER = SystemTimer;
+    ACTION = ALARMCALLBACK {
+      ALARMCALLBACKNAME = "free_task1";
+    };
+    AUTOSTART = TRUE {
+      ALARMTIME = 1000;
+      CYCLETIME = 1000;
+    };
+  };
+
+  TASK Task1 {
+    PRIORITY = 1;
+    STACK = PRIVATE {
+      SIZE = 512;
+    };
+    SCHEDULE = FULL;
+  };
+
+  TASK Task2 {
+    PRIORITY = 2;
+    STACK = PRIVATE {
+      SIZE = 512;
+      EXTENDED = TRUE;
+    };
+    SCHEDULE = FULL;
+  };
+
+  TASK Task3 {
+    PRIORITY = 1;
+    SCHEDULE = FULL;
+  };
+
+  TASK Task4 {
+    PRIORITY = 1;
+    SCHEDULE = FULL;
+  };
+
+  TASK Task5 {
+    PRIORITY = 1;
+    SCHEDULE = FULL;
+  };
+};
