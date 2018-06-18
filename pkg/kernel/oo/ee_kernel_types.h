@@ -118,7 +118,7 @@ typedef enum {
   OSEE_KERNEL_STARTING,
   OSEE_KERNEL_STARTED,
   OSEE_KERNEL_SHUTDOWN
-} OsEE_kernel_status;
+} volatile OsEE_kernel_status;
 
 #if (defined(OSEE_HAS_MUTEX))
 /* Forward declaration of MDB & TDB, needed for MCB p_next and p_mtx_owner
