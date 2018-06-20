@@ -180,8 +180,13 @@ FUNC(OsEE_bool, OS_CODE)
 #if (!defined(OSEE_SINGLECORE))
   /* Check if this is a remote activation */
   if (p_tdb_act->orig_core_id != osEE_get_curr_core_id()) {
-    (void)osEE_scheduler_task_insert_rq(p_ccb, p_tdb_act, p_tcb_act);
-    head_changed = OSEE_FALSE;
+    head_changed = osEE_scheduler_task_insert_rq(p_ccb, p_tdb_act, p_tcb_act);
+    if (head_changed) {
+      /* if RQ Head is changed, signal the remote core, it needs to
+         reschedule */
+      osEE_hal_signal_core(p_tdb_act->orig_core_id);
+      head_changed = OSEE_FALSE;
+    }
   } else
 #endif /* !OSEE_SINGLECORE */
   {
