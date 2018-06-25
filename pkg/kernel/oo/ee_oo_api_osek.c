@@ -66,6 +66,9 @@ FUNC(void, OS_CODE)
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
   /* Disable Immediately for Atomicity */
   osEE_hal_disableIRQ();
+
+  osEE_stack_monitoring(p_cdb);
+
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_DisableAllInterrupts);
   p_ccb->d_isr_all_cnt = 1U;
   osEE_orti_trace_service_exit(p_ccb, OSServiceId_DisableAllInterrupts);
@@ -88,6 +91,8 @@ FUNC(void, OS_CODE)
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_EnableAllInterrupts);
 
+  osEE_stack_monitoring(p_cdb);
+
   if (p_ccb->d_isr_all_cnt > 0U) {
     p_ccb->d_isr_all_cnt = 0U;
     osEE_hal_enableIRQ();
@@ -108,6 +113,8 @@ FUNC(void, OS_CODE)
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_SuspendAllInterrupts);
+
+  osEE_stack_monitoring(p_cdb);
 
   if (p_ccb->s_isr_all_cnt == 0U) {
     CONST(OsEE_reg, AUTOMATIC) flags = osEE_hal_suspendIRQ();
@@ -133,6 +140,8 @@ FUNC(void, OS_CODE)
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_ResumeAllInterrupts);
 
+  osEE_stack_monitoring(p_cdb);
+
   if (p_ccb->s_isr_all_cnt > 0U) {
     if (--p_ccb->s_isr_all_cnt == 0U) {
       osEE_hal_resumeIRQ(p_ccb->prev_s_isr_all_status);
@@ -154,6 +163,8 @@ FUNC(void, OS_CODE)
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_SuspendOSInterrupts);
+
+  osEE_stack_monitoring(p_cdb);
 
   if (p_ccb->s_isr_os_cnt == 0U) {
     CONST(OsEE_reg, AUTOMATIC) flags = osEE_hal_begin_nested_primitive();
@@ -178,6 +189,8 @@ FUNC(void, OS_CODE)
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_ResumeOSInterrupts);
+
+  osEE_stack_monitoring(p_cdb);
 
   if (p_ccb->s_isr_os_cnt > 0U) {
     if (--p_ccb->s_isr_os_cnt == 0U) {
@@ -489,10 +502,14 @@ FUNC(AppModeType, OS_CODE)
 )
 {
   VAR(AppModeType, AUTOMATIC) app_mode;
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
+    p_cdb = osEE_get_curr_core();
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-    p_ccb = osEE_get_curr_core()->p_ccb;
+    p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetActiveApplicationMode);
+
+  osEE_stack_monitoring(p_cdb);
 
   if (p_ccb->os_status >= OSEE_KERNEL_STARTING) {
     app_mode = p_ccb->app_mode;
@@ -513,11 +530,18 @@ FUNC(StatusType, OS_CODE)
 {
   VAR(StatusType, AUTOMATIC)                    ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA) p_kdb = osEE_get_kernel();
+#if (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
+    p_cdb = osEE_get_curr_core();
+#endif /* OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
 #if (defined(OSEE_HAS_ORTI))
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-    p_ccb = osEE_get_curr_core()->p_ccb;
+    p_ccb = p_cdb->p_ccb;
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_ActivateTask);
 #endif /* OSEE_HAS_ORTI */
+#if (defined(OSEE_HAS_STACK_MONITORING))
+  osEE_stack_monitoring(p_cdb);
+#endif /* OSEE_HAS_STACK_MONITORING */
 
   if (!osEE_is_valid_tid(p_kdb, TaskID)) {
     ev = E_OS_ID;
@@ -573,11 +597,18 @@ FUNC(StatusType, OS_CODE)
 {
   VAR(StatusType, AUTOMATIC)                    ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA) p_kdb = osEE_get_kernel();
+#if (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
+    p_cdb = osEE_get_curr_core();
+#endif /* OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
 #if (defined(OSEE_HAS_ORTI))
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-    p_ccb = osEE_get_curr_core()->p_ccb;
+    p_ccb = p_cdb->p_ccb;
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_ChainTask);
 #endif /* OSEE_HAS_ORTI */
+#if (defined(OSEE_HAS_STACK_MONITORING))
+  osEE_stack_monitoring(p_cdb);
+#endif /* OSEE_HAS_STACK_MONITORING */
 
   if (!osEE_is_valid_tid(p_kdb, TaskID)) {
     ev = E_OS_ID;
@@ -676,6 +707,8 @@ FUNC(StatusType, OS_CODE)
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_TerminateTask);
 
+  osEE_stack_monitoring(p_cdb);
+
   /*  [OS_SWS_088]: If an OS-Application makes a service call from the wrong
    *  context AND is currently not inside a Category 1 ISR the Operating
    *  System module shall not perform the requested action
@@ -707,9 +740,11 @@ FUNC(StatusType, OS_CODE)
     }
   } else
 #endif /* OSEE_HAS_MUTEX */
-#elif (defined(OSEE_HAS_ORTI))
+#elif (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_TerminateTask);
-#endif /* OSEE_HAS_CHECKS elif OSEE_HAS_ORTI */
+
+  osEE_stack_monitoring(p_cdb);
+#endif /* OSEE_HAS_CHECKS elif (OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING) */
   {
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
@@ -752,6 +787,8 @@ FUNC(StatusType, OS_CODE)
   CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA) p_tcb   = p_curr->p_tcb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_Schedule);
+
+  osEE_stack_monitoring(p_cdb);
 
 #if (defined(OSEE_HAS_CHECKS))
   if (p_curr->task_type > OSEE_TASK_TYPE_EXTENDED) {
@@ -808,11 +845,18 @@ FUNC(StatusType, OS_CODE)
 {
   VAR(StatusType, AUTOMATIC)                    ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA) p_kdb = osEE_get_kernel();
+#if (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
+    p_cdb = osEE_get_curr_core();
+#endif /* OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
 #if (defined(OSEE_HAS_ORTI))
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-    p_ccb = osEE_get_curr_core()->p_ccb;
+    p_ccb = p_cdb->p_ccb;
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetResource);
 #endif /* OSEE_HAS_ORTI */
+#if (defined(OSEE_HAS_STACK_MONITORING))
+  osEE_stack_monitoring(p_cdb);
+#endif /* OSEE_HAS_STACK_MONITORING */
 
   if (!osEE_is_valid_res_id(p_kdb, ResID)) {
     ev = E_OS_ID;
@@ -900,6 +944,7 @@ FUNC(StatusType, OS_CODE)
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_ReleaseResource);
 #endif /* OSEE_HAS_ORTI */
+  osEE_stack_monitoring(p_cdb);
 
   if (!osEE_is_valid_res_id(p_kdb, ResID)) {
     ev = E_OS_ID;
@@ -992,24 +1037,11 @@ FUNC(StatusType, OS_CODE)
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_ShutdownOS);
 
+/* No need to monitor the stack if ShutdownOs is called */
+
   if ((os_status == OSEE_KERNEL_STARTED) || (os_status == OSEE_KERNEL_STARTING))
   {
-    p_ccb->os_status = OSEE_KERNEL_SHUTDOWN;
-    /* Used to propagate the error to the ShutdownHook */
-    p_ccb->last_error = Error;
-
-#if (defined(OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN))
-    osEE_hal_disableIRQ();
-    osEE_call_shutdown_hook(p_ccb, Error);
-    while (1) {
-      ; /* Endless Loop */
-    }
-#else
-    if (os_status == OSEE_KERNEL_STARTED) {
-      osEE_idle_task_terminate(p_cdb->p_idle_task);
-    }
-    ev = E_OK;
-#endif /* OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN */
+    ev = osEE_shutdown_os(p_cdb, Error);
   } else {
     ev = E_OS_STATE;
   }
@@ -1107,11 +1139,18 @@ FUNC(StatusType, OS_CODE)
 {
   VAR(StatusType, AUTOMATIC)                    ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA) p_kdb = osEE_get_kernel();
+#if (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
+    p_cdb = osEE_get_curr_core();
+#endif /* OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
 #if (defined(OSEE_HAS_ORTI))
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-    p_ccb = osEE_get_curr_core()->p_ccb;
+    p_ccb = p_cdb->p_ccb;
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetTaskState);
 #endif /* OSEE_HAS_ORTI */
+#if (defined(OSEE_HAS_STACK_MONITORING))
+  osEE_stack_monitoring(p_cdb);
+#endif /* OSEE_HAS_STACK_MONITORING */
 
   /* [OS566]: The Operating System API shall check in extended mode all pointer
      argument for NULL pointer and return OS_E_PARAMETER_POINTER
@@ -1190,11 +1229,18 @@ FUNC(StatusType, OS_CODE)
   VAR(StatusType, AUTOMATIC)  ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
     p_kdb = osEE_get_kernel();
+#if (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
+    p_cdb = osEE_get_curr_core();
+#endif /* OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
 #if (defined(OSEE_HAS_ORTI))
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-    p_ccb = osEE_get_curr_core()->p_ccb;
+    p_ccb = p_cdb->p_ccb;
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_SetRelAlarm);
 #endif /* OSEE_HAS_ORTI */
+#if (defined(OSEE_HAS_STACK_MONITORING))
+  osEE_stack_monitoring(p_cdb);
+#endif /* OSEE_HAS_STACK_MONITORING */
 
   if (!osEE_is_valid_alarm_id(p_kdb, AlarmID)) {
     ev = E_OS_ID;
@@ -1265,11 +1311,18 @@ FUNC(StatusType, OS_CODE)
   VAR(StatusType, AUTOMATIC)  ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
     p_kdb = osEE_get_kernel();
+#if (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
+    p_cdb = osEE_get_curr_core();
+#endif /* OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
 #if (defined(OSEE_HAS_ORTI))
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-    p_ccb = osEE_get_curr_core()->p_ccb;
+    p_ccb = p_cdb->p_ccb;
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_SetAbsAlarm);
 #endif /* OSEE_HAS_ORTI */
+#if (defined(OSEE_HAS_STACK_MONITORING))
+  osEE_stack_monitoring(p_cdb);
+#endif /* OSEE_HAS_STACK_MONITORING */
 
   if (!osEE_is_valid_alarm_id(p_kdb, AlarmID)) {
     ev = E_OS_ID;
@@ -1337,11 +1390,18 @@ FUNC(StatusType, OS_CODE)
   VAR(StatusType, AUTOMATIC)  ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
     p_kdb = osEE_get_kernel();
+#if (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
+    p_cdb = osEE_get_curr_core();
+#endif /* OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
 #if (defined(OSEE_HAS_ORTI))
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-    p_ccb = osEE_get_curr_core()->p_ccb;
+    p_ccb = p_cdb->p_ccb;
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_CancelAlarm);
 #endif /* OSEE_HAS_ORTI */
+#if (defined(OSEE_HAS_STACK_MONITORING))
+  osEE_stack_monitoring(p_cdb);
+#endif /* OSEE_HAS_STACK_MONITORING */
 
   if (!osEE_is_valid_alarm_id(p_kdb, AlarmID)) {
     ev = E_OS_ID;
@@ -1390,11 +1450,18 @@ FUNC(StatusType, OS_CODE)
   VAR(StatusType, AUTOMATIC)  ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
     p_kdb = osEE_get_kernel();
+#if (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
+    p_cdb = osEE_get_curr_core();
+#endif /* OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
 #if (defined(OSEE_HAS_ORTI))
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-    p_ccb = osEE_get_curr_core()->p_ccb;
+    p_ccb = p_cdb->p_ccb;
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetAlarm);
 #endif /* OSEE_HAS_ORTI */
+#if (defined(OSEE_HAS_STACK_MONITORING))
+  osEE_stack_monitoring(p_cdb);
+#endif /* OSEE_HAS_STACK_MONITORING */
 
   if (!osEE_is_valid_alarm_id(p_kdb, AlarmID)) {
     ev = E_OS_ID;
@@ -1449,11 +1516,18 @@ FUNC(StatusType, OS_CODE)
   VAR(StatusType, AUTOMATIC)  ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
     p_kdb = osEE_get_kernel();
+#if (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
+    p_cdb = osEE_get_curr_core();
+#endif /* OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
 #if (defined(OSEE_HAS_ORTI))
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-    p_ccb = osEE_get_curr_core()->p_ccb;
+    p_ccb = p_cdb->p_ccb;
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetAlarmBase);
 #endif /* OSEE_HAS_ORTI */
+#if (defined(OSEE_HAS_STACK_MONITORING))
+  osEE_stack_monitoring(p_cdb);
+#endif /* OSEE_HAS_STACK_MONITORING */
 
   if (!osEE_is_valid_alarm_id(p_kdb, AlarmID)) {
     ev = E_OS_ID;
@@ -1520,6 +1594,8 @@ FUNC(StatusType, OS_CODE)
     p_curr_tcb  = p_curr->p_tcb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_WaitEvent);
+
+  osEE_stack_monitoring(p_cdb);
 
 #if (defined(OSEE_HAS_CHECKS))
   /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
@@ -1614,9 +1690,13 @@ FUNC(StatusType, OS_CODE)
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
     p_kdb       = osEE_get_kernel();
 #if (defined(OSEE_HAS_CHECKS)) || (defined(OSEE_HAS_ERRORHOOK)) ||\
-    (defined(OSEE_HAS_ORTI))
+    (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_curr_cdb  = osEE_get_curr_core();
+#endif /* OSEE_HAS_CHECKS || OSEE_HAS_ERRORHOOK || OSEE_HAS_ORTI 
+          OSEE_HAS_STACK_MONITORING */
+#if (defined(OSEE_HAS_CHECKS)) || (defined(OSEE_HAS_ERRORHOOK)) ||\
+    (defined(OSEE_HAS_ORTI))
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_curr_ccb  = p_curr_cdb->p_ccb;
 #if (defined(OSEE_HAS_CHECKS))
@@ -1624,6 +1704,8 @@ FUNC(StatusType, OS_CODE)
     p_curr      = p_curr_ccb->p_curr;
 
   osEE_orti_trace_service_entry(p_curr_ccb, OSServiceId_SetEvent);
+
+  osEE_stack_monitoring(p_curr_cdb);
 
   /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
    *    the Task/OsIsr calls any OS service (excluding the interrupt services)
@@ -1648,9 +1730,12 @@ FUNC(StatusType, OS_CODE)
   {
     ev = E_OS_CALLEVEL;
   } else
-#elif (defined(OSEE_HAS_ORTI))
+#else
+#if (defined(OSEE_HAS_ORTI))
   osEE_orti_trace_service_entry(p_curr_ccb, OSServiceId_SetEvent);
-#endif /* OSEE_HAS_CHECKS elif OSEE_HAS_ORTI */
+#endif /* OSEE_HAS_ORTI */
+  osEE_stack_monitoring(p_curr_cdb);
+#endif /* OSEE_HAS_CHECKS */
 #endif /* OSEE_HAS_CHECKS || OSEE_HAS_ERRORHOOK || OSEE_HAS_ORTI */
   if (!osEE_is_valid_tid(p_kdb, TaskID)) {
     ev = E_OS_ID;
@@ -1707,9 +1792,13 @@ FUNC(StatusType, OS_CODE)
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
     p_kdb       = osEE_get_kernel();
 #if (defined(OSEE_HAS_CHECKS)) || (defined(OSEE_HAS_ERRORHOOK)) ||\
-    (defined(OSEE_HAS_ORTI))
+    (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb       = osEE_get_curr_core();
+#endif /* OSEE_HAS_CHECKS || OSEE_HAS_ERRORHOOK || OSEE_HAS_ORTI ||
+          OSEE_HAS_STACK_MONITORING */
+#if (defined(OSEE_HAS_CHECKS)) || (defined(OSEE_HAS_ERRORHOOK)) ||\
+    (defined(OSEE_HAS_ORTI))
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb       = p_cdb->p_ccb;
 #if (defined(OSEE_SERVICE_PROTECTION))
@@ -1721,6 +1810,8 @@ FUNC(StatusType, OS_CODE)
     p_curr      = p_ccb->p_curr;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetEvent);
+
+  osEE_stack_monitoring(p_cdb);
 
   /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
    *    the Task/OsIsr calls any OS service (excluding the interrupt services)
@@ -1746,9 +1837,12 @@ FUNC(StatusType, OS_CODE)
   {
     ev = E_OS_CALLEVEL;
   } else
-#elif (defined(OSEE_HAS_ORTI))
+#else
+#if (defined(OSEE_HAS_ORTI))
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetEvent);
-#endif /* OSEE_HAS_CHECKS elif OSEE_HAS_ORTI */
+#endif /* OSEE_HAS_ORTI */
+  osEE_stack_monitoring(p_cdb);
+#endif /* OSEE_HAS_CHECKS */
 #endif /* OSEE_HAS_CHECKS || OSEE_HAS_ERRORHOOK || OSEE_HAS_ORTI */
   if (!osEE_is_valid_tid(p_kdb, TaskID)) {
     ev = E_OS_ID;
@@ -1817,6 +1911,8 @@ FUNC(StatusType, OS_CODE)
     p_curr_tcb  = p_curr->p_tcb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_ClearEvent);
+
+  osEE_stack_monitoring(p_cdb);
 
 #if (defined(OSEE_HAS_CHECKS))
   /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
@@ -1924,11 +2020,18 @@ FUNC(StatusType, OS_CODE)
   VAR(StatusType, AUTOMATIC)  ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
     p_kdb = osEE_get_kernel();
+#if (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
+    p_cdb = osEE_get_curr_core();
+#endif /* OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
 #if (defined(OSEE_HAS_ORTI))
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-    p_ccb = osEE_get_curr_core()->p_ccb;
+    p_ccb = p_cdb->p_ccb;
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetCounterValue);
 #endif /* OSEE_HAS_ORTI */
+#if (defined(OSEE_HAS_STACK_MONITORING))
+  osEE_stack_monitoring(p_cdb);
+#endif /* OSEE_HAS_STACK_MONITORING */
 /* [SWS_Os_00376] If the input parameter <CounterID> in a call of
     GetCounterValue() is not valid, GetCounterValue() shall return E_OS_ID. */
   if (!osEE_is_valid_counter_id(p_kdb, CounterID)) {
@@ -2007,12 +2110,18 @@ FUNC(StatusType, OS_CODE)
   VAR(StatusType, AUTOMATIC)  ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
     p_kdb = osEE_get_kernel();
+#if (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
+    p_cdb = osEE_get_curr_core();
+#endif /* OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
 #if (defined(OSEE_HAS_ORTI))
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-    p_ccb = osEE_get_curr_core()->p_ccb;
+    p_ccb = p_cdb->p_ccb;
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetElapsedValue);
 #endif /* OSEE_HAS_ORTI */
-
+#if (defined(OSEE_HAS_STACK_MONITORING))
+  osEE_stack_monitoring(p_cdb);
+#endif /* OSEE_HAS_STACK_MONITORING */
 /* [SWS_Os_00381] If the input parameter <CounterID> in a call of
     GetElapsedValue() is not valid GetElapsedValue() shall return E_OS_ID. */
   if (!osEE_is_valid_counter_id(p_kdb, CounterID)) {
@@ -2110,11 +2219,18 @@ FUNC(StatusType, OS_CODE)
   VAR(StatusType, AUTOMATIC)  ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
     p_kdb = osEE_get_kernel();
+#if (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
+    p_cdb = osEE_get_curr_core();
+#endif /* OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
 #if (defined(OSEE_HAS_ORTI))
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-    p_ccb = osEE_get_curr_core()->p_ccb;
+    p_ccb = p_cdb->p_ccb;
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_IncrementCounter);
 #endif /* OSEE_HAS_ORTI */
+#if (defined(OSEE_HAS_STACK_MONITORING))
+  osEE_stack_monitoring(p_cdb);
+#endif /* OSEE_HAS_STACK_MONITORING */
 
 /* [SWS_Os_00285] If the input parameter <CounterID> in a call of
     IncrementCounter() is not valid OR the counter is a hardware counter,

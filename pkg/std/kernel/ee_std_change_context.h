@@ -175,6 +175,13 @@ OSEE_GET_MSB_INLINE FUNC(MemSize, OS_CODE)
 );
 #endif /* OSEE_RQ_MULTIQUEUE */
 
+#if (defined(OSEE_HAS_STACK_MONITORING))
+FUNC(OsEE_bool, OS_CODE) osEE_hal_check_stack_overflow
+(
+  P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb
+);
+#endif /* OSEE_HAS_STACK_MONITORING */
+
 #if (defined(OSEE_SINGLECORE))
 LOCAL_INLINE FUNC(void, OS_CODE)
   osEE_hal_signal_broadcast

@@ -163,22 +163,41 @@ FUNC_P2VAR(OsEE_SN, OS_APPL_DATA, OS_CODE)
 }
 #endif /* OSEE_HAS_EVENTS */
 
+#if (defined(OSEE_HAS_STACK_MONITORING))
+FUNC(void, OS_CODE) osEE_stack_monitoring
+(
+  P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb
+)
+{
+  if (osEE_hal_check_stack_overflow(p_cdb)) {
+#if (defined(OSEE_HAS_PROTECTION_HOOK))
+  /* TODO */
+#else
+  osEE_shutdown_os(p_cdb, E_OS_STACKFAULT);
+#endif /*  OSEE_HAS_PROTECTION_HOOK */
+  }
+}
+#endif /* OSEE_HAS_STACK_MONITORING */
+
 FUNC(StatusType, OS_CODE)
   osEE_activate_isr2
 (
   VAR(TaskType, AUTOMATIC) isr2_id
 )
 {
-  VAR(StatusType, AUTOMATIC) ret_val  = E_OK;
-  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA) p_kdb = osEE_get_kernel();
-  CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
-    p_act_tdb = (*p_kdb->p_tdb_ptr_array)[isr2_id];
+#if (defined(OSEE_HAS_STACK_MONITORING))
+  osEE_stack_monitoring(osEE_get_curr_core());
+#endif /* OSEE_HAS_STACK_MONITORING */
+  {
+    CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA) p_kdb = osEE_get_kernel();
+    CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
+      p_act_tdb = (*p_kdb->p_tdb_ptr_array)[isr2_id];
 
-  /* Mark the TASK as Activated */
-  ++p_act_tdb->p_tcb->current_num_of_act;
+    /* Mark the TASK as Activated */
+    ++p_act_tdb->p_tcb->current_num_of_act;
 
-  osEE_scheduler_task_set_running(p_kdb, p_act_tdb, NULL);
-
-  return ret_val;
+    osEE_scheduler_task_set_running(p_kdb, p_act_tdb, NULL);
+  }
+  return E_OK;
 }
 

@@ -118,7 +118,7 @@ typedef enum {
   OSEE_KERNEL_STARTING,
   OSEE_KERNEL_STARTED,
   OSEE_KERNEL_SHUTDOWN
-} volatile OsEE_kernel_status;
+} OsEE_kernel_status;
 
 #if (defined(OSEE_HAS_MUTEX))
 /* Forward declaration of MDB & TDB, needed for MCB p_next and p_mtx_owner
@@ -348,7 +348,7 @@ typedef struct OsEE_CCB_tag {
 #endif /* OSEE_API_DYNAMIC */
 #endif /* !OSEE_SCHEDULER_GLOBAL */
   P2VAR(OsEE_SN, TYPEDEF, OS_APPL_DATA)         p_stk_sn;
-  VAR(OsEE_kernel_status, TYPEDEF)              os_status;
+  VAR(OsEE_kernel_status volatile, TYPEDEF)     os_status;
   VAR(AppModeType, TYPEDEF)                     app_mode;
   /* Error Handling variables */
   VAR(StatusType, TYPEDEF)                      last_error;

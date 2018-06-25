@@ -61,6 +61,8 @@ static FUNC(void, OS_CODE)
 {
   (void)osEE_begin_primitive();
 
+  osEE_stack_monitoring(osEE_get_curr_core());
+
   osEE_hal_terminate_activation(&p_to_term->hdb,
     OSEE_KERNEL_TERMINATE_ACTIVATION_CB);
 }
@@ -92,11 +94,19 @@ FUNC(void, OS_CODE)
 )
 {
 #if (defined(OSEE_HAS_PRETASKHOOK)) || (defined(OSEE_SCHEDULER_GLOBAL)) ||\
-    (defined(OSEE_HAS_CONTEXT)) || (defined(OSEE_HAS_ORTI))
+    (defined(OSEE_HAS_CONTEXT)) || (defined(OSEE_HAS_ORTI)) ||\
+    (defined(OSEE_HAS_STACK_MONITORING))
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb = osEE_get_curr_core();
+#endif /* OSEE_HAS_PRETASKHOOK || OSEE_SCHEDULER_GLOBAL || OSEE_HAS_CONTEXT ||
+          OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
+#if (defined(OSEE_HAS_PRETASKHOOK)) || (defined(OSEE_SCHEDULER_GLOBAL)) ||\
+    (defined(OSEE_HAS_CONTEXT)) || (defined(OSEE_HAS_ORTI))
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
 #endif /* OSEE_HAS_PRETASKHOOK || OSEE_SCHEDULER_GLOBAL || OSEE_HAS_CONTEXT ||
           OSEE_HAS_ORTI */
+#if (defined(OSEE_HAS_STACK_MONITORING))
+  osEE_stack_monitoring(p_cdb);
+#endif /* OSEE_HAS_STACK_MONITORING */
 #if (defined(OSEE_HAS_ORTI))
   if (p_ccb->orti_service_id_valid == OSEE_TRUE) {
 /* Reset last bit of service_id to mark OS service exit */
