@@ -47,3 +47,8 @@ Platform: MPPA
 (*) Kalray Inc. - MPPA AccessCore SDK
     License: Contact Kalray Inc.
     Website: http://www.kalrayinc.com/kalray/products/#software
+
+Platform: Cortex-M, NXP S32K1XX
+(*) NXP S32DS-ARM: S32 Design Studio IDE for Arm based MCUs
+    License: Contact NXP.
+    Website: https://www.nxp.com/support/developer-resources/run-time-software/s32-design-studio-ide/s32-design-studio-ide-for-arm-based-mcus:S32DS-ARM
