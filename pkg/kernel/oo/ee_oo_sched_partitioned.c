@@ -369,7 +369,9 @@ FUNC(void, OS_CODE)
   CONSTP2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA)
     p_preempted_sn = p_ccb->p_stk_sn;
 
-  p_preempted->p_tcb->status    = OSEE_TASK_READY_STACKED;
+  if (p_preempted->p_tcb->status == OSEE_TASK_RUNNING) {
+    p_preempted->p_tcb->status  = OSEE_TASK_READY_STACKED;
+  }
   p_ccb->p_curr                 = p_tdb;
 
   /* Touch unused parameters */
