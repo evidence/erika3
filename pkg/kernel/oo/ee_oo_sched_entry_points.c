@@ -65,27 +65,6 @@ static FUNC(void, OS_CODE)
     OSEE_KERNEL_TERMINATE_ACTIVATION_CB);
 }
 
-#if (!defined(OSEE_KERNEL_TERMINATE_ACTIVATION_OVERRIDE))
-FUNC(void, OS_CODE)
-  osEE_scheduler_task_end
-(
-  void
-)
-{
-  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_to;
-  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_from;
-
-  p_to = osEE_scheduler_task_terminated(osEE_get_kernel(), osEE_get_curr_core(),
-           &p_from);
-
-  if (p_from->task_type != OSEE_TASK_TYPE_ISR2) {
-    osEE_change_context_from_task_end(p_from, p_to);
-  } else {
-    osEE_change_context_from_isr2_end(p_from, p_to);
-  }
-}
-#endif /* !OSEE_KERNEL_TERMINATE_ACTIVATION_OVERRIDE */
-
 FUNC(void, OS_CODE)
   osEE_scheduler_task_wrapper_restore
 (

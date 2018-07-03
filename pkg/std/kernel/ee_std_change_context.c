@@ -52,6 +52,7 @@
  */
 #include "ee_internal.h"
 
+#if (!defined(OSEE_KERNEL_CHANGE_CONTEXT_FROM_RUNNING_OVERRIDE))
 FUNC(void, OS_CODE)
   osEE_change_context_from_running
 (
@@ -72,7 +73,9 @@ FUNC(void, OS_CODE)
       p_from->hdb.p_scb);
   }
 }
+#endif /* !OSEE_KERNEL_CHANGE_CONTEXT_FROM_RUNNING_OVERRIDE */
 
+#if (!defined(OSEE_KERNEL_CHANGE_CONTEXT_FROM_TASK_END_OVERRIDE))
 FUNC(void, OS_CODE)
   osEE_change_context_from_task_end
 (
@@ -94,7 +97,9 @@ FUNC(void, OS_CODE)
      that any implementation won't do that */
   (void)p_from;
 }
+#endif /* !OSEE_KERNEL_CHANGE_CONTEXT_FROM_TASK_END_OVERRIDE */
 
+#if (!defined(OSEE_KERNEL_IDLE_TASK_TERMINATE_OVERRIDE))
 FUNC(void, OS_CODE)
   osEE_idle_task_terminate
 (
@@ -119,4 +124,26 @@ FUNC(void, OS_CODE)
 
   osEE_hal_restore_ctx(p_idle_tdb, p_scb);
 }
+#endif /* !OSEE_KERNEL_IDLE_TASK_TERMINATE_OVERRIDE */
+
+#if (!defined(OSEE_KERNEL_TERMINATE_ACTIVATION_OVERRIDE))
+FUNC(void, OS_CODE)
+  osEE_scheduler_task_end
+(
+  void
+)
+{
+  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_to;
+  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_from;
+
+  p_to = osEE_scheduler_task_terminated(osEE_get_kernel(), osEE_get_curr_core(),
+           &p_from);
+
+  if (p_from->task_type != OSEE_TASK_TYPE_ISR2) {
+    osEE_change_context_from_task_end(p_from, p_to);
+  } else {
+    osEE_change_context_from_isr2_end(p_from, p_to);
+  }
+}
+#endif /* !OSEE_KERNEL_TERMINATE_ACTIVATION_OVERRIDE */
 
