@@ -139,4 +139,15 @@ typedef struct OsEE_CHDB_tag {
 #if	(defined(OSTICKDURATION))
 extern FUNC(void, OS_CODE) osEE_cortex_m_system_timer_handler( void );
 #endif	/* OSTICKDURATION */
+
+#if	1	/* [GS]: New Context-Switch using PendSV. */
+/*
+ * Used to override default definition of osEE_scheduler_task_end,
+ * in ee_std_change_context.c, that is not inlined
+ */
+#define	OSEE_KERNEL_TERMINATE_ACTIVATION_OVERRIDE
+
+/* Override Terminate Activation Kernel Callback (CB). */
+#define OSEE_KERNEL_TERMINATE_ACTIVATION_CB osEE_cortex_m_scheduler_task_end
+#endif	/* 1 - [GS]: New Context-Switch using PendSV. */
 #endif	/* !OSEE_HAL_INTERNAL_TYPES_H */

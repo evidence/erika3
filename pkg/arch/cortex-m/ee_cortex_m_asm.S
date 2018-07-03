@@ -320,6 +320,28 @@ osEE_hal_terminate_ctx:
 	/* This is a NORETURN Function */
 	.size	osEE_hal_terminate_ctx, .-osEE_hal_terminate_ctx
 
+#if	1	/* [GS]: New Context-Switch using PendSV. */
+/*
+FUNC(void, OS_CODE)
+	osEE_cortex_m_restore_ctx
+(
+	P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)	p_to_tdb,
+	P2VAR(OsEE_SCB, AUTOMATIC, OS_APPL_DATA)	p_to_scb
+)
+*/
+	.align 2
+	.global	osEE_cortex_m_restore_ctx
+	.type	osEE_cortex_m_restore_ctx, %function
+osEE_cortex_m_restore_ctx:
+	/*
+	 * R0 parameter:	OsEE_TDB * p_to_tdb
+	 * R1 parameter:	OsEE_SCB * p_to_scb
+	 */
+	osEE_hal_restore_vcontext_m R1
+	BX	LR
+	.size	osEE_cortex_m_restore_ctx, .-osEE_cortex_m_restore_ctx
+#endif	/* 1 - [GS]: New Context-Switch using PendSV. */
+
 /******************************************************************************
  *				END
  ******************************************************************************/

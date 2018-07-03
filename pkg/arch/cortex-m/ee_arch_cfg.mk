@@ -60,6 +60,9 @@ EE_SRCS += ee_cortex_m_irqstub.c
 EE_SRCS += ee_cortex_m_system.c
 EE_SRCS += ee_cortex_m_utils.c
 
+#[GS]: New Context-Switch using PendSV.
+EE_SRCS += ee_cortex_m_change_context.c
+
 ifeq	($(call iseeopt, OSEE_HAS_SYSTEM_TIMER), yes)
 EE_SRCS += ee_cortex_m_system_timer.c
 endif

@@ -138,14 +138,14 @@
 	.type	osEE_set_switch_context_pri, #function
 osEE_set_switch_context_pri:
 
-#if	0	/* [GS]: T.B.C. */
+#if	1	/* [GS]: New Context-Switch using PendSV. */
 	/* Set PendSV priority to the minumum one */
 	LDR	R0, =NVIC_SHPR3
 	LDR	R1, =NVIC_PENDSV_PRI
 	LDR	R2, [R0]
 	ORRS	R2, R2, R1
 	STR	R2, [R0]
-#endif	/* 0 - [GS]: T.B.C. */
+#endif	/* 1 - [GS]: New Context-Switch using PendSV. */
 
 	/* SVCall priority to the maximum one */
 	LDR	R0, =NVIC_SHPR2
@@ -158,6 +158,28 @@ osEE_set_switch_context_pri:
 
 	.size	osEE_set_switch_context_pri, . - osEE_set_switch_context_pri
 
+#if	1	/* [GS]: New Context-Switch using PendSV. */
+/*
+ * FUNC(void, OS_CODE) osEE_cortex_m_trigger_pend_sv(void)
+ */
+	.align 2
+	.global	osEE_cortex_m_trigger_pend_sv
+	.type	osEE_cortex_m_trigger_pend_sv, %function
+osEE_cortex_m_trigger_pend_sv:
+
+	/* 
+	 * Trigger the PendSV exception (causes context switch)
+	 */
+	LDR	R0, =NVIC_INT_CTRL
+	LDR	R1, =NVIC_PENDSVSET
+	STR	R1, [R0]
+
+	BX	LR
+
+	.size	osEE_cortex_m_trigger_pend_sv, . - osEE_cortex_m_trigger_pend_sv
+#endif	/* 1 - [GS]: New Context-Switch using PendSV. */
+
+#if	0	/* [GS]: New Context-Switch using PendSV. */
 /*
  * FUNC(void, OS_CODE) osEE_cortex_m_switch_context(void)
  */
@@ -242,6 +264,7 @@ osEE_cortex_m_switch_context:
 #endif	/* = - Fake Interrupt Frame to jump to osEE_cortex_m_thread_end */
 
 	.size	osEE_cortex_m_switch_context, . - osEE_cortex_m_switch_context
+#endif	/* 0 - [GS]: New Context-Switch using PendSV. */
 
 /*
  * FUNC(void, OS_CODE) PendSV_Handler(void)
@@ -251,31 +274,17 @@ osEE_cortex_m_switch_context:
 	.type	PendSV_Handler, %function
 PendSV_Handler:
 
-	CPSID	I		/* Disable all interrupts. */
+	CPSID	I	/* Disable all interrupts. */
 
 	/* Clear the PendSV exception (preventing 2nd triggering) */
-	LDR	R0, =NVIC_INT_CTRL
+	LDR	R2, =NVIC_INT_CTRL
 	LDR	R1, =NVIC_PENDSVCLR
-	STR	R1, [R0]
+	STR	R1, [R2]
 
-#if	0
-	BL	EE_IRQ_end_instance	@ IRQ Scheduler.
-
-@ R0 = EE_std_endcycle_next_tid.
-	LDR	R0, =_EE_std_endcycle_next_tid_addr
-	LDR	R0, [R0]
-
-#ifdef __MONO__
-@ #define EE_std_need_context_change(tid) ((tid) >= 0)
-	LDR	R1, =TID_IS_STACKED_MARK
-	ANDS	R0, R0, R1
-	CBNZ	R0, PendSV_Handler_end
-#endif
-
-#ifdef __MULTI__
-	BL	EE_std_need_context_change
-	CBZ	R0, PendSV_Handler_end
-#endif
+#if	defined(OS_EE_ARCH_CORTEX_M_M4F_FPU)
+	/* Save Link Register. */
+	PUSH	{R0, LR}
+#endif	/* defined(OS_EE_ARCH_CORTEX_M_M4F_FPU) */
 
 	/*
 	 * Build a stack frame to jump into the
@@ -286,16 +295,15 @@ PendSV_Handler:
 	/* R3 = 0x01000000 (xPSR) */
 	LDR	R3, =EPSR_T_BIT_VAL
 
-	/* R2 = osEE_scheduler_task_end (PC) */
+	/* R2 = osEE_cortex_m_change_context_from_task_end (PC) */
 	LDR	R2, =osEE_cortex_m_change_context_from_task_end
 
 	/* R1 = osEE_cortex_m_thread_end (LR) */
 	LDR	R1, =osEE_cortex_m_thread_end
-#endif
 
 	/*
 	 * |xPSR|-> xPSR AND 0xFFFFFE0
-	 * | PC |-> osEE_scheduler_task_end
+	 * | PC |-> osEE_cortex_m_change_context_from_task_end
 	 * | LR |-> osEE_cortex_m_thread_end
 	 * | R12|
 	 */
@@ -312,7 +320,7 @@ PendSV_Handler:
 	/*
 	 * Fake IRQ handler frame on top of PendSV frame:
 	 * |xPSR|-> xPSR AND 0xFFFFFE0
-	 * | PC |-> EE_cortex_mx_change_context
+	 * | PC |-> osEE_cortex_m_change_context_from_task_end
 	 * | LR |-> osEE_cortex_m_thread_end
 	 * | R12|
 	 * | R3 |
@@ -321,31 +329,14 @@ PendSV_Handler:
 	 * | R0 | <- MSP
 	 */
 
-#if	0	/* [GS]: T.B.C. */
 	/*
 	 * R0 = EXC_RETURN -> Return to Thread mode.
 	 *		   -> Exception return gets state from MSP.
 	 *		   -> Execution uses MSP after return.
 	 */
-	LDR	R0, =EXC_RETURN
-	BX	R0		/* EXC_RETURN. */
+	LDR	LR, =EXC_RETURN
 
-	NOP			/* Alignment. */
-#endif	/* 0 - [GS]: T.B.C. */
-
-PendSV_Handler_end:
-	/*
-	 * R0 = EXC_RETURN -> Return to Thread mode.
-	 *		   -> Exception return gets state from MSP.
-	 *		   -> Execution uses MSP after return.
-	 */
-	LDR	R0, =EXC_RETURN
-
-#if	0	/* [GS]: T.B.C. */
-	CPSIE	I		/* Enable all interrupts. */
-#endif	/* 0 - [GS]: T.B.C. */
-
-	BX	R0		/* EXC_RETURN. */
+	BX	LR		/* EXC_RETURN. */
 
 	.size	PendSV_Handler, . - PendSV_Handler
 

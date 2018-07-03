@@ -52,6 +52,7 @@
  */
 #include "ee_internal.h"
 
+#if	0	/* [GS]: New Context Switch */
 FUNC(void, OS_CODE)
   osEE_change_context_from_running
 (
@@ -119,4 +120,59 @@ FUNC(void, OS_CODE)
 
   osEE_hal_restore_ctx(p_idle_tdb, p_scb);
 }
+#endif	/* 0 - [GS]: New Context Switch */
 
+FUNC(void, OS_CODE)
+  osEE_cortex_m_scheduler_task_end
+(
+  void
+)
+{
+#if	0	/* [GS]: New Context Switch */
+    P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_to;
+    P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_from;
+
+    p_to = osEE_scheduler_task_terminated(osEE_get_kernel(), osEE_get_curr_core(),
+           &p_from);
+
+    if (p_from->task_type != OSEE_TASK_TYPE_ISR2) {
+      osEE_change_context_from_task_end(p_from, p_to);
+    } else {
+      osEE_change_context_from_isr2_end(p_from, p_to);
+    }
+#else	/* 0 - [GS]: New Context Switch */
+
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)  p_cdb = osEE_get_curr_core();
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb = p_cdb->p_ccb;
+  CONSTP2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA)
+    p_orig_task_sn = p_ccb->p_stk_sn->p_next;
+  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_orig_tdb;
+  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_to;
+  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_from;
+
+  /* p_orig_task_sn == NULL means I preempted idle task */
+  if (p_orig_task_sn != NULL) {
+    p_orig_tdb = p_orig_task_sn->p_tdb;
+  } else {
+    p_orig_tdb = p_cdb->p_idle_task;
+  }
+
+  p_to = osEE_scheduler_task_terminated(osEE_get_kernel(), p_cdb, &p_from);
+
+  if (p_from->task_type != OSEE_TASK_TYPE_ISR2) {
+    osEE_change_context_from_task_end(p_from, p_to);
+  } else {
+    /* With these CTX restore I'll jump back on ISR2 wrapper on preempted stack
+       (osEE_cortex_m_isr2_stub) after osEE_activate_isr2(t) call */
+    if (p_orig_tdb == p_to) {
+      /* Restore old TASK, set it running and do not PendSV */
+      p_to->p_tcb->status = OSEE_TASK_RUNNING;
+      osEE_hal_restore_ctx(p_to, p_to->hdb.p_scb);
+    } else {
+      /* Set PendSV */
+      osEE_cortex_m_trigger_pend_sv();
+      osEE_cortex_m_restore_ctx(p_orig_tdb, p_orig_tdb->hdb.p_scb);
+    }
+  }
+#endif	/* 0 - [GS]: New Context Switch */
+}

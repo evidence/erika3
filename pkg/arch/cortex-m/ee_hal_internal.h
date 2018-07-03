@@ -250,9 +250,27 @@ osEE_cpu_startos ( void )
 /* Switch-Context control block instanced in ee_cortex_m_irqstub.c. */
 extern VAR(OsEE_SCCB, OS_VAR_NO_INIT)	osEE_cortex_m_sccb;
 
+#if	0	/* [GS]: New Context-Switch using PendSV. */
 /* Switch-Context Trigger implemented in ee_cortex_mx_irq_asm.S. */
 extern FUNC(void, OS_CODE) osEE_cortex_m_switch_context( void );
+#else	/* 0 - [GS]: New Context-Switch using PendSV. */
 
+/* Trigger PendSV. */
+extern FUNC(void, OS_CODE) osEE_cortex_m_trigger_pend_sv( void );
+
+/* Pop a context from a stack, without actually calling kernel wrapper. used to
+   return from ISR2 with PendSV */
+extern FUNC(void, OS_CODE) osEE_cortex_m_restore_ctx
+(
+	P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)	p_to_tdb,
+	P2VAR(OsEE_SCB, AUTOMATIC, OS_APPL_DATA)	p_to_scb
+);
+
+/* Scheduler Entry Point at Task/ISR2 termination. */
+extern FUNC(void, OS_CODE) osEE_cortex_m_scheduler_task_end( void );
+#endif	/* 0 - [GS]: New Context-Switch using PendSV. */
+
+#if	0	/* [GS]: New Context-Switch using PendSV. */
 OSEE_STATIC_INLINE FUNC(void, OS_CODE) OSEE_ALWAYS_INLINE
 osEE_change_context_from_isr2_end
 (
@@ -271,4 +289,6 @@ osEE_change_context_from_isr2_end
   osEE_cortex_m_switch_context();
 #endif	/* 0 - [GS]: Context Switch using PendSV! */
 }
+#endif	/* 0 - [GS]: New Context-Switch using PendSV. */
+
 #endif	/* !OSEE_HAL_INTERNAL_H */

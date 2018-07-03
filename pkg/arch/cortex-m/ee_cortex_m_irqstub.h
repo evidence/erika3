@@ -70,10 +70,17 @@ osEE_cortex_m_isr1_stub(
 /*
  * ISR Type 2 stub.
  */
+#if	0	/* [GS]: New Context-Switch using PendSV. */
 FUNC(void, OS_CODE) OSEE_COMPILER_KEEP
 osEE_cortex_m_isr2_stub(
   VAR(TaskType, AUTOMATIC) t
 );
+#else	/* 0 - [GS]: New Context-Switch using PendSV. */
+FUNC_P2VAR(OsEE_TDB, OS_APPL_CONST, OS_CODE) OSEE_COMPILER_KEEP
+osEE_cortex_m_isr2_stub(
+  VAR(TaskType, AUTOMATIC) t
+);
+#endif	/* 0 - [GS]: New Context-Switch using PendSV. */
 
 #else	/* !OSEE_API_DYNAMIC */
 
@@ -98,6 +105,7 @@ FUNC(void, OS_CODE) (v)( void )			\
 }
 #endif  /* !OSEE_API_DYNAMIC */
 
+#if	0	/* [GS]: New Context-Switch using PendSV. */
 #if	defined(OS_EE_ARCH_CORTEX_M_M4F_FPU)
 /** \def	OSEE_ISR2_PROLOGUE()
  *
@@ -128,6 +136,14 @@ FUNC(void, OS_CODE) OSEE_NAKED (v)( void )	\
 	osEE_cortex_m_thread_end();		\
 }
 #endif	/* OS_EE_ARCH_CORTEX_M_M4F_FPU */
+#else	/* 0 - [GS]: New Context-Switch using PendSV. */
+#define OSEE_CORTEX_M_ISR2_DEFINITION(v,t)	\
+/* Declare The ISR User handler */		\
+FUNC(void, OS_CODE) (v)( void )			\
+{						\
+	osEE_cortex_m_isr2_stub(t);		\
+}
+#endif	/* 0 - [GS]: New Context-Switch using PendSV. */
 
 /* Un-Defined ISR */
 #define OSEE_CORTEX_M_ISR_NOT_DEFINED(v)	\

@@ -59,12 +59,33 @@
 
 VAR(OsEE_SCCB, OS_VAR_NO_INIT)	osEE_cortex_m_sccb;
 
+#if	0	/* [GS]: New Context-Switch using PendSV. */
 FUNC(void, OS_CODE) osEE_cortex_m_change_context_from_task_end( void )
 {
   osEE_change_context_from_task_end(
     osEE_cortex_m_sccb.p_from, osEE_cortex_m_sccb.p_to
   );
 }
+#else	/* 0 - [GS]: New Context-Switch using PendSV. */
+FUNC(void, OS_CODE) osEE_cortex_m_change_context_from_task_end(
+  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA) p_orig_tdb
+)
+{
+  OsEE_reg f = osEE_hal_begin_nested_primitive();
+
+  if (p_orig_tdb->p_tcb->status == OSEE_TASK_READY) {
+    osEE_change_context_from_task_end(
+      p_orig_tdb, osEE_get_curr_core()->p_ccb->p_curr
+    );
+  } else {
+    osEE_change_context_from_running(
+      p_orig_tdb, osEE_get_curr_core()->p_ccb->p_curr
+    );
+  }
+
+  osEE_hal_end_nested_primitive(f);
+}
+#endif	/* 0 - [GS]: New Context-Switch using PendSV. */
 
 #if	(!defined(OSEE_API_DYNAMIC))
 /*
@@ -84,6 +105,7 @@ osEE_cortex_m_isr1_stub(
 /*
  * ISR Type 2 stub.
  */
+#if	0	/* [GS]: New Context-Switch using PendSV. */
 FUNC(void, OS_CODE) OSEE_COMPILER_KEEP
 osEE_cortex_m_isr2_stub(
   VAR(TaskType, AUTOMATIC)	t
@@ -98,7 +120,25 @@ osEE_cortex_m_isr2_stub(
   osEE_hal_end_nested_primitive(f);
 
 }	/* osEE_cortex_m_isr2_stub() */
+#else	/* 0 - [GS]: New Context-Switch using PendSV. */
+FUNC_P2VAR(OsEE_TDB, OS_APPL_CONST, OS_CODE) OSEE_COMPILER_KEEP
+osEE_cortex_m_isr2_stub(
+  VAR(TaskType, AUTOMATIC)	t
+)
+{
+  CONSTP2VAR(OsEE_TDB, OS_APPL_CONST, OS_CODE)
+    p_orig_tdb = osEE_get_curr_core()->p_ccb->p_curr;
 
+  OsEE_reg f = osEE_hal_begin_nested_primitive();
+
+  /* Activate ISR2 */
+  osEE_activate_isr2(t);
+
+  osEE_hal_end_nested_primitive(f);
+
+  return p_orig_tdb;
+}	/* osEE_cortex_m_isr2_stub() */
+#endif	/* 0 - [GS]: New Context-Switch using PendSV. */
 #else	/* !OSEE_API_DYNAMIC */
 
 #ifndef	OSEE_CORTEX_M_ISR_ID_NUM
