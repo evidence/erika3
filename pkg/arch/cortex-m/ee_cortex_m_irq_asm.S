@@ -102,6 +102,12 @@
  */
 #define	TID_IS_STACKED_MARK	0x80000000
 
+/*
+ * FPCA bits
+ */
+#define	CONTROL_FPCA		0x00000004
+#define	CONTROL_FPCA_NEG	0xFFFFFFFB
+
 /******************************************************************************
  *			EXTERNAL SYMBOLS
  ******************************************************************************/
@@ -181,18 +187,9 @@ osEE_cortex_m_switch_context:
 	 */
 
 	/* R3 = 0x01000000 (xPSR) */
-#if	0
-	MRS	R3, PSR
-	ORR	R3, R3, #EPSR_T_BIT_VAL
-#else
 	LDR	R3, =EPSR_T_BIT_VAL
-#endif
 
-	/*
-	 * [GS]: FPU FRAME!!!
-	 */
-
-	/* R2 = osEE_scheduler_task_end (PC) */
+	/* R2 = osEE_cortex_m_change_context_from_task_end (PC) */
 	LDR	R2, =osEE_cortex_m_change_context_from_task_end
 
 	/* R1 = LR */
@@ -203,7 +200,7 @@ osEE_cortex_m_switch_context:
 
 	/*
 	 * |xPSR|-> xPSR AND 0xFFFFFE0
-	 * | PC |-> osEE_scheduler_task_end
+	 * | PC |-> osEE_cortex_m_change_context_from_task_end
 	 * | LR |-> osEE_cortex_m_thread_end
 	 * | R12|
 	 */
@@ -220,7 +217,7 @@ osEE_cortex_m_switch_context:
 	/*
 	 * Fake IRQ handler frame on top of ISR frame:
 	 * |xPSR|-> xPSR AND 0xFFFFFE0
-	 * | PC |-> EE_cortex_mx_change_context
+	 * | PC |-> osEE_cortex_m_change_context_from_task_end
 	 * | LR |-> osEE_cortex_m_thread_end
 	 * | R12|
 	 * | R3 |
@@ -367,9 +364,7 @@ osEE_cortex_m_thread_end:
  */
 
 	/* Enable interrupts (clear PRIMASK) */
-#if	0
 	CPSIE	I
-#endif
 
 	/* SVCall exception to remove Original PendSV stack-frame. */
 	SVC	#0
@@ -386,6 +381,11 @@ SVC_Handler:
 
 	/* Remove SVCall Stack-Frame. */
 	ADD	SP, SP, #(8*4)
+
+#if	defined(OS_EE_ARCH_CORTEX_M_M4F_FPU)
+	/* Retrieves original Link Register. */
+	POP	{R0, LR}
+#endif	/* defined(OS_EE_ARCH_CORTEX_M_M4F_FPU) */
 
 	BX	LR		/* EXC_RETURN. */
 

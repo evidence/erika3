@@ -99,14 +99,9 @@
 #define	OSEE_ISR2_MAX_PRIO	(OSEE_ISR2_PRIO_BIT + 7U)
 #endif	/* OSEE_ISR2_MAX_PRIO */
 
-#if	0
-#define	OSEE_ISR2_VIRT_TO_HW_PRIO(virt_prio)	\
-	(((virt_prio) & (~OSEE_ISR2_PRIO_BIT)) + 1U)
-#else
 #define	OSEE_ISR2_VIRT_TO_HW_PRIO(virt_prio)	(			\
 	OSEE_ISR_PRI_1 - (((virt_prio) & (~OSEE_ISR2_PRIO_BIT)))	\
 )
-#endif
 
 #define	OSEE_ISR2_MAX_HW_PRIO			\
 	OSEE_ISR2_VIRT_TO_HW_PRIO(OSEE_ISR2_MAX_PRIO)
@@ -200,11 +195,7 @@ osEE_hal_begin_nested_primitive( void )
   OsEE_reg flags = 0U;
   OSEE_GET_IPL(flags);
   flags >>= OSEE_CORTEX_M_PRIO_SH_BITS;
-#if	0
-  if (flags < OSEE_ISR2_MAX_HW_PRIO) {
-#else
   if ( (flags == 0x00U) || (flags > OSEE_ISR2_MAX_HW_PRIO) ) {
-#endif
     OSEE_SET_IPL(OSEE_ISR2_MAX_HW_PRIO << OSEE_CORTEX_M_PRIO_SH_BITS);
   }
   return flags;
@@ -226,6 +217,13 @@ osEE_hal_end_nested_primitive(
 
 #define	OSEE_CPU_STARTOS_INLINE	OSEE_STATIC_INLINE
 
+#if	0	/* [GS]: T.B.C. */
+#if	(defined(OS_EE_ARCH_CORTEX_M_M4F_FPU))
+/* Enable FPU. */
+extern FUNC(void, OS_CODE) osEE_hal_cortex_m4f_enable_fpu( void );
+#endif	/* OS_EE_ARCH_CORTEX_M_M4F_FPU */
+#endif	/* 0 - [GS]: T.B.C. */
+
 /* Nothing to do. All the initialiazation is done in osEE_os_init */
 OSEE_CPU_STARTOS_INLINE FUNC(OsEE_bool, OS_CODE) OSEE_ALWAYS_INLINE
 osEE_cpu_startos ( void )
@@ -233,9 +231,14 @@ osEE_cpu_startos ( void )
   OsEE_bool const cpu_startos_ok  = osEE_std_cpu_startos();
   if (cpu_startos_ok)
   {
-#if (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
+#if	0	/* [GS]: T.B.C. */
+#if	(defined(OS_EE_ARCH_CORTEX_M_M4F_FPU))
+    osEE_hal_cortex_m4f_enable_fpu();
+#endif	/* OS_EE_ARCH_CORTEX_M_M4F_FPU */
+#endif	/* 0 - [GS]: T.B.C. */
+#if	(defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
     osEE_cortex_m_stack_init();
-#endif /* OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
+#endif	/* OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
     osEE_cortex_m_system_init();
 #if	(defined(OSEE_HAS_SYSTEM_TIMER))
     osEE_cortex_m_system_timer_init();

@@ -117,14 +117,26 @@ endif
 ################################################################################
 OPT_CC = -c -mthumb -mthumb-interwork
 OPT_CC += -mapcs -fno-common -ffreestanding -fno-builtin -fno-exceptions
+# GS: FPU Support
+ifneq	($(call iseeopt, OS_EE_ARCH_CORTEX_M_M4F_FPU), yes)
 OPT_CC += -mfloat-abi=soft
+else	# OS_EE_ARCH_CORTEX_M_M4F_FPU
+OPT_CC += -mfloat-abi=hard -mfpu=fpv4-sp-d16
+endif	# OS_EE_ARCH_CORTEX_M_M4F_FPU
 
-# GS: FPU Support?!?
-#OPT_CC += -mfloat-abi=hard -mfpu=fpv4-sp-d16
-
-ifeq	($(call iseeopt, OS_EE_ARCH_CORTEX_M_M4), yes)
+ifeq	($(or							\
+  $(call iseeopt, OS_EE_ARCH_CORTEX_M_M4),			\
+  $(or								\
+	$(call iseeopt, OS_EE_ARCH_CORTEX_M_M4F),		\
+	$(call iseeopt, OS_EE_ARCH_CORTEX_M_M4F_FPU)		\
+  )								\
+), yes)
 OPT_CC += -mcpu=cortex-m4
-endif	# OS_EE_ARCH_CORTEX_M_M4
+endif	#
+	# OS_EE_ARCH_CORTEX_M_M4	||
+	# OS_EE_ARCH_CORTEX_M_M4F	||
+	# OS_EE_ARCH_CORTEX_M_M4F_FPU
+	#
 
 ifneq	($(call iseeopt, OS_EE_GCC_MINIMAL_OPTS), yes)
 OPT_CC += -Wextra -save-temps=obj -std=gnu99
@@ -152,12 +164,26 @@ OPT_CC += $(CFLAGS)
 ################################################################################
 OPT_CXX = -c -mthumb -mthumb-interwork
 
-# GS: FPU Support?!?
-#OPT_CXX += -mfloat-abi=hard -mfpu=fpv4-sp-d16
+# GS: FPU Support
+ifneq	($(call iseeopt, OS_EE_ARCH_CORTEX_M_M4F_FPU), yes)
+OPT_CXX += -mfloat-abi=soft
+else	# OS_EE_ARCH_CORTEX_M_M4F_FPU
+OPT_CXX += -mfloat-abi=hard -mfpu=fpv4-sp-d16
+endif	# OS_EE_ARCH_CORTEX_M_M4F_FPU
 
-ifeq ($(call iseeopt, OS_EE_ARCH_CORTEX_M_M4), yes)
+ifeq	($(or							\
+  $(call iseeopt, OS_EE_ARCH_CORTEX_M_M4),			\
+  $(or								\
+	$(call iseeopt, OS_EE_ARCH_CORTEX_M_M4F),		\
+	$(call iseeopt, OS_EE_ARCH_CORTEX_M_M4F_FPU)		\
+  )								\
+), yes)
 OPT_CXX += -mcpu=cortex-m4
-endif	# OS_EE_ARCH_CORTEX_M_M4
+endif	#
+	# OS_EE_ARCH_CORTEX_M_M4	||
+	# OS_EE_ARCH_CORTEX_M_M4F	||
+	# OS_EE_ARCH_CORTEX_M_M4F_FPU
+	#
 
 ifneq	($(call iseeopt, OS_EE_GCC_MINIMAL_OPTS), yes)
 OPT_CXX += -Wextra -save-temps=obj -std=gnu++11
@@ -184,12 +210,26 @@ OPT_CXX += $(CFLAGS) $(CXXFLAGS)
 ################################################################################
 OS_EE_AS_OPT = -c -x assembler-with-cpp -mthumb -mthumb-interwork
 
-# GS: FPU Support?!?
-#OS_EE_AS_OPT += -mfloat-abi=hard -mfpu=fpv4-sp-d16
+# GS: FPU Support
+ifneq	($(call iseeopt, OS_EE_ARCH_CORTEX_M_M4F_FPU), yes)
+OS_EE_AS_OPT += -mfloat-abi=soft
+else	# OS_EE_ARCH_CORTEX_M_M4F_FPU
+OS_EE_AS_OPT += -mfloat-abi=hard -mfpu=fpv4-sp-d16
+endif	# OS_EE_ARCH_CORTEX_M_M4F_FPU
 
-ifeq	($(call iseeopt, OS_EE_ARCH_CORTEX_M_M4), yes)
+ifeq	($(or							\
+  $(call iseeopt, OS_EE_ARCH_CORTEX_M_M4),			\
+  $(or								\
+	$(call iseeopt, OS_EE_ARCH_CORTEX_M_M4F),		\
+	$(call iseeopt, OS_EE_ARCH_CORTEX_M_M4F_FPU)		\
+  )								\
+), yes)
 OS_EE_AS_OPT += -mcpu=cortex-m4
-endif	# OS_EE_ARCH_CORTEX_M_M4
+endif	#
+	# OS_EE_ARCH_CORTEX_M_M4	||
+	# OS_EE_ARCH_CORTEX_M_M4F	||
+	# OS_EE_ARCH_CORTEX_M_M4F_FPU
+	#
 
 ifneq	($(call iseeopt, OS_EE_GCC_MINIMAL_OPTS), yes)
 OS_EE_AS_OPT += -save-temps=obj
@@ -221,14 +261,28 @@ endif	# OS_EE_VERBOSE
 ## OS_EE_AR_OPT are the options for arm linker invocation		      ##
 ################################################################################
 OPT_LINK = -mthumb -mthumb-interwork
+
+# GS: FPU Support
+ifneq	($(call iseeopt, OS_EE_ARCH_CORTEX_M_M4F_FPU), yes)
 OPT_LINK += -mfloat-abi=soft
+else	# OS_EE_ARCH_CORTEX_M_M4F_FPU
+OPT_LINK += -mfloat-abi=hard -mfpu=fpv4-sp-d16
+endif	# OS_EE_ARCH_CORTEX_M_M4F_FPU
 
-# GS: FPU Support?!?
-#OPT_LINK += -mfloat-abi=hard -mfpu=fpv4-sp-d16
-
-ifeq ($(call iseeopt, OS_EE_ARCH_CORTEX_M_M4), yes)
+ifeq	($(or							\
+  $(call iseeopt, OS_EE_ARCH_CORTEX_M_M4),			\
+  $(or								\
+	$(call iseeopt, OS_EE_ARCH_CORTEX_M_M4F),		\
+	$(call iseeopt, OS_EE_ARCH_CORTEX_M_M4F_FPU)		\
+  )								\
+), yes)
 OPT_LINK += -mcpu=cortex-m4
-endif	# OS_EE_ARCH_CORTEX_M_M4
+endif	#
+	# OS_EE_ARCH_CORTEX_M_M4	||
+	# OS_EE_ARCH_CORTEX_M_M4F	||
+	# OS_EE_ARCH_CORTEX_M_M4F_FPU
+	#
+
 
 
 ifneq ($(call iseeopt, OS_EE_GCC_MINIMAL_OPTS), yes)

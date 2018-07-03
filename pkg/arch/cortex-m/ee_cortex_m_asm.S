@@ -61,6 +61,19 @@
  */
 #define	EPSR_T_BIT	0x01000000
 
+#if	0	/* [GS]: T.B.C. */
+/*
+ * CPACR is located at address 0xE000ED88
+ */
+#define	CPACR		0xE000ED88
+#endif	/* 0 - [GS]: T.B.C. */
+
+/*
+ * FPCA bits
+ */
+#define	CONTROL_FPCA		0x00000004
+#define	CONTROL_FPCA_NEG	0xFFFFFFFB
+
 /******************************************************************************
  *				MACROS
  ******************************************************************************/
@@ -71,31 +84,20 @@
 	.macro	osEE_hal_save_vcontext_m	p_from_scb
 
 	/* Save working registers of preempted thread on stack */
-#if	0
-	PUSH	{R4-R7}		/* Store R4, R5, R6, R7 onto stack */
-	MOV	R4, R8
-	MOV	R5, R9
-	MOV	R6, R10
-	MOV	R7, R11
-	PUSH	{R4-R7}		/* Store R8, R9, R10, R11 onto stack */
-	PUSH	{LR}		/* Store link register (return address) */
-#else
 	PUSH	{R4-R11, LR}
-#endif
 	MRS	R4, PSR		/* Store xPSR to 8-bytes stack aligment */
 	PUSH	{R4}
+#if	defined(OS_EE_ARCH_CORTEX_M_M4F_FPU)
+	MRS	R4, CONTROL
+	PUSH	{R4-R5}
+#endif	/* defined(OS_EE_ARCH_CORTEX_M_M4F_FPU) */
 
 	/* R5 = p_from_scb->p_tos */
 	MOV	R4, \p_from_scb
 	LDR	R5, [R4]
 
 	/* Save previous tos on stack */
-#if	0
-	PUSH	{R5}		/* dummy */
-	PUSH	{R5}
-#else
 	PUSH	{R5, R6}	/* SP + dummy */
-#endif
 
 	/* p_from_scb->p_tos = MSP */
 	MRS	R5, MSP
@@ -116,35 +118,23 @@
 	MSR	MSP, R5
 
 	/* Get previous p_tos from stack (prev_p_tos) */
-#if	0
-	POP	{R5}	/* dummy */
-	POP	{R5}
-#else
 	POP	{R5, R6}	/* SP + dummy */
-#endif
 
 	/* p_to_scb->p_tos = prev_p_tos */
 	STR	R5, [R4]
 
 	/* Now restore the context */
+#if	defined(OS_EE_ARCH_CORTEX_M_M4F_FPU)
+	POP	{R4-R5}
+	MSR	CONTROL, R4
+#endif	/* defined(OS_EE_ARCH_CORTEX_M_M4F_FPU) */
 	POP	{R4}		/* Get xPSR from stack */
 	LDR	R5, =EPSR_T_BIT	/* R5 = 0x01000000 */
 	ORRS	R4, R4, R5	/* R4 = (xPSR OR 0x01000000).
 				 * This guarantees that Thumbs bit is set to
 				 * avoid an hard_fault exception */
 	MSR	XPSR_NZCVQ, R4	/* Restore xPSR register */
-#if	0
-	POP	{R4}		/* Get link register from stack */
-	MOV	LR, R4		/* Restore the link register */
-	POP	{R4-R7}		/* Restore R8, R9, R10, R11 from stack */
-	MOV	R8, R4
-	MOV	R9, R5
-	MOV	R10, R6
-	MOV	R11, R7
-	POP	{R4-R7}		/* Restore R4, R5, R6, R7 from stack */
-#else
 	POP	{R4-R11, LR}
-#endif
 
 	.endm	/* osEE_hal_restore_vcontext_m */
 
@@ -165,10 +155,46 @@
 
 	/* kernel code is in ARM-mode */
 	.syntax unified
-#ifdef	OS_EE_ARCH_CORTEX_M_M4
+
+	/* Architecture */
 	.arch armv7e-m
+
+#if	(						\
+	defined(OS_EE_ARCH_CORTEX_M_M4)		||	\
+	defined(OS_EE_ARCH_CORTEX_M_M4F)	||	\
+	defined(OS_EE_ARCH_CORTEX_M_M4F_FPU)		\
+)
+	/* CPU */
 	.cpu cortex-m4
-#endif	/* OS_EE_ARCH_CORTEX_M_M4 */
+#endif	/*
+	 * OS_EE_ARCH_CORTEX_M_M4	||
+	 * OS_EE_ARCH_CORTEX_M_M4F	||
+	 * OS_EE_ARCH_CORTEX_M_M4F_FPU
+	 */
+
+#if	0	/* [GS]: T.B.C. */
+#ifdef	OS_EE_ARCH_CORTEX_M_M4F_FPU
+/*
+FUNC(void, OS_CODE) osEE_hal_cortex_m4f_enable_fpu(void)
+*/
+	.align 2
+	.global	osEE_hal_cortex_m4f_enable_fpu
+	.type	osEE_hal_cortex_m4f_enable_fpu, %function
+osEE_hal_cortex_m4f_enable_fpu:
+	/* Set CPACR Address */
+	LDR.W	R0, =CPACR
+	/* Read CPACR */
+	LDR	R1, [R0]
+	/* Set bits 20-23 to enable CP10 and CP11 coprocessors */
+	ORR	R1, R1, (#0xF << 20)
+	/* Write back the modified value to the CPACR */
+	STR	R1, [R0]
+	/* [GS]: Disble other features. */
+	/* Return */
+	BX	LR
+	.size	osEE_hal_cortex_m4f_enable_fpu, .-osEE_hal_cortex_m4f_enable_fpu
+#endif	/* OS_EE_ARCH_CORTEX_M_M4F_FPU */
+#endif	/* 0 - [GS]: T.B.C. */
 
 /*
 FUNC(void, OS_CODE)
@@ -229,6 +255,12 @@ osEE_hal_ready2stacked:
 	 * R1 parameter:	OsEE_SCB * p_to_scb
 	 * R2 local:		p_to_scb->p_tos
 	 */
+#if	defined(OS_EE_ARCH_CORTEX_M_M4F_FPU)
+	MRS	R4, CONTROL
+	LDR	R5, =CONTROL_FPCA_NEG
+	ANDS	R4, R4, R5
+	MSR	CONTROL, R4
+#endif	/* defined(OS_EE_ARCH_CORTEX_M_M4F_FPU) */
 	LDR	R2, [R1]
 	/* sp = R2 */
 	MSR	MSP, R2
@@ -274,6 +306,12 @@ osEE_hal_terminate_ctx:
 	 * R1 parameter:	kernel_cb
 	 * R2 local:		p_term_scb->p_tos
 	 */
+#if	defined(OS_EE_ARCH_CORTEX_M_M4F_FPU)
+	MRS	R4, CONTROL
+	LDR	R5, =CONTROL_FPCA_NEG
+	ANDS	R4, R4, R5
+	MSR	CONTROL, R4
+#endif	/* defined(OS_EE_ARCH_CORTEX_M_M4F_FPU) */
 	LDR	R2, [R0]
 	/* Unwind SP */
 	MSR	MSP, R2

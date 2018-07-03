@@ -98,10 +98,28 @@ FUNC(void, OS_CODE) (v)( void )			\
 }
 #endif  /* !OSEE_API_DYNAMIC */
 
+#if	defined(OS_EE_ARCH_CORTEX_M_M4F_FPU)
+/** \def	OSEE_ISR2_PROLOGUE()
+ *
+ *  ISR2 Prologue.
+ */
+#define	OSEE_ISR2_PROLOGUE()	__asm__ volatile("push {R0, LR}")
+#endif	/* OS_EE_ARCH_CORTEX_M_M4F_FPU */
+
 /* Implemented in ee_cortex_m_irq_asm.S */
 extern FUNC(void, OS_CODE) osEE_cortex_m_thread_end( void );
 
 /* Define an ISR (category 2) */
+#if	defined(OS_EE_ARCH_CORTEX_M_M4F_FPU)
+#define OSEE_CORTEX_M_ISR2_DEFINITION(v,t)	\
+/* Declare The ISR User handler */		\
+FUNC(void, OS_CODE) OSEE_NAKED (v)( void )	\
+{						\
+	OSEE_ISR2_PROLOGUE();			\
+	osEE_cortex_m_isr2_stub(t);		\
+	osEE_cortex_m_thread_end();		\
+}
+#else	/* OS_EE_ARCH_CORTEX_M_M4F_FPU */
 #define OSEE_CORTEX_M_ISR2_DEFINITION(v,t)	\
 /* Declare The ISR User handler */		\
 FUNC(void, OS_CODE) OSEE_NAKED (v)( void )	\
@@ -109,6 +127,7 @@ FUNC(void, OS_CODE) OSEE_NAKED (v)( void )	\
 	osEE_cortex_m_isr2_stub(t);		\
 	osEE_cortex_m_thread_end();		\
 }
+#endif	/* OS_EE_ARCH_CORTEX_M_M4F_FPU */
 
 /* Un-Defined ISR */
 #define OSEE_CORTEX_M_ISR_NOT_DEFINED(v)	\
