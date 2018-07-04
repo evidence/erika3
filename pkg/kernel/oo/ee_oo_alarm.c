@@ -39,13 +39,11 @@
  * project.
  * ###*E*### */
 
-/** \file   ee_oo_counter.c
- *  \brief  OSEK Counters, Alarms & Schedule Tables Implementation.
+/** \file   ee_oo_alarm.c
+ *  \brief  OSEK AlarmsImplementation.
  *
  *  This files contains all OSEK Kernel Alarms Implementation in Erika
  *  Enterprise.
- *
- *  \note TO BE DOCUMENTED!!!
  *
  *  \author Errico Guidieri
  *  \date   2017

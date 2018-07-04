@@ -192,16 +192,12 @@ typedef OSEE_COUNTER_TYPE                           CounterType;
 
 typedef OSEE_TICK_TYPE                              TickType;
 typedef P2VAR(TickType, TYPEDEF, OS_APPL_DATA)      TickRefType;
-#endif /* OSEE_HAS_COUNTERS */
 
-#if (defined(OSEE_HAS_ALARMS))
-#if (!defined(OSEE_ALARM_ID_TYPE))
-#define OSEE_ALARM_ID_TYPE                          VAR(OsEE_reg, TYPEDEF)
-#endif /* !OSEE_ALARM_ID_TYPE */
+#if (!defined(OSEE_TICK_DELTA_TYPE))
+#define OSEE_TICK_DELTA_TYPE                        VAR(int, TYPEDEF)
+#endif /* !OSEE_TICK_DELTA_TYPE */
 
-typedef OSEE_ALARM_ID_TYPE                          AlarmType;
-
-#define INVALID_ALARM                               ((AlarmType)-1)
+typedef signed OSEE_TICK_DELTA_TYPE                 TickDeltaType;
 
 typedef VAR(struct, TYPEDEF) {
 /** Maximum possible allowed count value in ticks */
@@ -217,6 +213,16 @@ typedef VAR(struct, TYPEDEF) {
 } AlarmBaseType;
 
 typedef P2VAR(AlarmBaseType, TYPEDEF, OS_APPL_DATA) AlarmBaseRefType;
+#endif /* OSEE_HAS_COUNTERS */
+
+#if (defined(OSEE_HAS_ALARMS))
+#if (!defined(OSEE_ALARM_ID_TYPE))
+#define OSEE_ALARM_ID_TYPE                          VAR(OsEE_reg, TYPEDEF)
+#endif /* !OSEE_ALARM_ID_TYPE */
+
+typedef OSEE_ALARM_ID_TYPE                          AlarmType;
+
+#define INVALID_ALARM                               ((AlarmType)-1)
 
 /* Alarm declarations are handled by RT-Druid. Macro needed by standard */
 #define DeclareAlarm(Alarm)
@@ -251,6 +257,44 @@ typedef P2VAR(EventMaskType, TYPEDEF, OS_APPL_DATA) EventMaskRefType;
  * standard */
 #define DeclareEvent(Event)
 #endif /* OSEE_HAS_EVENTS */
+
+#if (defined(OSEE_HAS_SCHEDULE_TABLES))
+#if (!defined(OSEE_SCHEDULETABLE_TYPE))
+#define OSEE_SCHEDULETABLE_TYPE                     VAR(OsEE_reg, TYPEDEF)
+#endif /* !OSEE_SCHEDULETABLE_TYPE */
+
+typedef OSEE_SCHEDULETABLE_TYPE                     ScheduleTableType;
+
+/** @typedef This type describes the status of a schedule. The status can be
+    one of the following: */
+typedef enum OsEE_schedule_table_status_tag {
+/** The schedule table is not started. */
+  SCHEDULETABLE_STOPPED     = (0x00U),
+/** The schedule table will be started after the end of currently running
+    schedule table (schedule table was used in NextScheduleTable() service). */
+  SCHEDULETABLE_NEXT        = (0x01U),
+/** The schedule table uses explicit synchronization, has been started and is
+    waiting for the global time. */
+  SCHEDULETABLE_WAITING     = (0x02U),
+/** The schedule table is running, but is currently not synchronous to a
+    global time source. */
+  SCHEDULETABLE_RUNNING     = (0x03U),
+/** Used as bit-mask, flag if the schedule table is synchronized */
+  SCHEDULETABLE_SYNCHRONOUS = (0x04U),
+/** Used as bit-mask, flag if the schedule table shall be not synchronized */
+  SCHEDULETABLE_ASYNC       = (0x08U),
+/** The schedule table is running and is synchronous to a global time source
+    (SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS) */
+  SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS =
+    (SCHEDULETABLE_RUNNING + SCHEDULETABLE_SYNCHRONOUS)
+} OsEE_schedule_table_status;
+
+typedef VAR(OsEE_schedule_table_status, TYPEDEF)  ScheduleTableStatusType;
+
+typedef P2VAR(ScheduleTableStatusType, TYPEDEF, OS_APPL_DATA)
+  ScheduleTableStatusRefType;
+
+#endif /* OSEE_HAS_SCHEDULE_TABLES */
 
 #if (!defined(OSEE_OBJECT_ID_TYPE))
 #define OSEE_OBJECT_ID_TYPE                         VAR(OsEE_reg, TYPEDEF)
@@ -386,31 +430,45 @@ typedef enum OsEE_service_id_type_tag {
   OSServiceId_GetElapsedValue                 = (50),
   OSServiceId_GetElapsedValue_Entry           = (51),
 #endif /* OSEE_HAS_COUNTERS */
-  OSServiceId_GetActiveApplicationMode        = (52),
-  OSServiceId_GetActiveApplicationMode_Entry  = (53),
-  OSServiceId_ShutdownOS                      = (54),
-  OSServiceId_ShutdownOS_Entry                = (55),
-  OSServiceId_StartOS                         = (56),
-  OSServiceId_StartOS_Entry                   = (57),
+#if (defined(OSEE_HAS_SCHEDULE_TABLES))
+  OSServiceId_StartScheduleTableRel           = (52),
+  OSServiceId_StartScheduleTableRel_Entry     = (53),
+  OSServiceId_StartScheduleTableAbs           = (54),
+  OSServiceId_StartScheduleTableAbs_Entry     = (55),
+  OSServiceId_StopScheduleTable               = (56),
+  OSServiceId_StopScheduleTable_Entry         = (57),
+  OSServiceId_GetScheduleTableStatus          = (58),
+  OSServiceId_GetScheduleTableStatus_Entry    = (59),
+  OSServiceId_NextScheduleTable               = (60),
+  OSServiceId_NextScheduleTable_Entry         = (61),
+  OSServiceId_SyncScheduleTable               = (62),
+  OSServiceId_SyncScheduleTable_Entry         = (63),
+#endif /* OSEE_HAS_SCHEDULE_TABLES */
+  OSServiceId_GetActiveApplicationMode        = (64),
+  OSServiceId_GetActiveApplicationMode_Entry  = (65),
+  OSServiceId_ShutdownOS                      = (66),
+  OSServiceId_ShutdownOS_Entry                = (67),
+  OSServiceId_StartOS                         = (68),
+  OSServiceId_StartOS_Entry                   = (69),
 /** Special value to flag an error happened in the Task body
     needed for AR requirement [SWS_Os_00069] */
-  OSId_TaskBody                               = (58),
+  OSId_TaskBody                               = (70),
 /* Not needed, only added to not explicitly assign the value to the
  * next label */
-  OSId_TaskBody_Entry                         = (59),
+  OSId_TaskBody_Entry                         = (71),
 /* Special value to flag an error happened in the ISR2 body
    needed for AS requirement [SWS_Os_00368] */
-  OSId_ISR2Body                               = (60),
+  OSId_ISR2Body                               = (72),
 /* As above */
-  OSId_ISR2Body_Entry                         = (61),
+  OSId_ISR2Body_Entry                         = (73),
 /* Special value to flag an error happened in a Alarm or Schedule Table
    action */
-  OSId_Action                                 = (62),
-  OSId_Action_Entry                           = (63),
+  OSId_Action                                 = (74),
+  OSId_Action_Entry                           = (75),
 /* Special value to flag an error happened in a Kernel internal service */
-  OSId_Kernel                                 = (64),
-  OSId_Kernel_Entry                           = (65),
-  OsId_Invalid                                = (66)
+  OSId_Kernel                                 = (76),
+  OSId_Kernel_Entry                           = (77),
+  OsId_Invalid                                = (78)
 } OsEE_service_id_type;
 
 /** @typedef This data type represents the identification of system services. */

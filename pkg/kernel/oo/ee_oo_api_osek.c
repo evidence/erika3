@@ -62,8 +62,8 @@ FUNC(void, OS_CODE)
   void
 )
 {
-  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)  p_cdb = osEE_get_curr_core();
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)   p_ccb = p_cdb->p_ccb;
   /* Disable Immediately for Atomicity */
   osEE_hal_disableIRQ();
 
@@ -86,8 +86,8 @@ FUNC(void, OS_CODE)
    * /SuspendAllInterrupts()/SuspendOSInterrupts() was done before, the
    * Operating System module shall not perform this Operating System service.
    * (SRS_Os_11009) */
-  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)  p_cdb = osEE_get_curr_core();
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)   p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_EnableAllInterrupts);
 
@@ -109,8 +109,8 @@ FUNC(void, OS_CODE)
   void
 )
 {
-  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)  p_cdb = osEE_get_curr_core();
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)   p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_SuspendAllInterrupts);
 
@@ -135,8 +135,8 @@ FUNC(void, OS_CODE)
   void
 )
 {
-  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)  p_cdb = osEE_get_curr_core();
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)   p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_ResumeAllInterrupts);
 
@@ -159,8 +159,8 @@ FUNC(void, OS_CODE)
   void
 )
 {
-  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)  p_cdb = osEE_get_curr_core();
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)   p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_SuspendOSInterrupts);
 
@@ -185,8 +185,8 @@ FUNC(void, OS_CODE)
   void
 )
 {
-  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)  p_cdb = osEE_get_curr_core();
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)   p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_ResumeOSInterrupts);
 
@@ -213,11 +213,11 @@ FUNC(StatusType, OS_CODE)
   VAR(AppModeType, AUTOMATIC)               real_mode = Mode;
 #if (!defined(OSEE_SINGLECORE))
   CONST(CoreIdType, AUTOMATIC)           curr_core_id = osEE_get_curr_core_id();
-  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA) p_kdb = osEE_get_kernel();
-  CONSTP2VAR(OsEE_KCB, AUTOMATIC, OS_APPL_DATA) p_kcb = p_kdb->p_kcb;
+  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)  p_kdb = osEE_get_kernel();
+  CONSTP2VAR(OsEE_KCB, AUTOMATIC, OS_APPL_DATA)   p_kcb = p_kdb->p_kcb;
 #endif /* !OSEE_SINGLECORE */
-  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)  p_cdb = osEE_get_curr_core();
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)   p_ccb = p_cdb->p_ccb;
   CONST(OsEE_reg, AUTOMATIC) flags = osEE_begin_primitive();
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_StartOS);
@@ -359,17 +359,16 @@ FUNC(StatusType, OS_CODE)
     OS-Application is bound. (SRS_Os_80006, SRS_Os_80008) */
 /* TODO: Implement this when OS-Applications will be implemented */
 #endif /* OSEE_AS_OSAPPLICATIONS */
-
 #if (defined(OSEE_HAS_AUTOSTART_TRIGGER))
     {
       VAR(MemSize, AUTOMATIC) i;
-      CONSTP2VAR(OsEE_autostart_trigger, AUTOMATIC, OS_APPL_DATA)
-        p_auto_triggers  = &(*p_cdb->p_autostart_trigger_array)[real_mode];
+      CONSTP2VAR(OsEE_autostart_trigger, AUTOMATIC, OS_APPL_CONST)
+        p_auto_triggers = &(*p_cdb->p_autostart_trigger_array)[real_mode];
 
       for (i = 0U; i < p_auto_triggers->trigger_array_size; ++i) {
-        CONSTP2VAR(OsEE_autostart_trigger_info, AUTOMATIC, OS_APPL_DATA)
+        CONSTP2VAR(OsEE_autostart_trigger_info, AUTOMATIC, OS_APPL_CONST)
           p_trigger_to_act_info = &(*p_auto_triggers->p_trigger_ptr_array)[i];
-        CONSTP2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_DATA)
+        CONSTP2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_CONST)
           p_trigger_to_act_db   = p_trigger_to_act_info->p_trigger_db;
 
         /* TODO: Handle trigger as alarm or as schedule table */
@@ -382,11 +381,10 @@ FUNC(StatusType, OS_CODE)
       }
     }
 #endif /* OSEE_HAS_AUTOSTART_TRIGGER */
-
 #if (defined(OSEE_HAS_AUTOSTART_TASK))
     {
       VAR(MemSize, AUTOMATIC) i;
-      CONSTP2VAR(OsEE_autostart_tdb, AUTOMATIC, OS_APPL_DATA)
+      CONSTP2VAR(OsEE_autostart_tdb, AUTOMATIC, OS_APPL_CONST)
         p_auto_tdb  = &(*p_cdb->p_autostart_tdb_array)[real_mode];
 #if (!defined(OSEE_ALLOW_TASK_MIGRATION))
       CONSTP2VAR(OsEE_RQ, AUTOMATIC, OS_APPL_DATA)
@@ -424,7 +422,6 @@ FUNC(StatusType, OS_CODE)
 #endif /* !OSEE_ALLOW_TASK_MIGRATION */
     }
 #endif /* OSEE_HAS_AUTOSTART_TASK */
-
 #if (!defined(OSEE_SINGLECORE))
 /* [SWS_Os_00579] All cores that belong to the AUTOSAR system shall be
     synchronized within the StartOS function before the scheduling is started
@@ -502,7 +499,7 @@ FUNC(AppModeType, OS_CODE)
 )
 {
   VAR(AppModeType, AUTOMATIC) app_mode;
-  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb = p_cdb->p_ccb;
@@ -528,21 +525,35 @@ FUNC(StatusType, OS_CODE)
   VAR(TaskType, AUTOMATIC) TaskID
 )
 {
-  VAR(StatusType, AUTOMATIC)                    ev;
-  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA) p_kdb = osEE_get_kernel();
-#if (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
-  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
+  VAR(StatusType, AUTOMATIC)                      ev;
+  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)  p_kdb = osEE_get_kernel();
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
-#endif /* OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
-#if (defined(OSEE_HAS_ORTI))
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb = p_cdb->p_ccb;
-  osEE_orti_trace_service_entry(p_ccb, OSServiceId_ActivateTask);
-#endif /* OSEE_HAS_ORTI */
-#if (defined(OSEE_HAS_STACK_MONITORING))
-  osEE_stack_monitoring(p_cdb);
-#endif /* OSEE_HAS_STACK_MONITORING */
 
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_ActivateTask);
+  osEE_stack_monitoring(p_cdb);
+
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
+  /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
+   *    the Task/OsIsr calls any OS service (excluding the interrupt services)
+   *    then the Operating System shall ignore the service AND shall return  */
+  /*  [OS_SWS_088]: If an OS-Application makes a service call from the wrong
+   *    context AND is currently not inside a Category 1 ISR the Operating
+   *    System module shall not perform the requested action
+   *    (the service call shall have no effect), and return E_OS_CALLEVEL
+   *    (see [12], section 13.1) or the "invalid value" of  the service.
+   *    (BSW11009, BSW11013) */
+/* ActivateTask is callable by Task and ISR2 */
+  if (osEE_check_disableint(p_ccb)) {
+    ev = E_OS_DISABLEDINT;
+  } else
+  if (p_ccb->os_context > OSEE_TASK_ISR2_CTX)
+  {
+    ev = E_OS_CALLEVEL;
+  } else
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
   if (!osEE_is_valid_tid(p_kdb, TaskID)) {
     ev = E_OS_ID;
   } else
@@ -569,10 +580,10 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     VAR(OsEE_api_param, AUTOMATIC)
       param;
-#if (!defined(OSEE_HAS_ORTI))
+#if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_SERVICE_PROTECTION))
     CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
       p_ccb = osEE_get_curr_core()->p_ccb;
-#endif /* !OSEE_HAS_ORTI */
+#endif /* !OSEE_HAS_ORTI && !OSEE_HAS_SERVICE_PROTECTION */
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_ActivateTask);
@@ -595,49 +606,64 @@ FUNC(StatusType, OS_CODE)
   VAR(TaskType, AUTOMATIC) TaskID
 )
 {
-  VAR(StatusType, AUTOMATIC)                    ev;
-  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA) p_kdb = osEE_get_kernel();
-#if (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
-  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
+  VAR(StatusType, AUTOMATIC)                      ev;
+  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)  p_kdb = osEE_get_kernel();
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
-#endif /* OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
-#if (defined(OSEE_HAS_ORTI))
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb = p_cdb->p_ccb;
-  osEE_orti_trace_service_entry(p_ccb, OSServiceId_ChainTask);
-#endif /* OSEE_HAS_ORTI */
-#if (defined(OSEE_HAS_STACK_MONITORING))
-  osEE_stack_monitoring(p_cdb);
-#endif /* OSEE_HAS_STACK_MONITORING */
+  CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST)
+    p_curr = p_ccb->p_curr;
 
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_ChainTask);
+  osEE_stack_monitoring(p_cdb);
+
+  
+  /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
+   *    the Task/OsIsr calls any OS service (excluding the interrupt services)
+   *    then the Operating System shall ignore the service AND shall return  */
+  /*  [OS_SWS_088]: If an OS-Application makes a service call from the wrong
+   *    context AND is currently not inside a Category 1 ISR the Operating
+   *    System module shall not perform the requested action
+   *    (the service call shall have no effect), and return E_OS_CALLEVEL
+   *    (see [12], section 13.1) or the "invalid value" of  the service.
+   *    (BSW11009, BSW11013) */
+/* ChainTask is callable by Task */
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
+  if (osEE_check_disableint(p_ccb)) {
+    ev = E_OS_DISABLEDINT;
+  } else
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
+#if (defined(OSEE_HAS_CHECKS))
+  if ((p_curr->task_type > OSEE_TASK_TYPE_EXTENDED)
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
+      || (p_ccb->os_context > OSEE_TASK_CTX)
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
+  )
+  {
+    ev = E_OS_CALLEVEL;
+  } else
+#endif /* OSEE_HAS_CHECKS */
   if (!osEE_is_valid_tid(p_kdb, TaskID)) {
     ev = E_OS_ID;
   } else {
     CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
       p_tdb_act = (*p_kdb->p_tdb_ptr_array)[TaskID];
-    CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
-      p_curr = osEE_get_curr_task();
 #if (defined(OSEE_HAS_CHECKS)) && (defined(OSEE_HAS_MUTEX))
     CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
       p_curr_tcb  = p_curr->p_tcb;
-#endif /* OSEE_HAS_CHECKS && OSEE_HAS_CHECKS */
-#if (defined(OSEE_HAS_CHECKS))
-    if (p_curr->task_type >= OSEE_TASK_TYPE_ISR2) {
-      ev = E_OS_CALLEVEL;
-    } else
-#if (defined(OSEE_HAS_MUTEX))
+
     if (p_curr_tcb->p_first_mtx != NULL) {
 #if (!defined(OSEE_SINGLECORE))
-    if (p_curr_tcb->p_first_mtx->mtx_type == OSEE_MUTEX_SPINLOCK) {
-      ev = E_OS_SPINLOCK;
-    } else
+      if (p_curr_tcb->p_first_mtx->mtx_type == OSEE_MUTEX_SPINLOCK) {
+        ev = E_OS_SPINLOCK;
+      } else
 #endif /* !OSEE_SINGLECORE */
-    {
-      ev = E_OS_RESOURCE;
-    }
-  } else
-#endif /* OSEE_HAS_MUTEX */
-#endif /* OSEE_HAS_CHECKS */
+      {
+        ev = E_OS_RESOURCE;
+      }
+    } else
+#endif /* OSEE_HAS_CHECKS && OSEE_HAS_MUTEX */
     if (p_tdb_act->task_type <= OSEE_TASK_TYPE_EXTENDED) {
       CONST(OsEE_reg, AUTOMATIC)  flags = osEE_begin_primitive();
 
@@ -708,23 +734,26 @@ FUNC(StatusType, OS_CODE)
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_TerminateTask);
 
   osEE_stack_monitoring(p_cdb);
-
+  /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
+   *    the Task/OsIsr calls any OS service (excluding the interrupt services)
+   *    then the Operating System shall ignore the service AND shall return  */
   /*  [OS_SWS_088]: If an OS-Application makes a service call from the wrong
-   *  context AND is currently not inside a Category 1 ISR the Operating
-   *  System module shall not perform the requested action
-   *  (the service call shall have no effect), and return E_OS_CALLEVEL
-   *  (see [12], section 13.1) or the "invalid value" of  the service.
-   *  (BSW11009, BSW11013) */
-  /* check for a call at interrupt level
-   * This must be the FIRST Check!!!
-   */
-  if ((p_curr->task_type >= OSEE_TASK_TYPE_ISR2)
-#if (!defined(OSEE_SERVICE_PROTECTION))
-  )
-#else
+   *    context AND is currently not inside a Category 1 ISR the Operating
+   *    System module shall not perform the requested action
+   *    (the service call shall have no effect), and return E_OS_CALLEVEL
+   *    (see [12], section 13.1) or the "invalid value" of  the service.
+   *    (BSW11009, BSW11013) */
+/* TerminateTask is callable by Task */
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
+  if (osEE_check_disableint(p_ccb)) {
+    ev = E_OS_DISABLEDINT;
+  } else
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
+  if ((p_curr->task_type > OSEE_TASK_TYPE_EXTENDED)
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
     || (p_ccb->os_context > OSEE_TASK_CTX)
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
   )
-#endif /* OSEE_SERVICE_PROTECTION */
   {
     ev = E_OS_CALLEVEL;
   } else
@@ -780,18 +809,38 @@ FUNC(StatusType, OS_CODE)
   void
 )
 {
-  VAR(StatusType, AUTOMATIC)                    ev;
-  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb   = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb   = p_cdb->p_ccb;
-  CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA) p_curr  = p_ccb->p_curr;
-  CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA) p_tcb   = p_curr->p_tcb;
+  VAR(StatusType, AUTOMATIC)                     ev;
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST) p_cdb  = osEE_get_curr_core();
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb  = p_cdb->p_ccb;
+  CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST) p_curr = p_ccb->p_curr;
+  CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)  p_tcb  = p_curr->p_tcb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_Schedule);
 
   osEE_stack_monitoring(p_cdb);
 
 #if (defined(OSEE_HAS_CHECKS))
-  if (p_curr->task_type > OSEE_TASK_TYPE_EXTENDED) {
+  /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
+   *    the Task/OsIsr calls any OS service (excluding the interrupt services)
+   *    then the Operating System shall ignore the service AND shall return  */
+  /*  [OS_SWS_088]: If an OS-Application makes a service call from the wrong
+   *    context AND is currently not inside a Category 1 ISR the Operating
+   *    System module shall not perform the requested action
+   *    (the service call shall have no effect), and return E_OS_CALLEVEL
+   *    (see [12], section 13.1) or the "invalid value" of  the service.
+   *    (BSW11009, BSW11013) */
+/* Schedule is callable by Task */
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
+  if (osEE_check_disableint(p_curr_ccb)) {
+    ev = E_OS_DISABLEDINT;
+  } else
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
+  if ((p_curr->task_type > OSEE_TASK_TYPE_EXTENDED)
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
+    || (p_curr_ccb->os_context > OSEE_TASK_CTX)
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
+  )
+  {
     ev = E_OS_CALLEVEL;
   } else
 #if (defined(OSEE_HAS_MUTEX))
@@ -843,65 +892,73 @@ FUNC(StatusType, OS_CODE)
   VAR(ResourceType, AUTOMATIC) ResID
 )
 {
-  VAR(StatusType, AUTOMATIC)                    ev;
-  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA) p_kdb = osEE_get_kernel();
-#if (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
-  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
+  VAR(StatusType, AUTOMATIC)                      ev;
+  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)  p_kdb = osEE_get_kernel();
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
-#endif /* OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
-#if (defined(OSEE_HAS_ORTI))
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb = p_cdb->p_ccb;
-  osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetResource);
-#endif /* OSEE_HAS_ORTI */
-#if (defined(OSEE_HAS_STACK_MONITORING))
-  osEE_stack_monitoring(p_cdb);
-#endif /* OSEE_HAS_STACK_MONITORING */
+  CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST)
+    p_curr = p_ccb->p_curr;
 
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetResource);
+
+  osEE_stack_monitoring(p_cdb);
+
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
+  /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
+   *    the Task/OsIsr calls any OS service (excluding the interrupt services)
+   *    then the Operating System shall ignore the service AND shall return  */
+  /*  [OS_SWS_088]: If an OS-Application makes a service call from the wrong
+   *    context AND is currently not inside a Category 1 ISR the Operating
+   *    System module shall not perform the requested action
+   *    (the service call shall have no effect), and return E_OS_CALLEVEL
+   *    (see [12], section 13.1) or the "invalid value" of  the service.
+   *    (BSW11009, BSW11013) */
+/* GetResource is callable by Task and ISR2 */
+  if (osEE_check_disableint(p_ccb)) {
+    ev = E_OS_DISABLEDINT;
+  } else
+  if (p_ccb->os_context > OSEE_TASK_ISR2_CTX)
+  {
+    ev = E_OS_CALLEVEL;
+  } else
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
   if (!osEE_is_valid_res_id(p_kdb, ResID)) {
     ev = E_OS_ID;
   } else
   {
-    CONSTP2VAR(OsEE_MDB, AUTOMATIC, TYPEDEF)
-      p_mtx     = (*p_kdb->p_res_ptr_array)[ResID];
-    CONSTP2VAR(OsEE_MCB, AUTOMATIC, TYPEDEF)
-      p_mtx_mcb = p_mtx->p_mcb;
-    CONSTP2VAR(OsEE_TDB, AUTOMATIC, TYPEDEF)
-      p_tdb     = osEE_get_curr_task();
-    CONSTP2VAR(OsEE_TCB, AUTOMATIC, TYPEDEF)
-      p_tcb     = p_tdb->p_tcb;
+    CONSTP2VAR(OsEE_MDB, AUTOMATIC, OS_APPL_CONST)
+      p_mtx         = (*p_kdb->p_res_ptr_array)[ResID];
+    CONSTP2VAR(OsEE_MCB, AUTOMATIC, OS_APPL_DATA)
+      p_mtx_mcb     = p_mtx->p_mcb;
+    CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
+      p_curr_tcb    = p_curr->p_tcb;
     CONST(TaskPrio, AUTOMATIC)
-      mtx_prio  = p_mtx->mtx_prio;
+      mtx_prio      = p_mtx->mtx_prio;
+    CONST(TaskPrio, AUTOMATIC)
+      current_prio  = p_curr_tcb->current_prio;
     VAR(OsEE_reg, AUTOMATIC)
-      flags = osEE_begin_primitive();
+      flags         = osEE_begin_primitive();
 
-#if (defined(OSEE_HAS_CHECKS))
-    if ((p_mtx_mcb->locked) || (p_tdb->ready_prio > mtx_prio)) {
+    if ((p_mtx_mcb->p_mtx_owner != NULL) || (p_curr->ready_prio > mtx_prio)) {
       osEE_end_primitive(flags);
 
       ev = E_OS_ACCESS;
     } else
-#endif /* OSEE_HAS_CHECKS */
     {
-      CONST(TaskPrio, AUTOMATIC)
-        current_prio = p_tcb->current_prio;
-
       if (current_prio < mtx_prio) {
-        p_tcb->current_prio = mtx_prio;
+        p_curr_tcb->current_prio = mtx_prio;
         flags = osEE_hal_prepare_ipl(flags, mtx_prio);
       }
 
-      p_mtx_mcb->p_next       = p_tcb->p_first_mtx;
-      p_mtx_mcb->prev_prio    = current_prio;
-#if (defined(OSEE_HAS_CHECKS)) || (defined(OSEE_HAS_ORTI))
-      p_mtx_mcb->locked       = OSEE_TRUE;
-#endif /* OSEE_HAS_CHECKS || OSEE_HAS_ORTI */
-#if (!defined(OSEE_SINGLECORE)) || (defined(OSEE_HAS_ORTI))
-      p_mtx_mcb->p_mtx_owner  = p_tdb;
-#endif /* !OSEE_SINGLECORE || OSEE_HAS_ORTI */
-      p_tcb->p_first_mtx      = p_mtx;
+      p_mtx_mcb->p_mtx_owner  = p_curr;
 
       osEE_end_primitive(flags);
+
+      p_mtx_mcb->p_next       = p_curr_tcb->p_first_mtx;
+      p_mtx_mcb->prev_prio    = current_prio;
+      p_curr_tcb->p_first_mtx = p_mtx;
 
       ev = E_OK;
     }
@@ -911,10 +968,6 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     VAR(OsEE_api_param, AUTOMATIC)
       param;
-#if (!defined(OSEE_HAS_ORTI))
-    CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-      p_ccb = osEE_get_curr_core()->p_ccb;
-#endif /* !OSEE_HAS_ORTI */
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_GetResource);
@@ -924,9 +977,8 @@ FUNC(StatusType, OS_CODE)
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
-#if (defined(OSEE_HAS_ORTI))
+
   osEE_orti_trace_service_exit(p_ccb, OSServiceId_GetResource);
-#endif /* OSEE_HAS_ORTI */
 
   return ev;
 }
@@ -937,58 +989,73 @@ FUNC(StatusType, OS_CODE)
   VAR(ResourceType, AUTOMATIC) ResID
 )
 {
-  VAR(StatusType, AUTOMATIC)                    ev;
-  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA) p_kdb = osEE_get_kernel();
-  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb = osEE_get_curr_core();
-#if (defined(OSEE_HAS_ORTI))
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
+  VAR(StatusType, AUTOMATIC)                      ev;
+  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)  p_kdb = osEE_get_kernel();
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)  p_cdb = osEE_get_curr_core();
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)   p_ccb = p_cdb->p_ccb;
+  CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST)  p_curr = p_ccb->p_curr;
+
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_ReleaseResource);
-#endif /* OSEE_HAS_ORTI */
   osEE_stack_monitoring(p_cdb);
 
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
+  /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
+   *    the Task/OsIsr calls any OS service (excluding the interrupt services)
+   *    then the Operating System shall ignore the service AND shall return  */
+  /*  [OS_SWS_088]: If an OS-Application makes a service call from the wrong
+   *    context AND is currently not inside a Category 1 ISR the Operating
+   *    System module shall not perform the requested action
+   *    (the service call shall have no effect), and return E_OS_CALLEVEL
+   *    (see [12], section 13.1) or the "invalid value" of  the service.
+   *    (BSW11009, BSW11013) */
+/* ReleaseResource is callable by Task and ISR2 */
+  if (osEE_check_disableint(p_ccb)) {
+    ev = E_OS_DISABLEDINT;
+  } else
+  if (p_ccb->os_context > OSEE_TASK_ISR2_CTX)
+  {
+    ev = E_OS_CALLEVEL;
+  } else
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
   if (!osEE_is_valid_res_id(p_kdb, ResID)) {
     ev = E_OS_ID;
   } else
   {
-    CONSTP2VAR(OsEE_TDB, AUTOMATIC, TYPEDEF)
-      p_tdb     = osEE_get_curr_task();
     CONSTP2VAR(OsEE_TCB, AUTOMATIC, TYPEDEF)
-      p_tcb     = p_tdb->p_tcb;
+      p_curr_tcb  = p_curr->p_tcb;
     CONSTP2VAR(OsEE_MDB, AUTOMATIC, TYPEDEF)
-      p_mtx     = (*p_kdb->p_res_ptr_array)[ResID];
+      p_mtx       = (*p_kdb->p_res_ptr_array)[ResID];
     CONSTP2VAR(OsEE_MCB, AUTOMATIC, TYPEDEF)
-      p_mtx_mcb = p_mtx->p_mcb;
+      p_mtx_mcb   = p_mtx->p_mcb;
 
 #if (defined(OSEE_HAS_CHECKS))
-    if ((p_mtx_mcb->locked == OSEE_FALSE) || (p_tcb->p_first_mtx != p_mtx)) {
+    if ((p_mtx_mcb->p_mtx_owner == NULL) || (p_curr_tcb->p_first_mtx != p_mtx))
+    {
       ev = E_OS_NOFUNC;
     } else
 #endif /* OSEE_HAS_CHECKS */
     {
       VAR(OsEE_reg, AUTOMATIC)
         flags = osEE_begin_primitive();
-      /* Pop the MTX head */
-      p_tcb->p_first_mtx = p_tcb->p_first_mtx->p_mcb->p_next;
 
-      if (p_tcb->p_first_mtx != NULL) {
+      /* Pop the MTX head */
+      p_curr_tcb->p_first_mtx = p_curr_tcb->p_first_mtx->p_mcb->p_next;
+
+      if (p_curr_tcb->p_first_mtx != NULL) {
         CONST(TaskPrio, AUTOMATIC)
           prev_prio = p_mtx_mcb->prev_prio;
 
-        p_tcb->current_prio = prev_prio;
+        p_curr_tcb->current_prio = prev_prio;
         flags = osEE_hal_prepare_ipl(flags, prev_prio);
       } else {
         CONST(TaskPrio, AUTOMATIC)
-          dispatch_prio = p_tdb->dispatch_prio;
+          dispatch_prio = p_curr->dispatch_prio;
 
-        p_tcb->current_prio = dispatch_prio;
+        p_curr_tcb->current_prio = dispatch_prio;
         flags = osEE_hal_prepare_ipl(flags, dispatch_prio);
       }
-#if (defined(OSEE_HAS_CHECKS)) || (defined(OSEE_HAS_ORTI))
-      p_mtx_mcb->locked       = OSEE_FALSE;
-#endif /* OSEE_HAS_CHECKS || OSEE_HAS_ORTI */
-#if (!defined(OSEE_SINGLECORE)) || (defined(OSEE_HAS_ORTI))
+
       p_mtx_mcb->p_mtx_owner  = NULL;
-#endif /* !OSEE_SINGLECORE || OSEE_HAS_ORTI */
 
       /* Preemption point */
       (void)osEE_scheduler_task_preemption_point(p_kdb);
@@ -1003,10 +1070,6 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     VAR(OsEE_api_param, AUTOMATIC)
       param;
-#if (!defined(OSEE_HAS_ORTI))
-    CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-      p_ccb = p_cdb->p_ccb;
-#endif /* !OSEE_HAS_ORTI */
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_ReleaseResource);
@@ -1016,9 +1079,9 @@ FUNC(StatusType, OS_CODE)
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
-#if (defined(OSEE_HAS_ORTI))
+
   osEE_orti_trace_service_exit(p_ccb, OSServiceId_ReleaseResource);
-#endif /* OSEE_HAS_ORTI */
+
   return ev;
 }
 #endif /* OSEE_HAS_RESOURCES */
@@ -1036,9 +1099,23 @@ FUNC(StatusType, OS_CODE)
   CONST(OsEE_kernel_status, AUTOMATIC) os_status = p_ccb->os_status;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_ShutdownOS);
+  osEE_stack_monitoring(p_cdb);
 
-/* No need to monitor the stack if ShutdownOs is called */
-
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
+  /*  [OS_SWS_088]: If an OS-Application makes a service call from the wrong
+   *    context AND is currently not inside a Category 1 ISR the Operating
+   *    System module shall not perform the requested action
+   *    (the service call shall have no effect), and return E_OS_CALLEVEL
+   *    (see [12], section 13.1) or the "invalid value" of  the service.
+   *    (BSW11009, BSW11013) */
+/* ShutdownOS is callable in Task, ISR2, Error/Startup Hooks */
+  if ((p_ccb->os_context > OSEE_ERRORHOOK_CTX) && 
+      (p_ccb->os_context != OSEE_STARTUPHOOK_CTX)
+  )     
+  {
+    ev = E_OS_CALLEVEL;
+  } else
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
   if ((os_status == OSEE_KERNEL_STARTED) || (os_status == OSEE_KERNEL_STARTING))
   {
     ev = osEE_shutdown_os(p_cdb, Error);
@@ -1063,11 +1140,33 @@ FUNC(StatusType, OS_CODE)
 )
 {
   VAR(StatusType, AUTOMATIC) ev;
-#if (defined(OSEE_HAS_ORTI))
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
+    p_cdb = osEE_get_curr_core();
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-    p_ccb = osEE_get_curr_core()->p_ccb;
+    p_ccb = p_cdb->p_ccb;
+
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetTaskID);
-#endif /* OSEE_HAS_ORTI */
+  osEE_stack_monitoring(p_cdb);
+
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
+  /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
+   *    the Task/OsIsr calls any OS service (excluding the interrupt services)
+   *    then the Operating System shall ignore the service AND shall return  */
+  /*  [OS_SWS_088]: If an OS-Application makes a service call from the wrong
+   *    context AND is currently not inside a Category 1 ISR the Operating
+   *    System module shall not perform the requested action
+   *    (the service call shall have no effect), and return E_OS_CALLEVEL
+   *    (see [12], section 13.1) or the "invalid value" of  the service.
+   *    (BSW11009, BSW11013) */
+/* GetTaskID is callable by Task and ISR2, Error/PreTask/PostTask Hooks */
+  if (osEE_check_disableint(p_ccb)) {
+    ev = E_OS_DISABLEDINT;
+  } else
+  if (p_ccb->os_context > OSEE_POSTTASKHOOK_CTX)
+  {
+    ev = E_OS_CALLEVEL;
+  } else
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
   /* [OS566]: The Operating System API shall check in extended mode all pointer
       argument for NULL pointer and return OS_E_PARAMETER_POINTER
       if such argument is NULL.
@@ -1110,10 +1209,6 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     VAR(OsEE_api_param, AUTOMATIC)
       param;
-#if (!defined(OSEE_HAS_ORTI))
-    CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-      p_ccb = osEE_get_curr_core()->p_ccb;
-#endif /* !OSEE_HAS_ORTI */
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_GetTaskID);
@@ -1123,9 +1218,8 @@ FUNC(StatusType, OS_CODE)
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
-#if (defined(OSEE_HAS_ORTI))
+
   osEE_orti_trace_service_exit(p_ccb, OSServiceId_GetTaskID);
-#endif /* OSEE_HAS_ORTI */
 
   return ev;
 }
@@ -1139,19 +1233,33 @@ FUNC(StatusType, OS_CODE)
 {
   VAR(StatusType, AUTOMATIC)                    ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA) p_kdb = osEE_get_kernel();
-#if (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb = osEE_get_curr_core();
-#endif /* OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
-#if (defined(OSEE_HAS_ORTI))
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb = p_cdb->p_ccb;
-  osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetTaskState);
-#endif /* OSEE_HAS_ORTI */
-#if (defined(OSEE_HAS_STACK_MONITORING))
-  osEE_stack_monitoring(p_cdb);
-#endif /* OSEE_HAS_STACK_MONITORING */
 
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetTaskState);
+  osEE_stack_monitoring(p_cdb);
+
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
+  /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
+   *    the Task/OsIsr calls any OS service (excluding the interrupt services)
+   *    then the Operating System shall ignore the service AND shall return  */
+  /*  [OS_SWS_088]: If an OS-Application makes a service call from the wrong
+   *    context AND is currently not inside a Category 1 ISR the Operating
+   *    System module shall not perform the requested action
+   *    (the service call shall have no effect), and return E_OS_CALLEVEL
+   *    (see [12], section 13.1) or the "invalid value" of  the service.
+   *    (BSW11009, BSW11013) */
+/* GetTaskState is callable by Task and ISR2, Error/PreTask/PostTask Hooks */
+  if (osEE_check_disableint(p_ccb)) {
+    ev = E_OS_DISABLEDINT;
+  } else
+  if (p_ccb->os_context > OSEE_POSTTASKHOOK_CTX)
+  {
+    ev = E_OS_CALLEVEL;
+  } else
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
   /* [OS566]: The Operating System API shall check in extended mode all pointer
      argument for NULL pointer and return OS_E_PARAMETER_POINTER
      if such argument is NULL.
@@ -1195,10 +1303,8 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     VAR(OsEE_api_param, AUTOMATIC)
       param;
-#if (!defined(OSEE_HAS_ORTI))
     CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
       p_ccb = osEE_get_curr_core()->p_ccb;
-#endif /* !OSEE_HAS_ORTI */
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_GetTaskState);
@@ -1210,9 +1316,8 @@ FUNC(StatusType, OS_CODE)
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
-#if (defined(OSEE_HAS_ORTI))
+
   osEE_orti_trace_service_exit(p_ccb, OSServiceId_GetTaskState);
-#endif /* OSEE_HAS_ORTI */
 
   return ev;
 }
@@ -1229,19 +1334,33 @@ FUNC(StatusType, OS_CODE)
   VAR(StatusType, AUTOMATIC)  ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
     p_kdb = osEE_get_kernel();
-#if (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb = osEE_get_curr_core();
-#endif /* OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
-#if (defined(OSEE_HAS_ORTI))
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb = p_cdb->p_ccb;
-  osEE_orti_trace_service_entry(p_ccb, OSServiceId_SetRelAlarm);
-#endif /* OSEE_HAS_ORTI */
-#if (defined(OSEE_HAS_STACK_MONITORING))
-  osEE_stack_monitoring(p_cdb);
-#endif /* OSEE_HAS_STACK_MONITORING */
 
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_SetRelAlarm);
+  osEE_stack_monitoring(p_cdb);
+
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
+  /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
+   *    the Task/OsIsr calls any OS service (excluding the interrupt services)
+   *    then the Operating System shall ignore the service AND shall return  */
+  /*  [OS_SWS_088]: If an OS-Application makes a service call from the wrong
+   *    context AND is currently not inside a Category 1 ISR the Operating
+   *    System module shall not perform the requested action
+   *    (the service call shall have no effect), and return E_OS_CALLEVEL
+   *    (see [12], section 13.1) or the "invalid value" of  the service.
+   *    (BSW11009, BSW11013) */
+/* SetRelAlarm is callable by Task and ISR2 */
+  if (osEE_check_disableint(p_ccb)) {
+    ev = E_OS_DISABLEDINT;
+  } else
+  if (p_ccb->os_context > OSEE_TASK_ISR2_CTX)
+  {
+    ev = E_OS_CALLEVEL;
+  } else
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
   if (!osEE_is_valid_alarm_id(p_kdb, AlarmID)) {
     ev = E_OS_ID;
   } else
@@ -1311,19 +1430,33 @@ FUNC(StatusType, OS_CODE)
   VAR(StatusType, AUTOMATIC)  ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
     p_kdb = osEE_get_kernel();
-#if (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb = osEE_get_curr_core();
-#endif /* OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
-#if (defined(OSEE_HAS_ORTI))
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb = p_cdb->p_ccb;
-  osEE_orti_trace_service_entry(p_ccb, OSServiceId_SetAbsAlarm);
-#endif /* OSEE_HAS_ORTI */
-#if (defined(OSEE_HAS_STACK_MONITORING))
-  osEE_stack_monitoring(p_cdb);
-#endif /* OSEE_HAS_STACK_MONITORING */
 
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_SetAbsAlarm);
+  osEE_stack_monitoring(p_cdb);
+
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
+  /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
+   *    the Task/OsIsr calls any OS service (excluding the interrupt services)
+   *    then the Operating System shall ignore the service AND shall return  */
+  /*  [OS_SWS_088]: If an OS-Application makes a service call from the wrong
+   *    context AND is currently not inside a Category 1 ISR the Operating
+   *    System module shall not perform the requested action
+   *    (the service call shall have no effect), and return E_OS_CALLEVEL
+   *    (see [12], section 13.1) or the "invalid value" of  the service.
+   *    (BSW11009, BSW11013) */
+/* SetAbsAlarm is callable by Task and ISR2 */
+  if (osEE_check_disableint(p_ccb)) {
+    ev = E_OS_DISABLEDINT;
+  } else
+  if (p_ccb->os_context > OSEE_TASK_ISR2_CTX)
+  {
+    ev = E_OS_CALLEVEL;
+  } else
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
   if (!osEE_is_valid_alarm_id(p_kdb, AlarmID)) {
     ev = E_OS_ID;
   } else
@@ -1357,10 +1490,6 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     VAR(OsEE_api_param, AUTOMATIC)
       param;
-#if (!defined(OSEE_HAS_ORTI))
-    CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-      p_ccb = osEE_get_curr_core()->p_ccb;
-#endif /* !OSEE_HAS_ORTI */
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_SetAbsAlarm);
@@ -1374,9 +1503,8 @@ FUNC(StatusType, OS_CODE)
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
-#if (defined(OSEE_HAS_ORTI))
+
   osEE_orti_trace_service_exit(p_ccb, OSServiceId_SetAbsAlarm);
-#endif /* OSEE_HAS_ORTI */
 
   return ev;
 }
@@ -1390,19 +1518,33 @@ FUNC(StatusType, OS_CODE)
   VAR(StatusType, AUTOMATIC)  ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
     p_kdb = osEE_get_kernel();
-#if (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb = osEE_get_curr_core();
-#endif /* OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
-#if (defined(OSEE_HAS_ORTI))
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb = p_cdb->p_ccb;
-  osEE_orti_trace_service_entry(p_ccb, OSServiceId_CancelAlarm);
-#endif /* OSEE_HAS_ORTI */
-#if (defined(OSEE_HAS_STACK_MONITORING))
-  osEE_stack_monitoring(p_cdb);
-#endif /* OSEE_HAS_STACK_MONITORING */
 
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_CancelAlarm);
+  osEE_stack_monitoring(p_cdb);
+
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
+  /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
+   *    the Task/OsIsr calls any OS service (excluding the interrupt services)
+   *    then the Operating System shall ignore the service AND shall return  */
+  /*  [OS_SWS_088]: If an OS-Application makes a service call from the wrong
+   *    context AND is currently not inside a Category 1 ISR the Operating
+   *    System module shall not perform the requested action
+   *    (the service call shall have no effect), and return E_OS_CALLEVEL
+   *    (see [12], section 13.1) or the "invalid value" of  the service.
+   *    (BSW11009, BSW11013) */
+/* CancelAlarm is callable by Task and ISR2 */
+  if (osEE_check_disableint(p_ccb)) {
+    ev = E_OS_DISABLEDINT;
+  } else
+  if (p_ccb->os_context > OSEE_TASK_ISR2_CTX)
+  {
+    ev = E_OS_CALLEVEL;
+  } else
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
   if (!osEE_is_valid_alarm_id(p_kdb, AlarmID)) {
     ev = E_OS_ID;
   } else {
@@ -1420,10 +1562,6 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     VAR(OsEE_api_param, AUTOMATIC)
       param;
-#if (!defined(OSEE_HAS_ORTI))
-    CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-      p_ccb = osEE_get_curr_core()->p_ccb;
-#endif /* !OSEE_HAS_ORTI */
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_CancelAlarm);
@@ -1433,9 +1571,8 @@ FUNC(StatusType, OS_CODE)
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
-#if (defined(OSEE_HAS_ORTI))
+
   osEE_orti_trace_service_exit(p_ccb, OSServiceId_CancelAlarm);
-#endif /* OSEE_HAS_ORTI */
 
   return ev;
 }
@@ -1450,19 +1587,33 @@ FUNC(StatusType, OS_CODE)
   VAR(StatusType, AUTOMATIC)  ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
     p_kdb = osEE_get_kernel();
-#if (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb = osEE_get_curr_core();
-#endif /* OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
-#if (defined(OSEE_HAS_ORTI))
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb = p_cdb->p_ccb;
-  osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetAlarm);
-#endif /* OSEE_HAS_ORTI */
-#if (defined(OSEE_HAS_STACK_MONITORING))
-  osEE_stack_monitoring(p_cdb);
-#endif /* OSEE_HAS_STACK_MONITORING */
 
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetAlarm);
+  osEE_stack_monitoring(p_cdb);
+
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
+  /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
+   *    the Task/OsIsr calls any OS service (excluding the interrupt services)
+   *    then the Operating System shall ignore the service AND shall return  */
+  /*  [OS_SWS_088]: If an OS-Application makes a service call from the wrong
+   *    context AND is currently not inside a Category 1 ISR the Operating
+   *    System module shall not perform the requested action
+   *    (the service call shall have no effect), and return E_OS_CALLEVEL
+   *    (see [12], section 13.1) or the "invalid value" of  the service.
+   *    (BSW11009, BSW11013) */
+/* GetAlarm is callable by Task, ISR2, Error/PreTask/PostTask Hooks */
+  if (osEE_check_disableint(p_ccb)) {
+    ev = E_OS_DISABLEDINT;
+  } else
+  if (p_ccb->os_context > OSEE_POSTTASKHOOK_CTX)
+  {
+    ev = E_OS_CALLEVEL;
+  } else
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
   if (!osEE_is_valid_alarm_id(p_kdb, AlarmID)) {
     ev = E_OS_ID;
   } else
@@ -1484,10 +1635,6 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     VAR(OsEE_api_param, AUTOMATIC)
       param;
-#if (!defined(OSEE_HAS_ORTI))
-    CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-      p_ccb = osEE_get_curr_core()->p_ccb;
-#endif /* !OSEE_HAS_ORTI */
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_GetAlarm);
@@ -1499,9 +1646,8 @@ FUNC(StatusType, OS_CODE)
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
-#if (defined(OSEE_HAS_ORTI))
+
   osEE_orti_trace_service_exit(p_ccb, OSServiceId_GetAlarm);
-#endif /* OSEE_HAS_ORTI */
 
   return ev;
 }
@@ -1516,19 +1662,33 @@ FUNC(StatusType, OS_CODE)
   VAR(StatusType, AUTOMATIC)  ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
     p_kdb = osEE_get_kernel();
-#if (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb = osEE_get_curr_core();
-#endif /* OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
-#if (defined(OSEE_HAS_ORTI))
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb = p_cdb->p_ccb;
-  osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetAlarmBase);
-#endif /* OSEE_HAS_ORTI */
-#if (defined(OSEE_HAS_STACK_MONITORING))
-  osEE_stack_monitoring(p_cdb);
-#endif /* OSEE_HAS_STACK_MONITORING */
 
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetAlarmBase);
+  osEE_stack_monitoring(p_cdb);
+
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
+  /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
+   *    the Task/OsIsr calls any OS service (excluding the interrupt services)
+   *    then the Operating System shall ignore the service AND shall return  */
+  /*  [OS_SWS_088]: If an OS-Application makes a service call from the wrong
+   *    context AND is currently not inside a Category 1 ISR the Operating
+   *    System module shall not perform the requested action
+   *    (the service call shall have no effect), and return E_OS_CALLEVEL
+   *    (see [12], section 13.1) or the "invalid value" of  the service.
+   *    (BSW11009, BSW11013) */
+/* GetAlarmBase is callable by Task, ISR2, Error/PreTask/PostTask Hooks */
+  if (osEE_check_disableint(p_ccb)) {
+    ev = E_OS_DISABLEDINT;
+  } else
+  if (p_ccb->os_context > OSEE_POSTTASKHOOK_CTX)
+  {
+    ev = E_OS_CALLEVEL;
+  } else
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
   if (!osEE_is_valid_alarm_id(p_kdb, AlarmID)) {
     ev = E_OS_ID;
   } else
@@ -1552,10 +1712,6 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     VAR(OsEE_api_param, AUTOMATIC)
       param;
-#if (!defined(OSEE_HAS_ORTI))
-    CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-      p_ccb = osEE_get_curr_core()->p_ccb;
-#endif /* !OSEE_HAS_ORTI */
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_GetAlarmBase);
@@ -1567,9 +1723,8 @@ FUNC(StatusType, OS_CODE)
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
-#if (defined(OSEE_HAS_ORTI))
+
   osEE_orti_trace_service_exit(p_ccb, OSServiceId_GetAlarmBase);
-#endif /* OSEE_HAS_ORTI */
 
   return ev;
 }
@@ -1594,7 +1749,6 @@ FUNC(StatusType, OS_CODE)
     p_curr_tcb  = p_curr->p_tcb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_WaitEvent);
-
   osEE_stack_monitoring(p_cdb);
 
 #if (defined(OSEE_HAS_CHECKS))
@@ -1610,10 +1764,8 @@ FUNC(StatusType, OS_CODE)
   if (osEE_check_disableint(p_ccb)) {
     ev = E_OS_DISABLEDINT;
   } else
-  if ((p_curr->task_type >= OSEE_TASK_TYPE_ISR2)
-#if (!defined(OSEE_SERVICE_PROTECTION))
-  )
-#else
+  if ((p_curr->task_type > OSEE_TASK_TYPE_EXTENDED)
+#if (defined(OSEE_SERVICE_PROTECTION))
     || (p_ccb->os_context > OSEE_TASK_CTX)
   )
 #endif /* OSEE_SERVICE_PROTECTION */
@@ -1704,7 +1856,6 @@ FUNC(StatusType, OS_CODE)
     p_curr      = p_curr_ccb->p_curr;
 
   osEE_orti_trace_service_entry(p_curr_ccb, OSServiceId_SetEvent);
-
   osEE_stack_monitoring(p_curr_cdb);
 
   /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
@@ -1721,9 +1872,7 @@ FUNC(StatusType, OS_CODE)
     ev = E_OS_DISABLEDINT;
   } else
   if ((p_curr->task_type > OSEE_TASK_TYPE_ISR2)
-#if (!defined(OSEE_SERVICE_PROTECTION))
-  )
-#else
+#if (defined(OSEE_SERVICE_PROTECTION))
     || (p_curr_ccb->os_context > OSEE_TASK_ISR2_CTX)
   )
 #endif /* OSEE_SERVICE_PROTECTION */
@@ -1826,9 +1975,7 @@ FUNC(StatusType, OS_CODE)
     ev = E_OS_DISABLEDINT;
   } else
   if ((p_curr->task_type > OSEE_TASK_TYPE_ISR2)
-#if (!defined(OSEE_SERVICE_PROTECTION))
-  )
-#else
+#if (defined(OSEE_SERVICE_PROTECTION))
     || ((os_context > OSEE_ERRORHOOK_CTX) &&
         (os_context != OSEE_PRETASKHOOK_CTX) &&
         (os_context != OSEE_POSTTASKHOOK_CTX))
@@ -1911,7 +2058,6 @@ FUNC(StatusType, OS_CODE)
     p_curr_tcb  = p_curr->p_tcb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_ClearEvent);
-
   osEE_stack_monitoring(p_cdb);
 
 #if (defined(OSEE_HAS_CHECKS))
@@ -1928,10 +2074,8 @@ FUNC(StatusType, OS_CODE)
     ev = E_OS_DISABLEDINT;
   } else
   if ((p_curr->task_type >= OSEE_TASK_TYPE_ISR2)
-#if (!defined(OSEE_SERVICE_PROTECTION))
-  )
-#else
-    || (p_ccb->os_context > OSEE_TASK_CTX)
+#if (defined(OSEE_SERVICE_PROTECTION))
+      || (p_ccb->os_context > OSEE_TASK_CTX)
   )
 #endif /* OSEE_SERVICE_PROTECTION */
   {
@@ -2018,32 +2162,45 @@ FUNC(StatusType, OS_CODE)
 )
 {
   VAR(StatusType, AUTOMATIC)  ev;
-  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
+  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)
     p_kdb = osEE_get_kernel();
-#if (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
-  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
-#endif /* OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
-#if (defined(OSEE_HAS_ORTI))
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb = p_cdb->p_ccb;
+
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetCounterValue);
-#endif /* OSEE_HAS_ORTI */
-#if (defined(OSEE_HAS_STACK_MONITORING))
   osEE_stack_monitoring(p_cdb);
-#endif /* OSEE_HAS_STACK_MONITORING */
+
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
+  /*  [OS_SWS_0093]: If interrupts are disabled/suspended by a Task/OsIsr and
+   *    the Task/OsIsr calls any OS service (excluding the interrupt services)
+   *    then the Operating System shall ignore the service AND shall return  */
+  /*  [OS_SWS_0088]: If an OS-Application makes a service call from the wrong
+   *    context AND is currently not inside a Category 1 ISR the Operating
+   *    System module shall not perform the requested action
+   *    (the service call shall have no effect), and return E_OS_CALLEVEL
+   *    (see [12], section 13.1) or the "invalid value" of  the service.
+   *    (BSW11009, BSW11013) */
+/* GetCounterValue is callable by Task and ISR2 */
+  if (osEE_check_disableint(p_ccb)) {
+    ev = E_OS_DISABLEDINT;
+  } else
+  if (p_ccb->os_context > OSEE_TASK_ISR2_CTX)
+  {
+    ev = E_OS_CALLEVEL;
+  } else
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
 /* [SWS_Os_00376] If the input parameter <CounterID> in a call of
     GetCounterValue() is not valid, GetCounterValue() shall return E_OS_ID. */
   if (!osEE_is_valid_counter_id(p_kdb, CounterID)) {
     ev = E_OS_ID;
   } else
-#if (defined(OSEE_HAS_CHECKS))
   if (Value == NULL) {
     ev = E_OS_PARAM_POINTER;
   } else
-#endif /* OSEE_HAS_CHECKS */
   {
-    CONSTP2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_DATA)
+    CONSTP2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_CONST)
       p_counter_db = (*p_kdb->p_counter_ptr_array)[CounterID];
 /* [SWS_Os_00589] All functions that are not allowed to operate cross core
     shall return E_OS_CORE in extended status if called with parameters that
@@ -2078,10 +2235,6 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     VAR(OsEE_api_param, AUTOMATIC)
       param;
-#if (!defined(OSEE_HAS_ORTI))
-    CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-      p_ccb = osEE_get_curr_core()->p_ccb;
-#endif /* !OSEE_HAS_ORTI */
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_GetCounterValue);
@@ -2093,9 +2246,9 @@ FUNC(StatusType, OS_CODE)
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
-#if (defined(OSEE_HAS_ORTI))
+
   osEE_orti_trace_service_exit(p_ccb, OSServiceId_GetCounterValue);
-#endif /* OSEE_HAS_ORTI */
+
   return ev;
 }
 
@@ -2108,30 +2261,42 @@ FUNC(StatusType, OS_CODE)
 )
 {
   VAR(StatusType, AUTOMATIC)  ev;
-  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
+  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)
     p_kdb = osEE_get_kernel();
-#if (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
-  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
-#endif /* OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
-#if (defined(OSEE_HAS_ORTI))
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb = p_cdb->p_ccb;
+
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetElapsedValue);
-#endif /* OSEE_HAS_ORTI */
-#if (defined(OSEE_HAS_STACK_MONITORING))
   osEE_stack_monitoring(p_cdb);
-#endif /* OSEE_HAS_STACK_MONITORING */
-/* [SWS_Os_00381] If the input parameter <CounterID> in a call of
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
+  /*  [OS_SWS_0093]: If interrupts are disabled/suspended by a Task/OsIsr and
+   *    the Task/OsIsr calls any OS service (excluding the interrupt services)
+   *    then the Operating System shall ignore the service AND shall return  */
+  /*  [OS_SWS_0088]: If an OS-Application makes a service call from the wrong
+   *    context AND is currently not inside a Category 1 ISR the Operating
+   *    System module shall not perform the requested action
+   *    (the service call shall have no effect), and return E_OS_CALLEVEL
+   *    (see [12], section 13.1) or the "invalid value" of  the service.
+   *    (BSW11009, BSW11013) */
+/* GetElapsedValue is callable by Task and ISR2 */
+  if (osEE_check_disableint(p_ccb)) {
+    ev = E_OS_DISABLEDINT;
+  } else
+  if (p_ccb->os_context > OSEE_TASK_ISR2_CTX)
+  {
+    ev = E_OS_CALLEVEL;
+  } else
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
+ /* [SWS_Os_00381] If the input parameter <CounterID> in a call of
     GetElapsedValue() is not valid GetElapsedValue() shall return E_OS_ID. */
   if (!osEE_is_valid_counter_id(p_kdb, CounterID)) {
     ev = E_OS_ID;
   } else
-#if (defined(OSEE_HAS_CHECKS))
   if ((Value == NULL) || (ElapsedValue == NULL)) {
     ev = E_OS_PARAM_POINTER;
   } else
-#endif /* OSEE_HAS_CHECKS */
   {
     CONSTP2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_DATA)
       p_counter_db = (*p_kdb->p_counter_ptr_array)[CounterID];
@@ -2185,10 +2350,6 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     VAR(OsEE_api_param, AUTOMATIC)
       param;
-#if (!defined(OSEE_HAS_ORTI))
-    CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-      p_ccb = osEE_get_curr_core()->p_ccb;
-#endif /* !OSEE_HAS_ORTI */
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_GetElapsedValue);
@@ -2202,13 +2363,11 @@ FUNC(StatusType, OS_CODE)
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
-#if (defined(OSEE_HAS_ORTI))
+
   osEE_orti_trace_service_exit(p_ccb, OSServiceId_GetElapsedValue);
-#endif /* OSEE_HAS_ORTI */
 
   return ev;
 }
-
 
 FUNC(StatusType, OS_CODE)
   IncrementCounter
@@ -2217,21 +2376,35 @@ FUNC(StatusType, OS_CODE)
 )
 {
   VAR(StatusType, AUTOMATIC)  ev;
-  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
+  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)
     p_kdb = osEE_get_kernel();
-#if (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
-  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
-#endif /* OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
-#if (defined(OSEE_HAS_ORTI))
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb = p_cdb->p_ccb;
-  osEE_orti_trace_service_entry(p_ccb, OSServiceId_IncrementCounter);
-#endif /* OSEE_HAS_ORTI */
-#if (defined(OSEE_HAS_STACK_MONITORING))
-  osEE_stack_monitoring(p_cdb);
-#endif /* OSEE_HAS_STACK_MONITORING */
 
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_IncrementCounter);
+  osEE_stack_monitoring(p_cdb);
+
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
+  /*  [OS_SWS_0093]: If interrupts are disabled/suspended by a Task/OsIsr and
+   *    the Task/OsIsr calls any OS service (excluding the interrupt services)
+   *    then the Operating System shall ignore the service AND shall return  */
+  /*  [OS_SWS_0088]: If an OS-Application makes a service call from the wrong
+   *    context AND is currently not inside a Category 1 ISR the Operating
+   *    System module shall not perform the requested action
+   *    (the service call shall have no effect), and return E_OS_CALLEVEL
+   *    (see [12], section 13.1) or the "invalid value" of  the service.
+   *    (BSW11009, BSW11013) */
+/* IncrementCounter is callable by Task and ISR2 */
+  if (osEE_check_disableint(p_ccb)) {
+    ev = E_OS_DISABLEDINT;
+  } else
+  if (p_ccb->os_context > OSEE_TASK_ISR2_CTX)
+  {
+    ev = E_OS_CALLEVEL;
+  } else
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
 /* [SWS_Os_00285] If the input parameter <CounterID> in a call of
     IncrementCounter() is not valid OR the counter is a hardware counter,
     IncrementCounter() shall return E_OS_ID. */
@@ -2282,10 +2455,6 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     VAR(OsEE_api_param, AUTOMATIC)
       param;
-#if (!defined(OSEE_HAS_ORTI))
-    CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-      p_ccb = osEE_get_curr_core()->p_ccb;
-#endif /* !OSEE_HAS_ORTI */
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_IncrementCounter);
@@ -2295,14 +2464,657 @@ FUNC(StatusType, OS_CODE)
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
-#if (defined(OSEE_HAS_ORTI))
+
   osEE_orti_trace_service_exit(p_ccb, OSServiceId_IncrementCounter);
-#endif /* OSEE_HAS_ORTI */
 
   return ev;
 }
 
 #endif /* OSEE_HAS_COUNTERS */
+
+#if (defined(OSEE_HAS_SCHEDULE_TABLES))
+FUNC(StatusType, OS_CODE)
+  StartScheduleTableRel
+(
+  VAR(ScheduleTableType, AUTOMATIC) ScheduleTableID,
+  VAR(TickType, AUTOMATIC)          Offset
+)
+{
+  VAR(StatusType, AUTOMATIC)  ev;
+  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)
+    p_kdb = osEE_get_kernel();
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
+    p_cdb = osEE_get_curr_core();
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+    p_ccb = p_cdb->p_ccb;
+
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_StartScheduleTableRel);
+  osEE_stack_monitoring(p_cdb);
+
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
+  /*  [OS_SWS_0093]: If interrupts are disabled/suspended by a Task/OsIsr and
+   *    the Task/OsIsr calls any OS service (excluding the interrupt services)
+   *    then the Operating System shall ignore the service AND shall return  */
+  /*  [OS_SWS_0088]: If an OS-Application makes a service call from the wrong
+   *    context AND is currently not inside a Category 1 ISR the Operating
+   *    System module shall not perform the requested action
+   *    (the service call shall have no effect), and return E_OS_CALLEVEL
+   *    (see [12], section 13.1) or the "invalid value" of  the service.
+   *    (BSW11009, BSW11013) */
+/* StartScheduleTableRel is callable by Task and ISR2 */
+  if (osEE_check_disableint(p_ccb)) {
+    ev = E_OS_DISABLEDINT;
+  } else
+  if (p_ccb->os_context > OSEE_TASK_ISR2_CTX)
+  {
+    ev = E_OS_CALLEVEL;
+  } else
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
+  if (!osEE_is_valid_st_id(p_kdb, ScheduleTableID)) {
+    ev = E_OS_ID;
+  } else
+  {
+    CONSTP2VAR(OsEE_SchedTabDB, AUTOMATIC, OS_APPL_CONST)
+      p_st_db = (*p_kdb->p_st_ptr_array)[ScheduleTableID];
+    CONSTP2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_DATA)
+      p_counter_db = osEE_st_get_trigger_db(p_st_db)->p_counter_db;
+    CONST(OsEE_reg, AUTOMATIC)
+      flags = osEE_begin_primitive();
+#if (defined(OSEE_HAS_CHECKS))
+    /* [SWS_Os_00452] If the schedule table <ScheduleTableID> in a call of
+        StartScheduleTableRel() is implicitly synchronized
+       (OsScheduleTblSyncStrategy = IMPLICIT), StartScheduleTableRel()
+       shall return E_OS_ID. */
+    /* [SWS_Os_00332] If <Offset> in a call of StartScheduleTableRel() is zero
+       StartScheduleTableRel() shall return E_OS_VALUE. */
+    /* [SWS_Os_00276] If the offset <Offset>) is greater than
+       OsCounterMaxAllowedValue of the underlying counter minus the Initial
+       Offset, StartScheduleTableRel() shall return E_OS_VALUE. */
+    /* [SWS_Os_00277] If the schedule table <ScheduleTableID> in a call of
+        StartScheduleTableRel() is not in the state SCHEDULETABLE_STOPPED,
+        StartScheduleTableRel() shall return E_OS_STATE. */
+    if (p_st_db->sync_strategy == OSEE_SCHEDTABLE_SYNC_IMPLICIT)
+    {
+      ev = E_OS_ID;
+    } else if ((Offset == 0) || (Offset > p_counter_db->info.maxallowedvalue))
+    {
+      ev = E_OS_VALUE;
+    } else if (osEE_st_get_cb(p_st_db)->st_status != SCHEDULETABLE_STOPPED)
+    {
+      ev = E_OS_STATE;
+    } else
+#endif /* OSEE_HAS_CHECKS */
+    {
+      /* [SWS_Os_00278] If the input parameters of StartScheduleTableRel()
+          are valid and the state of schedule table <ScheduleTableID> is
+          SCHEDULETABLE_STOPPED, then StartScheduleTableRel() shall start the
+          processing of a schedule table <ScheduleTableID>.
+          The Initial Expiry Point shall be processed after
+          <Offset> + Initial Offset ticks have elapsed on the underlying
+          counter. The state of <ScheduleTableID> is set to
+          SCHEDULETABLE_RUNNING before the service returns to the caller. */
+      ev = osEE_st_start_rel(p_counter_db, p_st_db, Offset);
+    }
+    osEE_end_primitive(flags);
+  }
+
+#if (defined(OSEE_HAS_ERRORHOOK))
+  if (ev != E_OK) {
+    VAR(OsEE_api_param, AUTOMATIC)
+      param;
+    CONST(OsEE_reg, AUTOMATIC)
+      flags = osEE_begin_primitive();
+    osEE_set_service_id(p_ccb, OSServiceId_StartScheduleTableRel);
+    param.num_param = ScheduleTableID;
+    osEE_set_api_param1(p_ccb, param);
+    param.num_param = Offset;
+    osEE_set_api_param3(p_ccb, param);
+    osEE_call_error_hook(p_ccb, ev);
+    osEE_end_primitive(flags);
+  }
+#endif /* OSEE_HAS_ERRORHOOK */
+
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_StartScheduleTableRel);
+
+  return ev;
+}
+
+FUNC(StatusType, OS_CODE)
+  StartScheduleTableAbs
+(
+  VAR(ScheduleTableType, AUTOMATIC) ScheduleTableID,
+  VAR(TickType, AUTOMATIC)          Start
+)
+{
+  VAR(StatusType, AUTOMATIC)  ev;
+  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)
+    p_kdb = osEE_get_kernel();
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
+    p_cdb = osEE_get_curr_core();
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+    p_ccb = p_cdb->p_ccb;
+
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_StartScheduleTableAbs);
+  osEE_stack_monitoring(p_cdb);
+
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
+  /*  [OS_SWS_0093]: If interrupts are disabled/suspended by a Task/OsIsr and
+   *    the Task/OsIsr calls any OS service (excluding the interrupt services)
+   *    then the Operating System shall ignore the service AND shall return  */
+  /*  [OS_SWS_0088]: If an OS-Application makes a service call from the wrong
+   *    context AND is currently not inside a Category 1 ISR the Operating
+   *    System module shall not perform the requested action
+   *    (the service call shall have no effect), and return E_OS_CALLEVEL
+   *    (see [12], section 13.1) or the "invalid value" of  the service.
+   *    (BSW11009, BSW11013) */
+/* StartScheduleTableAbs is callable by Task and ISR2 */
+  if (osEE_check_disableint(p_ccb)) {
+    ev = E_OS_DISABLEDINT;
+  } else
+  if (p_ccb->os_context > OSEE_TASK_ISR2_CTX)
+  {
+    ev = E_OS_CALLEVEL;
+  } else
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
+  /* [SWS_Os_00348] If the schedule table <ScheduleTableID> in a call of
+      StartScheduleTableAbs() is not valid, StartScheduleTableAbs()
+      shall return E_OS_ID. */
+  if (!osEE_is_valid_st_id(p_kdb, ScheduleTableID)) {
+    ev = E_OS_ID;
+  } else
+  {
+    CONSTP2VAR(OsEE_SchedTabDB, AUTOMATIC, OS_APPL_CONST)
+      p_st_db = (*p_kdb->p_st_ptr_array)[ScheduleTableID];
+    CONSTP2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_DATA)
+      p_counter_db = osEE_st_get_trigger_db(p_st_db)->p_counter_db;
+    CONST(OsEE_reg, AUTOMATIC)
+      flags = osEE_begin_primitive();
+#if (defined(OSEE_HAS_CHECKS))
+    /* [SWS_Os_00349] If the <Start> in a call of StartScheduleTableAbs()
+        is greater than the OsCounterMaxAllowedValue of the underlying counter,
+        StartScheduleTableAbs() shall return E_OS_VALUE. */
+    /* [SWS_Os_00350] If the schedule table <ScheduleTableID> in a call of
+        StartScheduleTableAbs() is not in the state SCHEDULETABLE_STOPPED,
+        StartScheduleTableAbs() shall return E_OS_STATE. */
+    if (Start > p_counter_db->info.maxallowedvalue)
+    {
+      ev = E_OS_VALUE;
+    } else if (osEE_st_get_cb(p_st_db)->st_status != SCHEDULETABLE_STOPPED)
+    {
+      ev = E_OS_STATE;
+    } else
+#endif /* OSEE_HAS_CHECKS */
+    {
+      /* [SWS_Os_00351] If the input parameters of StartScheduleTableAbs() are
+          valid and <ScheduleTableID> is in the state SCHEDULETABLE_STOPPED,
+          StartScheduleTableAbs() shall start the processing of schedule table
+          <ScheduleTableID> when the underlying counter next equals <Start> and
+          shall set the state of <ScheduleTableID> to
+          - SCHEDULETABLE_RUNNING (for a non-synchronized / Explicitly
+            synchronized schedule table) OR
+          - SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS (for implicitly synchronized
+            schedule table)
+          before returning to the user. (The Initial Expiry Point will be
+          processed when the underlying counter next equals
+          <Start>+Initial Offset). */
+      ev = osEE_st_start_abs(p_counter_db, p_st_db, Start);
+    }
+    osEE_end_primitive(flags);
+  }
+
+#if (defined(OSEE_HAS_ERRORHOOK))
+  if (ev != E_OK) {
+    VAR(OsEE_api_param, AUTOMATIC)
+      param;
+    CONST(OsEE_reg, AUTOMATIC)
+      flags = osEE_begin_primitive();
+    osEE_set_service_id(p_ccb, OSServiceId_StartScheduleTableAbs);
+    param.num_param = ScheduleTableID;
+    osEE_set_api_param1(p_ccb, param);
+    param.num_param = Start;
+    osEE_set_api_param3(p_ccb, param);
+    osEE_call_error_hook(p_ccb, ev);
+    osEE_end_primitive(flags);
+  }
+#endif /* OSEE_HAS_ERRORHOOK */
+
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_StartScheduleTableAbs);
+
+  return ev;
+}
+
+FUNC(StatusType, OS_CODE)
+  StopScheduleTable
+(
+  VAR(ScheduleTableType, AUTOMATIC) ScheduleTableID
+)
+{
+ VAR(StatusType, AUTOMATIC)  ev;
+  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)
+    p_kdb = osEE_get_kernel();
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
+    p_cdb = osEE_get_curr_core();
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+    p_ccb = p_cdb->p_ccb;
+
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_StopScheduleTable);
+  osEE_stack_monitoring(p_cdb);
+
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
+  /*  [OS_SWS_0093]: If interrupts are disabled/suspended by a Task/OsIsr and
+   *    the Task/OsIsr calls any OS service (excluding the interrupt services)
+   *    then the Operating System shall ignore the service AND shall return  */
+  /*  [OS_SWS_0088]: If an OS-Application makes a service call from the wrong
+   *    context AND is currently not inside a Category 1 ISR the Operating
+   *    System module shall not perform the requested action
+   *    (the service call shall have no effect), and return E_OS_CALLEVEL
+   *    (see [12], section 13.1) or the "invalid value" of  the service.
+   *    (BSW11009, BSW11013) */
+/* StopScheduleTable is callable by Task and ISR2 */
+  if (osEE_check_disableint(p_ccb)) {
+    ev = E_OS_DISABLEDINT;
+  } else
+  if (p_ccb->os_context > OSEE_TASK_ISR2_CTX)
+  {
+    ev = E_OS_CALLEVEL;
+  } else
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
+  /* [SWS_Os_00279] If the schedule table identifier <ScheduleTableID> in a
+      call of StopScheduleTable() is not valid, StopScheduleTable()
+      shall return E_OS_ID. */
+  if (!osEE_is_valid_st_id(p_kdb, ScheduleTableID)) {
+    ev = E_OS_ID;
+  } else {
+    /* [SWS_Os_00280] If the schedule table with identifier <ScheduleTableID> is
+        in state SCHEDULETABLE_STOPPED when calling StopScheduleTable(),
+        StopScheduleTable() shall return E_OS_NOFUNC. */
+    /* [SWS_Os_00281] If the input parameters of StopScheduleTable() are valid,
+        StopScheduleTable() shall set the state of <ScheduleTableID> to
+        SCHEDULETABLE_STOPPED and (stop the schedule table <ScheduleTableID>
+        from processing any further expiry points and) shall return E_OK. */
+    CONSTP2VAR(OsEE_SchedTabDB, AUTOMATIC, OS_APPL_CONST)
+      p_st_db  = (*p_kdb->p_st_ptr_array)[ScheduleTableID];
+    CONST(OsEE_reg, AUTOMATIC)
+      flags = osEE_begin_primitive();
+
+    ev = osEE_st_stop(p_st_db);
+
+    osEE_end_primitive(flags);
+  }
+
+#if (defined(OSEE_HAS_ERRORHOOK))
+  if (ev != E_OK) {
+    VAR(OsEE_api_param, AUTOMATIC)
+      param;
+    CONST(OsEE_reg, AUTOMATIC)
+      flags = osEE_begin_primitive();
+    osEE_set_service_id(p_ccb, OSServiceId_StopScheduleTable);
+    param.num_param = ScheduleTableID;
+    osEE_set_api_param1(p_ccb, param);
+    osEE_call_error_hook(p_ccb, ev);
+    osEE_end_primitive(flags);
+  }
+#endif /* OSEE_HAS_ERRORHOOK */
+
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_StopScheduleTable);
+
+  return ev;
+}
+
+FUNC(StatusType, OS_CODE)
+  GetScheduleTableStatus
+(
+  VAR(ScheduleTableType, AUTOMATIC)           ScheduleTableID,
+  VAR(ScheduleTableStatusRefType, AUTOMATIC)  ScheduleStatus
+)
+{
+  VAR(StatusType, AUTOMATIC)  ev;
+  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)
+    p_kdb = osEE_get_kernel();
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
+    p_cdb = osEE_get_curr_core();
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+    p_ccb = p_cdb->p_ccb;
+
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetScheduleTableStatus);
+  osEE_stack_monitoring(p_cdb);
+
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
+  /*  [OS_SWS_0093]: If interrupts are disabled/suspended by a Task/OsIsr and
+   *    the Task/OsIsr calls any OS service (excluding the interrupt services)
+   *    then the Operating System shall ignore the service AND shall return  */
+  /*  [OS_SWS_0088]: If an OS-Application makes a service call from the wrong
+   *    context AND is currently not inside a Category 1 ISR the Operating
+   *    System module shall not perform the requested action
+   *    (the service call shall have no effect), and return E_OS_CALLEVEL
+   *    (see [12], section 13.1) or the "invalid value" of  the service.
+   *    (BSW11009, BSW11013) */
+/* GetScheduleTableStatus is callable by Task and ISR2 */
+  if (osEE_check_disableint(p_ccb)) {
+    ev = E_OS_DISABLEDINT;
+  } else
+  if (p_ccb->os_context > OSEE_TASK_ISR2_CTX)
+  {
+    ev = E_OS_CALLEVEL;
+  } else
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
+  if (!osEE_is_valid_st_id(p_kdb, ScheduleTableID)) {
+    ev = E_OS_ID;
+  } else
+  if (ScheduleStatus == NULL) {
+    ev = E_OS_PARAM_POINTER;
+  } else
+  {
+    CONSTP2VAR(OsEE_SchedTabDB, AUTOMATIC, OS_APPL_CONST)
+      p_st_db = (*p_kdb->p_st_ptr_array)[ScheduleTableID];
+    CONSTP2VAR(OsEE_SchedTabCB, AUTOMATIC, OS_APPL_DATA)
+      p_st_cb = osEE_st_get_cb(p_st_db);
+    /* [SWS_Os_00289] If the schedule table <ScheduleTableID> in a call of
+        GetScheduleTableStatus() is NOT started, GetScheduleTableStatus()
+        shall pass back SCHEDULETABLE_STOPPED via the reference parameter
+        <ScheduleStatus> AND shall return E_OK. */
+    /* [SWS_Os_00353] If the schedule table <ScheduleTableID> in a call of
+        GetScheduleTableStatus() was used in a NextScheduleTable() call AND
+        waits for the end of the current schedule table,
+        GetScheduleTableStatus() shall return SCHEDULETABLE_NEXT via the
+        reference parameter <ScheduleStatus> AND shall return E_OK. */
+    /* [SWS_Os_00354] If the schedule table <ScheduleTableID> in a call of
+        GetScheduleTableStatus() is configured with explicit synchronization
+        AND <ScheduleTableID> was started with StartScheduleTableSynchron()
+        AND no synchronization count was provided to the Operating System,
+        GetScheduleTableStatus() shall return SCHEDULETABLE_WAITING via the
+        reference parameter <ScheduleStatus> AND shall return E_OK. */
+    /* [SWS_Os_00290] If the schedule table <ScheduleTableID> in a call of
+        GetScheduleTableStatus() is started AND synchronous,
+        GetScheduleTableStatus() shall pass back
+        SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS via the reference parameter
+        <ScheduleStatus> AND shall return E_OK. */
+    /* [SWS_Os_00291] If the schedule table <ScheduleTableID> in a call of
+        GetScheduleTableStatus() is started AND NOT synchronous
+        (deviation is not within the precision interval OR the schedule table
+        has been set asynchronous), GetScheduleTableStatus() shall pass back
+        SCHEDULETABLE_RUNNING via the reference parameter ScheduleStatus AND
+        shall return E_OK. */
+    /* XXX: ScheduleTableStatusType read MUST Atomic */
+    *ScheduleStatus = p_st_cb->st_status & (~SCHEDULETABLE_ASYNC);
+
+    ev = E_OK;
+  }
+
+#if (defined(OSEE_HAS_ERRORHOOK))
+  if (ev != E_OK) {
+    VAR(OsEE_api_param, AUTOMATIC)
+      param;
+    CONST(OsEE_reg, AUTOMATIC)
+      flags = osEE_begin_primitive();
+    osEE_set_service_id(p_ccb, OSServiceId_GetScheduleTableStatus);
+    param.num_param = ScheduleTableID;
+    osEE_set_api_param1(p_ccb, param);
+    param.p_param = ScheduleStatus;
+    osEE_set_api_param2(p_ccb, param);
+    osEE_call_error_hook(p_ccb, ev);
+    osEE_end_primitive(flags);
+  }
+#endif /* OSEE_HAS_ERRORHOOK */
+
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_GetScheduleTableStatus);
+
+  return ev;
+}
+
+FUNC(StatusType, OS_CODE)
+  NextScheduleTable
+(
+  VAR(ScheduleTableType, AUTOMATIC) ScheduleTableID_From,
+  VAR(ScheduleTableType, AUTOMATIC) ScheduleTableID_To
+)
+{
+  VAR(StatusType, AUTOMATIC)  ev;
+  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)
+    p_kdb = osEE_get_kernel();
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
+    p_cdb = osEE_get_curr_core();
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+    p_ccb = p_cdb->p_ccb;
+
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_NextScheduleTable);
+  osEE_stack_monitoring(p_cdb);
+
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
+  /*  [OS_SWS_0093]: If interrupts are disabled/suspended by a Task/OsIsr and
+   *    the Task/OsIsr calls any OS service (excluding the interrupt services)
+   *    then the Operating System shall ignore the service AND shall return  */
+  /*  [OS_SWS_0088]: If an OS-Application makes a service call from the wrong
+   *    context AND is currently not inside a Category 1 ISR the Operating
+   *    System module shall not perform the requested action
+   *    (the service call shall have no effect), and return E_OS_CALLEVEL
+   *    (see [12], section 13.1) or the "invalid value" of  the service.
+   *    (BSW11009, BSW11013) */
+/* NextScheduleTable is callable by Task and ISR2 */
+  if (osEE_check_disableint(p_ccb)) {
+    ev = E_OS_DISABLEDINT;
+  } else
+  if (p_ccb->os_context > OSEE_TASK_ISR2_CTX) {
+    ev = E_OS_CALLEVEL;
+  } else
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
+/* [SWS_Os_00282] If the input parameter <ScheduleTableID_From> or
+    <ScheduleTableID_To> in a call of NextScheduleTable() is not valid,
+    NextScheduleTable() shall return E_OS_ID. */
+  if (!osEE_is_valid_st_id(p_kdb, ScheduleTableID_From) ||
+      !osEE_is_valid_st_id(p_kdb, ScheduleTableID_To))
+  {
+    ev = E_OS_ID;
+  } else
+  {
+    CONSTP2VAR(OsEE_SchedTabDB, AUTOMATIC, OS_APPL_CONST)
+      p_from_st_db = (*p_kdb->p_st_ptr_array)[ScheduleTableID_From];
+    CONSTP2VAR(OsEE_SchedTabDB, AUTOMATIC, OS_APPL_CONST)
+      p_to_st_db = (*p_kdb->p_st_ptr_array)[ScheduleTableID_To];
+    CONSTP2VAR(OsEE_SchedTabCB, AUTOMATIC, OS_APPL_DATA)
+      p_from_st_cb = osEE_st_get_cb(p_from_st_db);
+    CONSTP2VAR(OsEE_SchedTabCB, AUTOMATIC, OS_APPL_DATA)
+      p_to_st_cb = osEE_st_get_cb(p_to_st_db);
+    CONST(OsEE_reg, AUTOMATIC)
+      flags = osEE_begin_primitive();
+
+#if (defined(OSEE_HAS_CHECKS))
+  /* [SWS_Os_00330] If in a call of NextScheduleTable() schedule table
+      <ScheduleTableID_To> is driven by different counter than schedule table
+      <ScheduleTableID_From> then NextScheduleTable() shall return an error
+      E_OS_ID. */
+  /* [SWS_Os_00484] If OsScheduleTblSyncStrategy of <ScheduleTableID_To> in a
+      call of NextScheduleTable() is not equal to the OsScheduleTblSyncStrategy
+      of <ScheduleTableID_From> then NextScheduleTable() shall return E_OS_ID.
+   */
+  /* [SWS_Os_00283] If the schedule table <ScheduleTableID_From> in a call
+      of NextScheduleTable() is in state SCHEDULETABLE_STOPPED OR in state
+      SCHEDULETABLE_NEXT, NextScheduleTable() shall leave the state of
+      <ScheduleTable_From> and <ScheduleTable_To> unchanged and return
+      E_OS_NOFUNC. */
+  /*   XXX: !!! Contradiction with SWS_Os_00324 && SWS_Os_00453 !!!  */
+  /* [SWS_Os_00309] If the schedule table <ScheduleTableID_To> in a call of
+      NextScheduleTable() is not in state SCHEDULETABLE_STOPPED,
+      NextScheduleTable() shall leave the state of <ScheduleTable_From> and
+      <ScheduleTable_To> unchanged and return E_OS_STATE. */
+    if ((p_from_st_db->p_counter_db != p_to_st_db->p_counter_db) ||
+        (p_from_st_db->sync_strategy != p_to_st_db->sync_strategy)
+      )
+    {
+      ev = E_OS_ID;
+    } else
+    if ((p_from_st_cb->st_status == SCHEDULETABLE_STOPPED) ||
+      (p_from_st_cb->st_status == SCHEDULETABLE_STOPPED))
+    {
+      ev = E_OS_NOFUNC;
+    } else
+    if (p_to_st_cb->st_status != SCHEDULETABLE_STOPPED) {
+      ev = E_OS_STATE;
+    } else
+#endif /* OSEE_HAS_CHECKS */
+    {
+/* [SWS_Os_00284] If the input parameters of NextScheduleTable() are valid
+    then NextScheduleTable() shall start the processing of schedule table
+    <ScheduleTableID_To> <ScheduleTableID_From>. FinalDelay ticks after the
+    Final Expiry Point on <ScheduleTableID_From> is processed and shall
+    return E_OK. NextScheduleTable() shall process the Initial Expiry Point
+    on <ScheduleTableID_To> at <ScheduleTableID_From>.
+    Final Delay + <ScheduleTable_To>.Initial Offset ticks after the Final
+    Expiry Point on <ScheduleTableID_From> is processed. */
+/* [SWS_Os_00324] If the input parameters of NextScheduleTable() are valid
+    AND the <ScheduleTableID_From> already has a "next" schedule table then
+    NextScheduleTable()shall replace the previous "next" schedule table with
+    <ScheduleTableID_To> and shall change the old "next" schedule table state
+    to SCHEDULETABLE_STOPPED.
+    XXX: !!! Contradiction with SWS_Os_00283 !!! */
+/* [SWS_Os_00505] If OsScheduleTblSyncStrategy of the schedule tables
+    <ScheduleTableID_From> and <ScheduleTableID_To> in a call of
+    NextScheduleTable() is EXPLICIT and the Operating System module already
+    synchronizes <ScheduleTableID_From>, NextScheduleTable() shall continue
+    synchronization after the start of processing <ScheduleTableID_To>. */
+/* [SWS_Os_00453] If the <ScheduleTableID_From> in a call of
+    NextScheduleTable() is stopped, NextScheduleTable() shall not start the
+    "next" schedule table and change its state to SCHEDULETABLE_STOPPED.
+    XXX: !!! Contradiction with SWS_Os_00283 !!! */
+      if (p_from_st_cb->p_next_table != NULL) {
+        osEE_st_get_cb(p_from_st_cb->p_next_table)->
+          st_status = SCHEDULETABLE_STOPPED;
+      }
+
+      p_from_st_cb->p_next_table = p_to_st_db;
+      p_to_st_cb->st_status = SCHEDULETABLE_NEXT;
+
+      ev = E_OK;
+    }
+
+    osEE_end_primitive(flags);
+  }
+#if (defined(OSEE_HAS_ERRORHOOK))
+  if (ev != E_OK) {
+    VAR(OsEE_api_param, AUTOMATIC)
+      param;
+    CONST(OsEE_reg, AUTOMATIC)
+      flags = osEE_begin_primitive();
+    osEE_set_service_id(p_ccb, OSServiceId_NextScheduleTable);
+    param.num_param = ScheduleTableID_From;
+    osEE_set_api_param1(p_ccb, param);
+    param.num_param = ScheduleTableID_To;
+    osEE_set_api_param2(p_ccb, param);
+    osEE_call_error_hook(p_ccb, ev);
+    osEE_end_primitive(flags);
+  }
+#endif /* OSEE_HAS_ERRORHOOK */
+
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_NextScheduleTable);
+
+  return ev;
+}
+
+
+FUNC(StatusType, OS_CODE)
+  SyncScheduleTable
+(
+  VAR(ScheduleTableType, AUTOMATIC) ScheduleTableID,
+  VAR(TickType, AUTOMATIC)          Value
+)
+{
+  VAR(StatusType, AUTOMATIC)  ev;
+  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)
+    p_kdb = osEE_get_kernel();
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
+    p_cdb = osEE_get_curr_core();
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+    p_ccb = p_cdb->p_ccb;
+
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_SyncScheduleTable);
+  osEE_stack_monitoring(p_cdb);
+
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
+  /*  [OS_SWS_0093]: If interrupts are disabled/suspended by a Task/OsIsr and
+   *    the Task/OsIsr calls any OS service (excluding the interrupt services)
+   *    then the Operating System shall ignore the service AND shall return  */
+  /*  [OS_SWS_0088]: If an OS-Application makes a service call from the wrong
+   *    context AND is currently not inside a Category 1 ISR the Operating
+   *    System module shall not perform the requested action
+   *    (the service call shall have no effect), and return E_OS_CALLEVEL
+   *    (see [12], section 13.1) or the "invalid value" of  the service.
+   *    (BSW11009, BSW11013) */
+/* NextScheduleTable is callable by Task and ISR2 */
+  if (osEE_check_disableint(p_ccb)) {
+    ev = E_OS_DISABLEDINT;
+  } else
+  if (p_ccb->os_context > OSEE_TASK_ISR2_CTX) {
+    ev = E_OS_CALLEVEL;
+  } else
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
+  /* [SWS_Os_00279] If the schedule table identifier <ScheduleTableID> in a
+      call of StopScheduleTable() is not valid, StopScheduleTable()
+      shall return E_OS_ID. */
+  if (!osEE_is_valid_st_id(p_kdb, ScheduleTableID))
+  {
+    ev = E_OS_ID;
+  } else
+  {
+    CONSTP2VAR(OsEE_SchedTabDB, AUTOMATIC, OS_APPL_CONST)
+      p_st_db = (*p_kdb->p_st_ptr_array)[ScheduleTableID];
+    CONST(OsEE_reg, AUTOMATIC)
+      flags = osEE_begin_primitive();
+
+#if (defined(OSEE_HAS_CHECKS))
+/* [SWS_Os_00454] If the <ScheduleTableID> in a call of SyncScheduleTable()
+    is not valid OR schedule table can not be explicitly synchronized
+    (OsScheduleTblSyncStrategy is not equal to EXPLICIT)
+    SyncScheduleTable() shall return E_OS_ID. */
+/* [SWS_Os_00454] If the <ScheduleTableID> in a call of SyncScheduleTable()
+    is not valid OR schedule table can not be explicitly synchronized
+    (OsScheduleTblSyncStrategy is not equal to EXPLICIT)
+    SyncScheduleTable() shall return E_OS_ID. */
+/* [SWS_Os_00455] If the <Value> in a call of SyncScheduleTable() is
+    greater or equal than the OsScheduleTableDuration, SyncScheduleTable()
+    shall return E_OS_VALUE. */
+/* [SWS_Os_00456] If the state of the schedule table <ScheduleTableID> in a
+    call of SyncScheduleTable() is equal to SCHEDULETABLE_STOPPED or
+    SCHEDULETABLE_NEXT SyncScheduleTable() shall return E_OS_STATE. */
+    if (p_st_db->sync_strategy != OSEE_SCHEDTABLE_SYNC_EXPLICIT) {
+      ev = E_OS_ID;
+    } else
+    if (Value >= p_st_db->duration ) {
+      ev = E_OS_VALUE;
+    } else if ((osEE_st_get_cb(p_st_db)->st_status == SCHEDULETABLE_STOPPED) ||
+      (osEE_st_get_cb(p_st_db)->st_status == SCHEDULETABLE_NEXT)
+    ) 
+    {
+      ev = E_OS_STATE;
+    } else
+#endif /* OSEE_HAS_CHECKS */
+    {
+      ev = osEE_st_syncronize(p_st_db, Value);
+    }
+
+    osEE_end_primitive(flags);
+  }
+#if (defined(OSEE_HAS_ERRORHOOK))
+  if (ev != E_OK) {
+    VAR(OsEE_api_param, AUTOMATIC)
+      param;
+    CONST(OsEE_reg, AUTOMATIC)
+      flags = osEE_begin_primitive();
+    osEE_set_service_id(p_ccb, OSServiceId_SyncScheduleTable);
+    param.num_param = ScheduleTableID;
+    osEE_set_api_param1(p_ccb, param);
+    param.num_param = Value;
+    osEE_set_api_param2(p_ccb, param);
+    osEE_call_error_hook(p_ccb, ev);
+    osEE_end_primitive(flags);
+  }
+#endif /* OSEE_HAS_ERRORHOOK */
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_SyncScheduleTable);
+
+  return E_OK;
+}
+
+
+#endif /* OSEE_HAS_SCHEDULE_TABLES */
 
 FUNC(ISRType, OS_CODE)
   GetISRID

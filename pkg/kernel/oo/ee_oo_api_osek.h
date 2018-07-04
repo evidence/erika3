@@ -364,6 +364,194 @@ FUNC(StatusType, OS_CODE)
 
 #endif /* OSEE_HAS_COUNTERS */
 
+#if (defined(OSEE_HAS_SCHEDULE_TABLES))
+/** 8.4.9 StartScheduleTableRel [SWS_Os_00347]
+ *
+ *  @brief This service starts the processing of a schedule table at "Offset"
+ *    relative to the "Now" value on the underlying counter.
+ *
+ *  Sync/Async: Synchronous
+ *  Reentrancy: Reentrant
+ *
+ *  @param ScheduleTableID Schedule table to be started.
+ *
+ *  @param Offset Number of ticks on the counter before the the schedule table
+ *     processing is started
+ *
+ *  @return StatusType -
+ *          E_OK: No Error
+ *          E_OS_ID: (only in EXTENDED status): ScheduleTableID not valid.
+ *          E_OS_VALUE: (only in EXTENDED status): Offset is greater than
+ *            (OsCounterMaxAllowedValue - InitialOffset) or is equal to 0.
+ *          E_OS_STATE: Schedule table was already started.
+ */
+FUNC(StatusType, OS_CODE)
+  StartScheduleTableRel
+(
+  VAR(ScheduleTableType, AUTOMATIC) ScheduleTableID,
+  VAR(TickType, AUTOMATIC)          Offset
+);
+
+/** 8.4.10 StartScheduleTableAbs [SWS_Os_00358]
+ *
+ * @brief This service starts the processing of a schedule table at an absolute
+ *  value "Start" on the underlying counter.
+ *
+ *  Sync/Async: Synchronous
+ *  Reentrancy: Reentrant
+ *
+ *  @param ScheduleTableID: Schedule table to be started
+ *  @param Start: Absolute counter tick value at which the schedule table is
+ *    started
+ *
+ *  @return StatusType
+ *    E_OK: No Error
+ *    E_OS_ID (only in EXTENDED status): ScheduleTableID not valid.
+ *    E_OS_VALUE (only in EXTENDED status): "Start" is greater than
+ *      OsCounterMaxAllowedValue
+ *    E_OS_STATE: Schedule table was already started Description:
+ */
+FUNC(StatusType, OS_CODE)
+  StartScheduleTableAbs
+(
+  VAR(ScheduleTableType, AUTOMATIC) ScheduleTableID,
+  VAR(TickType, AUTOMATIC)          Start
+);
+
+/** 8.4.11 StopScheduleTable [SWS_Os_00006]
+ *
+ *  @brief This service cancels the processing of a schedule table immediately
+ *    at any point while the schedule table is running.
+ *
+ *  Sync/Async: Synchronous
+ *  Reentrancy: Reentrant
+ *
+ *  @param ScheduleTableID: Schedule table to be stopped
+ *
+ *  @return StatusType
+ *    E_OK: No Error
+ *    E_OS_ID (only in EXTENDED status): ScheduleTableID not valid.
+ *    E_OS_NOFUNC: Schedule table was already stopped.
+ */
+FUNC(StatusType, OS_CODE)
+  StopScheduleTable
+(
+  VAR(ScheduleTableType, AUTOMATIC) ScheduleTableID
+);
+
+/** 8.4.16 GetScheduleTableStatus [SWS_Os_00227]
+ *
+ *  @brief This service queries the state of a schedule table (also with respect
+ *    to synchronization).
+ *
+ *  Sync/Async: Synchronous
+ *  Reentrancy: Reentrant
+ *
+ *  @param ScheduleTableID (in): Schedule table for which status is requested.
+ *  @param ScheduleStatus (out): Reference to ScheduleTableStatusType.
+ *
+ *  @return StatusType:
+ *    E_OK: No Error
+ *    E_OS_ID (only in EXTENDED status): Invalid ScheduleTableID
+ *
+ * (SRS_Os_11002)
+ */
+FUNC(StatusType, OS_CODE)
+  GetScheduleTableStatus
+(
+  VAR(ScheduleTableType, AUTOMATIC)           ScheduleTableID,
+  VAR(ScheduleTableStatusRefType, AUTOMATIC)  ScheduleStatus
+);
+
+/** 8.4.12 NextScheduleTable [SWS_Os_00191]
+ *
+ *  @brief This service switches the processing from one schedule table to
+ *    another schedule table.
+ *
+ *  Sync/Async: Synchronous
+ *  Reentrancy: Reentrant
+ *
+ *  @param ScheduleTableID_From: Currently processed schedule table
+ *  @param ScheduleTableID_To: Schedule table that provides its series of
+ *    expiry points
+ *
+ * @return StatusType
+ *    E_OK: No error
+ *    E_OS_ID (only in EXTENDED status): ScheduleTableID_From or
+ *      ScheduleTableID_To not valid.
+ *    E_OS_NOFUNC: ScheduleTableID_From not started
+ *    E_OS_STATE: ScheduleTableID_To is started or next
+ *
+ * (SRS_Os_00099)
+ */
+FUNC(StatusType, OS_CODE)
+  NextScheduleTable
+(
+  VAR(ScheduleTableType, AUTOMATIC) ScheduleTableID_From,
+  VAR(ScheduleTableType, AUTOMATIC) ScheduleTableID_To
+);
+
+/** 8.4.14 SyncScheduleTable [SWS_Os_00199]
+ *
+ *  @brief This service provides the schedule table with a synchronization
+ *    count and start synchronization.
+ *
+ *  Sync/Async: Synchronous
+ *  Reentrancy: Reentrant
+ *
+ *  @param ScheduleTableID (in): Schedule table to be synchronized
+ *  @param Value (in): The current value of the synchronization counter
+ *
+ *  @return StatusType:
+ *    E_OK: No errors
+ *    E_OS_ID (only in EXTENDED status): The ScheduleTableID was not valid or
+ *      schedule table can not be synchronized (OsScheduleTblSyncStrategy not
+ *      set or OsScheduleTblSyncStrategy = IMPLICIT)
+ *    E_OS_VALUE (only in EXETENDED status): The <Value> is out of range.
+ *    E_OS_STATE: The state of schedule table <ScheduleTableID> is equal to
+ *      SCHEDULETABLE_STOPPED
+ * (SRS_Os_11002)
+ */
+FUNC(StatusType, OS_CODE)
+  SyncScheduleTable
+(
+  VAR(ScheduleTableType, AUTOMATIC) ScheduleTableID,
+  VAR(TickType, AUTOMATIC)          Value
+);
+
+/* 8.4.13 StartScheduleTableSynchron [SWS_Os_00201]
+ *
+ *  @brief This service starts an explicitly synchronized schedule table
+ *    synchronously.
+ *
+ *  Sync/Async: Synchronous
+ *  Reentrancy: Reentrant
+ *
+ *  @param ScheduleTableID (in): Schedule table to be started
+ *
+ *  @return StatusType:
+ *    E_OK: No Error
+ *    E_OS_ID (only in EXTENDED status): ScheduleTableID not valid
+ *    E_OS_STATE: Schedule table was already started Description:
+ *
+ * (SRS_Os_11002)
+ */
+
+/*  8.4.15 SetScheduleTableAsync [SWS_Os_00422]
+ *
+ *  @brief This service stops synchronization of a schedule table.
+ *
+ *  Sync/Async: Synchronous
+ *  Reentrancy: Reentrant
+ *
+ *  @param ScheduleTableID (in) Schedule table for which status is requested
+ *
+ *  @return StatusType:
+ *    E_OK: No Error
+ *    E_OS_ID (only in EXTENDED status): Invalid ScheduleTableID
+ */
+#endif /* OSEE_HAS_SCHEDULE_TABLES */
+
 FUNC(ISRType, OS_CODE)
   GetISRID
 (
@@ -404,6 +592,6 @@ FUNC(void, OS_CODE)
   VAR(CoreIdType, AUTOMATIC)                  CoreID,
   P2VAR(StatusType, AUTOMATIC, OS_APPL_DATA)  Status
 );
-
 #endif /* !OSEE_SINGLECORE */
+
 #endif /* !OSEE_API_OSEK_H_ */

@@ -77,4 +77,8 @@ ifeq	($(call iseeopt, OSEE_HAS_ALARMS), yes)
 EE_SRCS += ee_oo_alarm.c
 endif
 
+ifeq	($(call iseeopt, OSEE_HAS_SCHEDULE_TABLES), yes)
+EE_SRCS += ee_ar_sched_table.c
+endif
+
 endif	# OS_EE_KERNEL_OSEK

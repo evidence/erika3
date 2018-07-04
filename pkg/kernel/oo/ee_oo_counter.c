@@ -217,8 +217,203 @@ static FUNC(StatusType, OS_CODE)
       ev = E_OK;
     break;
   }
+
+#if (defined(OSEE_HAS_ERRORHOOK))
+  if (ev != E_OK) {
+    CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+      p_ccb = osEE_get_curr_core()->p_ccb;
+    osEE_set_service_id(p_ccb, OSId_Action);
+    osEE_call_error_hook(p_ccb, ev);
+  }
+#endif /* OSEE_HAS_ERRORHOOK */
+
   return ev;
 }
+
+#if (defined(OSEE_HAS_ALARMS))
+static FUNC(void, OS_CODE)
+  osEE_counter_handle_alarm
+(
+  P2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_CONST) p_counter_db,
+  P2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_CONST) p_trigger_to_be_handled_db,
+  P2VAR(OsEE_TriggerCB, AUTOMATIC, OS_APPL_DATA)  p_trigger_to_be_handled_cb
+)
+{
+  P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST) p_cdb;
+
+  (void)osEE_handle_action(
+    &osEE_trigger_get_alarm_db(osEE_get_p_trigger_to_be_handled_db)->action
+  );
+
+  if (p_trigger_to_be_handled_cb->status >= OSEE_TRIGGER_EXPIRED) {
+    CONST(TickType, AUTOMATIC) cycle = p_trigger_to_be_handled_cb->cycle;
+    if (cycle > 0U) {
+      /* trigger CB "when" field is used to hold next trigger value, for
+         reinsertion in counter timer wheel */
+      p_trigger_to_be_handled_cb->when =
+        osEE_counter_eval_when(p_counter_db, cycle);
+    } else {
+      p_trigger_to_be_handled_cb->status = OSEE_TRIGGER_INACTIVE;
+    }
+  }
+}
+
+#endif /* OSEE_HAS_ALARMS */
+
+#if (defined(OSEE_HAS_SCHEDULE_TABLES))
+
+#define INVALID_SCHEDULETABLE_POSITION ((MemSize)-1)
+
+static FUNC(void, OS_CODE)
+  osEE_counter_handle_st_expiry_point
+(
+  P2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_CONST) p_counter_db,
+  P2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_CONST) p_trigger_to_be_handled_db
+)
+{
+  /* Get Schedule Table Configuration Structures */
+  P2VAR(OsEE_SchedTabDB, AUTOMATIC, OS_APPL_CONST)
+    p_st_db = osEE_trigger_get_st_db(p_trigger_to_be_handled_db);
+  P2VAR(OsEE_SchedTabCB, AUTOMATIC, OS_APPL_CONST)
+    p_st_cb = osEE_st_get_cb(p_st_db);
+
+  do {
+    /* Expiry point description */
+    P2VAR(OsEE_st_exipiry_point, AUTOMATIC, OS_APPL_CONST)  p_expiry_point;
+    /* Index to traverse expiry point actions */
+    VAR(TickType, AUTOMATIC)  nextOffset;
+    /* ExpiryPoint Index */
+    VAR(MemSize, AUTOMATIC)   expiry_position = p_st_cb->position;
+
+    /* This can happen:
+        - When a Next Schedule Table is activated, to stop the original
+          Schedule Table after the final delay
+        - When the Original Schedule Table is repeating */
+    if (expiry_position == INVALID_SCHEDULETABLE_POSITION) {
+      /* Get the next Schedule Table */
+      CONSTP2VAR(OsEE_SchedTabDB, AUTOMATIC, OS_APPL_CONST)
+        p_next_st_db = p_st_cb->p_next_table;
+
+      if (p_next_st_db != NULL) {
+        p_st_cb->status       = SCHEDULETABLE_STOPPED;
+        p_st_cb->p_next_table = NULL;
+
+        /* Next ST Handling */
+        p_st_db = p_next_st_db;
+        p_st_cb = osEE_st_get_cb(p_next_st_db);
+
+        p_st_cb->status = SCHEDULETABLE_RUNNING;
+
+        expiry_position   = 0U;
+        p_st_cb->position = 0U;
+        /* Set Next ST Start value */
+        p_st_cb->start    = p_counter_db->p_counter_cb->value;
+
+        nextOffset = (*p_st_db->p_expiry_point_array)[0U].offset;
+
+        /* Handle special case of some expiry points with offset equal to
+           zero */
+        if (nextOffset > 0U) {
+          /* Exit From The Loop */
+          p_st_db = NULL;
+        } else {
+          /* Continue The Loop with the next Schedule Table expiry points:
+             before them, evaluate next trigger event offset to enable
+             underlying schedule table trigger. */
+          do {
+            ++expiry_position;
+            nextOffset = (*p_st_db->p_expiry_point_array)[expiry_position].
+              offset;
+          } while ((nextOffset == 0U) &&
+            (expiry_position < p_st_db->expiry_point_array_size));
+
+          if (nextOffset == 0U) {
+            nextOffset = p_st_db->duration;
+          }
+        }
+        /* Schedule the trigger tied to the next Schedule Table */
+        osEE_counter_insert_rel_trigger(
+          p_counter_db, osEE_st_get_trigger_db(p_st_db), nextOffset
+        );
+      } else {
+        /* Repeating Schedule Table */
+        expiry_position   = 0U;
+        p_st_cb->position = 0U;
+        /* Set Repeating ST Start value */
+        p_st_cb->start    = p_counter_db->p_counter_cb->value;
+        nextOffset        = (*p_st_db->p_expiry_point_array)[0U].offset;
+
+        if (nextOffset > 0U) {
+          /* Trigger CB "when" field is used to hold next trigger value, for
+             next expiry point */
+          osEE_st_get_trigger_db(p_st_db)->p_trigger_cb->when =
+            p_st_cb->start + nextOffset;
+          /* Exit From The Loop */
+          p_st_db = NULL;
+        }
+      }
+    } else {
+      /* Get the Expiry point */
+      VAR(MemSize, AUTOMATIC) i;
+      p_expiry_point = &(*p_st_db->p_expiry_point_array)[expiry_position];
+
+      for (i = 0U; i <= p_expiry_point->action_array_size; ++i) {
+        (void)osEE_handle_action(&(*p_expiry_point->p_action_array)[i]);
+      }
+
+      /* Handle next expiry point insertion in alarm queue */
+      /* if it is the last expiry point and if this is not a repeating
+         schedule table, handle next schedule table or stop it */
+      if (expiry_position == (p_st_db->expiry_point_array_size - 1U)) {
+        /* We reached the end of schedule table so we stop it */
+        if ((p_st_cb->p_next_table == NULL) && (!p_st_db->repeated)) {
+          /* [SWS_Os_00009] If the schedule table is single-shot, the Operating
+             System module shall stop the processing of the schedule table
+             Final Delay ticks after the Final Expiry Point is processed. */
+          p_st_cb->st_status  = SCHEDULETABLE_STOPPED;
+          /*  This is needed to stop the underlying Trigger tied to the Schedule
+              Table, otherwise the Trigger will reschedule this trigger on the
+              next occurrence of counter.value == when */
+          osEE_st_get_trigger_db(p_st_db)->p_trigger_cb->status =
+            OSEE_TRIGGER_INACTIVE;
+          /* Exit From The Loop */
+          p_st_db = NULL;
+        } else {
+          /* Schedule the final delay for original schedule table */
+          p_st_cb->position = INVALID_SCHEDULETABLE_POSITION;
+          /* [SWS_Os_0427] If the schedule table is single-shot,
+              the Operating System module shall allow a Final Delay between
+              0 .. OsCounterMaxAllowedValue of the underlying counter. */
+          if (p_st_db->duration > p_expiry_point->offset) {
+            osEE_st_get_trigger_db(p_st_db)->p_trigger_cb->
+              when  = p_st_cb->start + p_st_db->duration;
+            /* Exit From The Loop */
+            p_st_db = NULL;
+          }
+        }
+      } else {
+        if (p_st_db->sync_strategy == OSEE_SCHEDTABLE_SYNC_EXPLICIT) {
+          /* *** TODO: HANDLE SYNCRONIZATION *** */
+        }
+        /* Schedule the next expiry point */
+        ++expiry_position;
+        p_st_cb->position = expiry_position;
+
+        nextOffset = (*p_st_db->p_expiry_point_array)[expiry_position].offset;
+
+        if (nextOffset > p_expiry_point->offset) {
+          /* This is an Hack to let alarm handling cycle reschedule the schedule
+             table alarm with the right offset (increment) */
+          osEE_st_get_trigger_db(p_st_db)->p_trigger_cb->
+            when  = p_st_cb->start + nextOffset;
+          /* Exit From The Loop */
+          p_st_db = NULL;
+        }
+      }
+    }
+  } while (p_st_db != NULL);
+}
+#endif /* OSEE_HAS_SCHEDULE_TABLES */
 
 FUNC(void, OS_CODE)
   osEE_counter_increment
@@ -249,7 +444,7 @@ FUNC(void, OS_CODE)
     P2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_DATA) p_triggered_db;
     /* Since only the core that own a counter can increment it, I use
        osEE_get_curr_core_id, instead reading the CounterDB to get the info.
-       This because is more efficient to read SFR than mamory. */
+       This because is more efficient to read SFR than memory. */
     CONST(CoreIdType, AUTOMATIC) counter_core_id = osEE_get_curr_core_id();
 
     /* Counter Increment can be done outside lock critical section, since only
@@ -304,8 +499,7 @@ FUNC(void, OS_CODE)
 
         /* Handle Actions */
         do {
-          VAR(StatusType, AUTOMATIC)                      ev;
-          CONSTP2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_DATA)
+          CONSTP2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_CONST)
             p_trigger_to_be_handled_db = p_triggered_db;
           CONSTP2VAR(OsEE_TriggerCB, AUTOMATIC, OS_APPL_DATA)
             p_trigger_to_be_handled_cb =
@@ -321,22 +515,18 @@ FUNC(void, OS_CODE)
 #if (defined(OSEE_COUNTER_TRIGGER_TYPES))
           /* TODO */
 #elif (defined(OSEE_HAS_ALARMS))
-          ev = osEE_handle_action(&p_trigger_to_be_handled_db->action);
-          /* Re-enter in critical section to reinsert cycling triggers */
+          osEE_counter_handle_alarm(p_counter_db, p_trigger_to_be_handled_db,
+            p_trigger_to_be_handled_cb);
+#elif (defined(OSEE_HAS_SCHEDULE_TABLES))
+          osEE_counter_handle_st_expiry_point(p_counter_db,
+            p_trigger_to_be_handled_db);
+#endif /* OSEE_COUNTER_TRIGGER_TYPES elif OSEE_HAS_ALARMS elif
+          OSEE_HAS_SCHEDULE_TABLES */
+
+          /* Re-enter in critical section to reinsert triggers if needed */
           osEE_lock_core_id(counter_core_id);
 
-          if (p_trigger_to_be_handled_cb->status == OSEE_TRIGGER_EXPIRED) {
-            CONST(TickType, AUTOMATIC)
-              cycle = p_trigger_to_be_handled_cb->cycle;
-            if (cycle > 0U) {
-              p_trigger_to_be_handled_cb->status = OSEE_TRIGGER_ACTIVE;
-              osEE_counter_insert_rel_trigger(p_counter_db,
-                p_trigger_to_be_handled_db, cycle);
-            } else {
-              p_trigger_to_be_handled_cb->status = OSEE_TRIGGER_INACTIVE;
-            }
-          } else
-            if (p_trigger_to_be_handled_cb->status == OSEE_TRIGGER_REENABLED)
+          if (p_trigger_to_be_handled_cb->status >= OSEE_TRIGGER_ACTIVE)
           {
             p_trigger_to_be_handled_cb->status = OSEE_TRIGGER_ACTIVE;
             osEE_counter_insert_abs_trigger(p_counter_db,
@@ -347,19 +537,6 @@ FUNC(void, OS_CODE)
 
           /* Exit from critical section for the next action */
           osEE_unlock_core_id(counter_core_id);
-#elif (defined(OSEE_HAS_SCHEDULE_TABLES))
-          /* TODO */
-#endif
-#if (defined(OSEE_HAS_ERRORHOOK))
-          if (ev != E_OK) {
-            CONST(OsEE_reg, AUTOMATIC)
-              flags = osEE_begin_primitive();
-            osEE_call_error_hook(osEE_get_curr_core()->p_ccb, ev);
-            osEE_end_primitive(flags);
-          }
-#else
-          (void)ev; /* TODO: Handle ErrorHook */
-#endif /* OSEE_HAS_ERRORHOOK */
         } while (p_triggered_db != NULL);
       } else {
         osEE_unlock_core_id(counter_core_id);

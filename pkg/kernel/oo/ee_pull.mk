@@ -86,5 +86,8 @@ endif
 ifeq ($(call iseeopt, OSEE_HAS_ALARMS), yes)
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/kernel/oo/ee_oo_alarm.c
 endif
+ifeq ($(call iseeopt, OSEE_HAS_SCHEDULE_TABLES), yes)
+OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/kernel/oo/ee_ar_sched_table.c
+endif
 
 endif	#OS_EE_KERNEL_OSEK

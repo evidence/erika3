@@ -445,7 +445,7 @@ LOCAL_INLINE FUNC(OsEE_bool, OS_CODE)
   osEE_is_valid_counter_id
 (
   P2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)  p_kdb,
-  VAR(AlarmType, AUTOMATIC)                 counter_id
+  VAR(CounterType, AUTOMATIC)               counter_id
 )
 {
 #if (defined(OSEE_API_DYNAMIC))
@@ -458,38 +458,38 @@ LOCAL_INLINE FUNC(OsEE_bool, OS_CODE)
 FUNC(void, OS_CODE)
   osEE_counter_insert_rel_trigger
 (
-  P2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_DATA) p_counter_db,
-  P2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_DATA) p_trigger_db,
-  VAR(TickType, AUTOMATIC)                       delta
+  P2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_CONST) p_counter_db,
+  P2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_CONST) p_trigger_db,
+  VAR(TickType, AUTOMATIC)                        delta
 );
 
 FUNC(void, OS_CODE)
   osEE_counter_insert_abs_trigger
 (
-  P2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_DATA) p_counter_cb,
-  P2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_DATA) p_trigger_db,
-  VAR(TickType, AUTOMATIC)                       when
+  P2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_CONST) p_counter_db,
+  P2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_CONST) p_trigger_db,
+  VAR(TickType, AUTOMATIC)                        when
 );
 
 FUNC(void, OS_CODE)
   osEE_counter_cancel_trigger
 (
-  P2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_DATA) p_counter_db,
-  P2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_DATA) p_trigger_db
+  P2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_CONST) p_counter_db,
+  P2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_CONST) p_trigger_db
 );
 
 FUNC(void, OS_CODE)
   osEE_counter_increment
 (
-  P2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_DATA) p_counter_db
+  P2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_CONST) p_counter_db
 );
 
 
 LOCAL_INLINE FUNC(TickType, OS_CODE)
   osEE_counter_eval_when
 (
-  P2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_DATA) p_counter_db,
-  VAR(TickType, AUTOMATIC)                       delta
+  P2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_CONST) p_counter_db,
+  VAR(TickType, AUTOMATIC)                        delta
 )
 {
   VAR(TickType, AUTOMATIC) when;
@@ -512,8 +512,8 @@ LOCAL_INLINE FUNC(TickType, OS_CODE)
 LOCAL_INLINE FUNC(TickType, OS_CODE)
   osEE_counter_eval_delta
 (
-  P2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_DATA) p_counter_db,
-  VAR(TickType, AUTOMATIC)                       when
+  P2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_CONST) p_counter_db,
+  VAR(TickType, AUTOMATIC)                        when
 )
 {
   VAR(TickType, AUTOMATIC) delta;
@@ -537,8 +537,8 @@ LOCAL_INLINE FUNC(TickType, OS_CODE)
 FUNC(StatusType, OS_CODE)
   osEE_alarm_set_rel
 (
-  P2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_DATA)  p_counter_db,
-  P2VAR(OsEE_AlarmDB, AUTOMATIC, OS_APPL_DATA)    p_alarm_db,
+  P2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_CONST) p_counter_db,
+  P2VAR(OsEE_AlarmDB, AUTOMATIC, OS_APPL_CONST)   p_alarm_db,
   VAR(TickType,   AUTOMATIC)                      increment,
   VAR(TickType,   AUTOMATIC)                      cycle
 );
@@ -546,8 +546,8 @@ FUNC(StatusType, OS_CODE)
 FUNC(StatusType, OS_CODE)
   osEE_alarm_set_abs
 (
-  P2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_DATA)  p_counter_db,
-  P2VAR(OsEE_AlarmDB, AUTOMATIC, OS_APPL_DATA)    p_alarm_db,
+  P2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_CONST) p_counter_db,
+  P2VAR(OsEE_AlarmDB, AUTOMATIC, OS_APPL_CONST)   p_alarm_db,
   VAR(TickType,   AUTOMATIC)                      start,
   VAR(TickType,   AUTOMATIC)                      cycle
 );
@@ -555,20 +555,20 @@ FUNC(StatusType, OS_CODE)
 FUNC(StatusType, OS_CODE)
   osEE_alarm_cancel
 (
-  P2VAR(OsEE_AlarmDB, AUTOMATIC, OS_APPL_DATA)    p_alarm_db
+  P2VAR(OsEE_AlarmDB, AUTOMATIC, OS_APPL_CONST)   p_alarm_db
 );
 
 FUNC(StatusType, OS_CODE)
   osEE_alarm_get
 (
-  P2VAR(OsEE_AlarmDB, AUTOMATIC, OS_APPL_DATA)    p_alarm_db,
+  P2VAR(OsEE_AlarmDB, AUTOMATIC, OS_APPL_CONST)   p_alarm_db,
   P2VAR(TickType, AUTOMATIC, OS_APPL_DATA)        p_tick
 );
 
 LOCAL_INLINE FUNC(OsEE_bool, OS_CODE)
   osEE_is_valid_alarm_id
 (
-  P2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)  p_kdb,
+  P2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST) p_kdb,
   VAR(AlarmType, AUTOMATIC)                 alarm_id
 )
 {
@@ -579,14 +579,15 @@ LOCAL_INLINE FUNC(OsEE_bool, OS_CODE)
 #endif /* OSEE_API_DYNAMIC */
 }
 
-LOCAL_INLINE FUNC_P2VAR(OsEE_TriggerDB, OS_APPL_DATA, OS_CODE)
+LOCAL_INLINE FUNC_P2VAR(OsEE_TriggerDB, OS_APPL_CONST, OS_CODE)
   osEE_alarm_get_trigger_db
 (
-  P2VAR(OsEE_AlarmDB, AUTOMATIC, OS_APPL_DATA) p_alarm_db
+  P2VAR(OsEE_AlarmDB, AUTOMATIC, OS_APPL_CONST) p_alarm_db
 )
 {
 #if (defined(OSEE_COUNTER_TRIGGER_TYPES))
-  return &p_alarm_db->super;
+  /* return &p_alarm_db->super; */
+  return p_alarm_db->p_trigger_db;
 #else
   return p_alarm_db;
 #endif
@@ -595,14 +596,115 @@ LOCAL_INLINE FUNC_P2VAR(OsEE_TriggerDB, OS_APPL_DATA, OS_CODE)
 LOCAL_INLINE FUNC_P2VAR(OsEE_AlarmCB, OS_APPL_DATA, OS_CODE)
   osEE_alarm_get_cb
 (
-  P2VAR(OsEE_AlarmDB, AUTOMATIC, OS_APPL_DATA) p_alarm_db
+  P2VAR(OsEE_AlarmDB, AUTOMATIC, OS_APPL_CONST) p_alarm_db
 )
 {
-  return (P2VAR(OsEE_AlarmCB, AUTOMATIC, OS_APPL_DATA))
-    (osEE_alarm_get_trigger_db(p_alarm_db)->p_trigger_cb);
+#if (defined(OSEE_COUNTER_TRIGGER_TYPES))
+  return p_alarm_db->p_alarm_cb;
+#else
+  return p_alarm_db->p_trigger_cb;
+#endif
+}
+
+LOCAL_INLINE FUNC_P2VAR(OsEE_AlarmDB, OS_APPL_CONST, OS_CODE)
+  osEE_trigger_get_alarm_db
+(
+  P2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_CONST) p_trigger_db
+)
+{
+#if (defined(OSEE_COUNTER_TRIGGER_TYPES))
+  return p_trigger_db->p_alarm_db;
+#else
+  return p_trigger_db;
+#endif
 }
 
 #endif /* OSEE_HAS_ALARMS */
+
+#if (defined(OSEE_HAS_SCHEDULE_TABLES))
+FUNC(StatusType, OS_CODE)
+  osEE_st_start_rel
+(
+  P2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_DATA)  p_counter_db,
+  P2VAR(OsEE_SchedTabDB, AUTOMATIC, OS_APPL_DATA) p_st_db,
+  VAR(TickType,   AUTOMATIC)                      offset
+);
+
+FUNC(StatusType, OS_CODE)
+  osEE_st_start_abs
+(
+  P2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_DATA)  p_counter_db,
+  P2VAR(OsEE_SchedTabDB, AUTOMATIC, OS_APPL_DATA) p_st_db,
+  VAR(TickType,   AUTOMATIC)                      start
+);
+
+FUNC(StatusType, OS_CODE)
+  osEE_st_stop
+(
+  P2VAR(OsEE_SchedTabDB, AUTOMATIC, OS_APPL_CONST)  p_st_db
+);
+
+FUNC(StatusType, OS_CODE)
+  osEE_st_syncronize
+(
+  P2VAR(OsEE_SchedTabDB, AUTOMATIC, OS_APPL_CONST)  p_st_db,
+  VAR(TickType, AUTOMATIC)                          value
+);
+
+LOCAL_INLINE FUNC(OsEE_bool, OS_CODE)
+  osEE_is_valid_st_id
+(
+  P2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST) p_kdb,
+  VAR(ScheduleTableType, AUTOMATIC)         st_id
+)
+{
+#if (defined(OSEE_API_DYNAMIC))
+  return (st_id < p_kdb->p_kcb->free_st_index);
+#else
+  return (st_id < p_kdb->st_array_size);
+#endif /* OSEE_API_DYNAMIC */
+}
+
+LOCAL_INLINE FUNC_P2VAR(OsEE_TriggerDB, OS_APPL_CONST, OS_CODE)
+  osEE_st_get_trigger_db
+(
+  P2VAR(OsEE_SchedTabDB, AUTOMATIC, OS_APPL_CONST) p_st_db
+)
+{
+#if (defined(OSEE_COUNTER_TRIGGER_TYPES))
+  return p_st_db->p_trigger_db;
+#else
+  return p_st_db;
+#endif
+}
+
+LOCAL_INLINE FUNC_P2VAR(OsEE_SchedTabCB, OS_APPL_DATA, OS_CODE)
+  osEE_st_get_cb
+(
+  P2VAR(OsEE_SchedTabDB, AUTOMATIC, OS_APPL_CONST) p_st_db
+)
+{
+#if (defined(OSEE_COUNTER_TRIGGER_TYPES))
+  return p_st_db->p_st_cb;
+#else
+  return p_st_db->p_trigger_cb;
+#endif
+}
+
+LOCAL_INLINE FUNC_P2VAR(OsEE_SchedTabDB, OS_APPL_CONST, OS_CODE)
+  osEE_trigger_get_st_db
+(
+  P2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_CONST) p_trigger_db
+)
+{
+#if (defined(OSEE_COUNTER_TRIGGER_TYPES))
+  return p_trigger_db->p_st_db;
+#else
+  return p_trigger_db;
+#endif
+}
+
+#endif /* OSEE_HAS_SCHEDULE_TABLES */
 #endif /* OSEE_HAS_COUNTERS */
 
 #if (defined(OSEE_HAS_STACK_MONITORING))
