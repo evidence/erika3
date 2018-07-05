@@ -102,7 +102,7 @@ FUNC(OsEE_bool, OS_CODE)
 (
   P2VAR(OsEE_SN *, AUTOMATIC, OS_APPL_DATA) pp_first,
   P2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA)   p_sn_new,
-  CONST(OsEE_bool, AUTOMATIC)               hnd_act
+  CONST(OsEE_bool, AUTOMATIC)               as_ready
 );
 
 /*==============================================================================

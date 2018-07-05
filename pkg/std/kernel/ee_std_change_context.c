@@ -61,11 +61,8 @@ FUNC(void, OS_CODE)
 )
 {
   CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA) p_to_tcb  = p_to->p_tcb;
-  CONST(TaskStateType, AUTOMATIC)     status_prev_running = p_to_tcb->status;
 
-  p_to_tcb->status = OSEE_TASK_RUNNING;
-
-  if (status_prev_running == OSEE_TASK_READY_STACKED) {
+  if (p_to_tcb->status == OSEE_TASK_READY_STACKED) {
     osEE_hal_save_ctx_and_restore_ctx(p_to, p_to->hdb.p_scb,
       p_from->hdb.p_scb);
   } else {
@@ -84,11 +81,8 @@ FUNC(void, OS_CODE)
 )
 {
   CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA) p_to_tcb  = p_to->p_tcb;
-  CONST(TaskStateType, AUTOMATIC)     status_prev_running = p_to_tcb->status;
 
-  p_to_tcb->status = OSEE_TASK_RUNNING;
-
-  if (status_prev_running == OSEE_TASK_READY_STACKED) {
+  if (p_to_tcb->status == OSEE_TASK_READY_STACKED) {
     osEE_hal_restore_ctx(p_to, p_to->hdb.p_scb);
   } else {
     osEE_hal_ready2stacked(p_to, p_to->hdb.p_scb);
@@ -136,8 +130,7 @@ FUNC(void, OS_CODE)
   P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_to;
   P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_from;
 
-  p_to = osEE_scheduler_task_terminated(osEE_get_kernel(), osEE_get_curr_core(),
-           &p_from);
+  p_to = osEE_scheduler_task_terminated(osEE_get_kernel(), &p_from);
 
   if (p_from->task_type != OSEE_TASK_TYPE_ISR2) {
     osEE_change_context_from_task_end(p_from, p_to);

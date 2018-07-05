@@ -1,38 +1,38 @@
 /* ###*B*###
  * Erika Enterprise, version 3
- * 
+ *
  * Copyright (C) 2017 Evidence s.r.l.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or (at
  * your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License, version 2, for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License,
  * version 2, along with this program; if not, see
  * <https://www.gnu.org/licenses/old-licenses/gpl-2.0.html >.
- * 
+ *
  * This program is distributed to you subject to the following
  * clarifications and special exceptions to the GNU General Public
  * License, version 2.
- * 
+ *
  * THIRD PARTIES' MATERIALS
- * 
+ *
  * Certain materials included in this library are provided by third
  * parties under licenses other than the GNU General Public License. You
  * may only use, copy, link to, modify and redistribute this library
  * following the terms of license indicated below for third parties'
  * materials.
- * 
+ *
  * In case you make modified versions of this library which still include
  * said third parties' materials, you are obligated to grant this special
  * exception.
- * 
+ *
  * The complete list of Third party materials allowed with ERIKA
  * Enterprise version 3, together with the terms and conditions of each
  * license, is present in the file THIRDPARTY.TXT in the root of the
@@ -205,17 +205,18 @@ void __attribute__((section(TARGET_TEXT)))
   /* Catch this context as Idle TASK */
   StartOS(OSDEFAULTAPPMODE);
 
+#if (!defined(OSEE_ALLOW_TASK_MIGRATION))
   /* Write Barrier */
   __builtin_k1_wpurge();
   __builtin_k1_fence();
+#endif /* !OSEE_ALLOW_TASK_MIGRATION */
 
   mOS_it_disable();
 
   /* Synchronize with the startup of the other cores */
   for (unsigned int i = 1U; i < OSEE_K1_CORE_NUMBER; ++i ) {
-    while (
-      __k1_umem_read32(&KCB_WJ.core_ctrls[i].ccb.os_status) !=
-         OSEE_KERNEL_STARTED )
+    while (__k1_umem_read32(&osEE_kcb_wj.core_ctrls[i].
+      os_status) != OSEE_KERNEL_STARTED)
     {
       ; /* Wait for the start of i */
     }
@@ -253,15 +254,20 @@ void __attribute__((section(TARGET_TEXT)))
 
 #if (!defined(OSEE_SINGLECORE))
   mOS_set_it_level(0);
-  while (
-    __k1_umem_read32(&KCB_WJ.core_ctrls[OSEE_K1_MAIN_CORE].ccb.os_status) !=
-      OSEE_KERNEL_STARTED )
+  while (__k1_umem_read32(&osEE_kcb_wj.core_ctrls[OSEE_K1_MAIN_CORE].
+    os_status) != OSEE_KERNEL_STARTED)
   {
     ; /* cycle until master pe has done what he needs */
   }
 
   /* Catch this context as Idle TASK */
   StartOS(OSDEFAULTAPPMODE);
+
+#if (!defined(OSEE_ALLOW_TASK_MIGRATION))
+  /* Write Barrier */
+  __builtin_k1_wpurge();
+  __builtin_k1_fence();
+#endif /* !OSEE_ALLOW_TASK_MIGRATION */
 
   do {
 #if (defined(OSEE_HAS_COMM_HOOK))
@@ -411,3 +417,14 @@ int osEE_os_scall(int r0, int r1, int r2, int r3 __attribute__((unused)),
   return ret;
 }
 
+#if (!defined(OSEE_SINGLECORE))
+void osEE_hal_sync_barrier(
+  OsEE_barrier * p_barrier, OsEE_reg volatile * p_wait_mask)
+{
+  /* To Be done */
+}
+
+void osEE_hal_start_core(CoreIdType core_id) {
+  /* To Be done */
+}
+#endif /* !OSEE_SINGLECORE */

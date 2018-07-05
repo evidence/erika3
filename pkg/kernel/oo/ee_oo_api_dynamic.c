@@ -57,9 +57,26 @@
 #endif /* !OSEE_ISR2_MAX_PRIO */
 
 #if (defined(OSEE_API_DYNAMIC))
-FUNC(void, OS_CODE) InitOS ( void )
+FUNC(StatusType, OS_CODE)
+  InitOS
+(
+  void
+)
 {
-  osEE_os_init();
+  VAR(StatusType, AUTOMATIC)  ev;
+  CONST(OsEE_reg, AUTOMATIC)  flags = osEE_begin_primitive();
+
+  if (osEE_get_kernel()->p_kcb == NULL) {
+    osEE_os_init();
+
+    ev = E_OK;
+  } else {
+    ev = E_OS_SYS_INIT;
+  }
+
+  osEE_end_primitive(flags);
+
+  return ev;
 }
 
 FUNC(StatusType, OS_CODE)
@@ -206,9 +223,9 @@ FUNC(StatusType, OS_CODE)
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb = osEE_get_curr_core();
 
-  if ( idleHook == NULL ) {
+  if (idleHook == NULL) {
     ev = E_OS_PARAM_POINTER;
-  } else if ( p_cdb->p_ccb->os_status != OSEE_KERNEL_STOPPED ) {
+  } else if (p_cdb->p_ccb->os_status != OSEE_KERNEL_INITIALIZED) {
     ev = E_OS_SYS_INIT;
   } else {
     p_cdb->p_idle_hook = idleHook;

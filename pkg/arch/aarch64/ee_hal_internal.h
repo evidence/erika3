@@ -548,9 +548,9 @@ OSEE_STATIC_INLINE void osEE_hal_end_nested_primitive(OsEE_reg flags)
 void osEE_c_start(void);
 
 /* System Timer init */
-#if (defined(OSTICKDURATION))
+#if (defined(OSEE_HAS_SYSTEM_TIMER))
 void osEE_aarch64_system_timer_init(void);
-#endif /* OSTICKDURATION */
+#endif /* OSEE_HAS_SYSTEM_TIMER */
 
 /* ERIKA's ISR2 Wrapper */
 extern void osEE_aarch64_isr_wrapper(OsEE_ISR_CTX * p_isr_ctx);

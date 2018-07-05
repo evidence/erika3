@@ -61,6 +61,7 @@ endif	# EE_API_EXTENSION
 EE_SRCS += ee_oo_api_osek.c
 EE_SRCS += ee_oo_sched_entry_points.c
 EE_SRCS += ee_oo_scheduler.c
+EE_SRCS += ee_oo_kernel.c
 
 ifeq	($(call iseeopt, OSEE_SCHEDULER_GLOBAL), yes)
 EE_SRCS +=  ee_oo_sched_global.c
@@ -74,6 +75,10 @@ endif
 
 ifeq	($(call iseeopt, OSEE_HAS_ALARMS), yes)
 EE_SRCS += ee_oo_alarm.c
+endif
+
+ifeq	($(call iseeopt, OSEE_HAS_SCHEDULE_TABLES), yes)
+EE_SRCS += ee_ar_sched_table.c
 endif
 
 endif	# OS_EE_KERNEL_OSEK

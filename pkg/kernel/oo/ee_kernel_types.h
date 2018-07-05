@@ -98,6 +98,7 @@ typedef OSEE_CORE_MASK_TYPE                       CoreMaskType;
  *  ErrorHook */
 typedef enum OsEE_os_context_tag{
   OSEE_KERNEL_CTX,
+  OSEE_IDLE_CTX,
   OSEE_TASK_CTX,
   OSEE_TASK_ISR2_CTX,
   OSEE_ERRORHOOK_CTX,
@@ -107,32 +108,30 @@ typedef enum OsEE_os_context_tag{
   OSEE_STARTUPHOOK_CTX,
   OSEE_SHUTDOWNHOOK_CTX,
   OSEE_ALARMCALLBACK_CTX,
-  OSEE_IDLE_CTX
 } OsEE_os_context;
 
 typedef enum {
 #if (defined(OSEE_API_DYNAMIC))
-  OSEE_KERNEL_UNITIALIZED,
+  OSEE_KERNEL_UNINITIALIZED,
 #endif /* OSEE_API_DYNAMIC */
-  OSEE_KERNEL_STOPPED,
+  OSEE_KERNEL_INITIALIZED,
   OSEE_KERNEL_STARTING,
   OSEE_KERNEL_STARTED,
   OSEE_KERNEL_SHUTDOWN
 } OsEE_kernel_status;
 
 #if (defined(OSEE_HAS_MUTEX))
-/* Forward declaration of MDB, needed for MCB p_next field. */
+/* Forward declaration of MDB & TDB, needed for MCB p_next and p_mtx_owner
+   fields. */
 struct OsEE_MDB_tag;
+#if (!defined(OSEE_SINGLECORE)) || (defined(OSEE_HAS_ORTI))
+struct OsEE_TDB_tag;
+#endif /* !OSEE_SINGLECORE || OSEE_HAS_ORTI */
 
 typedef struct OsEE_MCB_tag {
   P2VAR(struct OsEE_MDB_tag OSEE_CONST, TYPEDEF, OS_APPL_DATA)  p_next;
   VAR(TaskPrio, TYPEDEF)                                        prev_prio;
-#if (defined(OSEE_HAS_CHECKS)) || (defined(OSEE_HAS_ORTI))
-  VAR(OsEE_bool, TYPEDEF)                                       locked;
-#endif /* OSEE_HAS_CHECKS  || OSEE_HAS_ORTI */
-#if (!defined(OSEE_SINGLECORE)) || (defined(OSEE_HAS_ORTI))
-  VAR(TaskType, TYPEDEF)                                        mtx_owner;
-#endif /* !OSEE_SINGLECORE || OSEE_HAS_ORTI */
+  P2VAR(struct OsEE_TDB_tag OSEE_CONST, TYPEDEF, OS_APPL_DATA)  p_mtx_owner;
 } OsEE_MCB;
 
 #if (!defined(OSEE_SINGLECORE))
@@ -163,6 +162,7 @@ typedef struct OsEE_TCB_tag {
 #if (defined(OSEE_HAS_EVENTS))
   VAR(EventMaskType, TYPEDEF)               wait_mask;
   VAR(EventMaskType, TYPEDEF)               event_mask;
+  P2VAR(OsEE_SN, TYPEDEF, OS_APPL_DATA)     p_own_sn;
 #endif /* OSEE_HAS_EVENTS */
 #if (defined(OSEE_ALLOW_TASK_MIGRATION))
   VAR(CoreIdType, TYPEDEF)                  current_core_id;
@@ -249,41 +249,182 @@ typedef struct OsEE_action_tag {
   VAR(OsEE_action_type, TYPEDEF)                type;
 } OsEE_action;
 
+#if (defined(OSEE_HAS_SCHEDULE_TABLES))
+/** @typedef Schedule Table Synchronization strategies symbols */
+typedef enum {
+  /** No support for synchronization. (default) */
+  OSEE_SCHEDTABLE_SYNC_NONE,
+  /** The counter driving the schedule table is the counter with which
+      synchronization is required */
+  OSEE_SCHEDTABLE_SYNC_IMPLICIT,
+  /** The schedule table is driven by an OS counter but processing needs to be
+      synchronized with a different counter which is not an OS counter object.
+      Specification of Operating System */
+  OSEE_SCHEDTABLE_SYNC_EXPLICIT
+} OsEE_st_synch_strategy;
+
+/** @typedef to have a more harmonized type name with other OSEK type names. */
+typedef OsEE_st_synch_strategy SynchStrategyType;
+
+/** @typedef Structures that hold the information related to an expiry point */
+typedef struct OsEE_st_exipiry_point_tag{
+  /** Expiry point offset in its own schedule table */
+  VAR(TickType, TYPEDEF)                offset;
+  /** Array of the expiry point's actions */
+  P2SYM_VAR(OsEE_action, OS_APPL_DATA,  p_action_array)[];
+  /** Sizeof array of the expiry point's actions */
+  VAR(MemSize, TYPEDEF)                 action_array_size;
+  /** Maximum value that can be subtracted from the expiry offset */
+  VAR(TickType, TYPEDEF)                max_shorten;
+  /** Maximum value that can be added to the expiry point offset */
+  VAR(TickType, TYPEDEF)                max_lengthen;
+} OSEE_CONST OsEE_st_exipiry_point;
+#endif /* OSEE_HAS_SCHEDULE_TABLES */
+
 #if (defined(OSEE_COUNTER_TRIGGER_TYPES))
-typedef enum OsEE_trigger_type_tag {
-  OSEE_TRIGGER_ALARM,
-  OSEE_TRIGGER_SCHEDULE_TABLE
-} OsEE_trigger_type;
+typedef struct OsEE_AlarmCB_tag {
+  VAR(TickType, TYPEDEF)                      cycle;
+} OsEE_AlarmCB;
+
+typedef struct OsEE_AlarmDB_tag {
+  P2VAR(OsEE_AlarmCB, TYPEDEF, OS_APPL_DATA)  p_alarm_cb;
+  P2VAR(struct OsEE_TriggerDB_tag OSEE_CONST, TYPEDEF, OS_APPL_CONST)
+                                              p_trigger_db;
+  VAR(OsEE_action, TYPEDEF)                   action;
+} OsEE_AlarmDB;
+
+/**
+ * @typedef EE_as_Schedule_Table_RAM_type
+ *
+ * Data structure to store variable informations about a schedule table.
+ */
+typedef struct OsEE_SchedTabCB_tag {
+  /** ID of next schedule table to be started */
+  P2VAR(struct OsEE_SchedTabDB_tag OSEE_CONST, TYPEDEF, OS_APPL_CONST)
+                                              p_next_table;
+  /** Schedule Table underlying counter Start value */
+  VAR(TickType, TYPEDEF)                      start;
+  /** Schedule Table current status */
+  VAR(ScheduleTableStatusType, TYPEDEF)       st_status;
+  /** Expiry point to be processed in the schedule table. I use an index
+      instead a pointer to not rely in pointer arithmetic that is no compliant
+      with MISRA */
+  VAR(MemSize, TYPEDEF)                       position;
+  /** Deviation of the schedule table from synchronization */
+  VAR(TickDeltaType, TYPEDEF)                 deviation;
+} OsEE_SchedTabCB;
+
+/**
+ * @typedef OsEE_schedule_table_db
+ *
+ * This is the data structure used to describe the constant part of a
+ * schedule table. */
+typedef struct OsEE_SchedTabDB_tag {
+  /** Pointer to corresponding Control Block */
+  P2VAR(OsEE_SchedTabCB, TYPEDEF, OS_APPL_DATA) p_st_cb;
+  /** Pointer to corresponding Schedule Table Trigger */
+  P2VAR(struct OsEE_SchedTabDB_tag OSEE_CONST, TYPEDEF, OS_APPL_CONST)
+                                                p_trigger_db;
+  /** Array of the schedule table's expiry points */
+  P2SYM_VAR(OsEE_st_exipiry_point, OS_APPL_CONST, p_expiry_point_array)[];
+  /** Size of array of the schedule table's expiry point */
+  VAR(MemSize, TYPEDEF)                         expiry_point_array_size;
+  /** Schedule table synchronization strategy */
+  VAR(SynchStrategyType, TYPEDEF)               sync_strategy;
+  /** The length of the schedule table in ticks */
+  VAR(TickType, TYPEDEF)                        duration;
+  /** Minimum deviation from synchronization source to be synchronized */
+  VAR(TickDeltaType, TYPEDEF)                   precision;
+  /** OSTRUE if the schedule table shall be repeated after the last expiry
+      point, FALSE if the schedule table is single-shot */
+  VAR(OsEE_bool, TYPEDEF)                       repeated;
+#if (defined(OSEE_HAS_OSAPPLICATIONS))
+  /** The ID of the application to which this schedule table belong to. */
+  VAR(ApplicationType, TYPEDEF)                 ApplID;
+#endif /* OSEE_HAS_OSAPPLICATIONS */
+} OSEE_CONST OsEE_SchedTabDB;
 #endif /* OSEE_COUNTER_TRIGGER_TYPES */
+
+/**
+ * I will handle concurrent updates for triggers thanks this status 
+ */
+typedef enum OsEE_trigger_status_tag {
+  OSEE_TRIGGER_INACTIVE,
+  OSEE_TRIGGER_CANCELED,
+  OSEE_TRIGGER_ACTIVE,
+  OSEE_TRIGGER_EXPIRED,
+  OSEE_TRIGGER_REENABLED
+} OsEE_trigger_status;
 
 typedef struct OsEE_TriggerCB_tag {
   P2VAR(struct OsEE_TriggerDB_tag OSEE_CONST, TYPEDEF, OS_APPL_DATA)  p_next;
   VAR(TickType, TYPEDEF)                                              when;
-  VAR(OsEE_bool, TYPEDEF)                                             active;
+  VAR(OsEE_trigger_status, TYPEDEF)                                   status;
 #if (!defined(OSEE_COUNTER_TRIGGER_TYPES))
 #if (defined(OSEE_HAS_ALARMS))
   VAR(TickType, TYPEDEF)                                              cycle;
 #elif (defined(OSEE_HAS_SCHEDULE_TABLES))
-/* TODO */
+  /** ID of next schedule table to be started */
+  P2VAR(struct OsEE_TriggerDB_tag OSEE_CONST, TYPEDEF, OS_APPL_CONST)
+                                                              p_next_table;
+  /** Schedule Table underlying counter Start value */
+  VAR(TickType, TYPEDEF)                                      start;
+  /** Schedule Table current status */
+  VAR(ScheduleTableStatusType, TYPEDEF)                       st_status;
+  /** Expiry point to be processed in the schedule table. I use an index
+      instead a pointer to not rely in pointer arithmetic that is no compliant
+      with MISRA */
+  VAR(MemSize, TYPEDEF)                                       position;
+  /** Deviation of the schedule table from synchronization */
+  VAR(TickDeltaType, TYPEDEF)                                 deviation;
 #endif /* OSEE_HAS_ALARMS || OSEE_HAS_SCHEDULE_TABLES */
 #endif /* !OSEE_COUNTER_TRIGGER_TYPES */
 } OsEE_TriggerCB;
 
 typedef struct OsEE_TriggerDB_tag {
-  P2VAR(OsEE_TriggerCB, TYPEDEF, OS_APPL_DATA)  p_trigger_cb;
-  P2VAR(OsEE_CounterDB, TYPEDEF, OS_APPL_DATA)  p_counter_db;
+  P2VAR(OsEE_TriggerCB, TYPEDEF, OS_APPL_DATA)              p_trigger_cb;
+  P2VAR(OsEE_CounterDB, TYPEDEF, OS_APPL_DATA)              p_counter_db;
 #if (defined(OSEE_COUNTER_TRIGGER_TYPES))
-  VAR(OsEE_trigger_type, TYPEDEF)               type;
+  P2VAR(struct OsEE_AlarmDB_tagOSEE_CONST, TYPEDEF, OS_APPL_CONST)
+                                                            p_alarm_db;
+  P2VAR(struct OsEE_SchedTabDB_tag OSEE_CONST, TYPEDEF, OS_APPL_CONST)
+                                                            p_st_db;
 #elif (defined(OSEE_HAS_ALARMS))
-  VAR(OsEE_action, TYPEDEF)                     action;
+  VAR(OsEE_action, TYPEDEF)                                 action;
 #elif (defined(OSEE_HAS_SCHEDULE_TABLES))
-  /* TODO */
+  /** Array of the schedule table's expiry points */
+  P2SYM_VAR(OsEE_st_exipiry_point, OS_APPL_CONST, p_expiry_point_array)[];
+  /** Size of array of the schedule table's expiry point */
+  VAR(MemSize, TYPEDEF)                         expiry_point_array_size;
+  /** Schedule table synchronization strategy */
+  VAR(SynchStrategyType, TYPEDEF)               sync_strategy;
+  /** The length of the schedule table in ticks */
+  VAR(TickType, TYPEDEF)                        duration;
+  /** Minimum deviation from synchronization source to be synchronized */
+  VAR(TickDeltaType, TYPEDEF)                   precision;
+  /** OSEE_TRUE if the schedule table shall be repeated after the last expiry
+      point, FALSE if the schedule table is single-shot */
+  VAR(OsEE_bool, TYPEDEF)                       repeated;
+#if (defined(OSEE_HAS_OSAPPLICATIONS))
+  /** The ID of the application to which this schedule table belong to. */
+  VAR(ApplicationType, TYPEDEF)                 ApplID;
+#endif /* OSEE_HAS_OSAPPLICATIONS */
 #endif /* OSEE_COUNTER_TRIGGER_TYPES */
 } OSEE_CONST OsEE_TriggerDB;
 
+#if (!defined(OSEE_COUNTER_TRIGGER_TYPES))
+#if (defined(OSEE_HAS_ALARMS))
+typedef OsEE_TriggerCB OsEE_AlarmCB;
+typedef OsEE_TriggerDB OsEE_AlarmDB;
+#elif (defined(OSEE_HAS_SCHEDULE_TABLES))
+typedef OsEE_TriggerCB OsEE_SchedTabCB;
+typedef OsEE_TriggerDB OsEE_SchedTabDB;
+#endif /* OSEE_HAS_ALARMS elif OSEE_HAS_SCHEDULE_TABLES */
+#endif /* !OSEE_COUNTER_TRIGGER_TYPES */
+
 #if (defined(OSEE_HAS_AUTOSTART_TRIGGER))
 typedef struct OsEE_autostart_trigger_info_tag {
-  P2VAR(OsEE_TriggerDB, OS_APPL_DATA, TYPEDEF)  p_trigger_db;
+  P2VAR(OsEE_TriggerDB, TYPEDEF, OS_APPL_CONST) p_trigger_db;
   VAR(TickType, TYPEDEF)                        increment;
   VAR(TickType, TYPEDEF)                        cycle;
 } OSEE_CONST OsEE_autostart_trigger_info;
@@ -293,23 +434,6 @@ typedef struct OsEE_autostart_trigger_tag {
   VAR(MemSize, TYPEDEF)                                 trigger_array_size;
 } OSEE_CONST OsEE_autostart_trigger;
 #endif /* OSEE_HAS_AUTOSTART_TRIGGER */
-
-#if (defined(OSEE_COUNTER_TRIGGER_TYPES))
-typedef struct OsEE_AlarmCB_tag {
-  VAR(OsEE_TriggerCB, TYPEDEF)                  super;
-  VAR(TickType, TYPEDEF)                        cycle;
-} OsEE_AlarmCB;
-
-typedef struct OsEE_AlarmDB_tag {
-  VAR(OsEE_TriggerDB, TYPEDEF)                  super;
-  VAR(OsEE_action, TYPEDEF)                     action;
-} OsEE_AlarmDB;
-#elif (defined(OSEE_HAS_ALARMS))
-typedef OsEE_TriggerCB OsEE_AlarmCB;
-typedef OsEE_TriggerDB OsEE_AlarmDB;
-#elif (defined(OSEE_HAS_SCHEDULE_TABLES))
-/* TODO Schedule Tables */
-#endif /* OSEE_COUNTER_TRIGGER_TYPES */
 #endif /* OSEE_HAS_COUNTERS */
 
 #if (defined(OSEE_HAS_AUTOSTART_TASK))
@@ -332,7 +456,7 @@ typedef struct OsEE_CCB_tag {
 #endif /* OSEE_API_DYNAMIC */
 #endif /* !OSEE_SCHEDULER_GLOBAL */
   P2VAR(OsEE_SN, TYPEDEF, OS_APPL_DATA)         p_stk_sn;
-  VAR(OsEE_kernel_status, TYPEDEF)              os_status;
+  VAR(OsEE_kernel_status volatile, TYPEDEF)     os_status;
   VAR(AppModeType, TYPEDEF)                     app_mode;
   /* Error Handling variables */
   VAR(StatusType, TYPEDEF)                      last_error;
@@ -367,6 +491,9 @@ typedef struct OsEE_CDB_tag {
   VAR(OsEE_CHDB, TYPEDEF)                       chdb;
 #endif /* OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
   P2VAR(OsEE_CCB, TYPEDEF, OS_APPL_DATA)        p_ccb;
+#if (!defined(OSEE_SINGLECORE))
+  P2VAR(OsEE_spin_lock, TYPEDEF,OS_APPL_DATA)   p_lock;
+#endif /* !OSEE_SINGLECORE */
 #if (defined(OSEE_HAS_IDLEHOOK)) || (defined(OSEE_API_DYNAMIC))
   VAR(TaskFunc, TYPEDEF)                        p_idle_hook;
 #endif /* OSEE_HAS_IDLEHOOK || OSEE_API_DYNAMIC */
@@ -406,31 +533,39 @@ typedef struct OsEE_KCB_tag {
 #if (defined(OSEE_HAS_ALARMS))
   VAR(MemSize, TYPEDEF)                   free_alarm_index;
 #endif /* OSEE_HAS_ALARMS */
+#if (defined(OSEE_HAS_SCHEDULE_TABLES))
+  VAR(MemSize, TYPEDEF)                   free_st_index;
+#endif /* OSEE_HAS_SCHEDULE_TABLES */
 #endif /* OSEE_HAS_COUNTERS && OSEE_API_DYNAMIC */
-#if (!defined(OSEE_SCHEDULER_GLOBAL)) && (!defined(OSEE_API_DYNAMIC))
+#if (!defined(OSEE_SINGLECORE))
+  VAR(CoreMaskType, TYPEDEF)              ar_core_mask;
+  VAR(CoreMaskType, TYPEDEF)              not_ar_core_mask;
+  VAR(CoreIdType,   TYPEDEF)              ar_num_core_started;
+#endif /* !OSEE_SINGLECORE */
+#if (defined(OSEE_SINGLECORE)) && (!defined(OSEE_API_DYNAMIC))
   /* To not have an empty struct */
   VAR(OsEE_reg, TYPEDEF)                  dummy;
-#endif /* !OSEE_SCHEDULER_GLOBAL && !OSEE_API_DYNAMIC */
+#endif /* OSEE_SINGLECORE && !OSEE_API_DYNAMIC */
 } OsEE_KCB;
 
 typedef struct OsEE_KDB_tag {
   P2VAR(OsEE_KCB, TYPEDEF, OS_APPL_DATA)          p_kcb;
+#if (!defined(OSEE_SINGLECORE))
+  P2VAR(OsEE_spin_lock, TYPEDEF,OS_APPL_DATA)     p_lock;
+  P2VAR(OsEE_barrier, TYPEDEF,OS_APPL_DATA)       p_barrier;
+#endif /* !OSEE_SINGLECORE */
   /* EG: No AUTOSAR Compiler Abstraction For Pointer To Array !!!
          ==> I need to invent one */
-/* [GS]: Avoid "warning: assignment from incompatible pointer type" in 
- * 	 ee_std_hal_init.c:160 in A.P.I. DYNAMIC Environment.
- */
-#if (!defined(OSEE_API_DYNAMIC))
   P2SYM_CONSTP2VAR(OsEE_TDB, OS_APPL_DATA,        p_tdb_ptr_array)
-    [/*OSEE_TASK_ARRAY_SIZE + OSEE_USED_CORES*/];
-#else	/* OSEE_API_DYNAMIC */
-  P2SYM_P2VAR(OsEE_TDB, OS_APPL_DATA,             p_tdb_ptr_array)
-    [/*OSEE_TASK_ARRAY_SIZE + OSEE_USED_CORES*/];
-#endif	/* OSEE_API_DYNAMIC */
+    [/*OSEE_TASK_ARRAY_SIZE + OsNumberOfCores*/];
+  VAR(MemSize, TYPEDEF)                           tdb_array_size;
+#if (defined(OSEE_ALLOW_TASK_MIGRATION))
   P2SYM_VAR(OsEE_SN, OS_APPL_DATA,                p_sn_array)
     [/*OSEE_SN_ARRAY_SIZE*/];
-  VAR(MemSize, TYPEDEF)                           tdb_array_size;
   VAR(MemSize, TYPEDEF)                           sn_array_size;
+#endif /* OSEE_ALLOW_TASK_MIGRATION */
+#if (defined(OSEE_ALLOW_TASK_MIGRATION))
+#endif /* OSEE_ALLOW_TASK_MIGRATION */
 #if (defined(OSEE_HAS_RESOURCES))
   P2SYM_CONSTP2VAR(OsEE_MDB, OS_APPL_DATA,        p_res_ptr_array)[];
   VAR(MemSize, TYPEDEF)                           res_array_size;
@@ -443,7 +578,8 @@ typedef struct OsEE_KDB_tag {
   VAR(MemSize, TYPEDEF)                           alarm_array_size;
 #endif /* OSEE_HAS_ALARMS */
 #if (defined(OSEE_HAS_SCHEDULE_TABLES))
-  /* TODO: Schedule Tables */
+  P2SYM_CONSTP2VAR(OsEE_SchedTabDB, OS_APPL_DATA, p_st_ptr_array)[];
+  VAR(MemSize, TYPEDEF)                           st_array_size;
 #endif /* OSEE_HAS_SCHEDULE_TABLES */
 #endif /* OSEE_HAS_COUNTERS */
 } OSEE_CONST OsEE_KDB;

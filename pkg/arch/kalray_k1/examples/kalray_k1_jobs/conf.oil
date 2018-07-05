@@ -145,10 +145,7 @@ CPU mySystem {
     };
   };
 
-  /* Workaround: FAKE TASK, just to have a place where declare APP_SRC */
-  TASK Fake_Task {
-    CPU_ID   = 0;
+  APPDATA kalaray_1_jobs {
     APP_SRC  = "test.c";
-    PRIORITY = 1; /* Always Needed */
   };
 };

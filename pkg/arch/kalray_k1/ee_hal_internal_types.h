@@ -107,8 +107,8 @@ typedef struct OsEE_HDB_tag {
 typedef struct OsEE_HPB_tag {
   OsEE_addr     pool_base;
   size_t        residual_mem;
-  OsEE_SDB      sdb_array[OSEE_TASK_ARRAY_SIZE + OSEE_USED_CORES];
-  OsEE_SCB      scb_array[OSEE_TASK_ARRAY_SIZE + OSEE_USED_CORES];
+  OsEE_SDB      sdb_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
+  OsEE_SCB      scb_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
 } OsEE_HPB;
 #endif /* OSEE_API_DYNAMIC */
 
@@ -116,8 +116,8 @@ typedef struct OsEE_HPB_tag {
 #define OSEE_K1_BSP_IT_TIMER_0 (0U)
 #define OSEE_K1_BSP_IT_TIMER_1 (1U)
 
-#if (defined(OSTICKDURATION))
+#if (defined(OSEE_HAS_SYSTEM_TIMER))
 extern void osEE_kalray_k1_system_timer_handler(void);
-#endif /* OSTICKDURATION */
+#endif /* OSEE_HAS_SYSTEM_TIMER */
 
 #endif /* !OsEE_HAL_INTERNAL_TYPES_H */

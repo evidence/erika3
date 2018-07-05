@@ -1,38 +1,38 @@
 /* ###*B*###
  * Erika Enterprise, version 3
- * 
+ *
  * Copyright (C) 2017 Evidence s.r.l.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or (at
  * your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License, version 2, for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License,
  * version 2, along with this program; if not, see
  * <https://www.gnu.org/licenses/old-licenses/gpl-2.0.html >.
- * 
+ *
  * This program is distributed to you subject to the following
  * clarifications and special exceptions to the GNU General Public
  * License, version 2.
- * 
+ *
  * THIRD PARTIES' MATERIALS
- * 
+ *
  * Certain materials included in this library are provided by third
  * parties under licenses other than the GNU General Public License. You
  * may only use, copy, link to, modify and redistribute this library
  * following the terms of license indicated below for third parties'
  * materials.
- * 
+ *
  * In case you make modified versions of this library which still include
  * said third parties' materials, you are obligated to grant this special
  * exception.
- * 
+ *
  * The complete list of Third party materials allowed with ERIKA
  * Enterprise version 3, together with the terms and conditions of each
  * license, is present in the file THIRDPARTY.TXT in the root of the
@@ -57,83 +57,102 @@
 #error Having a global scheduler in single core environment is a nonsense
 #endif
 
-FUNC(StatusType, OS_CODE)
+FUNC(OsEE_bool, OS_CODE)
   osEE_scheduler_task_activated
 (
   P2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)  p_kdb,
-  P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)  p_cdb,
-  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_tdb_act,
-  CONST(OsEE_bool, AUTOMATIC)               is_preemption_point
+  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_tdb_act
 )
 {
-  VAR(StatusType, AUTOMATIC)                    ev;
-  CONSTP2VAR(OsEE_KCB, AUTOMATIC, OS_APPL_DATA) p_kcb = p_kdb->p_kcb;
-  CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
-    p_tcb_act  = p_tdb_act->p_tcb;
+  VAR(OsEE_bool, AUTOMATIC)                     is_preemption;
+  CONSTP2VAR(OsEE_KCB, AUTOMATIC, OS_APPL_DATA) p_kcb     = p_kdb->p_kcb;
+  CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA) p_tcb_act = p_tdb_act->p_tcb;
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
+    p_cdb = osEE_get_curr_core();
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb     = p_cdb->p_ccb;
+  CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA) p_curr    = p_ccb->p_curr;
 
   osEE_lock_kernel();
 
-  if ( p_tcb_act->current_num_of_act <
-      p_tdb_act->max_num_of_act )
+  if (p_curr->p_tcb->current_prio < p_tcb_act->current_prio)
   {
-    CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
-    CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA) p_curr = p_ccb->p_curr;
-
-    ++p_tcb_act->current_num_of_act;
-
-    if ((is_preemption_point) &&
-        (p_curr->p_tcb->current_prio < p_tcb_act->current_prio)
-       )
-    {
-      CONSTP2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA)
-        p_stk_sn = p_ccb->p_stk_sn;
-      /* Set the RUNNING Task as READY but Stacked (No more RUNNING) */
-      p_curr->p_tcb->status = OSEE_TASK_READY_STACKED;
-      if ( p_curr != p_cdb->p_idle_task ) {
-        /* Re-insert preempted in RQ */
-        (void)osEE_scheduler_rq_insert(&p_kcb->rq, p_stk_sn, p_curr);
-        /* Ask to another idle core to take care of it... */
-        osEE_hal_signal_broadcast();
-      }
-
-      /* Set the activated TASK as current */
-      p_ccb->p_stk_sn             = osEE_sn_alloc(&p_kcb->p_free_sn);
-      p_ccb->p_curr               = p_tdb_act;
-
-      p_tcb_act->current_core_id  = osEE_get_curr_core_id();
-      osEE_event_reset_mask(p_tcb_act);
-
-      osEE_change_context_from_running(p_curr, p_tdb_act);
-    } else {
-      /* Actually Insert the activated in READY Queue */
-      if ( p_tcb_act->status == OSEE_TASK_SUSPENDED ) {
-        p_tcb_act->status = OSEE_TASK_READY;
-        osEE_event_reset_mask(p_tcb_act);
-      }
-      (void)osEE_scheduler_rq_insert(&p_kcb->rq,
-          osEE_sn_alloc(&p_kcb->p_free_sn), p_tdb_act);
-      osEE_unlock_kernel();
-      /* Let other idle cores handle it... */
+    CONSTP2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA)
+      p_stk_sn = p_ccb->p_stk_sn;
+    /* Set the RUNNING Task as READY but Stacked (No more RUNNING) */
+    p_curr->p_tcb->status = OSEE_TASK_READY_STACKED;
+    if (p_curr != p_cdb->p_idle_task) {
+      /* Re-insert preempted in RQ */
+      (void)osEE_scheduler_rq_insert(&p_kcb->rq, p_stk_sn, p_curr);
+      /* Ask to another idle core to take care of it... */
       osEE_hal_signal_broadcast();
     }
-    ev = E_OK;
+
+    /* Set the activated TASK as current */
+    p_ccb->p_stk_sn             = osEE_sn_alloc(&p_kcb->p_free_sn);
+    p_ccb->p_curr               = p_tdb_act;
+
+    p_tcb_act->current_core_id  = osEE_get_curr_core_id();
+    osEE_task_event_reset_mask(p_tcb_act);
+
+    osEE_change_context_from_running(p_curr, p_tdb_act);
+
+    is_preemption = OSEE_TRUE;
   } else {
+    /* Actually Insert the activated in READY Queue */
+    if (p_tcb_act->status == OSEE_TASK_SUSPENDED) {
+      p_tcb_act->status = OSEE_TASK_READY;
+      osEE_task_event_reset_mask(p_tcb_act);
+    }
+
+    (void)osEE_scheduler_rq_insert(&p_kcb->rq,
+            osEE_sn_alloc(&p_kcb->p_free_sn), p_tdb_act);
+
     osEE_unlock_kernel();
-    ev = E_OS_LIMIT;
+    /* Let other idle cores handle it... */
+    osEE_hal_signal_broadcast();
+
+    is_preemption = OSEE_FALSE;
   }
-  return ev;
+
+  return is_preemption;
+}
+
+FUNC(OsEE_bool, OS_CODE)
+  osEE_scheduler_task_insert
+(
+  P2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)  p_kdb,
+  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_tdb_act
+)
+{
+  VAR(OsEE_bool, AUTOMATIC)                     head_changed;
+  CONSTP2VAR(OsEE_KCB, AUTOMATIC, OS_APPL_DATA) p_kcb       = p_kdb->p_kcb;
+  CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA) p_tcb_act   = p_tdb_act->p_tcb;
+
+  osEE_lock_kernel();
+
+  if (p_tcb_act->status == OSEE_TASK_SUSPENDED) {
+    p_tcb_act->status = OSEE_TASK_READY;
+    osEE_task_event_reset_mask(p_tcb_act);
+  }
+
+  head_changed = osEE_scheduler_rq_insert(&p_kcb->rq,
+                  osEE_sn_alloc(&p_kcb->p_free_sn), p_tdb_act);
+
+  osEE_unlock_kernel();
+
+  return head_changed;
 }
 
 FUNC_P2VAR(OsEE_TDB, OS_APPL_DATA, OS_CODE)
   osEE_scheduler_task_block_current
 (
   P2VAR(OsEE_KDB,  AUTOMATIC, OS_APPL_DATA) p_kdb,
-  P2VAR(OsEE_CDB,  AUTOMATIC, OS_APPL_DATA) p_cdb,
   P2VAR(OsEE_SN *, AUTOMATIC, OS_APPL_DATA) p_sn_blocked
 )
 {
-  CONSTP2VAR(OsEE_KCB, AUTOMATIC, OS_APPL_DATA) p_kcb   = p_kdb->p_kcb;
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb   = p_cdb->p_ccb;
+  CONSTP2VAR(OsEE_KCB, AUTOMATIC, OS_APPL_DATA) p_kcb = p_kdb->p_kcb;
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb = osEE_get_curr_core();
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA) p_tdb_blocked  = p_ccb->p_curr;
 
   osEE_lock_kernel();
@@ -150,7 +169,6 @@ FUNC(OsEE_bool, OS_CODE)
   osEE_scheduler_task_unblocked
 (
   P2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)  p_kdb,
-  P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)  p_cdb,
   P2VAR(OsEE_SN,  AUTOMATIC, OS_APPL_DATA)  p_sn_released
 )
 {
@@ -171,16 +189,17 @@ FUNC(OsEE_bool, OS_CODE)
 
   osEE_unlock_kernel();
 
-  if ( rq_head_changed == OSEE_TRUE ) {
+  if (rq_head_changed == OSEE_TRUE) {
     is_preemption = (p_tdb_released->p_tcb->current_prio >
-      p_cdb->p_ccb->p_curr->p_tcb->current_prio);
+      osEE_get_curr_core()->p_ccb->p_curr->p_tcb->current_prio);
   }
 
   /* If the unlocked Task has priority do not signal, the blocking primitive is
      supposed to try a preemption */
-  if ( is_preemption == OSEE_FALSE ) {
+  if (is_preemption == OSEE_FALSE) {
     osEE_hal_signal_broadcast();
   }
+
   return is_preemption;
 }
 
@@ -188,10 +207,10 @@ FUNC_P2VAR(OsEE_TDB, OS_APPL_DATA, OS_CODE)
   osEE_scheduler_task_terminated
 (
   P2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)    p_kdb,
-  P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)    p_cdb,
   P2VAR(OsEE_TDB *, AUTOMATIC, OS_APPL_DATA)  pp_tdb_from
 )
 {
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb = osEE_get_curr_core();
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
   P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)      p_tdb_to;
 
@@ -265,12 +284,12 @@ FUNC_P2VAR(OsEE_TDB, OS_APPL_DATA, OS_CODE)
 FUNC(OsEE_bool, OS_CODE)
   osEE_scheduler_task_preemption_point
 (
-  P2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)  p_kdb,
-  P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)  p_cdb
+  P2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)  p_kdb
 )
 {
   VAR(OsEE_bool, AUTOMATIC)                     is_preemption;
   P2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA)       p_prev_stk_sn;
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb  = osEE_get_curr_core();
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb  = p_cdb->p_ccb;
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA) p_prev = p_ccb->p_curr;
   P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)      p_new;
@@ -282,7 +301,7 @@ FUNC(OsEE_bool, OS_CODE)
 
   p_new = p_ccb->p_curr;
 
-  if ( p_prev_stk_sn != NULL ) {
+  if (p_prev_stk_sn != NULL) {
     /* In scheduler global the TDB is reinserted in RQ */
     (void)osEE_scheduler_rq_insert(&p_kdb->p_kcb->rq, p_prev_stk_sn,
         p_prev);
@@ -309,11 +328,12 @@ FUNC(void, OS_CODE)
   osEE_scheduler_task_set_running
 (
   P2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)  p_kdb,
-  P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)  p_cdb,
-  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_tdb
+  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_tdb,
+  P2VAR(OsEE_SN,  AUTOMATIC, OS_APPL_DATA)  p_sn
 )
 {
   CONSTP2VAR(OsEE_KCB, AUTOMATIC, OS_APPL_DATA) p_kcb  = p_kdb->p_kcb;
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb  = osEE_get_curr_core();
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb  = p_cdb->p_ccb;
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA) p_preempted = p_ccb->p_curr;
   CONSTP2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA)
@@ -324,11 +344,17 @@ FUNC(void, OS_CODE)
   p_tdb->p_tcb->current_core_id = osEE_get_curr_core_id();
 
   osEE_lock_kernel();
-  /* Alloc the SN for the new Running TASK */
-  p_ccb->p_stk_sn               = osEE_sn_alloc(&p_kcb->p_free_sn);
+
+  if (p_sn == NULL) {
+    /* Alloc the SN for the new Running TASK */
+    p_ccb->p_stk_sn             = osEE_sn_alloc(&p_kcb->p_free_sn);
+  } else {
+    p_ccb->p_stk_sn             = p_sn;
+  }
+
   p_ccb->p_stk_sn->p_tdb        = p_tdb;
 
-  if ( p_preempted != p_cdb->p_idle_task ) {
+  if (p_preempted != p_cdb->p_idle_task) {
     /* Let the other cores try to handle the preempted TASK */
     (void)osEE_scheduler_rq_insert(&p_kcb->rq, p_preempted_sn,
       p_preempted);
@@ -355,7 +381,7 @@ FUNC(OsEE_bool, OS_CODE)
   /* This function is supposed to be called in a kernel critical section
      already */
 
-  if ( p_kcb->free_sn_counter >= activations ) {
+  if (p_kcb->free_sn_counter >= activations) {
     p_kcb->free_sn_counter -= activations;
     reserved = OSEE_TRUE;
   } else {

@@ -64,26 +64,30 @@ OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/kernel/oo/ee_oo_api_osek.h
 
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/kernel/oo/ee_kernel.h
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/kernel/oo/ee_scheduler.h
+OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/kernel/oo/ee_oo_kernel.c
 
-ifeq	($(call iseeopt, OSEE_API_DYNAMIC), yes)
+ifeq ($(call iseeopt, OSEE_API_DYNAMIC), yes)
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/kernel/oo/ee_oo_api_dynamic.c
-endif	# EE_API_DYNAMIC
+endif # EE_API_DYNAMIC
 ifeq ($(call iseeopt, OSEE_API_EXTENSION), yes)
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/kernel/oo/ee_oo_api_extension.c
-endif	# EE_API_EXTENSION
+endif # EE_API_EXTENSION
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/kernel/oo/ee_oo_api_osek.c
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/kernel/oo/ee_oo_sched_entry_points.c
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/kernel/oo/ee_oo_scheduler.c
-ifeq	($(call iseeopt, OSEE_SCHEDULER_GLOBAL), yes)
+ifeq ($(call iseeopt, OSEE_SCHEDULER_GLOBAL), yes)
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/kernel/oo/ee_oo_sched_global.c
 else
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/kernel/oo/ee_oo_sched_partitioned.c
 endif
-ifeq	($(call iseeopt, OSEE_HAS_COUNTERS), yes)
+ifeq ($(call iseeopt, OSEE_HAS_COUNTERS), yes)
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/kernel/oo/ee_oo_counter.c
 endif
-ifeq	($(call iseeopt, OSEE_HAS_ALARMS), yes)
+ifeq ($(call iseeopt, OSEE_HAS_ALARMS), yes)
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/kernel/oo/ee_oo_alarm.c
+endif
+ifeq ($(call iseeopt, OSEE_HAS_SCHEDULE_TABLES), yes)
+OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/kernel/oo/ee_ar_sched_table.c
 endif
 
 endif	#OS_EE_KERNEL_OSEK

@@ -289,13 +289,13 @@ FUNC(OsEE_bool, OS_CODE)
 (
   P2VAR(OsEE_SN *, AUTOMATIC, OS_APPL_DATA)     pp_first,
   P2VAR(OsEE_SN  , AUTOMATIC, OS_APPL_DATA)     p_sn_new,
-  CONST(OsEE_bool, AUTOMATIC)                   hnd_act
+  CONST(OsEE_bool, AUTOMATIC)                   as_ready
 )
 {
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA) p_tdb_new = p_sn_new->p_tdb;
   CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA) p_tcb_new = p_tdb_new->p_tcb;
   CONST(TaskPrio, AUTOMATIC)                new_task_prio =
-    ((hnd_act) && osEE_is_active_task(p_tcb_new))?
+    (as_ready)?
       p_tdb_new->ready_prio:
       p_tcb_new->current_prio;
   P2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA) p_prev          = NULL;
@@ -308,7 +308,7 @@ FUNC(OsEE_bool, OS_CODE)
     CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA) p_cur_tdb = p_curr->p_tdb;
     CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA) p_cur_tcb = p_cur_tdb->p_tcb;
 
-    if (hnd_act && osEE_is_active_task(p_cur_tcb)) {
+    if (as_ready) {
       prio_to_check = p_cur_tdb->ready_prio;
     } else {
       prio_to_check = p_cur_tcb->current_prio;

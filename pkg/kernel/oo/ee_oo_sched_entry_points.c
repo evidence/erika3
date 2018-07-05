@@ -61,6 +61,8 @@ static FUNC(void, OS_CODE)
 {
   (void)osEE_begin_primitive();
 
+  osEE_stack_monitoring(osEE_get_curr_core());
+
   osEE_hal_terminate_activation(&p_to_term->hdb,
     OSEE_KERNEL_TERMINATE_ACTIVATION_CB);
 }
@@ -72,11 +74,19 @@ FUNC(void, OS_CODE)
 )
 {
 #if (defined(OSEE_HAS_PRETASKHOOK)) || (defined(OSEE_SCHEDULER_GLOBAL)) ||\
-    (defined(OSEE_HAS_CONTEXT)) || (defined(OSEE_HAS_ORTI))
+    (defined(OSEE_HAS_CONTEXT)) || (defined(OSEE_HAS_ORTI)) ||\
+    (defined(OSEE_HAS_STACK_MONITORING))
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb = osEE_get_curr_core();
+#endif /* OSEE_HAS_PRETASKHOOK || OSEE_SCHEDULER_GLOBAL || OSEE_HAS_CONTEXT ||
+          OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
+#if (defined(OSEE_HAS_PRETASKHOOK)) || (defined(OSEE_SCHEDULER_GLOBAL)) ||\
+    (defined(OSEE_HAS_CONTEXT)) || (defined(OSEE_HAS_ORTI))
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
 #endif /* OSEE_HAS_PRETASKHOOK || OSEE_SCHEDULER_GLOBAL || OSEE_HAS_CONTEXT ||
           OSEE_HAS_ORTI */
+#if (defined(OSEE_HAS_STACK_MONITORING))
+  osEE_stack_monitoring(p_cdb);
+#endif /* OSEE_HAS_STACK_MONITORING */
 #if (defined(OSEE_HAS_ORTI))
   if (p_ccb->orti_service_id_valid == OSEE_TRUE) {
 /* Reset last bit of service_id to mark OS service exit */
@@ -108,10 +118,10 @@ FUNC(void, OS_CODE)
     p_ccb->os_context = OSEE_IDLE_CTX;
   }
 #endif /* OSEE_HAS_CONTEXT */
-#else
-/* Touch unused parameter */
-(void)p_tdb_to;
 #endif /* OSEE_HAS_PRETASKHOOK || OSEE_HAS_CONTEXT */
+
+  /* Set the TASK status to RUNNING */
+  p_tdb_to->p_tcb->status = OSEE_TASK_RUNNING;
 
 #if (defined(OSEE_SCHEDULER_GLOBAL))
   CONSTP2VAR(OsEE_spin_lock, AUTOMATIC, OS_APPL_DATA)
@@ -159,7 +169,7 @@ FUNC(void, OS_CODE)
 #if (defined(OSEE_HAS_AUTOSTART_TASK))
   /* Schedule Here: Autostart TASKs */
   CONST(OsEE_reg, AUTOMATIC) flags = osEE_begin_primitive();
-  (void)osEE_scheduler_task_preemption_point(osEE_get_kernel(), p_cdb);
+  (void)osEE_scheduler_task_preemption_point(osEE_get_kernel());
   osEE_end_primitive(flags);
 #endif /* !OSEE_STARTOS_RETURN && !OSEE_API_DYNAMIC && !OSEE_HAS_AUTOSTART_TASK */
   while (p_cdb->p_ccb->os_status == OSEE_KERNEL_STARTED) {

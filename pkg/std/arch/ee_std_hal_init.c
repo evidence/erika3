@@ -55,17 +55,20 @@
 
 #if (defined(OSEE_API_DYNAMIC))
 
-VAR(OsEE_KCB, OS_VAR_CLEARED) KCB;
-VAR(OsEE_CCB, OS_VAR_CLEARED) CCB;
+VAR(OsEE_KCB, OS_VAR_CLEARED) osEE_kcb;
+VAR(OsEE_CCB, OS_VAR_CLEARED) osEE_ccb;
 
-VAR(OsEE_KDB, OS_VAR_CLEARED) KDB;
-VAR(OsEE_CDB, OS_VAR_CLEARED) CDB;
+VAR(OsEE_KDB, OS_VAR_CLEARED) osEE_kdb;
+VAR(OsEE_CDB, OS_VAR_CLEARED) osEE_cdb;
 
-VAR(OsEE_TDB, OS_VAR_CLEARED) tdb_array[OSEE_TASK_ARRAY_SIZE + OSEE_USED_CORES];
-VAR(OsEE_TCB, OS_VAR_CLEARED) tcb_array[OSEE_TASK_ARRAY_SIZE + OSEE_USED_CORES];
+VAR(OsEE_TDB, OS_VAR_CLEARED)
+  osEE_tdb_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
+VAR(OsEE_TCB, OS_VAR_CLEARED)
+  osEE_tcb_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
 P2VAR(OsEE_TDB, OS_VAR_CLEARED, OS_APPL_DATA)
-                          tdb_ptr_array[OSEE_TASK_ARRAY_SIZE + OSEE_USED_CORES];
-VAR(OsEE_SN, OS_VAR_CLEARED)  sn_array[OSEE_SN_ARRAY_SIZE];
+  osEE_tdb_ptr_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
+VAR(OsEE_SN, OS_VAR_CLEARED)
+  osEE_sn_array[OSEE_SN_ARRAY_SIZE];
 
 /* Stacks "space" array */
 VAR(OsEE_stack, OS_STACK)
@@ -74,8 +77,8 @@ VAR(OsEE_stack, OS_STACK)
 typedef struct OsEE_HPB_tag {
   VAR(OsEE_addr, TYPEDEF)     pool_base;
   VAR(size_t, TYPEDEF)        residual_mem;
-  VAR(OsEE_SDB, TYPEDEF)      sdb_array[OSEE_TASK_ARRAY_SIZE + OSEE_USED_CORES];
-  VAR(OsEE_SCB, TYPEDEF)      scb_array[OSEE_TASK_ARRAY_SIZE + OSEE_USED_CORES];
+  VAR(OsEE_SDB, TYPEDEF)      sdb_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
+  VAR(OsEE_SCB, TYPEDEF)      scb_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
 } OsEE_HPB;
 
 VAR(OsEE_HPB, OS_VAR_INIT) osEE_pool = {
@@ -154,42 +157,40 @@ FUNC(void, OS_CODE_INIT)
   VAR(size_t, AUTOMATIC) i;
 
   /* Initialize Kernel Descriptor block */
-  KDB.p_kcb           = &KCB;
-  KDB.p_tdb_ptr_array = &tdb_ptr_array;
-  KDB.tdb_array_size  = OSEE_ARRAY_ELEMENT_COUNT(tdb_ptr_array);
-  KDB.p_sn_array      = &sn_array;
-  KDB.sn_array_size   = OSEE_ARRAY_ELEMENT_COUNT(sn_array);
+  osEE_kdb.p_kcb           = &osEE_kcb;
+  osEE_kdb.p_tdb_ptr_array = (OsEE_TDB * const (*)[])&osEE_tdb_ptr_array;
+  osEE_kdb.tdb_array_size  = OSEE_ARRAY_ELEMENT_COUNT(osEE_tdb_ptr_array);
 
   /* Initialize Core Data Structures */
 #if (defined(OSEE_SINGLECORE))
-  CDB.p_ccb                   = &CCB;
-  CDB.p_idle_task             = &tdb_array[OSEE_TASK_ARRAY_SIZE];
-  CDB.p_idle_task->task_func  = osEE_idle_hook_wrapper;
+  osEE_cdb.p_ccb                   = &osEE_ccb;
+  osEE_cdb.p_idle_task             = &osEE_tdb_array[OSEE_TASK_ARRAY_SIZE];
+  osEE_cdb.p_idle_task->task_func  = osEE_idle_hook_wrapper;
 #else
   /* TODO */
-  /* p_idle_task = (*KDB.tdb_ptr_array)[OSEE_TASK_ARRAY_SIZE + core_id]; */
+  /* p_idle_task = (*osEE_kdb.tdb_ptr_array)[OSEE_TASK_ARRAY_SIZE + core_id]; */
 #endif /* OSEE_SINGLECORE */
 
   /* Initialize the Task Description & Control Blocks (TDB & TCB) */
-  for ( i = 0U; i < OSEE_ARRAY_ELEMENT_COUNT(tdb_array); ++i ) {
-    CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA) p_tdb = &tdb_array[i];
+  for (i = 0U; i < OSEE_ARRAY_ELEMENT_COUNT(osEE_tdb_array); ++i) {
+    CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA) p_tdb = &osEE_tdb_array[i];
 
-    tdb_ptr_array[i]        = p_tdb;
-    p_tdb->p_tcb            = &tcb_array[i];
+    osEE_tdb_ptr_array[i]   = p_tdb;
+    p_tdb->p_tcb            = &osEE_tcb_array[i];
     p_tdb->hdb.p_sdb        = &osEE_pool.sdb_array[i];
     p_tdb->hdb.p_scb        = &osEE_pool.scb_array[i];
   }
 
   /* Initialize the Scheduler Nodes (SN) Free Linked List */
-  for ( i = 1U; i < KDB.sn_array_size; ++i ) {
-    (*KDB.p_sn_array)[(i - 1U)].p_next = &(*KDB.p_sn_array)[i];
+  for (i = 1U; i < OSEE_ARRAY_ELEMENT_COUNT(osEE_sn_array); ++i) {
+    osEE_sn_array[(i - 1U)].p_next = &osEE_sn_array[i];
   }
 
 #if (defined(OSEE_SINGLECORE))
   /* Initialize Core Data Structures */
-  CCB.p_free_sn       = &(*KDB.p_sn_array)[0U];
-  CCB.free_sn_counter = OSEE_ARRAY_ELEMENT_COUNT(sn_array);
-  CCB.os_status       = OSEE_KERNEL_STOPPED;
+  osEE_ccb.p_free_sn       = &osEE_sn_array[0U];
+  osEE_ccb.free_sn_counter = OSEE_ARRAY_ELEMENT_COUNT(osEE_sn_array);
+  osEE_ccb.os_status       = OSEE_KERNEL_INITIALIZED;
 #else
   /* TODO: configure how partition the SN in between Cores and set the core as
            configured*/
@@ -208,7 +209,8 @@ FUNC(OsEE_bool, OS_CODE)
 
   /* Initialize Idle TASK */
   /* System tos will be rewrittern by EE_hal_start_idle_task */
-  CONSTP2VAR(OsEE_CTX, AUTOMATIC, OS_APPL_DATA) p_tos = (OsEE_CTX *)osEE_get_SP();
+  CONSTP2VAR(OsEE_CTX, AUTOMATIC, OS_APPL_DATA)
+    p_tos = (OsEE_CTX *)osEE_get_SP();
 
   /* Tie Idle TASK with main Stack */
   p_hdb->p_sdb->p_bos       = p_tos;

@@ -155,9 +155,9 @@ OSEE_STATIC_INLINE void osEE_hal_end_nested_primitive( OsEE_reg flag )
 
 extern void osEE_atmega_intvect(void);
 
-#if (defined(OSTICKDURATION))
+#if (defined(OSEE_HAS_SYSTEM_TIMER))
 extern void osEE_avr8_system_timer_init(void);
-#endif /* OSTICKDURATION */
+#endif /* OSEE_HAS_SYSTEM_TIMER */
 
 #define OSEE_CPU_STARTOS_INLINE OSEE_STATIC_INLINE
 
@@ -167,11 +167,11 @@ OSEE_CPU_STARTOS_INLINE OsEE_bool osEE_cpu_startos ( void )
   /* Interrupt Vector Table Recall. */
   OsEE_void_cb volatile ivt             =  &osEE_atmega_intvect;
   OsEE_bool    const    cpu_startos_ok  = osEE_std_cpu_startos();
-#if (defined(OSTICKDURATION))
+#if (defined(OSEE_HAS_SYSTEM_TIMER))
   if (cpu_startos_ok) {
     osEE_avr8_system_timer_init();
   }
-#endif /* OSTICKDURATION */
+#endif /* OSEE_HAS_SYSTEM_TIMER */
   return cpu_startos_ok;
 }
 

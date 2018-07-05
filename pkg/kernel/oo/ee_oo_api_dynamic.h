@@ -59,7 +59,11 @@
 #include "ee_api_types.h"
 
 /* All Core OS initialization: It SHALL be called first. */
-FUNC(void, OS_CODE) InitOS ( void );
+FUNC(StatusType, OS_CODE)
+  InitOS
+(
+  void
+);
 
 FUNC(StatusType, OS_CODE)
   CreateTask

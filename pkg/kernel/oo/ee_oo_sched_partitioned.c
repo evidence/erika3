@@ -53,10 +53,24 @@
 
 #include "ee_internal.h"
 
-static FUNC(OsEE_bool, OS_CODE)
-  osEE_scheduler_task_activated_insert_rq
+LOCAL_INLINE FUNC_P2VAR(OsEE_CDB, OS_APPL_DATA, OS_CODE)
+  osEE_task_get_curr_core
 (
-  P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)  p_cdb,
+  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA) p_tdb
+)
+{
+#if (defined(OSEE_SINGLECORE))
+  /* Touch unused parameter */
+  (void)p_tdb;
+  return osEE_get_curr_core();
+#else
+  return osEE_get_core(p_tdb->orig_core_id);
+#endif /* OSEE_SINGLECORE */
+}
+
+static FUNC(OsEE_bool, OS_CODE)
+  osEE_scheduler_task_insert_rq
+(
   P2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb,
   P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_tdb_act,
   P2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)  p_tcb_act
@@ -68,102 +82,132 @@ static FUNC(OsEE_bool, OS_CODE)
    * Change Status only if is not active yet. */
   if (p_tcb_act->status == OSEE_TASK_SUSPENDED) {
     p_tcb_act->status = OSEE_TASK_READY;
-    osEE_event_reset_mask(p_tcb_act);
+    osEE_task_event_reset_mask(p_tcb_act);
   }
 
   rq_head_changed = osEE_scheduler_rq_insert(&p_ccb->rq,
     osEE_sn_alloc(&p_ccb->p_free_sn), p_tdb_act);
 
-  osEE_unlock_core(p_cdb);
-
   return rq_head_changed;
 }
 
-FUNC(StatusType, OS_CODE)
+FUNC(OsEE_bool, OS_CODE)
   osEE_scheduler_task_activated
 (
   P2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)  p_kdb,
-  P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)  p_cdb,
-  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_tdb_act,
-  CONST(OsEE_bool, AUTOMATIC)               is_preemption_point
+  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_tdb_act
 )
 {
-  VAR(StatusType, AUTOMATIC)                    ev;
-  CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
-    p_tcb_act  = p_tdb_act->p_tcb;
+  VAR(OsEE_bool, AUTOMATIC)   is_preemption;
+  CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA) p_tcb_act   = p_tdb_act->p_tcb;
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
+    p_cdb = osEE_task_get_curr_core(p_tdb_act);
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb       = p_cdb->p_ccb;
+  CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA) p_curr      = p_ccb->p_curr;
+  CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA) p_curr_tcb  = p_curr->p_tcb;
 
   /* Touch unused parameters */
   (void)p_kdb;
   osEE_lock_core(p_cdb);
 
-  if (p_tcb_act->current_num_of_act < p_tdb_act->max_num_of_act)
-  {
-    CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb       = p_cdb->p_ccb;
-    CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA) p_curr      = p_ccb->p_curr;
-    CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA) p_curr_tcb  = p_curr->p_tcb;
+#if (!defined(OSEE_SINGLECORE))
+  /* Check if this is a remote activation */
+  if (p_tdb_act->orig_core_id != osEE_get_curr_core_id()) {
+    CONST(OsEE_bool, AUTOMATIC) rq_head_changed =
+      osEE_scheduler_task_insert_rq(p_ccb, p_tdb_act, p_tcb_act);
 
-    ++p_tcb_act->current_num_of_act;
+    osEE_unlock_core(p_cdb);
+
+    if (rq_head_changed) {
+      /* if RQ Head is changed, signal the remote core, it needs to
+         reschedule */
+      osEE_hal_signal_core(p_tdb_act->orig_core_id);
+    }
+    is_preemption = OSEE_FALSE;
+  } else
+#endif /* !OSEE_SINGLECORE */
+  /* Preemption Check */
+  if (p_curr_tcb->current_prio < p_tcb_act->current_prio) {
+    CONSTP2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA)
+      p_new_stk = osEE_sn_alloc(&p_ccb->p_free_sn);
+
+    /* Call PostTaskHook before switching active TASK */
+    osEE_call_post_task_hook(p_ccb);
+
+    /* Set Previous TASK status as Ready but stacked */
+    p_curr_tcb->status = OSEE_TASK_READY_STACKED;
+
+    /* Set the activated TASK as current */
+    p_new_stk->p_tdb            = p_tdb_act;
+    p_new_stk->p_next           = p_ccb->p_stk_sn;
+    p_ccb->p_stk_sn             = p_new_stk;
+    p_ccb->p_curr               = p_tdb_act;
+    osEE_task_event_reset_mask(p_tdb_act->p_tcb);
+
+    osEE_unlock_core(p_cdb);
+
+    osEE_change_context_from_running(p_curr, p_tdb_act);
+
+    is_preemption = OSEE_TRUE;
+  } else {
+    /* Actually Insert the activated in READY Queue */
+    (void)osEE_scheduler_task_insert_rq(p_ccb, p_tdb_act, p_tcb_act);
+    osEE_unlock_core(p_cdb);
+
+    is_preemption = OSEE_FALSE;
+  }
+
+  return is_preemption;
+}
+
+FUNC(OsEE_bool, OS_CODE)
+  osEE_scheduler_task_insert
+(
+  P2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)  p_kdb,
+  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_tdb_act
+)
+{
+  VAR(OsEE_bool, AUTOMATIC)   head_changed;
+  CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA) p_tcb_act   = p_tdb_act->p_tcb;
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
+    p_cdb = osEE_task_get_curr_core(p_tdb_act);
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb       = p_cdb->p_ccb;
+
+  /* Touch unused parameters */
+  (void)p_kdb;
+  osEE_lock_core(p_cdb);
 
 #if (!defined(OSEE_SINGLECORE))
-    /* Check if this is a remote activation */
-    if (p_tdb_act->orig_core_id != osEE_get_curr_core_id()) {
-      CONST(OsEE_bool, AUTOMATIC) rq_head_changed =
-        osEE_scheduler_task_activated_insert_rq(p_cdb, p_ccb, p_tdb_act,
-          p_tcb_act);
-      if (rq_head_changed) {
-        /* if RQ Head is changed, signal the remote core, it needs to
-           reschedule */
-        osEE_hal_signal_core(p_tdb_act->orig_core_id);
-      }
-    } else
-#endif /* !OSEE_SINGLECORE */
-    /* Preemption Check */
-    if ((is_preemption_point) &&
-        (p_curr_tcb->current_prio < p_tcb_act->current_prio)
-       )
-    {
-      CONSTP2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA)
-        p_new_stk = osEE_sn_alloc(&p_ccb->p_free_sn);
-
-      /* Call PostTaskHook before switching active TASK */
-      osEE_call_post_task_hook(p_ccb);
-
-      /* Set Previous TASK status as Ready but stacked */
-      p_curr_tcb->status = OSEE_TASK_READY_STACKED;
-
-      /* Set the activated TASK as current */
-      p_new_stk->p_tdb            = p_tdb_act;
-      p_new_stk->p_next           = p_ccb->p_stk_sn;
-      p_ccb->p_stk_sn             = p_new_stk;
-      p_ccb->p_curr               = p_tdb_act;
-
-      osEE_unlock_core(p_cdb);
-
-#if (defined(OSEE_HAS_EVENTS))
-      osEE_event_reset_mask(p_tdb_act->p_tcb);
-#endif /* OSEE_HAS_EVENTS */
-      osEE_change_context_from_running(p_curr, p_tdb_act);
-    } else {
-      /* Actually Insert the activated in READY Queue */
-      osEE_scheduler_task_activated_insert_rq(p_cdb, p_ccb, p_tdb_act,
-        p_tcb_act);
+  /* Check if this is a remote activation */
+  if (p_tdb_act->orig_core_id != osEE_get_curr_core_id()) {
+    head_changed = osEE_scheduler_task_insert_rq(p_ccb, p_tdb_act, p_tcb_act);
+    if (head_changed) {
+      /* if RQ Head is changed, signal the remote core, it needs to
+         reschedule */
+      osEE_hal_signal_core(p_tdb_act->orig_core_id);
+      head_changed = OSEE_FALSE;
     }
-    ev = E_OK;
-  } else {
-    osEE_unlock_kernel();
-    ev = E_OS_LIMIT;
+  } else
+#endif /* !OSEE_SINGLECORE */
+  {
+    /* Actually Insert the activated in READY Queue */
+    head_changed  = osEE_scheduler_task_insert_rq(p_ccb, p_tdb_act, p_tcb_act);
   }
-  return ev;
+
+  osEE_unlock_core(p_cdb);
+
+  return head_changed;
 }
 
 FUNC_P2VAR(OsEE_TDB, OS_APPL_DATA, OS_CODE)
   osEE_scheduler_task_block_current
 (
   P2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)    p_kdb,
-  P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)    p_cdb,
   P2VAR(OsEE_SN *,  AUTOMATIC, OS_APPL_DATA)  p_sn_blocked
 )
 {
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
+    p_cdb = osEE_get_curr_core();
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb         = p_cdb->p_ccb;
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA) p_tdb_blocked = p_ccb->p_curr;
 
@@ -184,31 +228,33 @@ FUNC(OsEE_bool, OS_CODE)
   osEE_scheduler_task_unblocked
 (
   P2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)  p_kdb,
-  P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)  p_cdb,
   P2VAR(OsEE_SN,  AUTOMATIC, OS_APPL_DATA)  p_sn_released
 )
 {
   VAR(OsEE_bool, AUTOMATIC) rq_head_changed;
   VAR(OsEE_bool, AUTOMATIC)
     is_preemption = OSEE_FALSE;
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-    p_ccb = p_cdb->p_ccb;
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
     p_tdb_released = p_sn_released->p_tdb;
   CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
     p_tcb_released = p_tdb_released->p_tcb;
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
+    p_cdb = osEE_task_get_curr_core(p_tdb_released);
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+    p_ccb = p_cdb->p_ccb;
 
   p_tcb_released->status       = OSEE_TASK_READY_STACKED;
   p_tcb_released->current_prio = p_tdb_released->ready_prio;
 
   /* Touch unused parameters */
   (void)p_kdb;
+
   osEE_lock_core(p_cdb);
 
   rq_head_changed = osEE_scheduler_rq_insert(&p_ccb->rq,
     p_sn_released, p_tdb_released);
 
-  if ( rq_head_changed == OSEE_TRUE ) {
+  if (rq_head_changed == OSEE_TRUE) {
     is_preemption = (p_tcb_released->current_prio >
       p_ccb->p_curr->p_tcb->current_prio);
   }
@@ -219,8 +265,8 @@ FUNC(OsEE_bool, OS_CODE)
   {
     CONST(CoreIdType, AUTOMATIC) tdb_core_id = p_tdb_released->orig_core_id;
     /* Check if this is a remote release */
-    if ( tdb_core_id != osEE_get_curr_core_id() ) {
-      if ( is_preemption ) {
+    if (tdb_core_id != osEE_get_curr_core_id()) {
+      if (is_preemption) {
         osEE_hal_signal_core(tdb_core_id);
         /* If this is a remote release, it is not a preemption for this core */
         is_preemption = OSEE_FALSE;
@@ -236,10 +282,10 @@ FUNC_P2VAR(OsEE_TDB, OS_APPL_DATA, OS_CODE)
   osEE_scheduler_task_terminated
 (
   P2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)    p_kdb,
-  P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)    p_cdb,
   P2VAR(OsEE_TDB *, AUTOMATIC, OS_APPL_DATA)  pp_tdb_from
 )
 {
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb = osEE_get_curr_core();
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
   P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA) p_tdb_to;
 
@@ -293,9 +339,9 @@ FUNC_P2VAR(OsEE_TDB, OS_APPL_DATA, OS_CODE)
       p_tcb_term->status = OSEE_TASK_READY;
 #if (defined(OSEE_HAS_EVENTS))
       /* If this activation is the last of a TASK, a chaining is
-       * a transiction from SUSPENDED to READY so I need to reset Events. */
+       * a transition from SUSPENDED to READY so I need to reset Events. */
       if (p_tcb_term->current_num_of_act == 1U) {
-        osEE_event_reset_mask(p_tcb_term);
+        osEE_task_event_reset_mask(p_tcb_term);
       }
 #endif /* OSEE_HAS_EVENTS */
 
@@ -326,12 +372,12 @@ FUNC_P2VAR(OsEE_TDB, OS_APPL_DATA, OS_CODE)
 FUNC(OsEE_bool, OS_CODE)
   osEE_scheduler_task_preemption_point
 (
-  P2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)  p_kdb,
-  P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)  p_cdb
+  P2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)  p_kdb
 )
 {
   VAR(OsEE_bool, AUTOMATIC)                     is_preemption;
   P2VAR(OsEE_preempt, AUTOMATIC, OS_APPL_DATA)  p_prev;
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb = osEE_get_curr_core();
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
 
   /* Touch unused parameters */
@@ -341,18 +387,19 @@ FUNC(OsEE_bool, OS_CODE)
 
   p_prev = osEE_scheduler_core_rq_preempt_stk(p_cdb, &p_ccb->rq);
 
+  /* Unlock the Scheduler (critical section terminated) */
+  osEE_unlock_core(p_cdb);
+
   if (p_prev != NULL) {
     CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA) p_curr = p_ccb->p_curr;
-
-    osEE_unlock_core(p_cdb);
 
     osEE_change_context_from_running(p_prev, p_curr);
 
     is_preemption = OSEE_TRUE;
   } else {
-    osEE_unlock_core(p_cdb);
     is_preemption = OSEE_FALSE;
   }
+
   return is_preemption;
 }
 
@@ -360,11 +407,12 @@ FUNC(void, OS_CODE)
   osEE_scheduler_task_set_running
 (
   P2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)  p_kdb,
-  P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)  p_cdb,
-  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_tdb
+  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_tdb,
+  P2VAR(OsEE_SN,  AUTOMATIC, OS_APPL_DATA)  p_sn
 )
 {
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb  = p_cdb->p_ccb;
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb = osEE_get_curr_core();
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA) p_preempted = p_ccb->p_curr;
   CONSTP2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA)
     p_preempted_sn = p_ccb->p_stk_sn;
@@ -376,10 +424,14 @@ FUNC(void, OS_CODE)
 
   /* Touch unused parameters */
   (void)p_kdb;
-  osEE_lock_core(p_cdb);
-  /* Alloc the SN for the new Running TASK */
-  p_ccb->p_stk_sn               = osEE_sn_alloc(&p_ccb->p_free_sn);
-  osEE_unlock_core(p_cdb);
+  if (p_sn == NULL) {
+    osEE_lock_core(p_cdb);
+    /* Alloc the SN for the new Running TASK */
+    p_ccb->p_stk_sn             = osEE_sn_alloc(&p_ccb->p_free_sn);
+    osEE_unlock_core(p_cdb);
+  } else {
+    p_ccb->p_stk_sn             = p_sn;
+  }
 
   /* In Scheduler partitioned the TASK are stacked */
   p_ccb->p_stk_sn->p_tdb        = p_tdb;
@@ -405,7 +457,7 @@ FUNC(OsEE_bool, OS_CODE)
   /* This function is supposed to be called in a kernel critical section
      already */
 
-  if ( p_ccb->free_sn_counter >= activations ) {
+  if (p_ccb->free_sn_counter >= activations) {
     p_ccb->free_sn_counter -= activations;
     reserved = OSEE_TRUE;
   } else {

@@ -1,38 +1,38 @@
 /* ###*B*###
  * Erika Enterprise, version 3
- * 
+ *
  * Copyright (C) 2017 Evidence s.r.l.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or (at
  * your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License, version 2, for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License,
  * version 2, along with this program; if not, see
  * <https://www.gnu.org/licenses/old-licenses/gpl-2.0.html >.
- * 
+ *
  * This program is distributed to you subject to the following
  * clarifications and special exceptions to the GNU General Public
  * License, version 2.
- * 
+ *
  * THIRD PARTIES' MATERIALS
- * 
+ *
  * Certain materials included in this library are provided by third
  * parties under licenses other than the GNU General Public License. You
  * may only use, copy, link to, modify and redistribute this library
  * following the terms of license indicated below for third parties'
  * materials.
- * 
+ *
  * In case you make modified versions of this library which still include
  * said third parties' materials, you are obligated to grant this special
  * exception.
- * 
+ *
  * The complete list of Third party materials allowed with ERIKA
  * Enterprise version 3, together with the terms and conditions of each
  * license, is present in the file THIRDPARTY.TXT in the root of the
@@ -76,6 +76,30 @@ typedef P2VAR(TaskType, TYPEDEF, OS_APPL_DATA)  TaskRefType;
 #if (!defined(OSEE_TASK_PRIO_TYPE))
 #define OSEE_TASK_PRIO_TYPE                     VAR(unsigned char, TYPEDEF)
 #endif /* !OSEE_TASK_PRIO_TYPE */
+
+/**
+  It represent the priority of TASK and virtual priority for ISR2.
+  The priority is an integer number with higher values for higher priorities.
+  Choosen the dimension 'n' in bit of the type (usually n=8),
+  the priority space is partitioned in the following way:
+  0 Idle (Task) Priority,
+  1 .. 2^(n-1) - 1 Tasks priorities
+  2^(n-1) .. 2^n-2 ISR2 virtual priorities
+    (not all this space need to correspond to an hardware priority)
+  2^n - 1 Special value used to not reenable interrupts
+    (used for internal interrupts when we want prevent preemption,
+     like for system timer or for Scheduling Inter Core Interrupts).
+
+  Using priorities in this way we are able to make coesist in the same data
+  structures ISR2 and TASK out of the box.
+
+  ISR2 virtual priorities are mapped to hardware priorities by a hal porting
+  function in the following way:
+
+  Virtual priority 2^(n-1) == lowest_hardware priority
+  2^(n-1) + 1 == second_lowest_harware_priority
+  ...
+  and so on. */
 typedef OSEE_TASK_PRIO_TYPE                     TaskPrio;
 #define OSEE_ISR2_PRIO_BIT                 ((TaskPrio)(~(((TaskPrio)-1) >> 1U)))
 #define OSEE_ISR_ALL_PRIO                       ((TaskPrio)-1)
@@ -95,6 +119,13 @@ typedef OSEE_TASK_ACTIVATION_TYPE               TaskActivation;
 #endif /* !OSEE_CORE_ID_TYPE */
 typedef OSEE_CORE_ID_TYPE                       CoreIdType;
 
+#define INVALID_CORE_ID                         ((CoreIdType)-1)
+
+#if (!defined(OSEE_CORE_MASK_TYPE))
+#define OSEE_CORE_MASK_TYPE                     VAR(OsEE_reg, TYPEDEF)
+#endif /* !OSEE_CORE_MASK_TYPE */
+typedef OSEE_CORE_MASK_TYPE                     CoreMaskType;
+
 #if (!defined(OSEE_TASK_FUNC_TYPE))
 #define OSEE_TASK_FUNC_TYPE(task_func_type_name)\
   P2FUNC(void, TYPEDEF, task_func_type_name)
@@ -102,27 +133,42 @@ typedef OSEE_CORE_ID_TYPE                       CoreIdType;
 typedef OSEE_TASK_FUNC_TYPE(TaskFunc) ( void );
 
 /**
- * ISR2 un tipo di TASK e usa lo stesso schedulatore degli altri TASK -->
- * Risorse a comune ISR2/TASK nativamente
- * (E' possibile che IPL, vada lo stesso gestisto)
+ * \brief TASK types enumeration
  */
 typedef enum OsEE_task_type_tag {
+  /** \brief Basic Task Type, also known as Run-To-Completition (RTC) TASKs,
+             these TASKs cannot call blocking services. */
   OSEE_TASK_TYPE_BASIC,
+  /** \brief Extended Task Type, also known as threads. These TASKs own a
+             private stack so they can call blocking primitives.*/
   OSEE_TASK_TYPE_EXTENDED,
+  /** \brief ISR2 are handled as special kind of TASKs.
+             This allow us to share a lot of core for termination and protection
+             with other TASKs.*/
   OSEE_TASK_TYPE_ISR2,
+  /** \brief Idle Task is a special kind of TASK for Idle Time.
+             There's exactly one Idle Task for each core.*/
   OSEE_TASK_TYPE_IDLE
 } OsEE_task_type;
 
 typedef VAR(OsEE_task_type, TYPEDEF)                TaskExecutionType;
 
 typedef enum OsEE_task_status_tag {
+  /** \brief Status of a TASK that's is not activated yet */
   OSEE_TASK_SUSPENDED,
+  /** \brief Task activated and present in raeady, but the current activation
+             has not executed yet (never set at OSEE_TASK_RUNNING) */
   OSEE_TASK_READY,
-  /** Special value to handle Preemption and Unblocking */
+  /** \brief Task activated and present in ready queue,
+             but the current activation has already executed for a while.
+             Special value to handle Preemption and Unblocking */
   OSEE_TASK_READY_STACKED,
+  /** \brief Task blocked in the middle of execution waiting for events */
   OSEE_TASK_WAITING,
+  /** \brief Task currently in execution. At most only one task for each core
+             can be in this status */
   OSEE_TASK_RUNNING,
-  /** Special value to handle ChainTask service on the same TASK */
+  /** \brief Transient status to handle ChainTask service on the same Task */
   OSEE_TASK_CHAINED
 } OsEE_task_status;
 
@@ -146,16 +192,12 @@ typedef OSEE_COUNTER_TYPE                           CounterType;
 
 typedef OSEE_TICK_TYPE                              TickType;
 typedef P2VAR(TickType, TYPEDEF, OS_APPL_DATA)      TickRefType;
-#endif /* OSEE_HAS_COUNTERS */
 
-#if (defined(OSEE_HAS_ALARMS))
-#if (!defined(OSEE_ALARM_ID_TYPE))
-#define OSEE_ALARM_ID_TYPE                          VAR(OsEE_reg, TYPEDEF)
-#endif /* !OSEE_ALARM_ID_TYPE */
+#if (!defined(OSEE_TICK_DELTA_TYPE))
+#define OSEE_TICK_DELTA_TYPE                        VAR(int, TYPEDEF)
+#endif /* !OSEE_TICK_DELTA_TYPE */
 
-typedef OSEE_ALARM_ID_TYPE                          AlarmType;
-
-#define INVALID_ALARM                               ((AlarmType)-1)
+typedef signed OSEE_TICK_DELTA_TYPE                 TickDeltaType;
 
 typedef VAR(struct, TYPEDEF) {
 /** Maximum possible allowed count value in ticks */
@@ -171,6 +213,16 @@ typedef VAR(struct, TYPEDEF) {
 } AlarmBaseType;
 
 typedef P2VAR(AlarmBaseType, TYPEDEF, OS_APPL_DATA) AlarmBaseRefType;
+#endif /* OSEE_HAS_COUNTERS */
+
+#if (defined(OSEE_HAS_ALARMS))
+#if (!defined(OSEE_ALARM_ID_TYPE))
+#define OSEE_ALARM_ID_TYPE                          VAR(OsEE_reg, TYPEDEF)
+#endif /* !OSEE_ALARM_ID_TYPE */
+
+typedef OSEE_ALARM_ID_TYPE                          AlarmType;
+
+#define INVALID_ALARM                               ((AlarmType)-1)
 
 /* Alarm declarations are handled by RT-Druid. Macro needed by standard */
 #define DeclareAlarm(Alarm)
@@ -205,6 +257,44 @@ typedef P2VAR(EventMaskType, TYPEDEF, OS_APPL_DATA) EventMaskRefType;
  * standard */
 #define DeclareEvent(Event)
 #endif /* OSEE_HAS_EVENTS */
+
+#if (defined(OSEE_HAS_SCHEDULE_TABLES))
+#if (!defined(OSEE_SCHEDULETABLE_TYPE))
+#define OSEE_SCHEDULETABLE_TYPE                     VAR(OsEE_reg, TYPEDEF)
+#endif /* !OSEE_SCHEDULETABLE_TYPE */
+
+typedef OSEE_SCHEDULETABLE_TYPE                     ScheduleTableType;
+
+/** @typedef This type describes the status of a schedule. The status can be
+    one of the following: */
+typedef enum OsEE_schedule_table_status_tag {
+/** The schedule table is not started. */
+  SCHEDULETABLE_STOPPED     = (0x00U),
+/** The schedule table will be started after the end of currently running
+    schedule table (schedule table was used in NextScheduleTable() service). */
+  SCHEDULETABLE_NEXT        = (0x01U),
+/** The schedule table uses explicit synchronization, has been started and is
+    waiting for the global time. */
+  SCHEDULETABLE_WAITING     = (0x02U),
+/** The schedule table is running, but is currently not synchronous to a
+    global time source. */
+  SCHEDULETABLE_RUNNING     = (0x03U),
+/** Used as bit-mask, flag if the schedule table is synchronized */
+  SCHEDULETABLE_SYNCHRONOUS = (0x04U),
+/** Used as bit-mask, flag if the schedule table shall be not synchronized */
+  SCHEDULETABLE_ASYNC       = (0x08U),
+/** The schedule table is running and is synchronous to a global time source
+    (SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS) */
+  SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS =
+    (SCHEDULETABLE_RUNNING + SCHEDULETABLE_SYNCHRONOUS)
+} OsEE_schedule_table_status;
+
+typedef VAR(OsEE_schedule_table_status, TYPEDEF)  ScheduleTableStatusType;
+
+typedef P2VAR(ScheduleTableStatusType, TYPEDEF, OS_APPL_DATA)
+  ScheduleTableStatusRefType;
+
+#endif /* OSEE_HAS_SCHEDULE_TABLES */
 
 #if (!defined(OSEE_OBJECT_ID_TYPE))
 #define OSEE_OBJECT_ID_TYPE                         VAR(OsEE_reg, TYPEDEF)
@@ -340,31 +430,45 @@ typedef enum OsEE_service_id_type_tag {
   OSServiceId_GetElapsedValue                 = (50),
   OSServiceId_GetElapsedValue_Entry           = (51),
 #endif /* OSEE_HAS_COUNTERS */
-  OSServiceId_GetActiveApplicationMode        = (52),
-  OSServiceId_GetActiveApplicationMode_Entry  = (53),
-  OSServiceId_ShutdownOS                      = (54),
-  OSServiceId_ShutdownOS_Entry                = (55),
-  OSServiceId_StartOS                         = (56),
-  OSServiceId_StartOS_Entry                   = (57),
+#if (defined(OSEE_HAS_SCHEDULE_TABLES))
+  OSServiceId_StartScheduleTableRel           = (52),
+  OSServiceId_StartScheduleTableRel_Entry     = (53),
+  OSServiceId_StartScheduleTableAbs           = (54),
+  OSServiceId_StartScheduleTableAbs_Entry     = (55),
+  OSServiceId_StopScheduleTable               = (56),
+  OSServiceId_StopScheduleTable_Entry         = (57),
+  OSServiceId_GetScheduleTableStatus          = (58),
+  OSServiceId_GetScheduleTableStatus_Entry    = (59),
+  OSServiceId_NextScheduleTable               = (60),
+  OSServiceId_NextScheduleTable_Entry         = (61),
+  OSServiceId_SyncScheduleTable               = (62),
+  OSServiceId_SyncScheduleTable_Entry         = (63),
+#endif /* OSEE_HAS_SCHEDULE_TABLES */
+  OSServiceId_GetActiveApplicationMode        = (64),
+  OSServiceId_GetActiveApplicationMode_Entry  = (65),
+  OSServiceId_ShutdownOS                      = (66),
+  OSServiceId_ShutdownOS_Entry                = (67),
+  OSServiceId_StartOS                         = (68),
+  OSServiceId_StartOS_Entry                   = (69),
 /** Special value to flag an error happened in the Task body
     needed for AR requirement [SWS_Os_00069] */
-  OSId_TaskBody                               = (58),
+  OSId_TaskBody                               = (70),
 /* Not needed, only added to not explicitly assign the value to the
  * next label */
-  OSId_TaskBody_Entry                         = (59),
+  OSId_TaskBody_Entry                         = (71),
 /* Special value to flag an error happened in the ISR2 body
    needed for AS requirement [SWS_Os_00368] */
-  OSId_ISR2Body                               = (60),
+  OSId_ISR2Body                               = (72),
 /* As above */
-  OSId_ISR2Body_Entry                         = (61),
+  OSId_ISR2Body_Entry                         = (73),
 /* Special value to flag an error happened in a Alarm or Schedule Table
    action */
-  OSId_Action                                 = (62),
-  OSId_Action_Entry                           = (63),
+  OSId_Action                                 = (74),
+  OSId_Action_Entry                           = (75),
 /* Special value to flag an error happened in a Kernel internal service */
-  OSId_Kernel                                 = (64),
-  OSId_Kernel_Entry                           = (65),
-  OsId_Invalid                                = (66)
+  OSId_Kernel                                 = (76),
+  OSId_Kernel_Entry                           = (77),
+  OsId_Invalid                                = (78)
 } OsEE_service_id_type;
 
 /** @typedef This data type represents the identification of system services. */
