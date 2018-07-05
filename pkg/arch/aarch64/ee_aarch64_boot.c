@@ -47,6 +47,11 @@
  */
 #include "ee_internal.h"
 
+#if (defined(OSEE_PLATFORM_JAILHOUSE))
+#include <inmate.h>
+#endif /* OSEE_PLATFORM_JAILHOUSE */
+
+
 extern int main(void);
 
 extern OsEE_stack stack_bottom[];
@@ -89,6 +94,19 @@ void osEE_c_start(void)
   osEE_os_init();
   osEE_get_curr_core()->p_idle_task->hdb.p_sdb->p_bos = (OsEE_addr)stack_bottom;
 #endif /* OSEE_API_DYNAMIC */
+
+#if (defined(OSEE_PLATFORM_JAILHOUSE))
+  /* Calling the jailhouse's inmate init function in order to:
+	* enable MMU
+	* enable Cache
+	* map inmate's RAM and the COM memory region
+  NOTE: the required Jailhouse version is v0.9.1 (and later) */
+  arch_init_early();
+
+  /* Mapping the GIC as non cachable memory */
+  map_range((void *) OSEE_GIC_BASE, OSEE_GICV_OFFSET + PAGE_SIZE, MAP_UNCACHED);
+#endif /* OSEE_PLATFORM_JAILHOUSE */
+
   /* Application main */
   (void)main();
 
