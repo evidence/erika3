@@ -125,34 +125,6 @@ FUNC(StatusType, OS_CODE)
   VAR(TaskType, AUTOMATIC) isr2_id
 );
 
-LOCAL_INLINE FUNC(StatusType, OS_CODE)
-  osEE_shutdown_os
-(
-  P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)  p_cdb,
-  VAR(StatusType, AUTOMATIC)                Error
-)
-{
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
-  CONST(OsEE_kernel_status, AUTOMATIC) os_status = p_ccb->os_status;
-
-  p_ccb->os_status = OSEE_KERNEL_SHUTDOWN;
-  /* Used to propagate the error to the ShutdownHook */
-  p_ccb->last_error = Error;
-
-#if (defined(OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN))
-  osEE_hal_disableIRQ();
-  osEE_call_shutdown_hook(p_ccb, Error);
-  while (1) {
-    ; /* Endless Loop */
-  }
-#else
-  if (os_status == OSEE_KERNEL_STARTED) {
-    osEE_idle_task_terminate(p_cdb->p_idle_task);
-  }
-#endif /* OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN */
-  return E_OK;
-}
-
 LOCAL_INLINE FUNC_P2VAR(OsEE_TDB, OS_APPL_DATA, OS_CODE)
   osEE_get_curr_task
 (
@@ -438,6 +410,36 @@ LOCAL_INLINE FUNC(void, OS_CODE)
   ((void)p_ccb);
   ((void)api_param);
 #endif /* OSEE_USEPARAMETERACCESS && */
+}
+
+LOCAL_INLINE FUNC(StatusType, OS_CODE)
+  osEE_shutdown_os
+(
+  P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)  p_cdb,
+  VAR(StatusType, AUTOMATIC)                Error
+)
+{
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
+#if (!defined(OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN))
+  CONST(OsEE_kernel_status, AUTOMATIC) os_status = p_ccb->os_status;
+#endif /* !OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN */
+
+  p_ccb->os_status = OSEE_KERNEL_SHUTDOWN;
+  /* Used to propagate the error to the ShutdownHook */
+  p_ccb->last_error = Error;
+
+#if (defined(OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN))
+  osEE_hal_disableIRQ();
+  osEE_call_shutdown_hook(p_ccb, Error);
+  while (1) {
+    ; /* Endless Loop */
+  }
+#else
+  if (os_status == OSEE_KERNEL_STARTED) {
+    osEE_idle_task_terminate(p_cdb->p_idle_task);
+  }
+#endif /* OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN */
+  return E_OK;
 }
 
 #if (defined(OSEE_HAS_COUNTERS))

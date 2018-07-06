@@ -239,10 +239,8 @@ static FUNC(void, OS_CODE)
   P2VAR(OsEE_TriggerCB, AUTOMATIC, OS_APPL_DATA)  p_trigger_to_be_handled_cb
 )
 {
-  P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST) p_cdb;
-
   (void)osEE_handle_action(
-    &osEE_trigger_get_alarm_db(osEE_get_p_trigger_to_be_handled_db)->action
+    &osEE_trigger_get_alarm_db(p_trigger_to_be_handled_db)->action
   );
 
   if (p_trigger_to_be_handled_cb->status >= OSEE_TRIGGER_EXPIRED) {

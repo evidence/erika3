@@ -82,11 +82,6 @@ typedef P2FUNC(void, OS_APPL_DATA, OsEE_kernel_cb) (void);
 typedef VAR(unsigned char, TYPEDEF) OsEE_byte;
 #define OSEE_MAX_BYTE               ((OsEE_byte)-1)
 
-#if (!defined(OSEE_CORE_MASK_TYPE))
-#define OSEE_CORE_MASK_TYPE                       VAR(unsigned char, TYPEDEF)
-#endif /* !OSEE_CORE_MASK_TYPE */
-typedef OSEE_CORE_MASK_TYPE                       CoreMaskType;
-
 /*[OS_SWS_088] If an OS-Application makes a service call from the wrong
  * context AND is currently not inside a Category 1 ISR the Operating System
  * module shall not perform the requested action
