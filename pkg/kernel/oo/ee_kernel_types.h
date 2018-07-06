@@ -376,7 +376,7 @@ typedef struct OsEE_TriggerCB_tag {
   VAR(MemSize, TYPEDEF)                                       position;
   /** Deviation of the schedule table from synchronization */
   VAR(TickDeltaType, TYPEDEF)                                 deviation;
-#endif /* OSEE_HAS_ALARMS || OSEE_HAS_SCHEDULE_TABLES */
+#endif /* OSEE_HAS_ALARMS elif OSEE_HAS_SCHEDULE_TABLES */
 #endif /* !OSEE_COUNTER_TRIGGER_TYPES */
 } OsEE_TriggerCB;
 
@@ -408,7 +408,8 @@ typedef struct OsEE_TriggerDB_tag {
   /** The ID of the application to which this schedule table belong to. */
   VAR(ApplicationType, TYPEDEF)                 ApplID;
 #endif /* OSEE_HAS_OSAPPLICATIONS */
-#endif /* OSEE_COUNTER_TRIGGER_TYPES */
+#endif /* OSEE_COUNTER_TRIGGER_TYPES elif OSEE_HAS_ALARMS elif
+          OSEE_HAS_SCHEDULE_TABLES */
 } OSEE_CONST OsEE_TriggerDB;
 
 #if (!defined(OSEE_COUNTER_TRIGGER_TYPES))
@@ -422,10 +423,24 @@ typedef OsEE_TriggerDB OsEE_SchedTabDB;
 #endif /* !OSEE_COUNTER_TRIGGER_TYPES */
 
 #if (defined(OSEE_HAS_AUTOSTART_TRIGGER))
+#if (defined(OSEE_HAS_SCHEDULE_TABLES))
+typedef enum osEE_autostart_trigger_info_type_tag {
+  OSEE_AUTOSTART_ALARM,
+  OSEE_AUTOSTART_SCHEDULE_TABLE_ABS,
+  OSEE_AUTOSTART_SCHEDULE_TABLE_REL,
+  OSEE_AUTOSTART_SCHEDULE_TABLE_SYNCHRON
+} osEE_autostart_trigger_info_type;
+#endif /* OSEE_HAS_SCHEDULE_TABLES */
+
 typedef struct OsEE_autostart_trigger_info_tag {
-  P2VAR(OsEE_TriggerDB, TYPEDEF, OS_APPL_CONST) p_trigger_db;
-  VAR(TickType, TYPEDEF)                        increment;
-  VAR(TickType, TYPEDEF)                        cycle;
+  P2VAR(OsEE_TriggerDB, TYPEDEF, OS_APPL_CONST)   p_trigger_db;
+  VAR(TickType, TYPEDEF)                          first_tick_paramter;
+#if (defined(OSEE_HAS_ALARMS))
+  VAR(TickType, TYPEDEF)                          second_tick_parameter;
+#endif /* OSEE_HAS_ALARMS */
+#if (defined(OSEE_HAS_SCHEDULE_TABLES)) 
+  VAR(osEE_autostart_trigger_info_type, TYPEDEF)  autostart_type;
+#endif /* OSEE_HAS_SCHEDULE_TABLES */
 } OSEE_CONST OsEE_autostart_trigger_info;
 
 typedef struct OsEE_autostart_trigger_tag {

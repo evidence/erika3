@@ -370,14 +370,47 @@ FUNC(StatusType, OS_CODE)
           p_trigger_to_act_info = &(*p_auto_triggers->p_trigger_ptr_array)[i];
         CONSTP2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_CONST)
           p_trigger_to_act_db   = p_trigger_to_act_info->p_trigger_db;
-
-        /* TODO: Handle trigger as alarm or as schedule table */
+#if (!defined(OSEE_HAS_SCHEDULE_TABLES))
         (void)osEE_alarm_set_rel(
           p_trigger_to_act_db->p_counter_db,
           p_trigger_to_act_db,
-          p_trigger_to_act_info->increment,
-          p_trigger_to_act_info->cycle
+          p_trigger_to_act_info->first_tick_paramter,
+          p_trigger_to_act_info->second_tick_parameter
         );
+#else
+        switch (p_trigger_to_act_info->autostart_type) {
+#if (defined(OSEE_HAS_ALARMS))
+          case OSEE_AUTOSTART_ALARM:
+            (void)osEE_alarm_set_rel(
+              p_trigger_to_act_db->p_counter_db,
+              p_trigger_to_act_db,
+              p_trigger_to_act_info->first_tick_paramter,
+              p_trigger_to_act_info->second_tick_parameter
+            );
+          break;
+#endif /* OSEE_HAS_ALARMS */
+          case OSEE_AUTOSTART_SCHEDULE_TABLE_ABS:
+            (void)osEE_st_start_abs(
+              p_trigger_to_act_db->p_counter_db,
+              p_trigger_to_act_db,
+              p_trigger_to_act_info->first_tick_paramter
+            );
+          break;
+          case OSEE_AUTOSTART_SCHEDULE_TABLE_REL:
+            (void)osEE_st_start_rel(
+              p_trigger_to_act_db->p_counter_db,
+              p_trigger_to_act_db,
+              p_trigger_to_act_info->first_tick_paramter
+            );
+          break;
+          case OSEE_AUTOSTART_SCHEDULE_TABLE_SYNCHRON:
+            /* XXX: TODO: Global Synchronism to be handled */
+          break;
+          default:
+            /* You never get here */
+          break;
+        }
+#endif /* !OSEE_HAS_SCHEDULE_TABLES */
       }
     }
 #endif /* OSEE_HAS_AUTOSTART_TRIGGER */
@@ -2944,7 +2977,7 @@ FUNC(StatusType, OS_CODE)
       ev = E_OS_ID;
     } else
     if ((p_from_st_cb->st_status == SCHEDULETABLE_STOPPED) ||
-      (p_from_st_cb->st_status == SCHEDULETABLE_STOPPED))
+      (p_from_st_cb->st_status == SCHEDULETABLE_NEXT))
     {
       ev = E_OS_NOFUNC;
     } else

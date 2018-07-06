@@ -94,8 +94,8 @@ FUNC(StatusType, OS_CODE)
       /* Turn On the Trigger */
       p_trigger_cb->status = OSEE_TRIGGER_ACTIVE;
 
-      osEE_counter_insert_rel_trigger(
-        p_counter_db, p_trigger_db, offset
+      osEE_counter_insert_rel_trigger(p_counter_db, p_trigger_db,
+        offset  + (*p_st_db->p_expiry_point_array)[0].offset
       );
     }
     ev = E_OK;
@@ -151,8 +151,8 @@ FUNC(StatusType, OS_CODE)
       /* Turn On the Trigger */
       p_trigger_cb->status = OSEE_TRIGGER_ACTIVE;
 
-      osEE_counter_insert_abs_trigger(
-        p_counter_db, p_trigger_db, start
+      osEE_counter_insert_abs_trigger(p_counter_db, p_trigger_db,
+        start + (*p_st_db->p_expiry_point_array)[0].offset
       );
     }
 
