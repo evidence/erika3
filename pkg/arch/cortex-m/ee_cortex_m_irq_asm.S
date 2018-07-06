@@ -274,7 +274,9 @@ osEE_cortex_m_switch_context:
 	.type	PendSV_Handler, %function
 PendSV_Handler:
 
+#if	0
 	CPSID	I	/* Disable all interrupts. */
+#endif
 
 	/* Clear the PendSV exception (preventing 2nd triggering) */
 	LDR	R2, =NVIC_INT_CTRL
