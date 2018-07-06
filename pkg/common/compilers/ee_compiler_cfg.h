@@ -59,6 +59,10 @@
 #include "ee_compiler_gcc.h"
 #endif /* __GNUC__ */
 
+#if (defined(__cplusplus))
+extern "C" {
+#endif
+
 /* TODO: Add specific platform  (arch+compiler) configuration */
 
 #if (!defined(OSEE_CONST))
@@ -132,6 +136,10 @@
 #if (!defined(OS_CODE_INIT))
 #define OS_CODE_INIT                OSEE_INIT
 #endif /* !OS_CODE_INIT */
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* !OSEE_COMPILER_CFG_H */
 

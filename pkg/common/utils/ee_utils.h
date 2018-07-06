@@ -58,6 +58,10 @@
 
 #include "ee_compiler.h"
 
+#if (defined(__cplusplus))
+extern "C" {
+#endif
+
 /*==============================================================================
                               Useful Generic Macros
  =============================================================================*/
@@ -328,5 +332,9 @@
 #define OSEE_TICKS_TO_MICRO(TICKS, REF_FREQ_HZ)  \
   (OSEE_TICKS_TO_NANO(TICKS, REF_FREQ_HZ) / OSEE_KILO)
 #endif /* !OSEE_TICKS_TO_MICRO */
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* !OSEE_UTILS_H */

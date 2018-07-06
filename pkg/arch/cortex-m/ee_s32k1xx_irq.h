@@ -50,8 +50,12 @@
  *  \author	Giuseppe Serano
  *  \date	2018
  */
-#if	(!defined(OSEE_S32K144_IRQ_H))
+#ifndef OSEE_S32K144_IRQ_H
 #define	OSEE_S32K144_IRQ_H
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 /*==============================================================================
 				ISR IDs
@@ -982,5 +986,9 @@
 	OSEE_CORTEX_M_FTM3_OVF_RELOAD_ISR_ID + 1			\
 )
 #endif	/* OS_EE_ARCH_CORTEX_M_S32K148 */
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif	/* !OSEE_S32K144_IRQ_H */

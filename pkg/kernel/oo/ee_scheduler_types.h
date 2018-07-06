@@ -50,7 +50,7 @@
  *  \date   2016
  */
 
-#if (!defined(OSEE_SCHEDULER_TYPES_H))
+#ifndef OSEE_SCHEDULER_TYPES_H
 #define OSEE_SCHEDULER_TYPES_H
 
 #include "ee_cfg.h"
@@ -58,6 +58,10 @@
 #include "ee_compiler.h"
 #include "ee_platform_types.h"
 #include "ee_api_types.h"
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 /* Forward OsEE_TDB declaration */
 struct OsEE_TDB_tag;
@@ -158,4 +162,10 @@ typedef struct OsEE_RQ_tag {
 #endif /* !OSEE_RQ_LL */
 typedef OsEE_SN * OsEE_RQ;
 #endif /* RQ Data Structures */
+
+
+#if (defined(__cplusplus))
+}
+#endif
+
 #endif /* !OSEE_SCHEDULER_TYPES_H */

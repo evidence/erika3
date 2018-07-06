@@ -62,6 +62,10 @@
 #include "ee_scheduler_types.h"
 #include "ee_kernel_types.h"
 
+#if (defined(__cplusplus))
+extern "C" {
+#endif
+
 FUNC(OsEE_bool, OS_CODE)
   osEE_scheduler_rq_insert
 (
@@ -169,5 +173,9 @@ FUNC(OsEE_bool, OS_CODE)
   VAR(TaskActivation, AUTOMATIC)            activations
 );
 #endif /* OSEE_API_DYNAMIC */
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* !OSEE_SCHEDULER_H */

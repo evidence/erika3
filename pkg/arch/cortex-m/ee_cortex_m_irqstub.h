@@ -51,11 +51,15 @@
  *  \date	2018
  */
 
-#if	(!defined(OSEE_CORTEX_M_IRQSTUB_H))
+#ifndef OSEE_CORTEX_M_IRQSTUB_H
 #define	OSEE_CORTEX_M_IRQSTUB_H
 
 /* Plus I need IRQ handling defines */
 #include "ee_cortex_m_irq.h"
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 #if	(!defined(OSEE_API_DYNAMIC))
 
@@ -155,5 +159,9 @@ FUNC(void, OS_CODE) (v)( void )			\
 	/* Hangs in a infinite loop!!! */	\
 	while(1U);				\
 }
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif	/* !OSEE_CORTEX_M_IRQSTUB_H */

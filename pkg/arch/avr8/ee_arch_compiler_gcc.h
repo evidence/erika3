@@ -57,7 +57,7 @@
 /*
  * Compiler dependent interface
  */
-#if (!defined(OSEE_ARCH_COMPILER_GCC_H))
+#ifndef OSEE_ARCH_COMPILER_GCC_H
 #define OSEE_ARCH_COMPILER_GCC_H
 
 #define OSEE_INIT       __attribute__((constructor))

@@ -50,7 +50,7 @@
  *  \date   2016
  */
 
-#if (!defined(OSEE_HAL_H))
+#ifndef OSEE_HAL_H
 #define OSEE_HAL_H
 
 /*==============================================================================
@@ -68,6 +68,10 @@
 #if (!defined(__GNUC__))
 #error Unsupported compiler!
 #endif /* !__GNUC__ */
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 /*==============================================================================
                             Array Utilities
@@ -103,5 +107,9 @@ OSEE_STATIC_INLINE OsEE_addr osEE_get_SP ( void )
 OSEE_STATIC_INLINE OsEE_core_id osEE_get_curr_core_id ( void ) {
   return  (OsEE_core_id)0U;
 }
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* !OSEE_HAL_H */

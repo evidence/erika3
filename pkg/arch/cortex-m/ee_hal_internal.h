@@ -52,7 +52,7 @@
  *  \date	2018
  */
 
-#if	(!defined(OSEE_HAL_INTERNAL_H))
+#ifndef OSEE_HAL_INTERNAL_H
 #define	OSEE_HAL_INTERNAL_H
 
 /*==============================================================================
@@ -80,6 +80,10 @@
 #if	(defined(OSEE_HAS_SYSTEM_TIMER))
 #include "ee_cortex_m_system_timer.h"
 #endif	/* OSEE_HAS_SYSTEM_TIMER */
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 /*==============================================================================
                                         Macros
@@ -290,5 +294,9 @@ osEE_change_context_from_isr2_end
 #endif	/* 0 - [GS]: Context Switch using PendSV! */
 }
 #endif	/* 0 - [GS]: New Context-Switch using PendSV. */
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif	/* !OSEE_HAL_INTERNAL_H */

@@ -58,6 +58,10 @@
 #if (defined(OSEE_API_DYNAMIC))
 #include "ee_api_types.h"
 
+#if (defined(__cplusplus))
+extern "C" {
+#endif
+
 /* All Core OS initialization: It SHALL be called first. */
 FUNC(StatusType, OS_CODE)
   InitOS
@@ -93,5 +97,9 @@ FUNC(StatusType, OS_CODE)
 #endif /* OSEE_API_DYNAMIC */
 
 #define OS_SERVICE_ID_DYNAMIC OS_SERVICE_ID_EXTENSION
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* OSEE_API_DYNAMIC_H */

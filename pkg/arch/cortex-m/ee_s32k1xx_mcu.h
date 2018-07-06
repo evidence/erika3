@@ -56,6 +56,10 @@
 
 #include "ee_mcu_common_types.h"
 
+#if (defined(__cplusplus))
+extern "C" {
+#endif
+
 extern FUNC(void, OS_CODE) osEE_s32k144_intvect( void );
 
 /*************************************************************************
@@ -73,6 +77,10 @@ OSEE_STATIC_INLINE FUNC(void, OS_CODE) OSEE_ALWAYS_INLINE osEE_mcu_init( void )
   osEE_hal_enableIRQ();
 #endif	/* OS_EE_KERNEL_OSEK */
 }
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif	/* OSEE_INCLUDE_S32K144_MCU_H */
 

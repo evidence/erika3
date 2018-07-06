@@ -50,11 +50,15 @@
  *  \author	Giuseppe Serano
  *  \date	2016
  */
-#if (!defined(OSEE_AVR8_IRQ_H))
+#ifndef OSEE_AVR8_IRQ_H
 #define OSEE_AVR8_IRQ_H
 
 /* I need base API */
 #include "ee_compiler.h"
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 /* Macro to declare ISR1: always valid */
 #define DeclareIsr1(f)  void f ( void )
@@ -291,5 +295,9 @@
 #endif  /* __AVR_ATmega1281__ */
 
 #endif  /* OSEE_API_DYNAMIC */
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif  /* !OSEE_AVR8_IRQ_H */

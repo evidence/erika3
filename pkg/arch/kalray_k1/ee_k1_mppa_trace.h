@@ -57,6 +57,11 @@
 #define EE_K1_MPPA_TRACE_H_
 
 #include <mppa_trace.h>
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
+
 MPPA_DECLARE_TRACEPOINT(erika,ISR_HANDLER_ENTER,(
 	MPPA_TRACEPOINT_DEC_FIELD(int,vector))
 )
@@ -188,6 +193,10 @@ MPPA_TRACEPOINT_LOGLEVEL(erika,SYSCALL_ENTER,MPPA_TRACE_DEBUG_SYSTEM)
 MPPA_TRACEPOINT_LOGLEVEL(erika,SYSCALL_EXIT,MPPA_TRACE_DEBUG_SYSTEM)
 
 #endif /* 0 */
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* !EE_K1_MPPA_TRACE_H_ || MPPA_TRACEPOINT_HEADER_MULTI_READ */
 

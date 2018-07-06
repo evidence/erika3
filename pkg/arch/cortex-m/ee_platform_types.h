@@ -55,7 +55,7 @@
  *  \date	2018
  */
 
-#if	(!defined(OSEE_PLATFORM_TYPES_H))
+#ifndef OSEE_PLATFORM_TYPES_H
 #define	OSEE_PLATFORM_TYPES_H
 
 #include "ee_cfg.h"
@@ -76,6 +76,10 @@
 #include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 #if	(!defined(OSEE_BOOL_TYPE))
 typedef	enum {
@@ -122,5 +126,9 @@ typedef uint8_t               OsEE_core_id;
 #endif	/* 0 - [GS]: Nothing to override! */
 
 typedef void (* OsEE_void_cb) (void);
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif	/* !OSEE_PLATFORM_TYPES_H */

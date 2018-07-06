@@ -51,7 +51,7 @@
  *  \date   2017
  */
 
-#if (!defined(OSEE_HAL_INTERNAL_H))
+#ifndef OSEE_HAL_INTERNAL_H
 #define OSEE_HAL_INTERNAL_H
 /*==============================================================================
                     Arch dependent Configuration Switches
@@ -71,6 +71,10 @@
 #if (defined(OSEE_AARCH64_SOC))
 #include "ee_aarch64_gic.h"
 #endif /* OSEE_AARCH64_SOC */
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 /*==============================================================================
                           Macros & Inline Functions
@@ -571,5 +575,9 @@ OSEE_STATIC_INLINE FUNC(void, OS_CODE)
   osEE_gicc_eoi(p_from->hdb.isr2_src);
   osEE_aarch64_change_context_from_isr2_end(p_from, p_to);
 }
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* !OSEE_HAL_INTERNAL_H */

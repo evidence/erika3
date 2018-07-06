@@ -61,6 +61,10 @@
 
 #include "ee_api_types.h"
 
+#if (defined(__cplusplus))
+extern "C" {
+#endif
+
 /* Semaphore forward declaration */
 struct OsEE_sem_tag;
 
@@ -96,5 +100,9 @@ FUNC(StatusType, OS_CODE)
 #endif /* OSEE_API_EXTENSION */
 
 #define OS_SERVICE_ID_EXTENSION OS_SERVICE_ID_OSEK
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* !OSEE_API_EXTENSION_H_ */

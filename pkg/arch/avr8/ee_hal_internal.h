@@ -52,7 +52,7 @@
  *  \date   2016
  */
 
-#if (!defined(OSEE_HAL_INTERNAL_H))
+#ifndef OSEE_HAL_INTERNAL_H
 #define OSEE_HAL_INTERNAL_H
 
 #include "ee_platform_types.h"
@@ -66,6 +66,10 @@
 #if (defined(OSEE_HAS_SYSTEM_TIMER))
 #include "ee_atmega_timer1ctc.h"
 #endif	/* OSEE_HAS_SYSTEM_TIMER */
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 /*==============================================================================
                                         Macros
@@ -184,4 +188,8 @@ OSEE_STATIC_INLINE FUNC(void, OS_CODE)
 {
   osEE_change_context_from_task_end(p_from, p_to);
 }
+#if (defined(__cplusplus))
+}
+#endif
+
 #endif /* !OSEE_HAL_INTERNAL_H */

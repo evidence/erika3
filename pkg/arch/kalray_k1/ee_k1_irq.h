@@ -47,10 +47,14 @@
  *  \author  Errico Guidieri
  *  \date  2016
  */
-#if (!defined(OSEE_K1_IRQ_H))
+#ifndef OSEE_K1_IRQ_H
 #define OSEE_K1_IRQ_H
 
 #include "ee_k1_vbsp.h"
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 /* Remapping on virtual PE event for reschedule */
 #define OSEE_K1_RESCHEDULE_IIRQ  BSP_IT_PE_0
@@ -89,5 +93,9 @@ extern void osEE_os_it_handler (int nb, __k1_vcontext_t *ctx);
 
 /* Interrupt Frame Restore */
 extern void osEE_os_int_context_restore (__k1_vcontext_t *ctx);
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* OSEE_K1_IRQ_H */

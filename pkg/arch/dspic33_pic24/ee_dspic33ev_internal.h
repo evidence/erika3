@@ -49,11 +49,15 @@
  *  \author	Errico Guidieri
  *  \date	2018
  */
-#if	(!defined(OSEE_DSPIC33EV_INTERNAL_H))
+#ifndef OSEE_DSPIC33EV_INTERNAL_H
 #define	OSEE_DSPIC33EV_INTERNAL_H
 
 #include "ee_hal.h"
 #include "ee_mcu_common_types.h"
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 #define	OSEE_DSPIC33EV_VALIDATE(exp)				\
   if (!(exp)) {							\
@@ -108,5 +112,9 @@ osEE_hal_resumeIRQ ( OsEE_reg flags )
 }
 
 #endif	/* OSEE_DSPIC33_PIC24_SOFT_I_BIT - [GS]: Using INTCON2bits.GIE! */
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* !OSEE_DSPIC33EV_INTERNAL_H */

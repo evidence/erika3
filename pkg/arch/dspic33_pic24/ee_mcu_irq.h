@@ -50,7 +50,7 @@
  *  \author	Giuseppe Serano
  *  \date	2018
  */
-#if	(!defined(OSEE_MCU_IRQ_H))
+#ifndef OSEE_MCU_IRQ_H
 #define	OSEE_MCU_IRQ_H
 
 /*==============================================================================

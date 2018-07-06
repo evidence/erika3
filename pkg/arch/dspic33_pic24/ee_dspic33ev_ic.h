@@ -50,6 +50,10 @@
 
 #include "ee_mcu_irq.h"
 
+#if (defined(__cplusplus))
+extern "C" {
+#endif
+
 /*
  * ISRs Clear.
  */
@@ -500,5 +504,8 @@ FUNC(void, OS_CODE) osEE_dspic33_pic24_ic_clr_int_src(
 
 #endif	/* !OSEE_API_DYNAMIC */
 
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif	/* OSEE_DSPIC33EV_IC_H */

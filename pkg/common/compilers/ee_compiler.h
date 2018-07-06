@@ -58,6 +58,10 @@
 
 #include "ee_compiler_cfg.h"
 
+#if (defined(__cplusplus))
+extern "C" {
+#endif
+
 /*==============================================================================
                               Compiler Abstraction
  =============================================================================*/
@@ -246,5 +250,9 @@
 #define P2SYM_CONSTP2VAR(type, ptrclass, ptrname)\
   type * const (* ptrclass ptrname)
 #endif /* !P2SYM_CONSTP2VAR */
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* !OSEE_COMPILER_H */

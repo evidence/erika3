@@ -49,13 +49,17 @@
  *  \date  2016
  */
 
-#if (!defined(OSEE_GET_CURRENT_CORE_H))
+#ifndef OSEE_GET_CURRENT_CORE_H
 #define OSEE_GET_CURRENT_CORE_H
 
 #include "ee_k1_vbsp.h"
 #include "ee_hal_internal.h"
 #include "ee_kernel_types.h"
 #include "ee_kernel_k1.h"
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 #if (defined(OSEE_HAS_JOBS))
 
@@ -303,3 +307,7 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
 #endif /* OSEE_HAS_JOBS */
 
 #endif /* OSEE_GET_CURRENT_CORE_H */
+
+#if (defined(__cplusplus))
+}
+#endif

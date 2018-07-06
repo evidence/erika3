@@ -51,11 +51,15 @@
  *  \date	2018
  */
 
-#if	(!defined(OSEE_DSPIC33_PIC24_IRQSTUB_H))
+#ifndef OSEE_DSPIC33_PIC24_IRQSTUB_H
 #define	OSEE_DSPIC33_PIC24_IRQSTUB_H
 
 /* Plus I need IRQ handling defines */
 #include "ee_dspic33_pic24_irq.h"
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 #if	(!defined(OSEE_API_DYNAMIC))
 /*
@@ -118,5 +122,9 @@ FUNC(void, OS_CODE) OSEE_ISR_NO_AUTO_PSV (v)(void)	\
 	/* Hangs in a infinite loop!!! */		\
 	while(1U);					\
 }
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif	/* !OSEE_DSPIC33_PIC24_IRQSTUB_H */

@@ -50,13 +50,17 @@
  *  \author	Giuseppe Serano
  *  \date	2018
  */
-#if	(!defined(OSEE_DSPIC33_PIC24_IRQ_H))
+#ifndef OSEE_DSPIC33_PIC24_IRQ_H
 #define	OSEE_DSPIC33_PIC24_IRQ_H
 
 /* I need base API */
 #include "ee_compiler.h"
 
 #include "ee_mcu_irq.h"
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 /** \brief	ISR priority level defines
  *
@@ -89,5 +93,9 @@
 
 /* Macro to define ISR: always valid */
 #define	ISR(f)		FUNC(void, OS_CODE) OSEE_COMPILER_KEEP f ( void )
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif	/* !OSEE_DSPIC33_PIC24_IRQ_H */

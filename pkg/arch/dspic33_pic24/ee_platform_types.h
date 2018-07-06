@@ -55,10 +55,14 @@
  *  \date	2018
  */
 
-#if	(!defined(OSEE_PLATFORM_TYPES_H))
+#ifndef OSEE_PLATFORM_TYPES_H
 #define	OSEE_PLATFORM_TYPES_H
 
 #include "ee_cfg.h"
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 #define	OSEE_STACK_TOS(stack)	((OsEE_addr)&stack[0U])
 #define	OSEE_STACK_BOS(stack)	(					\
@@ -113,5 +117,9 @@ typedef uint16_t		OsEE_isr_src_id;
 #define	OSEE_ISR_SOURCE_TYPE	OsEE_isr_src_id
 
 typedef void (* OsEE_void_cb) (void);
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif	/* !OSEE_PLATFORM_TYPES_H */

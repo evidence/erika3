@@ -60,6 +60,10 @@
 #include "ee_get_kernel_and_core.h"
 #include "ee_scheduler.h"
 
+#if (defined(__cplusplus))
+extern "C" {
+#endif
+
 FUNC(void, OS_CODE)
   osEE_change_context_from_running
 (
@@ -739,5 +743,9 @@ FUNC(StatusType, OS_CODE)
   VAR(MemSize, AUTOMATIC)           stack_size
 );
 #endif /* OSEE_API_DYNAMIC */
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* !OSEE_KERNEL_H */

@@ -62,6 +62,10 @@
 
 #include "ee_arch_compiler_gcc.h"
 
+#if (defined(__cplusplus))
+extern "C" {
+#endif
+
 #if (defined(OSEE_NO_INLINE))
 #define OSEE_INLINE
 #define OSEE_STATIC_INLINE  static
@@ -97,5 +101,9 @@
             reordering. At compile level.
    www.nongnu.org/avr-libc/user-manual/optimization.html */
 #define OSEE_BARRIER() __asm__ volatile("" : : : "memory")
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* !OSEE_COMPILER_GCC_H */

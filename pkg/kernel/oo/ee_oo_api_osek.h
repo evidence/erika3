@@ -56,6 +56,10 @@
 #include "ee_hal.h"
 #include "ee_api_types.h"
 
+#if (defined(__cplusplus))
+extern "C" {
+#endif
+
 #if (!defined(OSDEFAULTAPPMODE))
 #define OSDEFAULTAPPMODE ((AppModeType)0U)
 #endif /* !OSDEFAULTAPPMODE */
@@ -593,5 +597,9 @@ FUNC(void, OS_CODE)
   P2VAR(StatusType, AUTOMATIC, OS_APPL_DATA)  Status
 );
 #endif /* !OSEE_SINGLECORE */
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* !OSEE_API_OSEK_H_ */

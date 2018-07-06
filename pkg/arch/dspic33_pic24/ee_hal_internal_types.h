@@ -55,10 +55,14 @@
  *  \date	2018
  */
 
-#if	(!defined(OSEE_HAL_INTERNAL_TYPES_H))
+#ifndef OSEE_HAL_INTERNAL_TYPES_H
 #define	OSEE_HAL_INTERNAL_TYPES_H
 
 #include "ee_platform_types.h"
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 /*
  * W0-W3 and SR are scratch registers
@@ -110,4 +114,9 @@ typedef struct OsEE_HDB_tag {
 #if	(defined(OSTICKDURATION))
 extern FUNC(void, OS_CODE) osEE_dspic33_pic24_system_timer_handler( void );
 #endif	/* OSTICKDURATION */
+
+#if (defined(__cplusplus))
+}
+#endif
+
 #endif	/* !OSEE_HAL_INTERNAL_TYPES_H */

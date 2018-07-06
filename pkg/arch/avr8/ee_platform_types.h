@@ -54,7 +54,7 @@
  *  \date   2016
  */
 
-#if (!defined(OSEE_PLATFORM_TYPES_H))
+#ifndef OSEE_PLATFORM_TYPES_H
 #define OSEE_PLATFORM_TYPES_H
 
 #include "ee_cfg.h"
@@ -81,6 +81,10 @@
 
 /* I need AVR Input/Output */
 #include <avr/io.h>
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 #if (!defined(OSEE_BOOL_TYPE))
 typedef enum {
@@ -120,5 +124,9 @@ typedef uint8_t               OsEE_core_id;
 #define OSEE_CORE_ID_TYPE     OsEE_core_id
 
 typedef void (* OsEE_void_cb) (void);
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* !OSEE_PLATFORM_TYPES_H */

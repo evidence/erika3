@@ -56,6 +56,10 @@
 
 #include "ee_platform_types.h"
 
+#if (defined(__cplusplus))
+extern "C" {
+#endif
+
 /* OSEK Style typedefs */
 #if (!defined(OSEE_APPMODE_TYPE))
 #define OSEE_APPMODE_TYPE                       VAR(unsigned char, TYPEDEF)
@@ -480,5 +484,9 @@ typedef OsEE_service_id_type                        OSServiceIdType;
 #define TASK_FUNC(Task)   Func##Task
 #define DeclareTask(Task) extern FUNC(void, OS_CODE) Func##Task ( void )
 #define TASK(Task)               FUNC(void, OS_CODE) Func##Task ( void )
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* !OSEE_API_TYPES_H */

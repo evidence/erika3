@@ -50,11 +50,15 @@
  *  \date	2018
  */
 
-#if	(!defined(OSEE_GET_CURRENT_CORE_H))
+#ifndef OSEE_GET_CURRENT_CORE_H
 #define	OSEE_GET_CURRENT_CORE_H
 
 #include "ee_platform_types.h"
 #include "ee_kernel_types.h"
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 extern OsEE_KDB osEE_kdb;
 extern OsEE_CDB osEE_cdb;
@@ -120,5 +124,9 @@ OSEE_STATIC_INLINE void osEE_unlock_core(OsEE_CDB * const p_cdb) {
 }
 
 OSEE_STATIC_INLINE void osEE_unlock_curr_core(void) {}
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif	/* OSEE_GET_CURRENT_CORE_H */

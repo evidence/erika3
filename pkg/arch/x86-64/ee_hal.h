@@ -64,6 +64,10 @@
 #error Unsupported compiler!
 #endif /* !__GNUC__ */
 
+#if (defined(__cplusplus))
+extern "C" {
+#endif
+
 /*==============================================================================
                             Array Utilities
  =============================================================================*/
@@ -206,5 +210,9 @@ OSEE_STATIC_INLINE void osEE_x86_64_apic_timer_deadline(uint64_t dl)
 
 /* Define an ISR (category 2). Used only for client code. */
 #define ISR2(f) ISR1(f)
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* !OSEE_HAL_H */

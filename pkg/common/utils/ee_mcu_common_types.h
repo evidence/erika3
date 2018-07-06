@@ -67,6 +67,10 @@
 #include "ee_mcu_custom_types.h"
 #endif /* OSEE_HAS_MCU_CUSTOM_TYPES_H */
 
+#if (defined(__cplusplus))
+extern "C" {
+#endif
+
 /*==============================================================================
                          MCU independent data types
  =============================================================================*/
@@ -172,5 +176,9 @@ typedef unsigned char Std_ReturnType;
 /** \brief  Hardware Register R-Value */
 #define OSEE_HWREG(x) (*OSEE_HWREG_ADDR(x))
 #endif /* !OSEE_HWREG */
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif  /* OSEE_MCU_COMMON_TYPES_H */

@@ -53,7 +53,7 @@
  *  \date  2016
  */
 
-#if (!defined(OSEE_PLATFORM_TYPES_H))
+#ifndef OSEE_PLATFORM_TYPES_H
 #define OSEE_PLATFORM_TYPES_H
 
 #include "ee_cfg.h"
@@ -74,6 +74,10 @@
 #include <vbsp.h>
 #include "ee_compiler.h"
 #include "ee_utils.h"
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 #if (defined(OSEE_SINGLECORE)) && (!defined(OsNumberOfCores))
 #define OsNumberOfCores (1U)
@@ -128,4 +132,8 @@ typedef uint32_t              OsEE_task_prio;
 #define OSEE_K1_CORE_NUMBER   BSP_NB_PE_MAX
 #define OSEE_K1_MAIN_CORE     (0U)
 
+#if (defined(__cplusplus))
+}
+#endif
+  
 #endif /* !OSEE_PLATFORM_TYPES_H */

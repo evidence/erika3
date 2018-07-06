@@ -54,6 +54,10 @@
 #ifndef	OSEE_INCLUDE_EE_AVR8_UTILS_H
 #define	OSEE_INCLUDE_EE_AVR8_UTILS_H
 
+#if (defined(__cplusplus))
+extern "C" {
+#endif
+
 /*************************************************************************
  Types
  *************************************************************************/
@@ -89,5 +93,9 @@
  *
  */
 void EE_avr8_WriteCCPReg(volatile EE_UREG * addr, EE_UREG value);
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* OSEE_INCLUDE_EE_AVR8_UTILS_H */

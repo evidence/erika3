@@ -44,6 +44,10 @@
 
 #include "ee_internal.h"
 
+#if (defined(__cplusplus))
+extern "C" {
+#endif
+
 /******************************************************************************
  * Types
  *****************************************************************************/
@@ -60,7 +64,7 @@ typedef enum{
 	UART_BAUD_38400,
 	UART_BAUD_115200,
 	MAX_UART_BAUD 
-}UART_baudrate_t;
+} UART_baudrate_t;
 
 typedef void (*UART_callback_t)(char);
 
@@ -70,6 +74,10 @@ typedef void (*UART_callback_t)(char);
 uint8_t UART_init( UART_id_t id, UART_baudrate_t baudrate);
 uint32_t UART_write( UART_id_t id, const void * buffer, uint32_t size);
 void UART_set_callback( UART_id_t id, UART_callback_t rx_callback); 
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* UART_DRIVER_H*/
 

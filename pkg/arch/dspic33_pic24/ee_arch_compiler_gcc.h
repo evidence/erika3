@@ -58,7 +58,7 @@
 /*
  * Compiler dependent interface
  */
-#if	(!defined(OSEE_ARCH_COMPILER_GCC_H))
+#ifndef OSEE_ARCH_COMPILER_GCC_H
 #define	OSEE_ARCH_COMPILER_GCC_H
 
 /*
@@ -68,6 +68,10 @@
 #include "ee_compiler.h"
 #include "ee_utils.h"
 #include "xc.h"
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 #if	0	/* [GS]: MPLAB XC16 C Compiler doesn't support constructors. */
 #define	OSEE_INIT		__attribute__((constructor))
@@ -97,5 +101,9 @@
  *  Stack Pointer Register retrieval.
  */
 #define	OSEE_GET_SP(SP)		__asm__ volatile("mov w15, %0" : "=r" (SP))
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* !OSEE_ARCH_COMPILER_GCC_H */

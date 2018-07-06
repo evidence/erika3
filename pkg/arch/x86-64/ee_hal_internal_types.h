@@ -57,6 +57,10 @@
 
 #include "ee_platform_types.h"
 
+#if (defined(__cplusplus))
+extern "C" {
+#endif
+
 typedef struct OsEE_CTX_tag {
   struct OsEE_CTX_tag * p_ctx;
   OsEE_reg rbx;
@@ -87,5 +91,9 @@ typedef struct OsEE_HDB_tag {
 /* Used to override default definition of osEE_hal_change_context_from_isr2,
    in ee_std_change_context.h that is not inlined */
 #define OSEE_ISR2_INLINE OSEE_STATIC_INLINE
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* !OSEE_HAL_INTERNAL_TYPES_H */

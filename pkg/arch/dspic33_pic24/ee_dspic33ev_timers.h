@@ -51,6 +51,10 @@
 
 #include "ee.h"
 
+#if (defined(__cplusplus))
+extern "C" {
+#endif
+
 #define	OSEE_TIMERS_MAX_PERIOD	0xFFFFUL
 
 /** Timer Prescalers */
@@ -241,6 +245,10 @@ osEE_timer_irq_ack(
       break;
   }
 }
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* OSEE_DSPIC33EV_TIMERS_H */
 

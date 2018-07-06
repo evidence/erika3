@@ -51,6 +51,10 @@
 /* ERIKA Enterprise. */
 #include "ee.h"
 
+#if (defined(__cplusplus))
+extern "C" {
+#endif
+
 /* Application Code Memory Class */
 #define APPL_CODE	TYPEDEF
 
@@ -131,3 +135,6 @@ FUNC(void, APPL_CODE) DemoHAL_SerialWrite(
 	VAR(MemSize, AUTOMATIC)				length
 );
 
+#if (defined(__cplusplus))
+}
+#endif

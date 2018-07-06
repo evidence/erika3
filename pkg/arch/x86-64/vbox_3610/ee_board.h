@@ -51,6 +51,9 @@
 #include <inmate.h>
 #include "ee_internal.h"
 
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 #define GPIO_PORT_COMMAND           0xA35U
 #define GPIO_PORT_DATA              0xA36U
@@ -184,3 +187,7 @@ OSEE_STATIC_INLINE void vbox_reset_watchdog(void) {
     vbox_start_watchdog(inb(WATCHDOG_PORT_DATA), /* old values */
                         (inb(WATCHDOG_PORT_COMMAND) >> 3) & 1);
 }
+
+#if (defined(__cplusplus))
+}
+#endif

@@ -51,7 +51,7 @@
  *  \date   2016
  */
 
-#if (!defined(OSEE_AVR8_IRQSTUB_H))
+#ifndef OSEE_AVR8_IRQSTUB_H
 #define OSEE_AVR8_IRQSTUB_H
 
 /* I need Interals */
@@ -59,6 +59,10 @@
 
 /* Plus I need IRQ handling defines */
 #include "ee_avr8_irq.h"
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 #if (!defined(OSEE_API_DYNAMIC))
 /*
@@ -186,5 +190,9 @@ ISR(v, ISR_NAKED)                   \
     ;                               \
   }                                 \
 }
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* !OSEE_AVR8_IRQSTUB_H */

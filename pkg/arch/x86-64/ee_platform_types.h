@@ -66,6 +66,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#if (defined(__cplusplus))
+extern "C" {
+#endif
+
 #if (!defined(OSEE_BOOL_TYPE))
 typedef enum {
   OSEE_FALSE = OSEE_M_FALSE,
@@ -93,5 +97,9 @@ typedef void (* OsEE_void_cb) ( void );
 /* Override default implementation for some Kernel Types */
 //typedef size_t                OsEE_mem_size;
 //#define OSEE_MEM_SIZE_TYPE    OsEE_mem_size
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* !OSEE_PLATFORM_TYPES_H */

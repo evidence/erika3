@@ -49,19 +49,11 @@
  *  \date   2017
  */
 
-#if (!defined(OSEE_INTERNAL_H))
+#ifndef OSEE_INTERNAL_H
 #define OSEE_INTERNAL_H
-
-#if (defined(__cplusplus))
-extern "C" {
-#endif
 
 #include "ee_conf.h"
 #include "ee_hal_internal.h"
 #include "ee_kernel.h"
-
-#if (defined(__cplusplus))
-}
-#endif
 
 #endif /* !OSEE_INTERNAL_H */

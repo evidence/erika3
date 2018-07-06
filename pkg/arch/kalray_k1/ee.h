@@ -51,12 +51,8 @@
  *  \date  2016
  */
 
-#if (!defined(OSEE_H))
+#ifndef OSEE_H
 #define OSEE_H
-
-#if (defined(__cplusplus))
-extern "C" {
-#endif
 
 #include "ee_cfg.h"
 #include "ee_platform_types.h"
@@ -73,9 +69,5 @@ extern "C" {
 #if (!defined(OSEE_SINGLECORE)) && (defined(OSEE_API_EXTENSION))
 #include "ee_api_k1.h"
 #endif /* !OSEE_SINGLECORE && OSEE_API_EXTENSION_ */
-
-#if (defined(__cplusplus))
-}
-#endif
 
 #endif /* !OSEE_H */

@@ -51,6 +51,10 @@
 #include "ee_platform_types.h"
 #include "ee_mcu_common_types.h"
 
+#if (defined(__cplusplus))
+extern "C" {
+#endif
+
 /* NVIC registers (NVIC) */
 #define	OSEE_CORTEX_M_NVIC_INT_TYPE_R		OSEE_HWREG(0xE000E004U)
 #define	OSEE_CORTEX_M_NVIC_ACTLR_R		OSEE_HWREG(0xE000E008U)
@@ -1558,5 +1562,9 @@
 			OSEE_CORTEX_M_NVIC_INT_CLR_PENDING_REG_B	\
 		) |= OSEE_CORTEX_M_NVIC_INT_M(_int)			\
 	)
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif	/* OSEE_CORTEX_M_NVIC_H */

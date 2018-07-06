@@ -51,20 +51,12 @@
  *  \date   2017
  */
 
-#if (!defined(OSEE_CONF_H))
+#ifndef OSEE_CONF_H
 #define OSEE_CONF_H
-
-#if (defined(__cplusplus))
-extern "C" {
-#endif
 
 #include "ee.h"
 #include "ee_hal_internal_types.h"
 #include "ee_scheduler_types.h"
 #include "ee_kernel_types.h"
-
-#if (defined(__cplusplus))
-}
-#endif
 
 #endif /* !OSEE_CONF_H */

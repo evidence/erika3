@@ -52,11 +52,15 @@
  *  \date   2017
  */
 
-#if (!defined(OSEE_HAL_INTERNAL_TYPES_H))
+#ifndef OSEE_HAL_INTERNAL_TYPES_H
 #define OSEE_HAL_INTERNAL_TYPES_H
 
 #include "ee_platform_types.h"
 #include "ee_api_types.h"
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 typedef struct OsEE_ISR_CTX_tag {
   OsEE_reg x0;
@@ -133,5 +137,9 @@ typedef struct {
 /* Used to override default definition of osEE_hal_change_context_from_isr2,
    in ee_std_change_context.h that is not inlined */
 #define OSEE_ISR2_INLINE OSEE_STATIC_INLINE
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* !OSEE_HAL_INTERNAL_TYPES_H */

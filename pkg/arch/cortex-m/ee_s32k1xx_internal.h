@@ -48,11 +48,15 @@
  *  \author	Errico Guidieri
  *  \date	2018
  */
-#if	(!defined(OSEE_S32K144_INTERNAL_H))
+#ifndef OSEE_S32K144_INTERNAL_H
 #define	OSEE_S32K144_INTERNAL_H
 
 #include "ee_hal.h"
 #include "ee_mcu_common_types.h"
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 /*
  * ISR Priorities.
@@ -83,5 +87,9 @@
     odEE_hal_resumeIRQ(flags);				\
     return (rv);					\
   }
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif	/* !OSEE_S32K144_INTERNAL_H */

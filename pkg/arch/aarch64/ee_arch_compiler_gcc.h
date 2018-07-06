@@ -57,9 +57,17 @@
 /*
  * Compiler dependent interface
  */
-#if (!defined(OSEE_ARCH_COMPILER_GCC_H))
+#ifndef OSEE_ARCH_COMPILER_GCC_H
 #define OSEE_ARCH_COMPILER_GCC_H
 
+#if (defined(__cplusplus))
+extern "C" {
+#endif
+
 #define OSEE_INIT       __attribute__((constructor))
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* !OSEE_ARCH_COMPILER_GCC_H */

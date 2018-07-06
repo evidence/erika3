@@ -46,7 +46,7 @@
  *      Author: e.guidieri
  */
 
-#if (!defined(OSEE_API_K1_H))
+#ifndef OSEE_API_K1_H
 #define OSEE_API_K1_H
 
 #include "ee_cfg.h"
@@ -58,6 +58,9 @@
 #include "ee_api_types.h"
 #include "ee_hal.h"
 
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 typedef uint8_t   OsEE_job_id;
 typedef OsEE_addr OsEE_job_param;
@@ -191,6 +194,10 @@ StatusType SignalValue (BlockableValueTypeRef BlockableValueRef,
   ValueType Value);
 
 StatusType CommAndSchedule ( void );
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* OSEE_HAS_JOBS */
 

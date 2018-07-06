@@ -52,7 +52,7 @@
  *  \date	2018
  */
 
-#if	(!defined(OSEE_HAL_INTERNAL_H))
+#ifndef OSEE_HAL_INTERNAL_H
 #define	OSEE_HAL_INTERNAL_H
 
 #include "ee_platform_types.h"
@@ -79,6 +79,10 @@
 #else	/* OS_EE_ARCH_DSPIC33_PIC24_DSPIC33EV */
 #error NO Valid MCU Selected!!!
 #endif	/* OS_EE_ARCH_DSPIC33_PIC24_DSPIC33EV */
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 /*==============================================================================
                                         Macros
@@ -235,4 +239,9 @@ osEE_change_context_from_isr2_end
 {
   osEE_change_context_from_task_end(p_from, p_to);
 }
+
+#if (defined(__cplusplus))
+}
+#endif
+
 #endif	/* !OSEE_HAL_INTERNAL_H */

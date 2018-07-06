@@ -48,7 +48,7 @@
  *  \author Errico Guidieri
  *  \date   2016
  */
-#if (!defined(OSEE_ATMEGA_INTERNAL_H))
+#ifndef OSEE_ATMEGA_INTERNAL_H
 #define OSEE_ATMEGA_INTERNAL_H
 
 #include "ee_hal.h"
@@ -59,6 +59,10 @@
 
 /* I need AVR Input/Output */
 #include <avr/io.h>
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 /*
  * ISR Priorities.
@@ -109,5 +113,9 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
 
 /* True if we are inside an interrupt handler */
 #define osEE_is_inside_hw_ISR_call()  OSEE_FALSE
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* !OSEE_ATMEGA_INTERNAL_H */

@@ -50,13 +50,17 @@
  *  \author	Giuseppe Serano
  *  \date	2018
  */
-#if (!defined(OSEE_CORTEX_M_IRQ_H))
+#ifndef OSEE_CORTEX_M_IRQ_H
 #define OSEE_CORTEX_M_IRQ_H
 
 /* I need base API */
 #include "ee_compiler.h"
 
 #include "ee_mcu_irq.h"
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 /** \brief	ISR priority level defines
  *
@@ -401,5 +405,9 @@
 
 /* Overall Exceprions Number. */
 #define	OSEE_CORTEX_M_OVERALL_INT_NUM	0x00000100U
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif  /* !OSEE_CORTEX_M_IRQ_H */

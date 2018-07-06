@@ -51,6 +51,10 @@
 
 #include "ee_platform_types.h"
 
+#if (defined(__cplusplus))
+extern "C" {
+#endif
+
 /** \brief	System Timer Initialization. */
 FUNC(void, OS_CODE) osEE_cortex_m_system_timer_init(void);
 
@@ -59,5 +63,9 @@ FUNC(void, OS_CODE) osEE_cortex_m_system_timer_sleep(void);
 
 /** \brief	System Timer Wakeup. */
 FUNC(void, OS_CODE) osEE_cortex_m_system_timer_init(void);
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif	/* OSEE_CORTEX_M_SYSTEM_TIMER_H */

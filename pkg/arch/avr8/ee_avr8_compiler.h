@@ -54,7 +54,7 @@
  *  \date   2016
  */
 
-#if (!defined(OSEE_AVR8_COMPILER_H))
+#ifndef OSEE_AVR8_COMPILER_H
 #define OSEE_AVR8_COMPILER_H
 
 /*
@@ -63,6 +63,10 @@
 #include "ee_cfg.h"
 #include "ee_compiler.h"
 #include "ee_utils.h"
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 #define OSEE_PREPROC_VAR_VALUE(v) #v "=" OSEE_S(v)
 
@@ -88,6 +92,10 @@
  *   Use this attribute in the attributes parameter of the function.
  */
 #define OSEE_NAKED  __attribute__((naked))
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif  /* !__INCLUDE_EE_AVR8_COMPILER_H__ */
 

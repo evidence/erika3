@@ -52,6 +52,10 @@
 #include "ee_platform_types.h"
 #include "ee_mcu_common_types.h"
 
+#if (defined(__cplusplus))
+extern "C" {
+#endif
+
 /* SysTick registers */
 
 /** SysTick Control and Status */
@@ -278,5 +282,9 @@ osEE_cortex_m_systick_delay_us(
     ; /* wait */
   }
 }
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif	/* OSEE_CORTEX_X_SYSTICK_H */

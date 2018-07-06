@@ -51,7 +51,7 @@
  *  \date  2016
  */
 
-#if (!defined(OSEE_HAL_INTERNAL_H))
+#ifndef OSEE_HAL_INTERNAL_H
 #define OSEE_HAL_INTERNAL_H
 
 /* Used to override default definition of osEE_hal_get_msb,
@@ -66,6 +66,10 @@
 #include "ee_hal_internal_types.h"
 #include "ee_kernel_types.h"
 #include "ee_std_change_context.h"
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 /* Used to place ERIKA Stacks in right section for memory protection and ORTI
    Stack filling, and handling stack alignment */
@@ -203,4 +207,9 @@ void osEE_hal_sync_barrier(OsEE_barrier * p_bar,
 
 void osEE_hal_start_core(CoreIdType core_id);
 #endif /* !OSEE_SINGLECORE */
+
+#if (defined(__cplusplus))
+}
+#endif
+
 #endif /* OSEE_HAL_INTERNAL_H_ */

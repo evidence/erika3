@@ -73,6 +73,10 @@
 #include "ee_std_change_context.h"
 #include "ee_kernel_types.h"
 
+#if (defined(__cplusplus))
+extern "C" {
+#endif
+
 /*==============================================================================
                                   Macros
  =============================================================================*/
@@ -193,5 +197,9 @@ OSEE_STATIC_INLINE FUNC(void, OS_CODE)
 
   osEE_change_context_from_task_end(p_from, p_to);
 }
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* !OSEE_HAL_INTERNAL_H */

@@ -48,7 +48,7 @@
  *  \date      2016
  */
 
-#if (!defined(OSEE_K1_CONTEXT_H))
+#ifndef OSEE_K1_CONTEXT_H
 #define OSEE_K1_CONTEXT_H
 
 /** These assembly macro contains code to save and restore ERIKA Task context
@@ -72,6 +72,10 @@
 
 #include <HAL/hal/context.h>
 #endif /* !__ASSEMBLER__ */
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 /* TASK scratch AREA size */
 #if (!defined(OSEE_STACK_SCRATCH_AREA_SIZE))
@@ -222,5 +226,9 @@
   .endm
 
 #endif /* __ASSEMBLER__ */
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* OSEE_K1_CONTEXT_H */

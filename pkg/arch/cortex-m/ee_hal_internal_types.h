@@ -55,10 +55,14 @@
  *  \date	2018
  */
 
-#if	(!defined(OSEE_HAL_INTERNAL_TYPES_H))
+#ifndef OSEE_HAL_INTERNAL_TYPES_H
 #define	OSEE_HAL_INTERNAL_TYPES_H
 
 #include "ee_platform_types.h"
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 /* R0-R3 and R12 are scratch registers, R13 ->(MSP), R14 ->(LR), R15 -> (PC) */
 typedef struct OsEE_CTX_tag {
@@ -150,4 +154,9 @@ extern FUNC(void, OS_CODE) osEE_cortex_m_system_timer_handler( void );
 /* Override Terminate Activation Kernel Callback (CB). */
 #define OSEE_KERNEL_TERMINATE_ACTIVATION_CB osEE_cortex_m_scheduler_task_end
 #endif	/* 1 - [GS]: New Context-Switch using PendSV. */
+
+#if (defined(__cplusplus))
+}
+#endif
+
 #endif	/* !OSEE_HAL_INTERNAL_TYPES_H */

@@ -50,7 +50,7 @@
  *  \date	2018
  */
 
-#if	(!defined(OSEE_HAL_H))
+#ifndef OSEE_HAL_H
 #define	OSEE_HAL_H
 
 /*==============================================================================
@@ -65,6 +65,10 @@
 #if	(!defined(__GNUC__))
 #error	Unsupported compiler!
 #endif	/* !__GNUC__ */
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 /*==============================================================================
                             Array Utilities
@@ -104,5 +108,9 @@ osEE_get_curr_core_id (
 ) {
   return (CoreIdType)0U;
 }
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif	/* !OSEE_HAL_H */

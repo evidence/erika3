@@ -46,7 +46,7 @@
  *      Author: e.guidieri
  */
 
-#if (!defined(OSEE_KERNEL_K1_H))
+#ifndef OSEE_KERNEL_K1_H
 #define OSEE_KERNEL_K1_H
 
 #include "ee_cfg.h"
@@ -59,6 +59,10 @@
 #include "ee_api.h"
 #include "ee_api_k1.h"
 #include "ee_kernel_types.h"
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 #if (defined(OSEE_HAS_JOBS))
 
@@ -151,5 +155,10 @@ static OsEE_bool osEE_k1_umem_data_priority_insert (OsEE_SN ** p_head,
   return head_changed;
 }
 #endif /* OSEE_HAS_JOBS */
+
+#if (defined(__cplusplus))
+}
+#endif
+
 #endif /* !OSEE_SINGLECORE */
 #endif /* OSEE_KERNEL_K1_H */

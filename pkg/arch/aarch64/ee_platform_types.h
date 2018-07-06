@@ -53,7 +53,7 @@
  *  \date   2017
  */
 
-#if (!defined(OSEE_PLATFORM_TYPES_H))
+#ifndef OSEE_PLATFORM_TYPES_H
 #define OSEE_PLATFORM_TYPES_H
 
 #include "ee_cfg.h"
@@ -66,6 +66,11 @@
 #if (defined(OSEE_AARCH64_SOC))
 #include "ee_aarch64_gic.h"
 #endif /* OSEE_AARCH64_SOC */
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
+
 #if (!defined(OSEE_GIC_ISR_NUM))
 /* 32 Private Peripheral Interrupt (PPI) + 256 bit bitmask
    for 2 jailhouse_irqchip */
@@ -118,5 +123,9 @@ typedef uint8_t               OsEE_isr_src_id;
 typedef void (* OsEE_void_cb) ( void );
 
 typedef uint8_t               OsEE_isr_prio;
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* !OSEE_PLATFORM_TYPES_H */

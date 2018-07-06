@@ -48,7 +48,7 @@
  *  \date  2016
  */
 
-#if (!defined(OSEE_K1_VBSP_H_))
+#ifndef OSEE_K1_VBSP_H_
 #define OSEE_K1_VBSP_H_
 
 #ifdef OSEE_TICKED_LOCKS
@@ -63,6 +63,10 @@
 #include "ee_cfg.h"
 #include "ee_compiler_gcc.h"
 #include "ee_platform_types.h"
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 /* #define EE_K1_FULL_PREEMPTION */
 
@@ -125,5 +129,9 @@ OSEE_STATIC_INLINE void osEE_hal_spin_unlock ( OsEE_spin_lock * p_lock ) {
   osEE_k1_wmb();
   __k1_fspinlock_unlock(p_lock);
 }
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* !EE_K1_VBSP_H_ */

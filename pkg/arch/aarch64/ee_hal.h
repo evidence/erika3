@@ -49,7 +49,7 @@
  *  \date   2017
  */
 
-#if (!defined(OSEE_HAL_H))
+#ifndef OSEE_HAL_H
 #define OSEE_HAL_H
 
 /*==============================================================================
@@ -63,6 +63,10 @@
 #if (!defined(__GNUC__))
 #error Unsupported compiler!
 #endif /* !__GNUC__ */
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 /*==============================================================================
                           Macros & Inline Functions
@@ -203,5 +207,10 @@ OSEE_STATIC_INLINE void osEE_aarch64_gtimer_start(OsEE_reg timeout,
 
 /* Define an ISR (category 2). Used only for client code. */
 #define ISR2(f) ISR1(f)
+
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* !OSEE_HAL_H */

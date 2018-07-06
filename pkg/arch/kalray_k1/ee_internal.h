@@ -50,12 +50,8 @@
  *  \date  2016
  */
 
-#if (!defined(OSEE_INTERNAL_H))
+#ifndef OSEE_INTERNAL_H
 #define OSEE_INTERNAL_H
-
-#if (defined(__cplusplus))
-extern "C" {
-#endif
 
 #include "ee_conf.h"
 #include "ee_get_kernel_and_core.h"
@@ -65,9 +61,5 @@ extern "C" {
 #if (!defined(OSEE_SINGLECORE)) && (defined(OSEE_API_EXTENSION))
 #include "ee_kernel_k1.h"
 #endif /* !OSEE_SINGLECORE && OSEE_API_EXTENSION_ */
-
-#if (defined(__cplusplus))
-}
-#endif
 
 #endif /* !OSEE_INTERNAL_H */

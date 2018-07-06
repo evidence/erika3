@@ -58,7 +58,7 @@
 /*
  * Compiler dependent interface
  */
-#if (!defined(OSEE_ARCH_COMPILER_GCC_H))
+#ifndef OSEE_ARCH_COMPILER_GCC_H
 #define OSEE_ARCH_COMPILER_GCC_H
 
 /*
@@ -67,6 +67,10 @@
 #include "ee_cfg.h"
 #include "ee_compiler.h"
 #include "ee_utils.h"
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 #define	OSEE_INIT			__attribute__((constructor))
 
@@ -148,5 +152,9 @@
  */
 #define	OSEE_CLZ(MASK)		\
 	__builtin_clz(MASK)
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* !OSEE_ARCH_COMPILER_GCC_H */

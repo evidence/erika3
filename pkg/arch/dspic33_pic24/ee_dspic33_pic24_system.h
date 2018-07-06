@@ -56,6 +56,10 @@
 
 #include "ee_compiler.h"
 
+#if (defined(__cplusplus))
+extern "C" {
+#endif
+
 /*************************************************************************
  Types
  *************************************************************************/
@@ -73,5 +77,9 @@
  *  Implemented in ee_<mcu>_system.c
  */
 FUNC(void, OS_CODE) osEE_dspic33_pic24_system_init(void);
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif	/* OSEE_DSPIC33_PIC24_SYSTEM_H */

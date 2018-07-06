@@ -50,8 +50,12 @@
  *  \author	Giuseppe Serano
  *  \date	2018
  */
-#if	(!defined(OSEE_DSPIC33EV_IRQ_H))
+#ifndef OSEE_DSPIC33EV_IRQ_H
 #define	OSEE_DSPIC33EV_IRQ_H
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 /*==============================================================================
 				ISR IDs
@@ -174,5 +178,9 @@
 #define	OSEE_DSPIC33_PIC24_ECCSBE_ISR_ID	0xC2U
 
 #define	OSEE_DSPIC33_PIC24_ISR_ID_NUM		0xC3U
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif	/* !OSEE_DSPIC33EV_IRQ_H */

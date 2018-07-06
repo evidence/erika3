@@ -60,6 +60,10 @@
 #include "ee_hal_internal_types.h"
 #include "ee_scheduler_types.h"
 
+#if (defined(__cplusplus))
+extern "C" {
+#endif
+
 #if (!defined(OSEE_SINGLECORE)) && (defined(OSEE_SCHEDULER_GLOBAL))
 #define OSEE_ALLOW_TASK_MIGRATION
 #endif /* OSEE_SINGLECORE && OSEE_SCHEDULER_GLOBAL */
@@ -622,6 +626,10 @@ extern FUNC(void, OS_CODE)
 #define OSEE_KERNEL_TERMINATE_ACTIVATION_CB &osEE_scheduler_task_end
 #else
 #define OSEE_KERNEL_TERMINATE_ACTIVATION_OVERRIDE
+#endif
+
+#if (defined(__cplusplus))
+}
 #endif
 
 #endif /* !OSEE_KERNEL_TYPES_H */

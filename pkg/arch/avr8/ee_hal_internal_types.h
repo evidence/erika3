@@ -55,10 +55,14 @@
  *  \date   2016
  */
 
-#if (!defined(OSEE_HAL_INTERNAL_TYPES_H))
+#ifndef OSEE_HAL_INTERNAL_TYPES_H
 #define OSEE_HAL_INTERNAL_TYPES_H
 
 #include "ee_platform_types.h"
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 typedef struct OsEE_CTX_tag {
   OsEE_reg r29;
@@ -107,4 +111,9 @@ typedef struct OsEE_HDB_tag {
 #if (defined(OSEE_HAS_SYSTEM_TIMER))
 extern void osEE_avr8_system_timer_handler(void);
 #endif /* OSEE_HAS_SYSTEM_TIMER */
+
+#if (defined(__cplusplus))
+}
+#endif
+
 #endif /* !OSEE_HAL_INTERNAL_TYPES_H */

@@ -58,6 +58,10 @@
 
 #include "ee_mcu_common_types.h"
 
+#if (defined(__cplusplus))
+extern "C" {
+#endif
+
 void EE_atmega_intvect(void);
 
 /*************************************************************************
@@ -75,6 +79,10 @@ EE_INLINE__ void EE_mcu_init(void)
   EE_hal_enableIRQ();
 #endif	/* OS_EE_KERNEL_OSEK */
 }
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif	/* OSEE_INCLUDE_ATMEGA_MCU_H */
 

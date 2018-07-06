@@ -55,6 +55,10 @@
 #include "ee_platform_types.h"
 #include "ee_kernel_types.h"
 
+#if (defined(__cplusplus))
+extern "C" {
+#endif
+
 extern OsEE_KDB KDB;
 extern OsEE_CDB CDB;
 extern OsEE_KCB KCB;
@@ -109,5 +113,9 @@ OSEE_STATIC_INLINE void osEE_unlock_core_id ( CoreIdType core_id ) {}
 OSEE_STATIC_INLINE void osEE_unlock_core ( OsEE_CDB * const p_cdb ) {}
 
 OSEE_STATIC_INLINE void osEE_unlock_curr_core ( void ) {}
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* OSEE_GET_CURRENT_CORE_H */

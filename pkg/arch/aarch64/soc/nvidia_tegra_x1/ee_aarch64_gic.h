@@ -48,7 +48,7 @@
  *  \date   2017
  */
 
-#if (!defined(OSEE_AARCH64_GIC_H))
+#ifndef OSEE_AARCH64_GIC_H
 #define OSEE_AARCH64_GIC_H
 
 /* GIC base address for NVIDIA TEGRA X1 */

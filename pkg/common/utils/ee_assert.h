@@ -127,6 +127,10 @@
 
 #include "ee.h"
 
+#if (defined(__cplusplus))
+extern "C" {
+#endif
+
 
 /* types.h */
 #ifndef EE_TYPEASSERT
@@ -222,5 +226,9 @@ EE_TYPEASSERTVALUE EE_assert_last(void);
 #define API_STOP_SEC_CODE
 #include "MemMap.h"
 #endif /* EE_SUPPORT_MEMMAP_H */
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif	/* OSEE_ASSERT_ASSERT_H */

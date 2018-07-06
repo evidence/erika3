@@ -56,6 +56,10 @@
 
 #include "ee_compiler.h"
 
+#if (defined(__cplusplus))
+extern "C" {
+#endif
+
 /*************************************************************************
  Types
  *************************************************************************/
@@ -81,5 +85,9 @@ FUNC(void, OS_CODE) osEE_cortex_m_stack_init(void);
  *  Implemented in ee_<mcu>_system.c
  */
 FUNC(void, OS_CODE) osEE_cortex_m_system_init(void);
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif	/* OSEE_CORTEX_M_SYSTEM_H */

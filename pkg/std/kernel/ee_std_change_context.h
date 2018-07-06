@@ -51,7 +51,7 @@
  *  \date   2016
  */
 
-#if (!defined(OSEE_STD_CHANGE_CONTEXT_H))
+#ifndef OSEE_STD_CHANGE_CONTEXT_H
 #define OSEE_STD_CHANGE_CONTEXT_H
 
 #include "ee_cfg.h"
@@ -63,6 +63,10 @@
 #include "ee_hal_internal_types.h"
 #include "ee_scheduler_types.h"
 #include "ee_kernel_types.h"
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 /*******************************************************************************
                         Standard HAL For Initialization
@@ -203,5 +207,9 @@ LOCAL_INLINE FUNC(void, OS_CODE)
   ((void)core_id);
 }
 #endif /* OSEE_SINGLECORE */
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* !OSEE_STD_CHANGE_CONTEXT_H */
