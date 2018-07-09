@@ -246,7 +246,7 @@ typedef struct OsEE_action_param {
 typedef struct OsEE_action_tag {
   VAR(OsEE_action_param, TYPEDEF)               param;
   VAR(OsEE_action_type, TYPEDEF)                type;
-} OsEE_action;
+} OSEE_CONST OsEE_action;
 
 #if (defined(OSEE_HAS_SCHEDULE_TABLES))
 /** @typedef Schedule Table Synchronization strategies symbols */
@@ -434,7 +434,7 @@ typedef enum osEE_autostart_trigger_info_type_tag {
 
 typedef struct OsEE_autostart_trigger_info_tag {
   P2VAR(OsEE_TriggerDB, TYPEDEF, OS_APPL_CONST)   p_trigger_db;
-  VAR(TickType, TYPEDEF)                          first_tick_paramter;
+  VAR(TickType, TYPEDEF)                          first_tick_parameter;
 #if (defined(OSEE_HAS_ALARMS))
   VAR(TickType, TYPEDEF)                          second_tick_parameter;
 #endif /* OSEE_HAS_ALARMS */
@@ -502,29 +502,29 @@ typedef struct OsEE_CCB_tag {
 
 typedef struct OsEE_CDB_tag {
 #if (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
-  VAR(OsEE_CHDB, TYPEDEF)                       chdb;
+  VAR(OsEE_CHDB, TYPEDEF)                         chdb;
 #endif /* OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
-  P2VAR(OsEE_CCB, TYPEDEF, OS_APPL_DATA)        p_ccb;
+  P2VAR(OsEE_CCB, TYPEDEF, OS_APPL_DATA)          p_ccb;
 #if (!defined(OSEE_SINGLECORE))
-  P2VAR(OsEE_spin_lock, TYPEDEF,OS_APPL_DATA)   p_lock;
+  P2VAR(OsEE_spin_lock, TYPEDEF,OS_APPL_DATA)     p_lock;
 #endif /* !OSEE_SINGLECORE */
 #if (defined(OSEE_HAS_IDLEHOOK)) || (defined(OSEE_API_DYNAMIC))
-  VAR(TaskFunc, TYPEDEF)                        p_idle_hook;
+  VAR(TaskFunc, TYPEDEF)                          p_idle_hook;
 #endif /* OSEE_HAS_IDLEHOOK || OSEE_API_DYNAMIC */
-  P2VAR(OsEE_TDB, TYPEDEF, OS_APPL_DATA)        p_idle_task;
+  P2VAR(OsEE_TDB, TYPEDEF, OS_APPL_DATA)          p_idle_task;
 #if (defined(OSEE_HAS_SYSTEM_TIMER))
-  P2VAR(OsEE_CounterDB, TYPEDEF, OS_APPL_DATA)  p_sys_counter_db;
+  P2VAR(OsEE_CounterDB, TYPEDEF, OS_APPL_DATA)    p_sys_counter_db;
 #endif /* OSEE_HAS_SYSTEM_TIMER */
 #if (defined(OSEE_HAS_AUTOSTART_TASK))
-  P2SYM_VAR(OsEE_autostart_tdb, OS_APPL_DATA,   p_autostart_tdb_array)[];
-  VAR(MemSize, TYPEDEF)                         autostart_tdb_array_size;
+  P2SYM_VAR(OsEE_autostart_tdb, OS_APPL_DATA,     p_autostart_tdb_array)[];
+  VAR(MemSize, TYPEDEF)                           autostart_tdb_array_size;
 #endif /* OSEE_HAS_AUTOSTART_TASK */
 #if (defined(OSEE_HAS_AUTOSTART_TRIGGER))
   P2SYM_VAR(OsEE_autostart_trigger, OS_APPL_DATA, p_autostart_trigger_array)[];
-  VAR(MemSize, TYPEDEF)                         autostart_trigger_array_size;
+  VAR(MemSize, TYPEDEF)                           autostart_trigger_array_size;
 #endif /* OSEE_HAS_AUTOSTART_TRIGGER */
 #if (!defined(OSEE_SINGLECORE))
-  VAR(CoreIdType, TYPEDEF)                      core_id;
+  VAR(CoreIdType, TYPEDEF)                        core_id;
 #endif /* !OSEE_SINGLECORE */
 } OSEE_CONST OsEE_CDB;
 

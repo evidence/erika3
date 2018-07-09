@@ -380,7 +380,7 @@ FUNC(StatusType, OS_CODE)
         (void)osEE_alarm_set_rel(
           p_trigger_to_act_db->p_counter_db,
           p_trigger_to_act_db,
-          p_trigger_to_act_info->first_tick_paramter,
+          p_trigger_to_act_info->first_tick_parameter,
           p_trigger_to_act_info->second_tick_parameter
         );
 #else
@@ -390,7 +390,7 @@ FUNC(StatusType, OS_CODE)
             (void)osEE_alarm_set_rel(
               p_trigger_to_act_db->p_counter_db,
               p_trigger_to_act_db,
-              p_trigger_to_act_info->first_tick_paramter,
+              p_trigger_to_act_info->first_tick_parameter,
               p_trigger_to_act_info->second_tick_parameter
             );
           break;
@@ -399,14 +399,14 @@ FUNC(StatusType, OS_CODE)
             (void)osEE_st_start_abs(
               p_trigger_to_act_db->p_counter_db,
               p_trigger_to_act_db,
-              p_trigger_to_act_info->first_tick_paramter
+              p_trigger_to_act_info->first_tick_parameter
             );
           break;
           case OSEE_AUTOSTART_SCHEDULE_TABLE_REL:
             (void)osEE_st_start_rel(
               p_trigger_to_act_db->p_counter_db,
               p_trigger_to_act_db,
-              p_trigger_to_act_info->first_tick_paramter
+              p_trigger_to_act_info->first_tick_parameter
             );
           break;
           case OSEE_AUTOSTART_SCHEDULE_TABLE_SYNCHRON:
@@ -1784,8 +1784,10 @@ FUNC(StatusType, OS_CODE)
     p_ccb       = p_cdb->p_ccb;
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
     p_curr      = p_ccb->p_curr;
+#if (defined(OSEE_HAS_MUTEX))
   CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
     p_curr_tcb  = p_curr->p_tcb;
+#endif /* OSEE_HAS_MUTEX */
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_WaitEvent);
   osEE_stack_monitoring(p_cdb);
@@ -1806,8 +1808,8 @@ FUNC(StatusType, OS_CODE)
   if ((p_curr->task_type > OSEE_TASK_TYPE_EXTENDED)
 #if (defined(OSEE_SERVICE_PROTECTION))
     || (p_ccb->os_context > OSEE_TASK_CTX)
-  )
 #endif /* OSEE_SERVICE_PROTECTION */
+  )
   {
     ev = E_OS_CALLEVEL;
   } else
@@ -1913,8 +1915,8 @@ FUNC(StatusType, OS_CODE)
   if ((p_curr->task_type > OSEE_TASK_TYPE_ISR2)
 #if (defined(OSEE_SERVICE_PROTECTION))
     || (p_curr_ccb->os_context > OSEE_TASK_ISR2_CTX)
-  )
 #endif /* OSEE_SERVICE_PROTECTION */
+  )
   {
     ev = E_OS_CALLEVEL;
   } else
@@ -2018,8 +2020,8 @@ FUNC(StatusType, OS_CODE)
     || ((os_context > OSEE_ERRORHOOK_CTX) &&
         (os_context != OSEE_PRETASKHOOK_CTX) &&
         (os_context != OSEE_POSTTASKHOOK_CTX))
-  )
 #endif /* OSEE_SERVICE_PROTECTION */
+  )
   {
     ev = E_OS_CALLEVEL;
   } else
@@ -2115,8 +2117,8 @@ FUNC(StatusType, OS_CODE)
   if ((p_curr->task_type >= OSEE_TASK_TYPE_ISR2)
 #if (defined(OSEE_SERVICE_PROTECTION))
       || (p_ccb->os_context > OSEE_TASK_CTX)
-  )
 #endif /* OSEE_SERVICE_PROTECTION */
+  )
   {
     ev = E_OS_CALLEVEL;
   } else
