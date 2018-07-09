@@ -1784,10 +1784,8 @@ FUNC(StatusType, OS_CODE)
     p_ccb       = p_cdb->p_ccb;
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
     p_curr      = p_ccb->p_curr;
-#if (defined(OSEE_HAS_MUTEX))
   CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
     p_curr_tcb  = p_curr->p_tcb;
-#endif /* OSEE_HAS_MUTEX */
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_WaitEvent);
   osEE_stack_monitoring(p_cdb);

@@ -54,6 +54,7 @@ OS_EE_PULL_MK_FILES += $(ERIKA_FILES)/pkg/arch/kalray_k1/ee_arch_cfg.mk
 OS_EE_PULL_MK_FILES += $(ERIKA_FILES)/pkg/arch/kalray_k1/ee_arch_rules.mk
 OS_EE_PULL_MK_FILES += $(ERIKA_FILES)/pkg/arch/kalray_k1/ee_arch_compiler_gcc.mk
 
+OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/kalray_k1/ee_arch_override.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/kalray_k1/ee_arch_compiler_gcc.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/kalray_k1/ee_platform_types.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/kalray_k1/ee_k1_vbsp.h

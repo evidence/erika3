@@ -59,18 +59,7 @@
 #define	OSEE_PLATFORM_TYPES_H
 
 #include "ee_cfg.h"
-
-#define	OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN
-
-/*==============================================================================
-                                Stack
- =============================================================================*/
-/*
- * CORTEX-M seems to not have any rquirement for stack alignment,
- * in any case the following macro enable it.
- */
-#define	OSEE_STACK_ALIGN_SIZE	8U
-
+#include "ee_arch_override.h"
 #include "ee_compiler.h"
 #include "ee_utils.h"
 #include <limits.h>

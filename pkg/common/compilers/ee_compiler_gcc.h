@@ -57,7 +57,7 @@
 /*
  * Compiler dependent interface
  */
-#if (!defined(OSEE_COMPILER_GCC_H))
+#ifndef OSEE_COMPILER_GCC_H
 #define OSEE_COMPILER_GCC_H
 
 #include "ee_arch_compiler_gcc.h"

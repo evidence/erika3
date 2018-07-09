@@ -61,6 +61,8 @@ extern "C" {
 				ISR IDs
  =============================================================================*/
 
+#if	(defined(OSEE_API_DYNAMIC))
+
 #define	OSEE_DSPIC33_PIC24_OSCFAIL_ISR_ID	0x00U
 
 #define	OSEE_DSPIC33_PIC24_ADDRERR_ISR_ID	0x01U
@@ -178,6 +180,8 @@ extern "C" {
 #define	OSEE_DSPIC33_PIC24_ECCSBE_ISR_ID	0xC2U
 
 #define	OSEE_DSPIC33_PIC24_ISR_ID_NUM		0xC3U
+
+#endif	/* OSEE_API_DYNAMIC */
 
 #if (defined(__cplusplus))
 }

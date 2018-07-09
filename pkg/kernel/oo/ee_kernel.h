@@ -50,9 +50,10 @@
  *  \date   2016
  */
 
-#if (!defined(OSEE_KERNEL_H))
+#ifndef OSEE_KERNEL_H
 #define OSEE_KERNEL_H
 
+#include "ee_arch_override.h"
 #include "ee_api.h"
 #include "ee_scheduler_types.h"
 #include "ee_kernel_types.h"
@@ -210,7 +211,6 @@ LOCAL_INLINE FUNC(OsEE_bool, OS_CODE)
 #if (defined(OSEE_API_DYNAMIC))
   return (tid < p_kdb->p_kcb->free_task_index);
 #else
-  /* return (tid < p_kdb->tdb_array_size - OsNumberOfCores); */
   return (tid < p_kdb->tdb_array_size);
 #endif /* OSEE_API_DYNAMIC */
 }
@@ -592,7 +592,6 @@ LOCAL_INLINE FUNC_P2VAR(OsEE_TriggerDB, OS_APPL_CONST, OS_CODE)
 )
 {
 #if (defined(OSEE_COUNTER_TRIGGER_TYPES))
-  /* return &p_alarm_db->super; */
   return p_alarm_db->p_trigger_db;
 #else
   return p_alarm_db;

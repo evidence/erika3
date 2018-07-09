@@ -57,8 +57,6 @@
 				ISR IDs
  =============================================================================*/
 
-#define	OSEE_CORTEX_M_SYSTICK_ISR_ID	OSEE_CORTEX_M_SYSTICK_EXC_NUM
-
 #if	(defined(OS_EE_ARCH_CORTEX_M_STM32F4))
 #include "ee_stm32f4_irq.h"
 #endif	/* OS_EE_ARCH_CORTEX_M_STM32F4 */

@@ -49,8 +49,13 @@
  *  \date	2016
  */
 
+#ifndef OS_EE_CFG_H
+#define OS_EE_CFG_H
+
 #if (defined(OS_EE_BUILD))
 #include "ee_oscfg.h"
 #else	/* OS_EE_BUILD */
 #include "ee_applcfg.h"
 #endif	/* OS_EE_BUILD */
+
+#endif

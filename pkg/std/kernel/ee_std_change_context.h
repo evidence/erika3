@@ -55,6 +55,7 @@
 #define OSEE_STD_CHANGE_CONTEXT_H
 
 #include "ee_cfg.h"
+#include "ee_arch_override.h"
 #include "ee_compiler.h"
 #include "ee_utils.h"
 #include "ee_platform_types.h"

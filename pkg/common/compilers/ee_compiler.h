@@ -49,7 +49,7 @@
  *  \date   2016
  */
  
-#if (!defined(OSEE_COMPILER_H))
+#ifndef OSEE_COMPILER_H
 #define OSEE_COMPILER_H
 
 /*==============================================================================

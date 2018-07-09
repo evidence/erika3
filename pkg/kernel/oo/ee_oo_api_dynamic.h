@@ -50,10 +50,10 @@
  *  \date   2016
  */
 
-#include "ee_cfg.h"
-
 #ifndef OSEE_API_DYNAMIC_H
 #define OSEE_API_DYNAMIC_H
+
+#include "ee_cfg.h"
 
 #if (defined(OSEE_API_DYNAMIC))
 #include "ee_api_types.h"

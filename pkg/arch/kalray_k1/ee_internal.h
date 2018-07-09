@@ -53,6 +53,7 @@
 #ifndef OSEE_INTERNAL_H
 #define OSEE_INTERNAL_H
 
+#include "ee_arch_override.h"
 #include "ee_conf.h"
 #include "ee_get_kernel_and_core.h"
 #include "ee_hal_internal.h"

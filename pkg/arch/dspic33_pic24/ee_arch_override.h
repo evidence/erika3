@@ -1,7 +1,7 @@
 /* ###*B*###
  * Erika Enterprise, version 3
  * 
- * Copyright (C) 2017 Evidence s.r.l.
+ * Copyright (C) 2018 Evidence s.r.l.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,70 +39,56 @@
  * project.
  * ###*E*### */
 
-/** \file  ee_oo_api_extension.h
- *  \brief  OSEK Kernel Extended APIs.
+/** \file	ee_arch_override.h
+ *  \brief	Override default settings used in the architecture.
  *
- *  This files contains all OSEK Kernel Extended APIs in Erika Enterprise.
+ *  This files is used to define a set of defines which somehow ovveride
+ *  the default architecture behavior.
  *
- *  \note  TO BE DOCUMENTED!!!
+ *  \note	TO BE DOCUMENTED!!!
  *
- *  \author  Errico Guidieri
- *  \date  2016
+ *  \author	Paolo Gai
+ *  \date	2018
  */
 
-#ifndef OSEE_API_EXTENSION_H
-#define OSEE_API_EXTENSION_H
+#ifndef OSEE_ARCH_OVERRIDE_H
+#define	OSEE_ARCH_OVERRIDE_H
 
-#include "ee_cfg.h"
+#define	OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN
 
-#if (defined(OSEE_API_EXTENSION))
 
-#define OS_SERVICE_ID_EXTENSION OS_SERVICE_ID_OSEK
+/*==============================================================================
+                                Stack
+ =============================================================================*/
+/*
+ * DSPIC33/PIC24 seems to not have any requirement for stack alignment,
+ * in any case the following macro enable it.
+ */
+#define	OSEE_STACK_ALIGN_SIZE	2U
 
-#include "ee_api_types.h"
 
-#if (defined(__cplusplus))
-extern "C" {
-#endif
+/*
+ * dsPIC stack grows upwards. in the default architecture the stack grows downward.
+ */
 
-/* Semaphore forward declaration */
-struct OsEE_sem_tag;
+#define	OSEE_STACK_TOS(stack)	((OsEE_addr)&stack[0U])
+#define	OSEE_STACK_BOS(stack)	(					\
+	(OsEE_addr)&stack[((sizeof(stack)/sizeof(stack[0])) - 1U) &	\
+	OSEE_STACK_ALIGN_INDEX]						\
+)
 
-typedef P2VAR(struct OsEE_sem_tag, TYPEDEF, OS_APPL_DATA) SemRefType;
+#define	OSEE_GET_STACK_POINTER(pool)	(				\
+	(							\
+		(uint8_t *)(pool) + (ptrdiff_t)(			\
+			(						\
+				(OSEE_STACK_GUARD_AREA) +		\
+				(OSEE_STACK_ALIGN_SIZE - 1U)		\
+			) & OSEE_STACK_ALIGN				\
+		)							\
+	)								\
+)
 
-#if (!defined(OSEE_COUNT_TYPE))
-#define OSEE_COUNT_TYPE               VAR(OsEE_reg, TYPEDEF)
-#endif /* !OSEE_COUNT_TYPE */
+#define OSEE_ADJUST_POOL_BASE(pool, size)	((pool) + (ptrdiff_t)(size))
 
-typedef OSEE_COUNT_TYPE               CountType;
 
-#if (defined(OSEE_API_DYNAMIC))
-FUNC(void, OS_CODE)
-  InitSem
-(
-  VAR(SemRefType, AUTOMATIC)  pSem,
-  VAR(CountType, AUTOMATIC)   count
-);
-#endif /* OSEE_API_DYNAMIC */
-
-FUNC(StatusType, OS_CODE)
-  WaitSem
-(
-  VAR(SemRefType, AUTOMATIC) Sem
-);
-
-FUNC(StatusType, OS_CODE)
-  PostSem
-(
-  VAR(SemRefType, AUTOMATIC) Sem
-);
-
-#endif /* OSEE_API_EXTENSION */
-
-#define OS_SERVICE_ID_EXTENSION OS_SERVICE_ID_OSEK
-
-#if (defined(__cplusplus))
-}
-#endif
-
-#endif /* !OSEE_API_EXTENSION_H_ */
+#endif	/* !OSEE_ARCH_OVERRIDE_H */

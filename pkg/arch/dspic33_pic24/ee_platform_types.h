@@ -59,46 +59,16 @@
 #define	OSEE_PLATFORM_TYPES_H
 
 #include "ee_cfg.h"
-
-#if (defined(__cplusplus))
-extern "C" {
-#endif
-
-#define	OSEE_STACK_TOS(stack)	((OsEE_addr)&stack[0U])
-#define	OSEE_STACK_BOS(stack)	(					\
-	(OsEE_addr)&stack[((sizeof(stack)/sizeof(stack[0])) - 1U) &	\
-	OSEE_STACK_ALIGN_INDEX]						\
-)
-
-#define	OSEE_GET_STACK_POINTER(pool)	(				\
-	(							\
-		(uint8_t *)(pool) + (ptrdiff_t)(			\
-			(						\
-				(OSEE_STACK_GUARD_AREA) +		\
-				(OSEE_STACK_ALIGN_SIZE - 1U)		\
-			) & OSEE_STACK_ALIGN				\
-		)							\
-	)								\
-)
-
-#define OSEE_ADJUST_POOL_BASE(pool, size)	((pool) + (ptrdiff_t)(size))
-
-#define	OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN
-
-/*==============================================================================
-                                Stack
- =============================================================================*/
-/*
- * DSPIC33/PIC24 seems to not have any rquirement for stack alignment,
- * in any case the following macro enable it.
- */
-#define	OSEE_STACK_ALIGN_SIZE	2U
-
+#include "ee_arch_override.h"
 #include "ee_compiler.h"
 #include "ee_utils.h"
 #include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 #if	(!defined(OSEE_BOOL_TYPE))
 typedef	enum {

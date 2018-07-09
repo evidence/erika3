@@ -53,15 +53,8 @@
 
 #ifndef OSEE_HAL_INTERNAL_H
 #define OSEE_HAL_INTERNAL_H
-/*==============================================================================
-                    Arch dependent Configuration Switches
- =============================================================================*/
 
-/* Used to override default definition of osEE_hal_get_msb,
-   in ee_std_change_context.h that is not inlined */
-#define OSEE_GET_MSB_INLINE OSEE_STATIC_INLINE
-
-
+#include "arch_override.h"
 #include "ee_platform_types.h"
 #include "ee_utils.h"
 #include "ee_hal.h"
