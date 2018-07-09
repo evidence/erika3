@@ -52,7 +52,7 @@
 
 #include "ee_cfg.h"
 
-#if (!defined(OSEE_API_DYNAMIC_H))
+#ifndef OSEE_API_DYNAMIC_H
 #define OSEE_API_DYNAMIC_H
 
 #if (defined(OSEE_API_DYNAMIC))
