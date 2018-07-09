@@ -89,7 +89,7 @@ extern "C" {
                                 Stack
  =============================================================================*/
 /*
- * DSPIC33/PIC24 seems to not have any rquirement for stack alignment,
+ * DSPIC33/PIC24 seems to not have any requirement for stack alignment,
  * in any case the following macro enable it.
  */
 #define	OSEE_STACK_ALIGN_SIZE	2U

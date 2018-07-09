@@ -51,7 +51,7 @@
  *  \date   2016
  */
 
-#if (!defined(OSEE_API_TYPES_H))
+#ifndef OSEE_API_TYPES_H
 #define OSEE_API_TYPES_H
 
 #include "ee_platform_types.h"

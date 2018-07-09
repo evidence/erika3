@@ -51,7 +51,7 @@
  *  \date   2016
  */
 
-#if (!defined(OSEE_KERNEL_TYPES_H))
+#ifndef OSEE_KERNEL_TYPES_H
 #define OSEE_KERNEL_TYPES_H
 
 #include "ee_cfg.h"

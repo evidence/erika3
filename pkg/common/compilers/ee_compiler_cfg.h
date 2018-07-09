@@ -50,7 +50,8 @@
  *  \author Errico Guidieri
  *  \date   2016
  */
-#if (!defined(OSEE_COMPILER_CFG_H))
+
+#ifndef OSEE_COMPILER_CFG_H
 #define OSEE_COMPILER_CFG_H
 
 #include "ee_cfg.h"

@@ -50,7 +50,7 @@
  *  \date    2016
  */
 
-#if (!defined(OSEE_API_OSEK_H))
+#ifndef OSEE_API_OSEK_H
 #define OSEE_API_OSEK_H
 
 #include "ee_hal.h"

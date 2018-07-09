@@ -50,7 +50,7 @@
  *  \date  2016
  */
 
-#if (!defined(OSEE_SCHEDULER_H))
+#ifndef OSEE_SCHEDULER_H
 #define OSEE_SCHEDULER_H
 
 #include "ee_cfg.h"

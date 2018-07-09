@@ -89,6 +89,7 @@ osEE_dspic33_pic24_isr2_stub(
 
 #endif	/* !OSEE_API_DYNAMIC */
 
+#if	0	/* [GS]: MISRA */
 /*
  * ISR pre-stub.
  */
@@ -100,7 +101,30 @@ do {						\
 	__asm__ volatile("MOV _SRbits, w0");	\
 	__asm__ volatile("PUSH W0");		\
 } while(0U)
+#else	/* 0 - [GS]: MISRA */
+/*
+ * Save IRQ Context
+ */
+OSEE_STATIC_INLINE FUNC(void, OS_CODE) OSEE_ALWAYS_INLINE
+osEE_hal_saveIrqCtx( void )
+{
+	__asm__ volatile("PUSH.D W0");
+	__asm__ volatile("PUSH.D W2");
+	__asm__ volatile("MOV _SRbits, w0");
+	__asm__ volatile("PUSH W0");
+}
 
+/*
+ * ISR pre-stub.
+ */
+#define	OSEE_DSPIC33_PIC24_ISR_PRESTUB()	\
+do {						\
+	osEE_hal_disableIRQ();			\
+	osEE_hal_saveIrqCtx();			\
+} while(0U)
+#endif	/* 0 - [GS]: MISRA */
+
+#if	0	/* [GS]: MISRA */
 /*
  * ISR post-stub.
  */
@@ -111,6 +135,27 @@ do {						\
 	__asm__ volatile("POP.D W2");		\
 	__asm__ volatile("POP.D W0");		\
 } while(0)
+#else	/* 0 - [GS]: MISRA */
+/*
+ * Restore IRQ Context
+ */
+OSEE_STATIC_INLINE FUNC(void, OS_CODE) OSEE_ALWAYS_INLINE
+osEE_hal_restoreIrqCtx( void )
+{
+	__asm__ volatile("POP W0");
+	__asm__ volatile("MOV W0, _SRbits");
+	__asm__ volatile("POP.D W2");
+	__asm__ volatile("POP.D W0");
+}
+
+/*
+ * ISR post-stub.
+ */
+#define	OSEE_DSPIC33_PIC24_ISR_POSTSTUB()	\
+do {						\
+	osEE_hal_restoreIrqCtx();		\
+} while(0)
+#endif	/* 0 - [GS]: MISRA */
 
 /* Un-Defined ISR */
 #define OSEE_DSPIC33_PIC24_ISR_NOT_DEFINED(v)		\

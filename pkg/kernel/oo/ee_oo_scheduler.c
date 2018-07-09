@@ -183,8 +183,8 @@ FUNC_P2VAR(OsEE_preempt, OS_APPL_DATA, OS_CODE)
     if (p_rq_queue->p_head == p_rq_queue->p_tail) {
       /* Prio RQ became empty */
       p_rq_queue->p_head = NULL;
-      /* N.B. The following evicted for optimization */
-      /* p_rq_queue->p_tail = NULL; */
+      /* N.B. The following could be evicted for optimization */
+      p_rq_queue->p_tail = NULL;
       /* Adjust the Multiqueue Mask */
       p_rq->mask &= (~((OsEE_rq_mask)(1U << max_queue)));
     } else {

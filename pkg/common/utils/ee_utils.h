@@ -53,7 +53,7 @@
  *  \date  2016
  */
 
-#if (!defined(OSEE_UTILS_H))
+#ifndef OSEE_UTILS_H
 #define OSEE_UTILS_H
 
 #include "ee_compiler.h"
@@ -75,7 +75,7 @@ extern "C" {
 #endif /* !OSEE_STRING_JOIN */
 
 #if (!defined(OSEE_STRING))
-#define OSEE_STRING(s)         #s
+#define OSEE_STRING(stringtoquote) #stringtoquote
 #endif /* !OSEE_STRING */
 
 /* String manipulation macros with one more step indirection to let argument
