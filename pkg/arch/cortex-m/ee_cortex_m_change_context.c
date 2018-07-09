@@ -132,8 +132,7 @@ FUNC(void, OS_CODE)
     P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_to;
     P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_from;
 
-    p_to = osEE_scheduler_task_terminated(osEE_get_kernel(), osEE_get_curr_core(),
-           &p_from);
+    p_to = osEE_scheduler_task_terminated(osEE_get_kernel(), &p_from);
 
     if (p_from->task_type != OSEE_TASK_TYPE_ISR2) {
       osEE_change_context_from_task_end(p_from, p_to);
@@ -157,7 +156,7 @@ FUNC(void, OS_CODE)
     p_orig_tdb = p_cdb->p_idle_task;
   }
 
-  p_to = osEE_scheduler_task_terminated(osEE_get_kernel(), p_cdb, &p_from);
+  p_to = osEE_scheduler_task_terminated(osEE_get_kernel(), &p_from);
 
   if (p_from->task_type != OSEE_TASK_TYPE_ISR2) {
     osEE_change_context_from_task_end(p_from, p_to);
