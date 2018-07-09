@@ -57,9 +57,8 @@
 #define OSEE_PLATFORM_TYPES_H
 
 #include "ee_cfg.h"
-
-#define OSEE_STACK_ALIGN_SIZE         (16U)
-
+#include "ee_arch_override.h"
+#include "ee_arch
 #include "ee_compiler.h"
 #include "ee_utils.h"
 #include <limits.h>

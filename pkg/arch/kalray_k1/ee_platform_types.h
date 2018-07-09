@@ -57,17 +57,7 @@
 #define OSEE_PLATFORM_TYPES_H
 
 #include "ee_cfg.h"
-
-/*******************************************************************************
-                                Stack Utilities
- ******************************************************************************/
-
-#define OSEE_STACK_ALIGN_SIZE         8U
-
-#define OSEE_STACK_SCRATCH_AREA_SIZE  16U
-#define OSEE_STACK_SCRATCH_AREA_INDEX \
-  (OSEE_STACK_SCRATCH_AREA_SIZE/sizeof(OsEE_stack))
-
+#include "ee_arch_override.h"
 #include <limits.h>
 #include <stddef.h>
 #include <stdint.h>

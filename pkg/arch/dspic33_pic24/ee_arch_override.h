@@ -1,7 +1,7 @@
 /* ###*B*###
  * Erika Enterprise, version 3
  * 
- * Copyright (C) 2017 Evidence s.r.l.
+ * Copyright (C) 2018 Evidence s.r.l.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,28 +39,56 @@
  * project.
  * ###*E*### */
 
-/** \file  ee_internal.h
- *  \brief  Main Internals Collector.
+/** \file	ee_arch_override.h
+ *  \brief	Override default settings used in the architecture.
  *
- *  This files is the main internals collector in Erika Enterprise.
+ *  This files is used to define a set of defines which somehow ovveride
+ *  the default architecture behavior.
  *
- *  \note  TO BE DOCUMENTED!!!
+ *  \note	TO BE DOCUMENTED!!!
  *
- *  \author  Errico Guidieri
- *  \date  2016
+ *  \author	Paolo Gai
+ *  \date	2018
  */
 
-#ifndef OSEE_INTERNAL_H
-#define OSEE_INTERNAL_H
+#ifndef OSEE_ARCH_OVERRIDE_H
+#define	OSEE_ARCH_OVERRIDE_H
 
-#include "ee_arch_override.h"
-#include "ee_conf.h"
-#include "ee_get_kernel_and_core.h"
-#include "ee_hal_internal.h"
-#include "ee_kernel.h"
+#define	OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN
 
-#if (!defined(OSEE_SINGLECORE)) && (defined(OSEE_API_EXTENSION))
-#include "ee_kernel_k1.h"
-#endif /* !OSEE_SINGLECORE && OSEE_API_EXTENSION_ */
 
-#endif /* !OSEE_INTERNAL_H */
+/*==============================================================================
+                                Stack
+ =============================================================================*/
+/*
+ * DSPIC33/PIC24 seems to not have any requirement for stack alignment,
+ * in any case the following macro enable it.
+ */
+#define	OSEE_STACK_ALIGN_SIZE	2U
+
+
+/*
+ * dsPIC stack grows upwards. in the default architecture the stack grows downward.
+ */
+
+#define	OSEE_STACK_TOS(stack)	((OsEE_addr)&stack[0U])
+#define	OSEE_STACK_BOS(stack)	(					\
+	(OsEE_addr)&stack[((sizeof(stack)/sizeof(stack[0])) - 1U) &	\
+	OSEE_STACK_ALIGN_INDEX]						\
+)
+
+#define	OSEE_GET_STACK_POINTER(pool)	(				\
+	(							\
+		(uint8_t *)(pool) + (ptrdiff_t)(			\
+			(						\
+				(OSEE_STACK_GUARD_AREA) +		\
+				(OSEE_STACK_ALIGN_SIZE - 1U)		\
+			) & OSEE_STACK_ALIGN				\
+		)							\
+	)								\
+)
+
+#define OSEE_ADJUST_POOL_BASE(pool, size)	((pool) + (ptrdiff_t)(size))
+
+
+#endif	/* !OSEE_ARCH_OVERRIDE_H */

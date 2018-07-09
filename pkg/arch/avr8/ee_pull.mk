@@ -56,6 +56,7 @@ OS_EE_PULL_MK_FILES += $(ERIKA_FILES)/pkg/arch/avr8/ee_arch_compiler_gcc.mk
 
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/avr8/ee.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/avr8/ee_conf.h
+OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/avr8/ee_arch_override.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/avr8/ee_arch_compiler_gcc.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/avr8/ee_platform_types.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/avr8/ee_get_kernel_and_core.h

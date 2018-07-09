@@ -53,6 +53,7 @@
 #ifndef OSEE_KERNEL_H
 #define OSEE_KERNEL_H
 
+#include "ee_arch_override.h"
 #include "ee_api.h"
 #include "ee_scheduler_types.h"
 #include "ee_kernel_types.h"
