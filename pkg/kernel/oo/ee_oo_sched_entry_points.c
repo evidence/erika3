@@ -144,12 +144,12 @@ FUNC(void, OS_CODE)
   P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_tdb_to
 )
 {
-  CONST(TaskPrio, AUTOMATIC) task_prio = p_tdb_to->p_tcb->current_prio;
+  CONST(TaskPrio, AUTOMATIC) task_priority = p_tdb_to->p_tcb->current_prio;
   osEE_scheduler_task_wrapper_restore(p_tdb_to);
 
-  if (task_prio < OSEE_ISR_ALL_PRIO) {
+  if (task_priority < OSEE_ISR_ALL_PRIO) {
     /* Set-up IPL at current TASK level in addition to enable IRQ */
-    osEE_hal_set_ipl(task_prio);
+    osEE_hal_set_ipl(task_priority);
     osEE_hal_enableIRQ();
   }
   p_tdb_to->task_func();

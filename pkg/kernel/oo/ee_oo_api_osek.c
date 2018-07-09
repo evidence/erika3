@@ -143,7 +143,9 @@ FUNC(void, OS_CODE)
   osEE_stack_monitoring(p_cdb);
 
   if (p_ccb->s_isr_all_cnt > 0U) {
-    if (--p_ccb->s_isr_all_cnt == 0U) {
+    p_ccb->s_isr_all_cnt--;
+    
+    if (p_ccb->s_isr_all_cnt == 0U) {
       osEE_hal_resumeIRQ(p_ccb->prev_s_isr_all_status);
     }
   }
@@ -193,7 +195,9 @@ FUNC(void, OS_CODE)
   osEE_stack_monitoring(p_cdb);
 
   if (p_ccb->s_isr_os_cnt > 0U) {
-    if (--p_ccb->s_isr_os_cnt == 0U) {
+    p_ccb->s_isr_os_cnt--;
+    
+    if (p_ccb->s_isr_os_cnt == 0U) {
       osEE_hal_end_nested_primitive(p_ccb->prev_s_isr_os_status);
     }
   }
@@ -362,10 +366,12 @@ FUNC(StatusType, OS_CODE)
 #if (defined(OSEE_HAS_AUTOSTART_TRIGGER))
     {
       VAR(MemSize, AUTOMATIC) i;
+      VAR(MemSize, AUTOMATIC) trigger_size;
       CONSTP2VAR(OsEE_autostart_trigger, AUTOMATIC, OS_APPL_CONST)
         p_auto_triggers = &(*p_cdb->p_autostart_trigger_array)[real_mode];
 
-      for (i = 0U; i < p_auto_triggers->trigger_array_size; ++i) {
+      trigger_size = p_auto_triggers->trigger_array_size;
+      for (i = 0U; i < trigger_size; ++i) {
         CONSTP2VAR(OsEE_autostart_trigger_info, AUTOMATIC, OS_APPL_CONST)
           p_trigger_to_act_info = &(*p_auto_triggers->p_trigger_ptr_array)[i];
         CONSTP2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_CONST)
@@ -890,7 +896,7 @@ FUNC(StatusType, OS_CODE)
     /* Release internal resources */
     p_tcb->current_prio = p_curr->ready_prio;
     /* Try preemption */
-    osEE_scheduler_task_preemption_point(osEE_get_kernel());
+    (void)osEE_scheduler_task_preemption_point(osEE_get_kernel());
     /* Restore internal resources */
     p_tcb->current_prio = p_curr->dispatch_prio;
 

@@ -42,7 +42,7 @@
 /** \file	ee_dspic33_pic24_irq.h
  *  \brief	Microchip DSPIC33/PIC24 IRQs.
  *
- *  This files contains the interfaces of the IRQs support for ARM Cortex-M
+ *  This files contains the interfaces of the IRQs support for Microchip dsPIC33
  *  Architecture available in Erika Enterprise.
  *
  *  \note	TO BE DOCUMENTED!!!

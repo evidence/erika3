@@ -45,8 +45,8 @@
  *  This files contains all types and symbols for a specific Architecture in
  *  Erika Enterprise.
  *
- *  \note	COULD BE raplaced by AUTOSAR Type definition paradigm or being
- *  		the implementation.
+ *  \note	COULD BE replaced by AUTOSAR Type definition paradigm
+ *  		or be its implementation.
  *
  *  \note	TO BE DOCUMENTED!!!
  *
