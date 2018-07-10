@@ -63,6 +63,32 @@ static FUNC(void, OS_CODE)
 
   osEE_stack_monitoring(osEE_get_curr_core());
 
+#if (defined(OSEE_HAS_SERVICE_PROTECTION)) && (defined(OSEE_HAS_ERRORHOOK))
+  /* [SWS_Os_00069]: If a task returns from its entry function without making a
+      TerminateTask() or ChainTask() call AND the error hook is configured,
+      the Operating System shall call the ErrorHook() 
+      (this is done regardless of whether the task causes other errors,
+       e.g. E_OS_RESOURCE) with status E_OS_MISSINGEND before the task leaves
+      the RUNNING state. */
+  {
+    CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+      p_ccb = osEE_get_curr_core()->p_ccb;
+    osEE_set_service_id(p_ccb, OSId_TaskBody);
+    osEE_call_error_hook(p_ccb, E_OS_MISSINGEND);
+  }
+#endif /* OSEE_HAS_SERVICE_PROTECTION && OSEE_HAS_ERRORHOOK */
+
+#if (defined(OSEE_HAS_MUTEX))
+  /* [SWS_Os_0070]: If a task returns from the entry function without making a
+      TerminateTask() or ChainTask() call and still holds OSEK Resources,
+      the Operating System shall release them. */
+  /* TODO */
+#endif /* OSEE_HAS_MUTEX */
+
+#if (!defined(OSEE_HAS_SERVICE_PROTECTION))
+  /* TODO: azzera contatori ISR */
+#endif /* !OSEE_HAS_SERVICE_PROTECTION */
+
   osEE_hal_terminate_activation(&p_to_term->hdb,
     OSEE_KERNEL_TERMINATE_ACTIVATION_CB);
 }

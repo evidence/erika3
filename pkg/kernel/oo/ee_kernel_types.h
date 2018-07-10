@@ -290,7 +290,7 @@ typedef struct OsEE_AlarmDB_tag {
   P2VAR(struct OsEE_TriggerDB_tag OSEE_CONST, TYPEDEF, OS_APPL_CONST)
                                               p_trigger_db;
   VAR(OsEE_action, TYPEDEF)                   action;
-} OsEE_AlarmDB;
+} OSEE_CONST OsEE_AlarmDB;
 
 /**
  * @typedef EE_as_Schedule_Table_RAM_type
@@ -322,7 +322,7 @@ typedef struct OsEE_SchedTabDB_tag {
   /** Pointer to corresponding Control Block */
   P2VAR(OsEE_SchedTabCB, TYPEDEF, OS_APPL_DATA) p_st_cb;
   /** Pointer to corresponding Schedule Table Trigger */
-  P2VAR(struct OsEE_SchedTabDB_tag OSEE_CONST, TYPEDEF, OS_APPL_CONST)
+  P2VAR(struct OsEE_TriggerDB_tag OSEE_CONST, TYPEDEF, OS_APPL_CONST)
                                                 p_trigger_db;
   /** Array of the schedule table's expiry points */
   P2SYM_VAR(OsEE_st_exipiry_point, OS_APPL_CONST, p_expiry_point_array)[];
@@ -384,7 +384,7 @@ typedef struct OsEE_TriggerDB_tag {
   P2VAR(OsEE_TriggerCB, TYPEDEF, OS_APPL_DATA)              p_trigger_cb;
   P2VAR(OsEE_CounterDB, TYPEDEF, OS_APPL_DATA)              p_counter_db;
 #if (defined(OSEE_COUNTER_TRIGGER_TYPES))
-  P2VAR(struct OsEE_AlarmDB_tagOSEE_CONST, TYPEDEF, OS_APPL_CONST)
+  P2VAR(struct OsEE_AlarmDB_tag OSEE_CONST, TYPEDEF, OS_APPL_CONST)
                                                             p_alarm_db;
   P2VAR(struct OsEE_SchedTabDB_tag OSEE_CONST, TYPEDEF, OS_APPL_CONST)
                                                             p_st_db;

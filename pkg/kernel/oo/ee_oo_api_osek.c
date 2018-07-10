@@ -389,7 +389,7 @@ FUNC(StatusType, OS_CODE)
           case OSEE_AUTOSTART_ALARM:
             (void)osEE_alarm_set_rel(
               p_trigger_to_act_db->p_counter_db,
-              p_trigger_to_act_db,
+              osEE_trigger_get_alarm_db(p_trigger_to_act_db),
               p_trigger_to_act_info->first_tick_parameter,
               p_trigger_to_act_info->second_tick_parameter
             );
@@ -398,14 +398,14 @@ FUNC(StatusType, OS_CODE)
           case OSEE_AUTOSTART_SCHEDULE_TABLE_ABS:
             (void)osEE_st_start_abs(
               p_trigger_to_act_db->p_counter_db,
-              p_trigger_to_act_db,
+              osEE_trigger_get_st_db(p_trigger_to_act_db),
               p_trigger_to_act_info->first_tick_parameter
             );
           break;
           case OSEE_AUTOSTART_SCHEDULE_TABLE_REL:
             (void)osEE_st_start_rel(
               p_trigger_to_act_db->p_counter_db,
-              p_trigger_to_act_db,
+              osEE_trigger_get_st_db(p_trigger_to_act_db),
               p_trigger_to_act_info->first_tick_parameter
             );
           break;
@@ -2958,6 +2958,10 @@ FUNC(StatusType, OS_CODE)
       flags = osEE_begin_primitive();
 
 #if (defined(OSEE_HAS_CHECKS))
+    CONSTP2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_DATA)
+      p_from_trigger_db = osEE_st_get_trigger_db(p_from_st_db);
+    CONSTP2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_CONST)
+      p_to_trigger_db = osEE_st_get_trigger_db(p_to_st_db);
   /* [SWS_Os_00330] If in a call of NextScheduleTable() schedule table
       <ScheduleTableID_To> is driven by different counter than schedule table
       <ScheduleTableID_From> then NextScheduleTable() shall return an error
@@ -2976,7 +2980,7 @@ FUNC(StatusType, OS_CODE)
       NextScheduleTable() is not in state SCHEDULETABLE_STOPPED,
       NextScheduleTable() shall leave the state of <ScheduleTable_From> and
       <ScheduleTable_To> unchanged and return E_OS_STATE. */
-    if ((p_from_st_db->p_counter_db != p_to_st_db->p_counter_db) ||
+    if ((p_from_trigger_db->p_counter_db != p_to_trigger_db->p_counter_db) ||
         (p_from_st_db->sync_strategy != p_to_st_db->sync_strategy)
       )
     {

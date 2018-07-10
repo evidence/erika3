@@ -230,10 +230,10 @@ FUNC(StatusType, OS_CODE)
   VAR(TickType, AUTOMATIC)                          value
 )
 {
-  CONSTP2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_CONST)
-    p_counter_db = p_st_db->p_counter_db;
   CONSTP2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_CONST)
     p_trigger_db = osEE_st_get_trigger_db(p_st_db);
+  CONSTP2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_CONST)
+    p_counter_db = p_trigger_db->p_counter_db;
   CONSTP2VAR(OsEE_TriggerCB, AUTOMATIC, OS_APPL_DATA)
     p_trigger_cb = p_trigger_db->p_trigger_cb;
   CONSTP2VAR(OsEE_SchedTabCB, AUTOMATIC, OS_APPL_DATA)

@@ -235,11 +235,11 @@ static FUNC(void, OS_CODE)
   osEE_counter_handle_alarm
 (
   P2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_CONST) p_counter_db,
-  P2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_CONST) p_trigger_to_be_handled_db,
+  P2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_CONST) p_trigger_to_be_handled_db
 )
 {
-  P2VAR(OsEE_TriggerCB, AUTOMATIC, OS_APPL_DATA)  p_trigger_to_be_handled_cb;
   P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)       p_cdb;
+  P2VAR(OsEE_TriggerCB, AUTOMATIC, OS_APPL_DATA)  p_trigger_to_be_handled_cb;
 
   (void)osEE_handle_action(
     &osEE_trigger_get_alarm_db(p_trigger_to_be_handled_db)->action
@@ -251,7 +251,9 @@ static FUNC(void, OS_CODE)
   p_trigger_to_be_handled_cb = p_trigger_to_be_handled_db->p_trigger_cb;
 
   if (p_trigger_to_be_handled_cb->status == OSEE_TRIGGER_EXPIRED) {
-    CONST(TickType, AUTOMATIC) cycle = p_trigger_to_be_handled_cb->cycle;
+    CONST(TickType, AUTOMATIC) cycle = osEE_alarm_get_cb(
+        osEE_trigger_get_alarm_db(p_trigger_to_be_handled_db)
+      )->cycle;
     if (cycle > 0U) {
       /* trigger CB "when" field is used to hold next trigger value, for
          reinsertion in counter timer wheel */
@@ -551,7 +553,18 @@ FUNC(void, OS_CODE)
           }
 
 #if (defined(OSEE_COUNTER_TRIGGER_TYPES))
-          /* TODO */
+          {
+            CONSTP2VAR(OsEE_AlarmDB, AUTOMATIC, OS_APPL_CONST) 
+              p_alarm_db =
+                osEE_trigger_get_alarm_db(p_trigger_to_be_handled_db);
+            if (p_alarm_db != NULL) {
+              osEE_counter_handle_alarm(p_counter_db,
+                p_trigger_to_be_handled_db);
+            } else {
+              osEE_counter_handle_st_expiry_point(p_counter_db,
+                p_trigger_to_be_handled_db);
+            }
+          }
 #elif (defined(OSEE_HAS_ALARMS))
           osEE_counter_handle_alarm(p_counter_db, p_trigger_to_be_handled_db);
 #elif (defined(OSEE_HAS_SCHEDULE_TABLES))
