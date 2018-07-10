@@ -168,7 +168,7 @@ FUNC_P2VAR(OsEE_SN, OS_APPL_DATA, OS_CODE)
   VAR(EventMaskType, AUTOMATIC)               Mask,
   P2VAR(StatusType, AUTOMATIC, OS_APPL_DATA)  p_ev  
 );
-#endif/* OSEE_HAS_EVENTS */
+#endif /* OSEE_HAS_EVENTS */
 
 LOCAL_INLINE FUNC(void, OS_CODE)
   osEE_task_event_reset_mask

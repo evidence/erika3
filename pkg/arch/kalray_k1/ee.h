@@ -55,9 +55,10 @@
 #define OSEE_H
 
 #include "ee_cfg.h"
-#include "ee_platform_types.h"
+#include "ee_arch_override.h"
 #include "ee_k1_vbsp.h"
 #include "ee_utils.h"
+#include "ee_platform_types.h"
 #include "ee_hal.h"
 #include "ee_api.h"
 #include "ee_api_k1.h"
