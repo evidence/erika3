@@ -1222,8 +1222,6 @@ FUNC(StatusType, OS_CODE)
     if (p_tdb->task_type <= OSEE_TASK_TYPE_EXTENDED) {
       tid = p_tdb->tid;
     } else if (p_tdb->task_type == OSEE_TASK_TYPE_ISR2) {
-      CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-        p_ccb = osEE_get_curr_core()->p_ccb;
       /* In case of ISR2 search the first stacked that is not an ISR2 */
       P2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA)
         p_sn = p_ccb->p_stk_sn->p_next;
