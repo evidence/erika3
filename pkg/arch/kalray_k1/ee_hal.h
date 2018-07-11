@@ -56,10 +56,10 @@
                           HAL Types and structures
  ******************************************************************************/
 #include "ee_cfg.h"
+#include "ee_utils.h"
 #include "ee_compiler_gcc.h"
 #include "ee_platform_types.h"
 #include "ee_k1_vbsp.h"
-#include "ee_utils.h"
 
 #if (!defined(__GNUC__))
 #error Unsupported compiler!

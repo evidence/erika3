@@ -61,14 +61,12 @@
  * Compiler dependent interface
  */
 #include "ee_cfg.h"
-#include "ee_compiler.h"
 #include "ee_utils.h"
+#include "ee_compiler.h"
 
 #if (defined(__cplusplus))
 extern "C" {
 #endif
-
-#define OSEE_PREPROC_VAR_VALUE(v) #v "=" OSEE_S(v)
 
 /** @def  OSEE_RETURN()
  *

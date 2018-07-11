@@ -58,8 +58,8 @@
 
 #include "ee_cfg.h"
 #include "ee_arch_override.h"
-#include "ee_compiler.h"
 #include "ee_utils.h"
+#include "ee_compiler.h"
 #include <stddef.h>
 #if (defined(OSEE_AARCH64_SOC))
 #include "ee_aarch64_gic.h"

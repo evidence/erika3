@@ -57,7 +57,6 @@
 #define OSEE_UTILS_H
 
 #include "ee_arch_override.h"
-#include "ee_compiler.h"
 
 #if (defined(__cplusplus))
 extern "C" {

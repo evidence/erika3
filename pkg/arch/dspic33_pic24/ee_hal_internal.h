@@ -55,8 +55,8 @@
 #ifndef OSEE_HAL_INTERNAL_H
 #define	OSEE_HAL_INTERNAL_H
 
-#include "ee_platform_types.h"
 #include "ee_utils.h"
+#include "ee_platform_types.h"
 #include "ee_hal.h"
 #include "ee_hal_internal_types.h"
 #include "ee_kernel_types.h"

@@ -58,5 +58,6 @@
 #include "ee_hal_internal_types.h"
 #include "ee_scheduler_types.h"
 #include "ee_kernel_types.h"
+#include "ee_get_kernel_and_core.h"
 
 #endif /* !OSEE_CONF_H */

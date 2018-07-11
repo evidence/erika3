@@ -71,9 +71,9 @@
  * dsPIC stack grows upwards. in the default architecture the stack grows downward.
  */
 
-#define	OSEE_STACK_TOS(stack)	((OsEE_addr)&stack[0U])
+#define	OSEE_STACK_TOS(stack)	((OsEE_addr)&(stack)[0U])
 #define	OSEE_STACK_BOS(stack)	(					\
-	(OsEE_addr)&stack[((sizeof(stack)/sizeof(stack[0])) - 1U) &	\
+	(OsEE_addr)&(stack)[((sizeof(stack)/sizeof((stack)[0])) - 1U) &	\
 	OSEE_STACK_ALIGN_INDEX]						\
 )
 
