@@ -1217,7 +1217,7 @@ FUNC(StatusType, OS_CODE)
     VAR(TaskType, AUTOMATIC)
       tid = INVALID_TASK;
     CONSTP2CONST(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
-      p_tdb = osEE_get_curr_task();
+      p_tdb = p_ccb->p_curr;
 
     if (p_tdb->task_type <= OSEE_TASK_TYPE_EXTENDED) {
       tid = p_tdb->tid;
