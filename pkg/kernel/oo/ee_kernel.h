@@ -88,6 +88,7 @@ OSEE_CPU_STARTOS_INLINE FUNC(OsEE_bool, OS_CODE)
   void
 );
 
+#if (defined(OSEE_HAS_ORTI))
 LOCAL_INLINE FUNC(void, OS_CODE)
   osEE_orti_trace_service_entry
 (
@@ -95,14 +96,8 @@ LOCAL_INLINE FUNC(void, OS_CODE)
   CONST(OSServiceIdType, AUTOMATIC) service_id
 )
 {
-#if (defined(OSEE_HAS_ORTI))
   p_ccb->service_id = (service_id + 1U);
   p_ccb->orti_service_id_valid = OSEE_TRUE;
-#else
-/* Touch Unused parameters */
-  (void)p_ccb;
-  (void)service_id;
-#endif
 }
 
 LOCAL_INLINE FUNC(void, OS_CODE)
@@ -112,17 +107,36 @@ LOCAL_INLINE FUNC(void, OS_CODE)
   CONST(OSServiceIdType, AUTOMATIC) service_id
 )
 {
-#if (defined(OSEE_HAS_ORTI))
   if (p_ccb->orti_service_id_valid == OSEE_TRUE) {
     p_ccb->service_id            = service_id;
     p_ccb->orti_service_id_valid = OSEE_FALSE;
   }
+}
 #else
-/* Touch Unused parameters */
+LOCAL_INLINE FUNC(void, OS_CODE)
+  osEE_orti_trace_service_entry
+(
+  P2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb,
+  CONST(OSServiceIdType, AUTOMATIC)      service_id
+)
+{
+/* Touch unused parameter */
   (void)p_ccb;
   (void)service_id;
-#endif
 }
+
+LOCAL_INLINE FUNC(void, OS_CODE)
+  osEE_orti_trace_service_exit
+(
+  P2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb,
+  CONST(OSServiceIdType, AUTOMATIC)      service_id
+)
+{
+/* Touch unused parameter */
+  (void)p_ccb;
+  (void)service_id;
+}
+#endif /* OSEE_HAS_ORTI */
 
 FUNC(StatusType, OS_CODE)
   osEE_activate_isr2
@@ -164,11 +178,10 @@ FUNC(void, OS_CODE)
 FUNC_P2VAR(OsEE_SN, OS_APPL_DATA, OS_CODE)
   osEE_task_event_set_mask
 (
-  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)    p_tdb_waking_up,
+  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST)   p_tdb_waking_up,
   VAR(EventMaskType, AUTOMATIC)               Mask,
   P2VAR(StatusType, AUTOMATIC, OS_APPL_DATA)  p_ev  
 );
-#endif /* OSEE_HAS_EVENTS */
 
 LOCAL_INLINE FUNC(void, OS_CODE)
   osEE_task_event_reset_mask
@@ -176,12 +189,19 @@ LOCAL_INLINE FUNC(void, OS_CODE)
   P2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)  p_tcb
 )
 {
-#if (defined(OSEE_HAS_EVENTS))
   p_tcb->event_mask = 0U;
-#else
-  (void)p_tcb;
-#endif /* OSEE_HAS_EVENTS */
 }
+#else
+LOCAL_INLINE FUNC(void, OS_CODE)
+  osEE_task_event_reset_mask
+(
+  P2CONST(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)  p_tcb
+)
+{
+/* Touch unused parameter */
+  (void)p_tcb;
+}
+#endif /* OSEE_HAS_EVENTS */
 
 LOCAL_INLINE FUNC(OsEE_reg, OS_CODE)
   osEE_begin_primitive
@@ -243,106 +263,168 @@ LOCAL_INLINE FUNC(OsEE_bool, OS_CODE)
 }
 #endif /* OSEE_HAS_CHECKS */
 
+#if (defined(OSEE_HAS_STARTUPHOOK)) && (defined(OSEE_HAS_CONTEXT))
 LOCAL_INLINE FUNC(void, OS_CODE)
   osEE_call_startup_hook
 (
-  P2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb
+  P2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)    p_ccb
 )
 {
-#if (defined(OSEE_HAS_STARTUPHOOK))
-#if (defined(OSEE_HAS_CONTEXT))
   VAR(OsEE_os_context, AUTOMATIC) prev_os_ctx = p_ccb->os_context;
   p_ccb->os_context = OSEE_STARTUPHOOK_CTX;
-#else
-  /* Touch unused parameter */
-  ((void)p_ccb);
-#endif /* OSEE_HAS_CONTEXT */
-  StartupHook();
-#if (defined(OSEE_HAS_CONTEXT))
-  p_ccb->os_context = prev_os_ctx;
-#endif /* OSEE_HAS_CONTEXT */
-#else
-  /* Touch unused parameter */
-  ((void)p_ccb);
-#endif /* OSEE_HAS_STARTUPHOOK */
-}
 
+  StartupHook();
+
+  p_ccb->os_context = prev_os_ctx;
+}
+#elif (defined(OSEE_HAS_STARTUPHOOK))
+LOCAL_INLINE FUNC(void, OS_CODE)
+  osEE_call_startup_hook
+(
+  P2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb
+)
+{
+/* Touch unused parameter */
+  ((void)p_ccb);
+  StartupHook();
+}
+#else
+LOCAL_INLINE FUNC(void, OS_CODE)
+  osEE_call_startup_hook
+(
+  P2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb
+)
+{
+/* Touch unused parameter */
+  ((void)p_ccb);
+
+}
+#endif /* (OSEE_HAS_STARTUPHOOK && OSEE_HAS_CONTEXT) elif
+  OSEE_HAS_STARTUPHOOK */
+
+#if (defined(OSEE_HAS_PRETASKHOOK)) && (defined(OSEE_HAS_CONTEXT))
 LOCAL_INLINE FUNC(void, OS_CODE)
   osEE_call_pre_task_hook
 (
   P2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb
 )
 {
-#if (defined(OSEE_HAS_PRETASKHOOK))
-#if (defined(OSEE_HAS_CONTEXT))
   VAR(OsEE_os_context, AUTOMATIC) prev_os_ctx = p_ccb->os_context;
   p_ccb->os_context = OSEE_PRETASKHOOK_CTX;
-#else
-  ((void)p_ccb);
-#endif /* OSEE_HAS_CONTEXT */
-  PreTaskHook();
-#if (defined(OSEE_HAS_CONTEXT))
-  p_ccb->os_context = prev_os_ctx;
-#endif /* OSEE_HAS_CONTEXT */
-#else
-  ((void)p_ccb);
-#endif /* OSEE_HAS_PRETASKHOOK */
-}
 
+  PreTaskHook();
+
+  p_ccb->os_context = prev_os_ctx;
+}
+#elif (defined(OSEE_HAS_PRETASKHOOK))
+LOCAL_INLINE FUNC(void, OS_CODE)
+  osEE_call_pre_task_hook
+(
+  P2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb
+)
+{
+/* Touch unused parameter */
+  (void)p_ccb;
+  PreTaskHook();
+}
+#else
+LOCAL_INLINE FUNC(void, OS_CODE)
+  osEE_call_pre_task_hook
+(
+  P2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb
+)
+{
+/* Touch unused parameter */
+  (void)p_ccb;
+}
+#endif /* (OSEE_HAS_PRETASKHOOK && OSEE_HAS_CONTEXT) elif
+  OSEE_HAS_PRETASKHOOK */
+
+#if (defined(OSEE_HAS_POSTTASKHOOK)) && (defined(OSEE_HAS_CONTEXT))
 LOCAL_INLINE FUNC(void, OS_CODE)
   osEE_call_post_task_hook
 (
   P2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb
 )
 {
-#if (defined(OSEE_HAS_POSTTASKHOOK))
-#if (defined(OSEE_HAS_CONTEXT))
   VAR(OsEE_os_context, AUTOMATIC) prev_os_ctx = p_ccb->os_context;
   p_ccb->os_context = OSEE_POSTTASKHOOK_CTX;
-#else
-  ((void)p_ccb);
-#endif /* OSEE_HAS_CONTEXT */
-  PostTaskHook();
-#if (defined(OSEE_HAS_CONTEXT))
-  p_ccb->os_context = prev_os_ctx;
-#endif /* OSEE_HAS_CONTEXT */
-#else
-  ((void)p_ccb);
-#endif /* OSEE_HAS_POSTTASKHOOK */
-}
 
+  PostTaskHook();
+
+  p_ccb->os_context = prev_os_ctx;
+}
+#elif (defined(OSEE_HAS_POSTTASKHOOK))
+LOCAL_INLINE FUNC(void, OS_CODE)
+  osEE_call_post_task_hook
+(
+  P2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb
+)
+{
+/* Touch unused parameter */
+  (void)p_ccb;
+  PostTaskHook();
+}
+#else
+LOCAL_INLINE FUNC(void, OS_CODE)
+  osEE_call_post_task_hook
+(
+  P2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb
+)
+{
+/* Touch unused parameter */
+  (void)p_ccb;
+}
+#endif /* (OSEE_HAS_POSTTASKHOOK && OSEE_HAS_CONTEXT) elif
+  OSEE_HAS_POSTTASKHOOK */
+
+#if (defined(OSEE_HAS_SHUTDOWNHOOK)) && (defined(OSEE_HAS_CONTEXT))
 LOCAL_INLINE FUNC(void, OS_CODE)
   osEE_call_shutdown_hook
 (
-  P2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb,
-  VAR(StatusType, AUTOMATIC)                Error
+  P2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)    p_ccb,
+  VAR(StatusType, AUTOMATIC)                  Error
 )
 {
-#if (defined(OSEE_HAS_SHUTDOWNHOOK))
-#if (defined(OSEE_HAS_CONTEXT))
   VAR(OsEE_os_context, AUTOMATIC) prev_os_ctx = p_ccb->os_context;
   p_ccb->os_context = OSEE_SHUTDOWNHOOK_CTX;
-#else
-  ((void)p_ccb);
-#endif /* OSEE_HAS_CONTEXT */
+
   ShutdownHook(Error);
-#if (defined(OSEE_HAS_CONTEXT))
   p_ccb->os_context = prev_os_ctx;
-#endif /* OSEE_HAS_CONTEXT */
+}
+#elif (defined(OSEE_HAS_SHUTDOWNHOOK))
+LOCAL_INLINE FUNC(void, OS_CODE)
+  osEE_call_shutdown_hook
+(
+  P2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb,
+  VAR(StatusType, AUTOMATIC)                  Error
+)
+{
+/* Touch unused parameter */
+  ((void)p_ccb);
+  ShutdownHook(Error);
+}
 #else
+LOCAL_INLINE FUNC(void, OS_CODE)
+  osEE_call_shutdown_hook
+(
+  P2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb,
+  VAR(StatusType, AUTOMATIC)                  Error
+)
+{
   ((void)p_ccb);
   ((void)Error);
-#endif /* OSEE_HAS_SHUTDOWNHOOK */
 }
+#endif /* OSEE_HAS_SHUTDOWNHOOK */
 
+#if (defined(OSEE_HAS_ERRORHOOK))
 LOCAL_INLINE FUNC(void, OS_CODE)
   osEE_call_error_hook
 (
-  P2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb,
-  VAR(StatusType, AUTOMATIC)                Error
+  P2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)    p_ccb,
+  VAR(StatusType, AUTOMATIC)                  Error
 )
 {
-#if (defined(OSEE_HAS_ERRORHOOK))
   VAR(OsEE_os_context, AUTOMATIC) prev_os_ctx = p_ccb->os_context;
   if (prev_os_ctx != OSEE_ERRORHOOK_CTX) {
     p_ccb->os_context = OSEE_ERRORHOOK_CTX;
@@ -350,12 +432,22 @@ LOCAL_INLINE FUNC(void, OS_CODE)
     ErrorHook(Error);
     p_ccb->os_context = prev_os_ctx;
   }
+}
 #else
+LOCAL_INLINE FUNC(void, OS_CODE)
+  osEE_call_error_hook
+(
+  P2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb,
+  VAR(StatusType, AUTOMATIC)                  Error
+)
+{
+/* Touch unused parameter */
   ((void)p_ccb);
   ((void)Error);
-#endif /* OSEE_HAS_ERRORHOOK */
 }
+#endif /* OSEE_HAS_ERRORHOOK */
 
+#if (defined(OSEE_USEPARAMETERACCESS))
 LOCAL_INLINE FUNC(void, OS_CODE)
   osEE_set_service_id
 (
@@ -363,12 +455,7 @@ LOCAL_INLINE FUNC(void, OS_CODE)
   VAR(OSServiceIdType, AUTOMATIC)           service_id
 )
 {
-#if (defined(OSEE_USEPARAMETERACCESS))
   p_ccb->service_id = service_id;
-#else
-  ((void)p_ccb);
-  ((void)service_id);
-#endif /* OSEE_USEPARAMETERACCESS */
 }
 
 LOCAL_INLINE FUNC(void, OS_CODE)
@@ -378,12 +465,7 @@ LOCAL_INLINE FUNC(void, OS_CODE)
   VAR(OsEE_api_param, AUTOMATIC)            api_param
 )
 {
-#if (defined(OSEE_USEPARAMETERACCESS))
   p_ccb->api_param1 = api_param;
-#else
-  ((void)p_ccb);
-  ((void)api_param);
-#endif /* OSEE_USEPARAMETERACCESS && */
 }
 
 LOCAL_INLINE FUNC(void, OS_CODE)
@@ -393,12 +475,7 @@ LOCAL_INLINE FUNC(void, OS_CODE)
   VAR(OsEE_api_param, AUTOMATIC)            api_param
 )
 {
-#if (defined(OSEE_USEPARAMETERACCESS))
   p_ccb->api_param2 = api_param;
-#else
-  ((void)p_ccb);
-  ((void)api_param);
-#endif /* OSEE_USEPARAMETERACCESS && */
 }
 
 LOCAL_INLINE FUNC(void, OS_CODE)
@@ -408,13 +485,53 @@ LOCAL_INLINE FUNC(void, OS_CODE)
   VAR(OsEE_api_param, AUTOMATIC)            api_param
 )
 {
-#if (defined(OSEE_USEPARAMETERACCESS))
   p_ccb->api_param3 = api_param;
-#else
+}
+#else /* OSEE_USEPARAMETERACCESS */
+LOCAL_INLINE FUNC(void, OS_CODE)
+  osEE_set_service_id
+(
+  P2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb,
+  VAR(OSServiceIdType, AUTOMATIC)             service_id
+)
+{
+  ((void)p_ccb);
+  ((void)service_id);
+}
+
+LOCAL_INLINE FUNC(void, OS_CODE)
+  osEE_set_api_param1
+(
+  P2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb,
+  VAR(OsEE_api_param, AUTOMATIC)              api_param
+)
+{
   ((void)p_ccb);
   ((void)api_param);
-#endif /* OSEE_USEPARAMETERACCESS && */
 }
+
+LOCAL_INLINE FUNC(void, OS_CODE)
+  osEE_set_api_param2
+(
+  P2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb,
+  VAR(OsEE_api_param, AUTOMATIC)              api_param
+)
+{
+  ((void)p_ccb);
+  ((void)api_param);
+}
+
+LOCAL_INLINE FUNC(void, OS_CODE)
+  osEE_set_api_param3
+(
+  P2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb,
+  VAR(OsEE_api_param, AUTOMATIC)              api_param
+)
+{
+  ((void)p_ccb);
+  ((void)api_param);
+}
+#endif /* OSEE_USEPARAMETERACCESS */
 
 LOCAL_INLINE FUNC(StatusType, OS_CODE)
   osEE_shutdown_os
@@ -450,7 +567,7 @@ LOCAL_INLINE FUNC(StatusType, OS_CODE)
 LOCAL_INLINE FUNC(OsEE_bool, OS_CODE)
   osEE_is_valid_counter_id
 (
-  P2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)  p_kdb,
+  P2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST) p_kdb,
   VAR(CounterType, AUTOMATIC)               counter_id
 )
 {
@@ -715,12 +832,12 @@ LOCAL_INLINE FUNC_P2VAR(OsEE_SchedTabDB, OS_APPL_CONST, OS_CODE)
 #if (defined(OSEE_HAS_STACK_MONITORING))
 FUNC(void, OS_CODE) osEE_stack_monitoring
 (
-  P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb
+  P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST) p_cdb
 );
 #else
 LOCAL_INLINE FUNC(void, OS_CODE) osEE_stack_monitoring
 (
-  P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb
+  P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST) p_cdb
 )
 {
 /* Touch unused parameter */

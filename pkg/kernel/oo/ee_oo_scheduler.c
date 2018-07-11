@@ -100,7 +100,7 @@ FUNC(OsEE_bool, OS_CODE)
   VAR(OsEE_bool, AUTOMATIC)
     head_changed = OSEE_FALSE;
   CONST(MemSize, AUTOMATIC)
-    queue_index = (p_tdb_new->ready_prio - 1U);
+    queue_index = (p_tdb_new->ready_prio - (TaskPrio)1U);
   CONSTP2VAR(OsEE_rq_queue, AUTOMATIC, OS_APPL_DATA)
     p_rq_queue = &p_rq->queue[queue_index];
 
@@ -146,7 +146,7 @@ FUNC_P2VAR(OsEE_preempt, OS_APPL_DATA, OS_CODE)
     p_rq_sn  = (p_rq_queue != NULL)?
       p_rq_queue->p_head:
       NULL;
-  P2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA)
+  P2CONST(OsEE_SN, AUTOMATIC, OS_APPL_DATA)
     p_ret_sn = p_ccb->p_stk_sn;
   VAR(OsEE_bool, AUTOMATIC)
     is_rq_preemption = OSEE_FALSE;
@@ -176,6 +176,8 @@ FUNC_P2VAR(OsEE_preempt, OS_APPL_DATA, OS_CODE)
     p_ret_tdb                 = p_cdb->p_idle_task;
     p_ret_tdb->p_tcb->status  = OSEE_TASK_READY_STACKED;
     is_rq_preemption          = OSEE_TRUE;
+  } else {
+    /* Needed for Misra */
   }
 
   if (is_rq_preemption) {
@@ -263,6 +265,8 @@ FUNC_P2VAR(OsEE_preempt, OS_APPL_DATA, OS_CODE)
     p_ret_tdb                 = p_cdb->p_idle_task;
     p_ret_tdb->p_tcb->status  = OSEE_TASK_READY_STACKED;
     is_rq_preemption          = OSEE_TRUE;
+  } else {
+    /* Needed for Misra */
   }
 
   if (is_rq_preemption) {
@@ -292,9 +296,9 @@ FUNC(OsEE_bool, OS_CODE)
   CONST(OsEE_bool, AUTOMATIC)                   as_ready
 )
 {
-  CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA) p_tdb_new = p_sn_new->p_tdb;
-  CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA) p_tcb_new = p_tdb_new->p_tcb;
-  CONST(TaskPrio, AUTOMATIC)                new_task_prio =
+  CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST)  p_tdb_new = p_sn_new->p_tdb;
+  CONSTP2CONST(OsEE_TCB, AUTOMATIC, OS_APPL_DATA) p_tcb_new = p_tdb_new->p_tcb;
+  CONST(TaskPrio, AUTOMATIC)                  new_task_prio =
     (as_ready)?
       p_tdb_new->ready_prio:
       p_tcb_new->current_prio;

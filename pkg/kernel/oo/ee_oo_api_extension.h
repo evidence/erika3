@@ -97,12 +97,12 @@ FUNC(StatusType, OS_CODE)
   VAR(SemRefType, AUTOMATIC) Sem
 );
 
-#endif /* OSEE_API_EXTENSION */
-
-#define OS_SERVICE_ID_EXTENSION OS_SERVICE_ID_OSEK
-
 #if (defined(__cplusplus))
 }
 #endif
+
+#endif /* OSEE_API_EXTENSION */
+
+#define OS_SERVICE_ID_EXTENSION OS_SERVICE_ID_OSEK
 
 #endif /* !OSEE_API_EXTENSION_H_ */
