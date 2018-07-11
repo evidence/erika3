@@ -58,6 +58,7 @@
 #include "ee_hal_internal_types.h"
 #include "ee_scheduler_types.h"
 #include "ee_kernel_types.h"
-#include "ee_get_kernel_and_core.h"
+/* "ee_get_kernel_and_core.h" do not belong to conf interface but to internal
+   one instead, for kalray_k1 arch. This is due to the use of Kalray BSP. */
 
 #endif /* !OSEE_CONF_H */

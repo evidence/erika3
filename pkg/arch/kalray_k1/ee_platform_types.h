@@ -76,8 +76,14 @@ extern "C" {
 #endif /* OSEE_SINGLECORE || !OsNumberOfCores */
 
 #define OS_CORE_ID_MASTER       (0U)
+
+#if (!defined(OSEE_CORE_ID_VALID_MASK))
 #define OSEE_CORE_ID_VALID_MASK OSEE_ONES(OsNumberOfCores)
+#endif /* !OSEE_CORE_ID_VALID_MASK */
+
+#if (!defined(OSEE_CORE_ID_MAX))
 #define OSEE_CORE_ID_MAX        OsNumberOfCores
+#endif /* !OSEE_CORE_ID_MAX */
 
 #if (!defined(OSEE_SINGLECORE)) &&\
   ((defined(OSEE_API_EXTENSION)) && defined(OSEE_API_DYNAMIC))

@@ -55,6 +55,7 @@
 
 #include "ee.h"
 #include "ee_conf.h"
+#include "ee_get_kernel_and_core.h"
 
 #include "ee_hal_internal.h"
 #include "ee_kernel.h"
