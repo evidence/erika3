@@ -60,13 +60,13 @@ OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/kalray_k1/ee_platform_types.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/kalray_k1/ee_k1_vbsp.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/kalray_k1/ee_hal.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/kalray_k1/ee_k1_irq.h
+OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/kalray_k1/ee_get_kernel_and_core.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/kalray_k1/ee.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/kalray_k1/ee_conf.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/kalray_k1/ee_hal_internal_types.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/kalray_k1/kernel_k1/ee_api_k1.h
 
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/kalray_k1/ee_internal.h
-OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/kalray_k1/ee_get_kernel_and_core.h
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/kalray_k1/ee_k1_mppa_trace.h
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/kalray_k1/ee_hal_internal.h
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/kalray_k1/ee_k1_context.h

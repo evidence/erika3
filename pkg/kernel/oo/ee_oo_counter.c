@@ -493,7 +493,8 @@ FUNC(void, OS_CODE)
     /* Counter Increment can be done outside lock critical section, since only
        a core is allowed to do that */
     if (p_counter_cb->value >= p_counter_db->info.maxallowedvalue) {
-      counter_value = (p_counter_cb->value = 0U);
+      counter_value       = 0U;
+      p_counter_cb->value = 0U;
     } else {
       counter_value = ++p_counter_cb->value;
     }
