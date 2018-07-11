@@ -298,7 +298,7 @@ extern "C" {
            given frequency */
 #define OSEE_MICRO_TO_TICKS(X_US, REF_FREQ_HZ)                \
   (((X_US) / OSEE_KILO)?                                      \
-    OSEE_MILLI_TO_TICKS(((X_US) / OSEE_KILO), (REF_FREQ_HZ):    \
+   OSEE_MILLI_TO_TICKS(((X_US) / OSEE_KILO), (REF_FREQ_HZ)):  \
       (OSEE_MILLI_TO_TICKS(X_US, REF_FREQ_HZ) / OSEE_KILO))
 #endif /* !OSEE_MICRO_TO_TICKS */
 
