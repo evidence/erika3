@@ -94,12 +94,13 @@ FUNC(StatusType, OS_CODE)
   VAR(TaskFunc, AUTOMATIC)          idleHook
 );
 
+#if (defined(__cplusplus))
+}
+#endif
+
 #endif /* OSEE_API_DYNAMIC */
 
 #define OS_SERVICE_ID_DYNAMIC OS_SERVICE_ID_EXTENSION
 
-#if (defined(__cplusplus))
-}
-#endif
 
 #endif /* OSEE_API_DYNAMIC_H */

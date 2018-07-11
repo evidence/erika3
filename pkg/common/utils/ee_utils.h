@@ -78,12 +78,6 @@ extern "C" {
 #define OSEE_STRING(stringtoquote) #stringtoquote
 #endif /* !OSEE_STRING */
 
-/* String manipulation macros with one more step indirection to let argument
-   macro explode */
-#if (!defined(OSEE_EVAL))
-#define OSEE_EVAL(e)           e
-#endif /* !OSEE_EVAL */
-
 #if (!defined(OSEE_S))
 #define OSEE_S(m)             OSEE_STRING(m)
 #endif /* !OSEE_S */
@@ -184,17 +178,17 @@ extern "C" {
 
 #if (!defined(OSEE_B_GET))
 #define OSEE_B_GET(x, length, lower_bit)    \
-  ((x) & OSEE_B_MASK(length, lower_bit))
+  ((x) & OSEE_B_MASK((length), (lower_bit)))
 #endif /* !OSEE_B_GET */
 
 #if (!defined(OSEE_B_CLEAR))
 #define OSEE_B_CLEAR(x, length, lower_bit)  \
-  ((x) & (~OSEE_B_MASK(length, lower_bit)))
+  ((x) & (~OSEE_B_MASK((length), (lower_bit))))
 #endif /* OSEE_B_CLEAR */
 
 #if (!defined(OSEE_B_SET))
 #define OSEE_B_SET(x, length, lower_bit, v) \
-  (OSEE_B_CLEAR(x,length,lower_bit) |\
+  (OSEE_B_CLEAR((x),(length),(lower_bit)) | \
     (((v) & OSEE_ONES(length)) << (lower_bit))\
   )
 #endif /* !OSEE_B_SET*/
@@ -304,7 +298,7 @@ extern "C" {
            given frequency */
 #define OSEE_MICRO_TO_TICKS(X_US, REF_FREQ_HZ)                \
   (((X_US) / OSEE_KILO)?                                      \
-      OSEE_MILLI_TO_TICKS(((X_US) / OSEE_KILO), REF_FREQ_HZ): \
+    OSEE_MILLI_TO_TICKS(((X_US) / OSEE_KILO), (REF_FREQ_HZ):    \
       (OSEE_MILLI_TO_TICKS(X_US, REF_FREQ_HZ) / OSEE_KILO))
 #endif /* !OSEE_MICRO_TO_TICKS */
 
@@ -313,8 +307,8 @@ extern "C" {
            given frequency */
 #define OSEE_NANO_TO_TICKS(X_NS, REF_FREQ_HZ)                 \
   (((X_NS) / OSEE_KILO)?                                      \
-      OSEE_MICRO_TO_TICKS(((X_NS) / OSEE_KILO), REF_FREQ_HZ): \
-      (OSEE_MICRO_TO_TICKS(X_NS, REF_FREQ_HZ) / OSEE_KILO))
+   OSEE_MICRO_TO_TICKS(((X_NS) / OSEE_KILO), (REF_FREQ_HZ)):  \
+   (OSEE_MICRO_TO_TICKS((X_NS), (REF_FREQ_HZ)) / OSEE_KILO))
 #endif /* !OSEE_NANO_TO_TICKS */
 
 #if (!defined(OSEE_TICKS_TO_NANO))
@@ -330,7 +324,7 @@ extern "C" {
 /** \brief Utility macro that convert an amount of ticks in equivalent us
            given a frequency */
 #define OSEE_TICKS_TO_MICRO(TICKS, REF_FREQ_HZ)  \
-  (OSEE_TICKS_TO_NANO(TICKS, REF_FREQ_HZ) / OSEE_KILO)
+  (OSEE_TICKS_TO_NANO((TICKS), (REF_FREQ_HZ)) / OSEE_KILO)
 #endif /* !OSEE_TICKS_TO_MICRO */
 
 #if (defined(__cplusplus))

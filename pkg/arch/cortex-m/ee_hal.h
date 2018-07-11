@@ -81,7 +81,7 @@ extern "C" {
 
 /* Use Range Designated Initializers */
 #define	OSEE_FILL_ARRAY(array) = {				\
-	[0 ... (sizeof(array)/sizeof(array[0U]) - 1U)] =	\
+	[0 ... (sizeof(array)/sizeof((array)[0U]) - 1U)] =	\
 	OSEE_FILL_PATTERN					\
 }
 
