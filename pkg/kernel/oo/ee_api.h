@@ -54,8 +54,8 @@
 #ifndef OSEE_API_H
 #define OSEE_API_H
 
-#include "ee_platform_types.h"
 #include "ee_utils.h"
+#include "ee_platform_types.h"
 #include "ee_api_types.h"
 #include "ee_oo_api_osek.h"
 #include "ee_oo_api_dynamic.h"

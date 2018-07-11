@@ -65,7 +65,7 @@
  * Compiler dependent interface
  */
 #include "ee_cfg.h"
-#include "ee_compiler.h"
+/* compiler.h is the "mother" include file and does not need to be included here */
 #include "ee_utils.h"
 
 #if (defined(__cplusplus))
@@ -73,8 +73,6 @@ extern "C" {
 #endif
 
 #define	OSEE_INIT			__attribute__((constructor))
-
-#define	OSEE_PREPROC_VAR_VALUE(v)	#v "=" OSEE_S(v)
 
 /** \def	OSEE_RETURN()
  *

@@ -65,8 +65,7 @@
  * Compiler dependent interface
  */
 #include "ee_cfg.h"
-#include "ee_compiler.h"
-#include "ee_utils.h"
+/* compiler.h is the "mother" include file and does not need to be included here */
 #include "xc.h"
 
 #if (defined(__cplusplus))
@@ -78,8 +77,6 @@ extern "C" {
 #else	/* 0 - [GS]: MPLAB XC16 C Compiler doesn't support constructors. */
 #define	OS_CODE_INIT
 #endif	/* 0 - [GS]: MPLAB XC16 C Compiler doesn't support constructors. */
-
-#define	OSEE_PREPROC_VAR_VALUE(v)	#v "=" OSEE_S(v)
 
 /** \def	OSEE_NAKED
  *

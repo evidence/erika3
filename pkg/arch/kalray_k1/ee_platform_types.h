@@ -58,12 +58,12 @@
 
 #include "ee_cfg.h"
 #include "ee_arch_override.h"
+#include "ee_utils.h"
 #include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <vbsp.h>
 #include "ee_compiler.h"
-#include "ee_utils.h"
 
 #if (defined(__cplusplus))
 extern "C" {
