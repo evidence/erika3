@@ -255,11 +255,11 @@ static FUNC(void, OS_CODE)
         osEE_trigger_get_alarm_db(p_trigger_to_be_handled_db)
       )->cycle;
     if (cycle > 0U) {
-      /* trigger CB "when" field is used to hold next trigger value, for
-         reinsertion in counter timer wheel */
+      /* Reinsert the trigger in timer wheel as relative with delta equal to
+         cycle */
       p_trigger_to_be_handled_cb->status = OSEE_TRIGGER_ACTIVE;
-      p_trigger_to_be_handled_cb->when =
-        osEE_counter_eval_when(p_counter_db, cycle);
+      osEE_counter_insert_rel_trigger(p_counter_db,
+        p_trigger_to_be_handled_db, cycle);
     } else {
       p_trigger_to_be_handled_cb->status = OSEE_TRIGGER_INACTIVE;
     }
@@ -483,11 +483,12 @@ FUNC(void, OS_CODE)
 #endif /* OSEE_HAS_COUNTER_PRESCALER */
   {
     VAR(TickType, AUTOMATIC) counter_value;
-    P2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_DATA) p_triggered_db;
+    P2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_CONST) p_triggered_db;
     /* Since only the core that own a counter can increment it, I use
-       osEE_get_curr_core_id, instead reading the CounterDB to get the info.
+       osEE_get_curr_core, instead reading the CounterDB to get the info.
        This because is more efficient to read SFR than memory. */
-    CONST(CoreIdType, AUTOMATIC) counter_core_id = osEE_get_curr_core_id();
+    CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
+      p_cdb = osEE_get_curr_core();
 
     /* Counter Increment can be done outside lock critical section, since only
        a core is allowed to do that */
@@ -502,8 +503,8 @@ FUNC(void, OS_CODE)
             When the action is actually performed the core have to be released
             to not have nested critical sections.
             To handle possible races due to cycling triggers a state
-            protocol have beenimplemented. */
-    osEE_lock_core_id(counter_core_id);
+            protocol have been implemented. */
+    osEE_lock_core(p_cdb);
 
     p_triggered_db = p_counter_cb->trigger_queue;
 
@@ -537,7 +538,7 @@ FUNC(void, OS_CODE)
 
         /* Handle actions outside the critical sections, to not incur in
            nested critical sections. */
-        osEE_unlock_core_id(counter_core_id);
+        osEE_unlock_core(p_cdb);
 
         /* Handle Actions */
         do {
@@ -574,10 +575,10 @@ FUNC(void, OS_CODE)
           OSEE_HAS_SCHEDULE_TABLES */
         } while (p_triggered_db != NULL);
       } else {
-        osEE_unlock_core_id(counter_core_id);
+        osEE_unlock_core(p_cdb);
       }
     } else {
-      osEE_unlock_core_id(counter_core_id);
+      osEE_unlock_core(p_cdb);
     }
   }
 }
