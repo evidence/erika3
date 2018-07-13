@@ -285,7 +285,7 @@ void idle_hook ( void ) {
     old_sp = curr_sp;
   } else if ( old_sp != curr_sp ) {
     DemoHAL_LedOn(DEMO_HAL_LED_1);
-    while (1U);
+    for(;;);
   }
 
   ++idle_cnt;

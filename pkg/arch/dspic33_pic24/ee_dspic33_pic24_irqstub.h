@@ -100,7 +100,7 @@ do {						\
 	__asm__ volatile("PUSH.D W2");		\
 	__asm__ volatile("MOV _SRbits, w0");	\
 	__asm__ volatile("PUSH W0");		\
-} while(0U)
+} while(OSEE_FALSE)
 #else	/* 0 - [GS]: MISRA */
 /*
  * Save IRQ Context
@@ -121,7 +121,7 @@ osEE_hal_saveIrqCtx( void )
 do {						\
 	osEE_hal_disableIRQ();			\
 	osEE_hal_saveIrqCtx();			\
-} while(0U)
+} while(OSEE_FALSE)
 #endif	/* 0 - [GS]: MISRA */
 
 #if	0	/* [GS]: MISRA */
@@ -134,7 +134,7 @@ do {						\
 	__asm__ volatile("MOV W0, _SRbits");	\
 	__asm__ volatile("POP.D W2");		\
 	__asm__ volatile("POP.D W0");		\
-} while(0)
+} while(OSEE_FALSE)
 #else	/* 0 - [GS]: MISRA */
 /*
  * Restore IRQ Context
@@ -154,7 +154,7 @@ osEE_hal_restoreIrqCtx( void )
 #define	OSEE_DSPIC33_PIC24_ISR_POSTSTUB()	\
 do {						\
 	osEE_hal_restoreIrqCtx();		\
-} while(0)
+} while(OSEE_FALSE)
 #endif	/* 0 - [GS]: MISRA */
 
 /* Un-Defined ISR */
@@ -165,7 +165,7 @@ FUNC(void, OS_CODE) OSEE_ISR_NO_AUTO_PSV (v)(void)	\
 	/* Disables IRQ  */				\
 	osEE_hal_disableIRQ();				\
 	/* Hangs in a infinite loop!!! */		\
-	while(1U);					\
+	for(;;);					\
 }
 
 #if (defined(__cplusplus))

@@ -209,7 +209,7 @@ void idle_hook(void) {
   osEE_aarch64_gtimer_start(ticks_per_beat, OSEE_AARCH64_GTIMER_COUNTDOWN);
 
   /* Forever loop: background activities (if any) should go here */
-  for (;;)
+  for(;;)
   {
     curr_sp = osEE_get_SP();
     if ( curr_sp != curr_sp_after ) {

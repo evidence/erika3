@@ -157,7 +157,7 @@ FUNC(void, OS_CODE) (v)( void )			\
 	/* Disables IRQ  */			\
 	osEE_hal_disableIRQ();			\
 	/* Hangs in a infinite loop!!! */	\
-	while(1U);				\
+	for(;;);			\
 }
 
 #if (defined(__cplusplus))

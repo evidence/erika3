@@ -283,9 +283,7 @@ FUNC(StatusType, OS_CODE)
 /* [SWS_Os_00611] If the IOC is configured, StartOS shall initialize the data
      structures of the IOC. (SRS_Os_80020) */
     if (!(p_kcb->ar_core_mask & ((CoreMaskType)1U << curr_core_id))) {
-      while (1) {
-        ; /* Endless Loop */
-      }
+      for(;;);  /* Endless Loop */
     }
 /* [SWS_Os_00580] All cores that belong to the AUTOSAR system shall be
     synchronized within the StartOS before the global StartupHook is called.
@@ -306,9 +304,7 @@ FUNC(StatusType, OS_CODE)
     /* I rely in C shortcut for boolean expression */
     if ((curr_core_id != OS_CORE_ID_MASTER) && !osEE_cpu_startos()) {
       /* Enter in an endless loop if it happened */
-      while (1) {
-        ; 
-      }
+      for(;;);
     }
 /* [SWS_Os_00608] If more than one core calls StartOS with an AppMode other
     than "DONOTCARE", the AppModes shall be the same. StartOS shall check this
@@ -330,9 +326,7 @@ FUNC(StatusType, OS_CODE)
             } else if (real_mode != current_mode) {
             /* Error condition specified by SWS_Os_00608 requirement: enter
                 in an endless loop */
-              while (1) {
-                ; 
-              }
+              for(;;);
             } else {
               /* Empty else statement to comply with MISRA 14.10 */
             }
@@ -492,9 +486,7 @@ FUNC(StatusType, OS_CODE)
 #if (!defined(OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN))
     osEE_hal_disableIRQ();
     osEE_call_shutdown_hook(p_ccb, p_ccb->last_error);
-    while (1) {
-      ; /* Endless Loop */
-    }
+    for(;;); /* Endless Loop */
 #endif /* !OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN */
 #elif (defined(OSEE_API_DYNAMIC))
     if (p_ccb->os_status == OSEE_KERNEL_STARTED) {

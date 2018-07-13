@@ -84,7 +84,7 @@ TASK(Task1)
 		else if (old_sp != osEE_get_SP()) {
 			stk_wrong = OSEE_TRUE;
 			DemoHAL_LedOn(DEMO_HAL_LED_1);
-			while (1U);
+			for(;;);
 		}
 	}
 

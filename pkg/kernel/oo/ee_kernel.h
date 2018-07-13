@@ -552,7 +552,7 @@ LOCAL_INLINE FUNC(StatusType, OS_CODE)
 #if (defined(OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN))
   osEE_hal_disableIRQ();
   osEE_call_shutdown_hook(p_ccb, Error);
-  for (;;) {
+  for(;;) {
     ; /* Endless Loop */
   }
 #else
