@@ -55,49 +55,6 @@
 #define OSEE_LU_MASK  ((uint8_t)-1U)
 #define OSEE_LU_NULL  OSEE_LU_MASK
 
-static CONST(uint8_t, OS_CONST) osEE_msb_8bit_lookup[256U] =
-{
-  OSEE_LU_NULL, 0U, 1U, 1U, 2U, 2U, 2U, 2U,
-            3U, 3U, 3U, 3U, 3U, 3U, 3U, 3U,
-            4U, 4U, 4U, 4U, 4U, 4U, 4U, 4U,
-            4U, 4U, 4U, 4U, 4U, 4U, 4U, 4U,
-
-            5U, 5U, 5U, 5U, 5U, 5U, 5U, 5U,
-            5U, 5U, 5U, 5U, 5U, 5U, 5U, 5U,
-            5U, 5U, 5U, 5U, 5U, 5U, 5U, 5U,
-            5U, 5U, 5U, 5U, 5U, 5U, 5U, 5U,
-
-            6U, 6U, 6U, 6U, 6U, 6U, 6U, 6U,
-            6U, 6U, 6U, 6U, 6U, 6U, 6U, 6U,
-            6U, 6U, 6U, 6U, 6U, 6U, 6U, 6U,
-            6U, 6U, 6U, 6U, 6U, 6U, 6U, 6U,
-
-            6U, 6U, 6U, 6U, 6U, 6U, 6U, 6U,
-            6U, 6U, 6U, 6U, 6U, 6U, 6U, 6U,
-            6U, 6U, 6U, 6U, 6U, 6U, 6U, 6U,
-            6U, 6U, 6U, 6U, 6U, 6U, 6U, 6U,
-
-            7U, 7U, 7U, 7U, 7U, 7U, 7U, 7U,
-            7U, 7U, 7U, 7U, 7U, 7U, 7U, 7U,
-            7U, 7U, 7U, 7U, 7U, 7U, 7U, 7U,
-            7U, 7U, 7U, 7U, 7U, 7U, 7U, 7U,
-
-            7U, 7U, 7U, 7U, 7U, 7U, 7U, 7U,
-            7U, 7U, 7U, 7U, 7U, 7U, 7U, 7U,
-            7U, 7U, 7U, 7U, 7U, 7U, 7U, 7U,
-            7U, 7U, 7U, 7U, 7U, 7U, 7U, 7U,
-
-            7U, 7U, 7U, 7U, 7U, 7U, 7U, 7U,
-            7U, 7U, 7U, 7U, 7U, 7U, 7U, 7U,
-            7U, 7U, 7U, 7U, 7U, 7U, 7U, 7U,
-            7U, 7U, 7U, 7U, 7U, 7U, 7U, 7U,
-
-            7U, 7U, 7U, 7U, 7U, 7U, 7U, 7U,
-            7U, 7U, 7U, 7U, 7U, 7U, 7U, 7U,
-            7U, 7U, 7U, 7U, 7U, 7U, 7U, 7U,
-            7U, 7U, 7U, 7U, 7U, 7U, 7U, 7U,
-};
-
 typedef int VAR(OsEE_signed_index, TYPEDEF);
 
 
@@ -109,6 +66,48 @@ OSEE_GET_MSB_INLINE FUNC(MemSize, OS_CODE)
   VAR(OsEE_rq_mask, AUTOMATIC) mask
 )
 {
+  static CONST(uint8_t, OS_CONST) osEE_msb_8bit_lookup[256U] = {
+    OSEE_LU_NULL, 0U, 1U, 1U, 2U, 2U, 2U, 2U,
+              3U, 3U, 3U, 3U, 3U, 3U, 3U, 3U,
+              4U, 4U, 4U, 4U, 4U, 4U, 4U, 4U,
+              4U, 4U, 4U, 4U, 4U, 4U, 4U, 4U,
+
+              5U, 5U, 5U, 5U, 5U, 5U, 5U, 5U,
+              5U, 5U, 5U, 5U, 5U, 5U, 5U, 5U,
+              5U, 5U, 5U, 5U, 5U, 5U, 5U, 5U,
+              5U, 5U, 5U, 5U, 5U, 5U, 5U, 5U,
+
+              6U, 6U, 6U, 6U, 6U, 6U, 6U, 6U,
+              6U, 6U, 6U, 6U, 6U, 6U, 6U, 6U,
+              6U, 6U, 6U, 6U, 6U, 6U, 6U, 6U,
+              6U, 6U, 6U, 6U, 6U, 6U, 6U, 6U,
+
+              6U, 6U, 6U, 6U, 6U, 6U, 6U, 6U,
+              6U, 6U, 6U, 6U, 6U, 6U, 6U, 6U,
+              6U, 6U, 6U, 6U, 6U, 6U, 6U, 6U,
+              6U, 6U, 6U, 6U, 6U, 6U, 6U, 6U,
+
+              7U, 7U, 7U, 7U, 7U, 7U, 7U, 7U,
+              7U, 7U, 7U, 7U, 7U, 7U, 7U, 7U,
+              7U, 7U, 7U, 7U, 7U, 7U, 7U, 7U,
+              7U, 7U, 7U, 7U, 7U, 7U, 7U, 7U,
+
+              7U, 7U, 7U, 7U, 7U, 7U, 7U, 7U,
+              7U, 7U, 7U, 7U, 7U, 7U, 7U, 7U,
+              7U, 7U, 7U, 7U, 7U, 7U, 7U, 7U,
+              7U, 7U, 7U, 7U, 7U, 7U, 7U, 7U,
+
+              7U, 7U, 7U, 7U, 7U, 7U, 7U, 7U,
+              7U, 7U, 7U, 7U, 7U, 7U, 7U, 7U,
+              7U, 7U, 7U, 7U, 7U, 7U, 7U, 7U,
+              7U, 7U, 7U, 7U, 7U, 7U, 7U, 7U,
+
+              7U, 7U, 7U, 7U, 7U, 7U, 7U, 7U,
+              7U, 7U, 7U, 7U, 7U, 7U, 7U, 7U,
+              7U, 7U, 7U, 7U, 7U, 7U, 7U, 7U,
+              7U, 7U, 7U, 7U, 7U, 7U, 7U, 7U,
+  };
+
   VAR(OsEE_signed_index,  AUTOMATIC) i;
 
   /* the functions looks at the MSB 8 bit at a time. However, since
@@ -125,7 +124,7 @@ OSEE_GET_MSB_INLINE FUNC(MemSize, OS_CODE)
   VAR(MemSize,            AUTOMATIC) msb = (mask_8bit_size * 8U) - 1U;
 
   /* N.B. (x << 3U) == (x * 8U) */
-  for (i = ((mask_8bit_size - 1U) << 3U); i >= 0; (i -= 8U)) {
+  for (i = ((mask_8bit_size - 1U) << 3U); i >= 0; (i -= 8)) {
     CONST(uint8_t, AUTOMATIC) lu_i =
         (uint8_t)((mask & (OSEE_LU_MASK << i)) >> i);
     CONST(uint8_t, AUTOMATIC) msb_tmp = osEE_msb_8bit_lookup[lu_i];

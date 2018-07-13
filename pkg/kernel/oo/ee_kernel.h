@@ -579,13 +579,6 @@ LOCAL_INLINE FUNC(StatusType, OS_CODE)
 
 #endif /* OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN */
 
-
-
-
-
-
-
-
 #if (defined(OSEE_HAS_COUNTERS))
 LOCAL_INLINE FUNC(OsEE_bool, OS_CODE)
   osEE_is_valid_counter_id

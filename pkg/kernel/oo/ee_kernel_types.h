@@ -106,7 +106,7 @@ typedef enum OsEE_os_context_tag{
   OSEE_POSTTASKHOOK_CTX,
   OSEE_STARTUPHOOK_CTX,
   OSEE_SHUTDOWNHOOK_CTX,
-  OSEE_ALARMCALLBACK_CTX,
+  OSEE_ALARMCALLBACK_CTX
 } OsEE_os_context;
 
 typedef enum {
@@ -444,7 +444,7 @@ typedef struct OsEE_autostart_trigger_info_tag {
 } OSEE_CONST OsEE_autostart_trigger_info;
 
 typedef struct OsEE_autostart_trigger_tag {
-  P2SYM_VAR(OsEE_autostart_trigger_info, OS_APPL_DATA,  p_trigger_ptr_array)[];
+  P2SYM_VAR(OsEE_autostart_trigger_info, OS_APPL_CONST, p_trigger_ptr_array)[];
   VAR(MemSize, TYPEDEF)                                 trigger_array_size;
 } OSEE_CONST OsEE_autostart_trigger;
 #endif /* OSEE_HAS_AUTOSTART_TRIGGER */
@@ -452,13 +452,13 @@ typedef struct OsEE_autostart_trigger_tag {
 
 #if (defined(OSEE_HAS_AUTOSTART_TASK))
 typedef struct OsEE_autostart_tdb_tag {
-  P2SYM_CONSTP2VAR(OsEE_TDB, OS_APPL_DATA,  p_tdb_ptr_array)[];
+  P2SYM_CONSTP2VAR(OsEE_TDB, OS_APPL_CONST, p_tdb_ptr_array)[];
   VAR(MemSize, TYPEDEF)                     tdb_array_size;
 } OSEE_CONST OsEE_autostart_tdb;
 #endif /* !OSEE_HAS_AUTOSTART_TASK */
 
 typedef struct OsEE_CCB_tag {
-  P2VAR(OsEE_TDB, TYPEDEF, OS_APPL_DATA)        p_curr;
+  P2VAR(OsEE_TDB, TYPEDEF, OS_APPL_CONST)       p_curr;
 #if (!defined(OSEE_SINGLECORE)) && (defined(OSEE_SCHEDULER_GLOBAL))
   P2VAR(OsEE_spin_lock, TYPEDEF, OS_APPL_DATA)  p_lock_to_be_released;
 #endif /* !OSEE_SINGLECORE && OSEE_SCHEDULER_GLOBAL */
@@ -488,7 +488,7 @@ typedef struct OsEE_CCB_tag {
 #if (defined(OSEE_HAS_PRETASKHOOK))
   /* Needed to distinguish that PreTaskHook HAVE NOT to be called after an
    * ISR2 that terminate without a TASK rescheduling */
-  P2VAR(OsEE_TDB, OS_APPL_DATA, TYPEDEF)        p_last_tdb_hook;
+  P2VAR(OsEE_TDB, OS_APPL_CONST, TYPEDEF)       p_last_tdb_hook;
 #endif /* OSEE_HAS_PRETASKHOOK */
   VAR(OsEE_reg,  TYPEDEF)                       prev_s_isr_all_status;
   VAR(OsEE_reg,  TYPEDEF)                       prev_s_isr_os_status;
@@ -511,16 +511,16 @@ typedef struct OsEE_CDB_tag {
 #if (defined(OSEE_HAS_IDLEHOOK)) || (defined(OSEE_API_DYNAMIC))
   VAR(TaskFunc, TYPEDEF)                          p_idle_hook;
 #endif /* OSEE_HAS_IDLEHOOK || OSEE_API_DYNAMIC */
-  P2VAR(OsEE_TDB, TYPEDEF, OS_APPL_DATA)          p_idle_task;
+  P2VAR(OsEE_TDB, TYPEDEF, OS_APPL_CONST)         p_idle_task;
 #if (defined(OSEE_HAS_SYSTEM_TIMER))
-  P2VAR(OsEE_CounterDB, TYPEDEF, OS_APPL_DATA)    p_sys_counter_db;
+  P2VAR(OsEE_CounterDB, TYPEDEF, OS_APPL_CONST)   p_sys_counter_db;
 #endif /* OSEE_HAS_SYSTEM_TIMER */
 #if (defined(OSEE_HAS_AUTOSTART_TASK))
-  P2SYM_VAR(OsEE_autostart_tdb, OS_APPL_DATA,     p_autostart_tdb_array)[];
+  P2SYM_VAR(OsEE_autostart_tdb, OS_APPL_CONST,    p_autostart_tdb_array)[];
   VAR(MemSize, TYPEDEF)                           autostart_tdb_array_size;
 #endif /* OSEE_HAS_AUTOSTART_TASK */
 #if (defined(OSEE_HAS_AUTOSTART_TRIGGER))
-  P2SYM_VAR(OsEE_autostart_trigger, OS_APPL_DATA, p_autostart_trigger_array)[];
+  P2SYM_VAR(OsEE_autostart_trigger, OS_APPL_CONST, p_autostart_trigger_array)[];
   VAR(MemSize, TYPEDEF)                           autostart_trigger_array_size;
 #endif /* OSEE_HAS_AUTOSTART_TRIGGER */
 #if (!defined(OSEE_SINGLECORE))
@@ -563,37 +563,37 @@ typedef struct OsEE_KCB_tag {
 } OsEE_KCB;
 
 typedef struct OsEE_KDB_tag {
-  P2VAR(OsEE_KCB, TYPEDEF, OS_APPL_DATA)          p_kcb;
+  P2VAR(OsEE_KCB, TYPEDEF, OS_APPL_DATA)            p_kcb;
 #if (!defined(OSEE_SINGLECORE))
-  P2VAR(OsEE_spin_lock, TYPEDEF,OS_APPL_DATA)     p_lock;
-  P2VAR(OsEE_barrier, TYPEDEF,OS_APPL_DATA)       p_barrier;
+  P2VAR(OsEE_spin_lock, TYPEDEF,OS_APPL_DATA)       p_lock;
+  P2VAR(OsEE_barrier, TYPEDEF,OS_APPL_DATA)         p_barrier;
 #endif /* !OSEE_SINGLECORE */
   /* EG: No AUTOSAR Compiler Abstraction For Pointer To Array !!!
          ==> I need to invent one */
-  P2SYM_CONSTP2VAR(OsEE_TDB, OS_APPL_DATA,        p_tdb_ptr_array)
+  P2SYM_CONSTP2VAR(OsEE_TDB, OS_APPL_CONST,         p_tdb_ptr_array)
     [/*OSEE_TASK_ARRAY_SIZE + OsNumberOfCores*/];
-  VAR(MemSize, TYPEDEF)                           tdb_array_size;
+  VAR(MemSize, TYPEDEF)                             tdb_array_size;
 #if (defined(OSEE_ALLOW_TASK_MIGRATION))
-  P2SYM_VAR(OsEE_SN, OS_APPL_DATA,                p_sn_array)
+  P2SYM_VAR(OsEE_SN, OS_APPL_DATA,                  p_sn_array)
     [/*OSEE_SN_ARRAY_SIZE*/];
-  VAR(MemSize, TYPEDEF)                           sn_array_size;
+  VAR(MemSize, TYPEDEF)                             sn_array_size;
 #endif /* OSEE_ALLOW_TASK_MIGRATION */
 #if (defined(OSEE_ALLOW_TASK_MIGRATION))
 #endif /* OSEE_ALLOW_TASK_MIGRATION */
 #if (defined(OSEE_HAS_RESOURCES))
-  P2SYM_CONSTP2VAR(OsEE_MDB, OS_APPL_DATA,        p_res_ptr_array)[];
-  VAR(MemSize, TYPEDEF)                           res_array_size;
+  P2SYM_CONSTP2VAR(OsEE_MDB, OS_APPL_CONST,         p_res_ptr_array)[];
+  VAR(MemSize, TYPEDEF)                             res_array_size;
 #endif /* OSEE_HAS_RESOURCES */
 #if (defined(OSEE_HAS_COUNTERS))
-  P2SYM_CONSTP2VAR(OsEE_CounterDB, OS_APPL_DATA,  p_counter_ptr_array)[];
-  VAR(MemSize, TYPEDEF)                           counter_array_size;
+  P2SYM_CONSTP2VAR(OsEE_CounterDB, OS_APPL_CONST,   p_counter_ptr_array)[];
+  VAR(MemSize, TYPEDEF)                             counter_array_size;
 #if (defined(OSEE_HAS_ALARMS))
-  P2SYM_CONSTP2VAR(OsEE_AlarmDB, OS_APPL_DATA,    p_alarm_ptr_array)[];
-  VAR(MemSize, TYPEDEF)                           alarm_array_size;
+  P2SYM_CONSTP2VAR(OsEE_AlarmDB, OS_APPL_CONST,     p_alarm_ptr_array)[];
+  VAR(MemSize, TYPEDEF)                             alarm_array_size;
 #endif /* OSEE_HAS_ALARMS */
 #if (defined(OSEE_HAS_SCHEDULE_TABLES))
-  P2SYM_CONSTP2VAR(OsEE_SchedTabDB, OS_APPL_DATA, p_st_ptr_array)[];
-  VAR(MemSize, TYPEDEF)                           st_array_size;
+  P2SYM_CONSTP2VAR(OsEE_SchedTabDB, OS_APPL_CONST,  p_st_ptr_array)[];
+  VAR(MemSize, TYPEDEF)                             st_array_size;
 #endif /* OSEE_HAS_SCHEDULE_TABLES */
 #endif /* OSEE_HAS_COUNTERS */
 } OSEE_CONST OsEE_KDB;

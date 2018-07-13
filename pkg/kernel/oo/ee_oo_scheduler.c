@@ -100,7 +100,7 @@ FUNC(OsEE_bool, OS_CODE)
   VAR(OsEE_bool, AUTOMATIC)
     head_changed = OSEE_FALSE;
   CONST(MemSize, AUTOMATIC)
-    queue_index = (p_tdb_new->ready_prio - (TaskPrio)1U);
+    queue_index = (MemSize)(p_tdb_new->ready_prio - (TaskPrio)1U);
   CONSTP2VAR(OsEE_rq_queue, AUTOMATIC, OS_APPL_DATA)
     p_rq_queue = &p_rq->queue[queue_index];
 

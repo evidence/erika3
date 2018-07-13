@@ -122,6 +122,12 @@ FUNC(void, OS_CODE)
     ++p_ccb->s_isr_all_cnt;
   } else if (p_ccb->s_isr_all_cnt < OSEE_MAX_BYTE) {
     ++p_ccb->s_isr_all_cnt;
+  } else {
+#if (defined(OSEE_HAS_PROTECTIONHOOK))
+#error Add ProtectionHook call here since it has been implemented
+#else
+  osEE_shutdown_os(p_cdb, E_OS_SYS_SUSPEND_NESTING_LIMIT);
+#endif /* OSEE_HAS_PROTECTIONHOOK */
   }
 
   osEE_orti_trace_service_exit(p_ccb, OSServiceId_SuspendAllInterrupts);
@@ -174,6 +180,12 @@ FUNC(void, OS_CODE)
     ++p_ccb->s_isr_os_cnt;
   } else if (p_ccb->s_isr_os_cnt < OSEE_MAX_BYTE) {
     ++p_ccb->s_isr_os_cnt;
+  } else {
+#if (defined(OSEE_HAS_PROTECTIONHOOK))
+#error Add ProtectionHook call here since it has been implemented
+#else
+  osEE_shutdown_os(p_cdb, E_OS_SYS_SUSPEND_NESTING_LIMIT);
+#endif /* OSEE_HAS_PROTECTIONHOOK */
   }
 
   osEE_orti_trace_service_exit(p_ccb, OSServiceId_SuspendOSInterrupts);

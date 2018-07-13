@@ -349,10 +349,11 @@ typedef enum OsEE_status_type_tag {
 /* Implementation specific errors: they must start with E_OS_SYS_ */
 /* Error during StartOS */
   E_OS_SYS_INIT,                                    /* ((StatusType)24) */
+  E_OS_SYS_SUSPEND_NESTING_LIMIT,                   /* (E_OS_SYS_INIT + 1U) */
 /* Error Codes for Dynamic APIs */
-  E_OS_SYS_TASK,                                    /* (E_OS_SYS_INIT + 1U) */
-  E_OS_SYS_STACK,                                   /* (E_OS_SYS_INIT + 2U) */
-  E_OS_SYS_ACT                                      /* (E_OS_SYS_INIT + 3U) */
+  E_OS_SYS_TASK,                                    /* (E_OS_SYS_INIT + 2U) */
+  E_OS_SYS_STACK,                                   /* (E_OS_SYS_INIT + 3U) */
+  E_OS_SYS_ACT                                      /* (E_OS_SYS_INIT + 4U) */
 } OsEE_status_type;
 
 typedef OsEE_status_type                            StatusType;
