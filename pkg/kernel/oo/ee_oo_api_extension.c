@@ -108,7 +108,7 @@ FUNC(StatusType, OS_CODE)
         CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
           p_to =  osEE_scheduler_task_block_current(p_kdb, &blocked_sn);
 
-        osEE_sn_priority_insert(&Sem->blocked_queue, blocked_sn, OSEE_FALSE);
+        (void)osEE_sn_priority_insert(&Sem->blocked_queue, blocked_sn, OSEE_FALSE);
 
 #if (defined(OSEE_ALLOW_TASK_MIGRATION))
         osEE_get_curr_core()->p_ccb->p_lock_to_be_released = &Sem->lock;

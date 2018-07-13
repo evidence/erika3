@@ -1219,10 +1219,20 @@ FUNC(StatusType, OS_CODE)
     CONSTP2CONST(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
       p_tdb = p_ccb->p_curr;
 
+    /* This function should return the running task. Since ISR2 are in
+       the stacked queue as "tasks", we have the following cases: If
+       the task is BASIC or EXTENDED, then we immediately found the
+       value tu return. If it its ISR2 we have to follow the chain and
+       find the first task in the list (which is the running task
+       which was preempted by the ISR, which could be the idle task),
+       or we are idle. */
+    
     if (p_tdb->task_type <= OSEE_TASK_TYPE_EXTENDED) {
+      /* BASIC or EXTENDED tasks are the first ones in the stacked queue */
       tid = p_tdb->tid;
     } else if (p_tdb->task_type == OSEE_TASK_TYPE_ISR2) {
-      /* In case of ISR2 search the first stacked that is not an ISR2 */
+      /* In case of ISR2 search the first stacked that is not an
+	 ISR2. it could be a basic/extended task or an IDLE task */
       P2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA)
         p_sn = p_ccb->p_stk_sn->p_next;
 
@@ -1236,6 +1246,9 @@ FUNC(StatusType, OS_CODE)
           p_sn = p_sn->p_next;
         }
       }
+    } else {
+      /* This is the case of the IDLE task. we do nothing because tid
+	 is already initialized */
     }
     /* XXX: This SHALL be atomic. */
     (*TaskID) = tid;

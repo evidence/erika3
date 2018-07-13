@@ -128,6 +128,8 @@ osEE_timer_init(
       PR5 = period;			/* Load the period value	  */
       TMR5 = 0U;			/* Clear Timer Counter.		  */
       break;
+    default:                            /* no other timer on this MCU     */
+      break;
   }
 }
 
@@ -156,6 +158,8 @@ osEE_timer_start(
     case OSEE_T5:
       T5CONbits.TON = 1U;
       break;
+    default:                            /* no other timer on this MCU     */
+      break;
   }
 }
 
@@ -183,6 +187,8 @@ osEE_timer_stop(
       break;
     case OSEE_T5:
       T5CONbits.TON = 0U;
+      break;
+    default:                            /* no other timer on this MCU     */
       break;
   }
 }
@@ -214,6 +220,8 @@ osEE_timer_get_counter(
     case OSEE_T5:
       cnt = TMR5;
       break;
+    default:                            /* no other timer on this MCU     */
+      break;
   }
   return cnt;
 }
@@ -242,6 +250,8 @@ osEE_timer_irq_ack(
       break;
     case OSEE_T5:
       IFS1bits.T5IF = 0U;
+      break;
+    default:                            /* no other timer on this MCU     */
       break;
   }
 }

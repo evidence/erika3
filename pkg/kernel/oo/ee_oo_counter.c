@@ -81,11 +81,13 @@ FUNC(void, OS_CODE)
     p_current     = p_counter_cb->trigger_queue;
   CONST(TickType, AUTOMATIC)
     counter_value = p_counter_cb->value;
+  VAR(OsEE_bool, AUTOMATIC)
+    work_not_done = OSEE_TRUE;
 
   /* Update Trigger Status */
   p_trigger_db->p_trigger_cb->when   = when;
 
-  while (p_current != NULL) {
+  while (p_current != NULL && work_not_done) {
     CONST(TickType, AUTOMATIC) current_when = p_current->p_trigger_cb->when;
 
     if (current_when > counter_value) {
@@ -96,7 +98,7 @@ FUNC(void, OS_CODE)
         p_previous  = p_current;
         p_current   = p_current->p_trigger_cb->p_next;
       } else {
-        break;
+        work_not_done = OSEE_FALSE;
       }
     } else {
       /* "Current" belong to next counter-loop */
@@ -107,7 +109,7 @@ FUNC(void, OS_CODE)
         p_previous  = p_current;
         p_current   = p_current->p_trigger_cb->p_next;
       } else {
-        break;
+        work_not_done = OSEE_FALSE;
       }
     }
   }

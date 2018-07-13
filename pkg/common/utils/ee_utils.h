@@ -193,37 +193,6 @@ extern "C" {
   )
 #endif /* !OSEE_B_SET*/
 
-/* Range Bitmasks. r is a bit range with this syntax h:l.
-   It is a trick that uses ternary operator */
-#if (!defined(OSEE_DISABLE_R_MACROS))
-#if (!defined(OSEE_R_LOW))
-#define OSEE_R_LOW(r)     (0?r)
-#endif /* !OSEE_R_LOW */
-
-#if (!defined(OSEE_R_HIGH))
-#define OSEE_R_HIGH(r)    (1?r)
-#endif /* !OSEE_R_HIGH */
-
-#if (!defined(OSEE_R_LENGTH))
-#define OSEE_R_LENGTH(r)  (OSEE_R_HIGH(r) - OSEE_R_LOW(r) + 1U)
-#endif /* !OSEE_R_LENGTH */
-
-#if (!defined(OSEE_R_MASK))
-#define OSEE_R_MASK(r)    OSEE_B_MASK(OSEE_R_LENGTH(r), OSEE_R_LOW(r))
-#endif /* !OSEE_R_MASK */
-
-#if (!defined(OSEE_R_GET))
-#define OSEE_R_GET(x,r)   OSEE_B_GET(x, OSEE_R_LENGTH(r), OSEE_R_LOW(r))
-#endif /* !OSEE_R_GET */
-
-#if (!defined(OSEE_R_CLEAR))
-#define OSEE_R_CLEAR(x,r) OSEE_B_CLEAR(x, OSEE_R_LENGTH(r), OSEE_R_LOW(r))
-#endif /* !OSEE_R_CLEAR */
-
-#if (!defined(OSEE_R_SET))
-#define OSEE_R_SET(x,r,v) OSEE_B_SET(x, OSEE_R_LENGTH(r), OSEE_R_LOW(r), v)
-#endif /* !OSEE_R_SET */
-#endif /* !OSEE_DISABLE_R_MACROS */
 
 /*==============================================================================
                                  Array Macros
@@ -299,7 +268,7 @@ extern "C" {
 #define OSEE_MICRO_TO_TICKS(X_US, REF_FREQ_HZ)                \
   (((X_US) / OSEE_KILO)?                                      \
    OSEE_MILLI_TO_TICKS(((X_US) / OSEE_KILO), (REF_FREQ_HZ)):  \
-      (OSEE_MILLI_TO_TICKS(X_US, REF_FREQ_HZ) / OSEE_KILO))
+   (OSEE_MILLI_TO_TICKS((X_US), (REF_FREQ_HZ)) / OSEE_KILO))
 #endif /* !OSEE_MICRO_TO_TICKS */
 
 #if (!defined(OSEE_NANO_TO_TICKS))

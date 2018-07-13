@@ -552,15 +552,15 @@ LOCAL_INLINE FUNC(StatusType, OS_CODE)
 #if (defined(OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN))
   osEE_hal_disableIRQ();
   osEE_call_shutdown_hook(p_ccb, Error);
-  while (1) {
+  for (;;) {
     ; /* Endless Loop */
   }
 #else
   if (os_status == OSEE_KERNEL_STARTED) {
     osEE_idle_task_terminate(p_cdb->p_idle_task);
   }
-#endif /* OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN */
   return E_OK;
+#endif /* OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN */
 }
 
 #if (defined(OSEE_HAS_COUNTERS))

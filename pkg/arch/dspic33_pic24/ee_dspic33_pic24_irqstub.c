@@ -87,7 +87,7 @@ osEE_dspic33_pic24_isr2_stub(
   osEE_hal_enableIRQ();
 
   /* Activate ISR2 */
-  osEE_activate_isr2(t);
+  (void)osEE_activate_isr2(t);
 
   (void)f;
 
