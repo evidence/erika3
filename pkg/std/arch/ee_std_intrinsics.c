@@ -100,6 +100,9 @@ static CONST(uint8_t, OS_CONST) osEE_msb_8bit_lookup[256U] =
 
 typedef int VAR(OsEE_signed_index, TYPEDEF);
 
+
+/* this function returns the index of the most significant bit of the mask parameter.
+   Example: if the mask value is 0x0100, the function returns 9 */
 OSEE_GET_MSB_INLINE FUNC(MemSize, OS_CODE)
   osEE_hal_get_msb
 (
@@ -107,10 +110,17 @@ OSEE_GET_MSB_INLINE FUNC(MemSize, OS_CODE)
 )
 {
   VAR(OsEE_signed_index,  AUTOMATIC) i;
+
+  /* the functions looks at the MSB 8 bit at a time. However, since
+     the number of "real" bits that can be used in a configuration may
+     be lower than the size of the OEE_rq_mask, then mask_8bit_size
+     contains the number of 8-bit cycles that we have to perform in
+     oredr to find the MSB (the hypothesis here is that the bits
+     higher than OSEE_RQ_PRIO_NUM are 0 */
   CONST(OsEE_reg,         AUTOMATIC) mask_8bit_size =
     ((OSEE_RQ_PRIO_NUM & 0x7U) == 0U)?
-      (OSEE_RQ_PRIO_NUM / 8U):
-      ((OSEE_RQ_PRIO_NUM & (~0x7U)) + 8U) / 8U;
+    (OSEE_RQ_PRIO_NUM / 8U):
+    (((OSEE_RQ_PRIO_NUM & (~0x7U)) + 8U) / 8U);
 
   VAR(MemSize,            AUTOMATIC) msb = (mask_8bit_size * 8U) - 1U;
 

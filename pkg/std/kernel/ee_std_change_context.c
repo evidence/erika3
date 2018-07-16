@@ -60,7 +60,7 @@ FUNC(void, OS_CODE)
   P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST) p_to
 )
 {
-  CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA) p_to_tcb  = p_to->p_tcb;
+  CONSTP2CONST(OsEE_TCB, AUTOMATIC, OS_APPL_DATA) p_to_tcb  = p_to->p_tcb;
 
   if (p_to_tcb->status == OSEE_TASK_READY_STACKED) {
     osEE_hal_save_ctx_and_restore_ctx(p_to, p_to->hdb.p_scb,
@@ -80,7 +80,7 @@ FUNC(void, OS_CODE)
   P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST) p_to
 )
 {
-  CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA) p_to_tcb  = p_to->p_tcb;
+  CONSTP2CONST(OsEE_TCB, AUTOMATIC, OS_APPL_DATA) p_to_tcb  = p_to->p_tcb;
 
   if (p_to_tcb->status == OSEE_TASK_READY_STACKED) {
     osEE_hal_restore_ctx(p_to, p_to->hdb.p_scb);
@@ -105,7 +105,7 @@ FUNC(void, OS_CODE)
   CONSTP2VAR(OsEE_HDB, AUTOMATIC, OS_APPL_DATA) p_idle_hdb  = &p_idle_tdb->hdb;
   CONSTP2VAR(OsEE_SDB, AUTOMATIC, OS_APPL_DATA) p_sdb       = p_idle_hdb->p_sdb;
   CONSTP2VAR(OsEE_SCB, AUTOMATIC, OS_APPL_DATA) p_scb       = p_idle_hdb->p_scb;
-  CONSTP2VAR(OsEE_CTX, AUTOMATIC, OS_APPL_DATA) p_bos       = p_sdb->p_bos;
+  CONSTP2CONST(OsEE_CTX, AUTOMATIC, OS_APPL_DATA) p_bos     = p_sdb->p_bos;
   P2VAR(OsEE_CTX, AUTOMATIC, OS_APPL_DATA)      p_tos       = p_scb->p_tos;
 
   do {

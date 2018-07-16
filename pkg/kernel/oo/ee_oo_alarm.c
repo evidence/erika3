@@ -197,7 +197,7 @@ FUNC(StatusType, OS_CODE)
   VAR(StatusType, AUTOMATIC) ev;
   CONSTP2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_DATA)
     p_trigger_db = osEE_alarm_get_trigger_db(p_alarm_db);
-  CONSTP2VAR(OsEE_TriggerCB, AUTOMATIC, OS_APPL_DATA)
+  CONSTP2CONST(OsEE_TriggerCB, AUTOMATIC, OS_APPL_DATA)
     p_trigger_cb = p_trigger_db->p_trigger_cb;
   CONSTP2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_DATA)
     p_counter_db = p_trigger_db->p_counter_db;

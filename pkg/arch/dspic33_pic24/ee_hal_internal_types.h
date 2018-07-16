@@ -80,7 +80,7 @@ typedef struct OsEE_CTX_tag {
   struct OsEE_CTX_tag * p_ctx;
 } OsEE_CTX;
 
-/* Stack Control Block: contine le informazioni dinamiche relative allo stack */
+/* Stack Control Block: stores the stack dynamic information */
 typedef struct OsEE_SCB_tag {
   OsEE_CTX	* p_tos;	/* Saved Context */
 } OsEE_SCB;

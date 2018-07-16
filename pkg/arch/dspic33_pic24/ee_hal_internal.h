@@ -162,7 +162,7 @@ osEE_hal_set_ipl(
     SET_CPU_IPL(OSEE_DSPIC33_PIC24_IPL_MIN);
   }
   else {
-    SET_CPU_IPL(OSEE_ISR2_VIRT_TO_HW_PRIO(virt_prio) & 0x07U);
+    SET_CPU_IPL((uint8_t)(OSEE_ISR2_VIRT_TO_HW_PRIO(virt_prio) & 0x07U));
   }
 }
 
@@ -206,7 +206,7 @@ osEE_hal_end_nested_primitive(
   VAR(OsEE_reg, AUTOMATIC)	flag
 )
 {
-  SET_CPU_IPL(flag);
+  SET_CPU_IPL((uint8_t)flag);
 }
 
 /*==============================================================================

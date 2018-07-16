@@ -162,7 +162,7 @@ FUNC(StatusType, OS_CODE)
 LOCAL_INLINE FUNC(OsEE_bool, OS_CODE)
   osEE_task_is_active
 (
-  P2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)  p_tcb
+  P2CONST(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)  p_tcb
 )
 {
   return (p_tcb->status > OSEE_TASK_READY);
@@ -533,6 +533,30 @@ LOCAL_INLINE FUNC(void, OS_CODE)
 }
 #endif /* OSEE_USEPARAMETERACCESS */
 
+#if (defined(OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN))
+
+LOCAL_INLINE FUNC(StatusType, OS_CODE_NO_RETURN)
+  osEE_shutdown_os
+(
+  P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)  p_cdb,
+  VAR(StatusType, AUTOMATIC)                Error
+)
+{
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
+
+  p_ccb->os_status = OSEE_KERNEL_SHUTDOWN;
+  /* Used to propagate the error to the ShutdownHook */
+  p_ccb->last_error = Error;
+
+  osEE_hal_disableIRQ();
+  osEE_call_shutdown_hook(p_ccb, Error);
+  for(;;) {
+    ; /* Endless Loop */
+  }
+}
+
+#else /* OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN */
+
 LOCAL_INLINE FUNC(StatusType, OS_CODE)
   osEE_shutdown_os
 (
@@ -541,27 +565,26 @@ LOCAL_INLINE FUNC(StatusType, OS_CODE)
 )
 {
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
-#if (!defined(OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN))
   CONST(OsEE_kernel_status, AUTOMATIC) os_status = p_ccb->os_status;
-#endif /* !OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN */
 
   p_ccb->os_status = OSEE_KERNEL_SHUTDOWN;
   /* Used to propagate the error to the ShutdownHook */
   p_ccb->last_error = Error;
 
-#if (defined(OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN))
-  osEE_hal_disableIRQ();
-  osEE_call_shutdown_hook(p_ccb, Error);
-  for(;;) {
-    ; /* Endless Loop */
-  }
-#else
   if (os_status == OSEE_KERNEL_STARTED) {
     osEE_idle_task_terminate(p_cdb->p_idle_task);
   }
   return E_OK;
-#endif /* OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN */
 }
+
+#endif /* OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN */
+
+
+
+
+
+
+
 
 #if (defined(OSEE_HAS_COUNTERS))
 LOCAL_INLINE FUNC(OsEE_bool, OS_CODE)
@@ -616,14 +639,14 @@ LOCAL_INLINE FUNC(TickType, OS_CODE)
 )
 {
   VAR(TickType, AUTOMATIC) when;
-  CONSTP2VAR(OsEE_CounterCB, AUTOMATIC, OS_APPL_DATA)
+  CONSTP2CONST(OsEE_CounterCB, AUTOMATIC, OS_APPL_DATA)
     p_counter_cb    = p_counter_db->p_counter_cb;
   CONST(TickType, AUTOMATIC)
     maxallowedvalue = p_counter_db->info.maxallowedvalue;
   CONST(TickType, AUTOMATIC)
     value           = p_counter_cb->value;
 
-  if (maxallowedvalue - delta >= value) {
+  if ((maxallowedvalue - delta) >= value) {
     when = value + delta;
   } else {
     when = delta - (maxallowedvalue - value) - 1U;
@@ -640,7 +663,7 @@ LOCAL_INLINE FUNC(TickType, OS_CODE)
 )
 {
   VAR(TickType, AUTOMATIC) delta;
-  CONSTP2VAR(OsEE_CounterCB, AUTOMATIC, OS_APPL_DATA)
+  CONSTP2CONST(OsEE_CounterCB, AUTOMATIC, OS_APPL_DATA)
     p_counter_cb    = p_counter_db->p_counter_cb;
   CONST(TickType, AUTOMATIC)
     maxallowedvalue = p_counter_db->info.maxallowedvalue;

@@ -363,7 +363,7 @@ typedef OsEE_status_type                            StatusType;
  *       moreover in addition to the deviation for the union, probably MISRA
  *       will require something more "types aware" but actually this is just
  *       fine. */
-typedef union OsEE_api_param_tag {
+typedef union {
   VAR(ObjectIDType, TYPEDEF)  num_param;
   VAR(OsEE_addr, TYPEDEF)     p_param;
 } OsEE_api_param;

@@ -266,7 +266,7 @@ extern "C" {
 /** \brief Utility macro that convert an amount of us in number of ticks of a
            given frequency */
 #define OSEE_MICRO_TO_TICKS(X_US, REF_FREQ_HZ)                \
-  (((X_US) / OSEE_KILO)?                                      \
+   ( (((X_US) / OSEE_KILO) != 0U) ?	\
    OSEE_MILLI_TO_TICKS(((X_US) / OSEE_KILO), (REF_FREQ_HZ)):  \
    (OSEE_MILLI_TO_TICKS((X_US), (REF_FREQ_HZ)) / OSEE_KILO))
 #endif /* !OSEE_MICRO_TO_TICKS */
@@ -275,7 +275,7 @@ extern "C" {
 /** \brief Utility macro that convert an amount of ns in number of ticks of a
            given frequency */
 #define OSEE_NANO_TO_TICKS(X_NS, REF_FREQ_HZ)                 \
-  (((X_NS) / OSEE_KILO)?                                      \
+   ( (((X_NS) / OSEE_KILO) != 0U) ?	\
    OSEE_MICRO_TO_TICKS(((X_NS) / OSEE_KILO), (REF_FREQ_HZ)):  \
    (OSEE_MICRO_TO_TICKS((X_NS), (REF_FREQ_HZ)) / OSEE_KILO))
 #endif /* !OSEE_NANO_TO_TICKS */
@@ -284,7 +284,7 @@ extern "C" {
 /** \brief Utility macro that convert an amount of ticks in equivalent ns
            given a frequency */
 #define OSEE_TICKS_TO_NANO(TICKS, REF_FREQ_HZ)            \
-  (((TICKS) / OSEE_KILO)?                                 \
+    ( (((TICKS) / OSEE_KILO) != 0U) ?	\
     ((TICKS) * OSEE_KILO) / ((REF_FREQ_HZ) / OSEE_MEGA):  \
     ((TICKS) * OSEE_MEGA) / ((REF_FREQ_HZ) / OSEE_KILO))
 #endif /* !OSEE_TICKS_TO_NANO */

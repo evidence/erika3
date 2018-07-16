@@ -87,7 +87,7 @@ FUNC(void, OS_CODE)
   /* Update Trigger Status */
   p_trigger_db->p_trigger_cb->when   = when;
 
-  while (p_current != NULL && work_not_done) {
+  while ((p_current != NULL) && work_not_done) {
     CONST(TickType, AUTOMATIC) current_when = p_current->p_trigger_cb->when;
 
     if (current_when > counter_value) {
@@ -498,7 +498,8 @@ FUNC(void, OS_CODE)
       counter_value       = 0U;
       p_counter_cb->value = 0U;
     } else {
-      counter_value = ++p_counter_cb->value;
+      ++p_counter_cb->value;
+      counter_value = p_counter_cb->value;
     }
 
     /* XXX: The counter core is locked here to get all the triggers expired at
@@ -512,7 +513,7 @@ FUNC(void, OS_CODE)
     p_triggered_db = p_counter_cb->trigger_queue;
 
     if (p_triggered_db != NULL) {
-      P2VAR(OsEE_TriggerCB, AUTOMATIC, OS_APPL_DATA)
+      P2CONST(OsEE_TriggerCB, AUTOMATIC, OS_APPL_DATA)
         p_triggered_cb = p_triggered_db->p_trigger_cb;
 
       if (p_triggered_cb->when == counter_value) {

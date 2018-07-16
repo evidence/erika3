@@ -108,12 +108,14 @@ FUNC(OsEE_bool, OS_CODE)
 
   if (p_rq_queue->p_head == NULL) {
     CONST(MemSize, AUTOMATIC) max_queue = osEE_hal_get_msb(p_rq->mask);
+    VAR(OsEE_rq_mask, AUTOMATIC) queue_mask = 1U;
+
     /* Insertion in Empty Prio Queue */
     p_rq_queue->p_head  = p_sn_new;
     p_rq_queue->p_tail  = p_sn_new;
 
     /* Set Multiqueue Mask */
-    p_rq->mask         |= ((OsEE_rq_mask)(1U << queue_index));
+    p_rq->mask         |= queue_mask << queue_index;
 
     if ((max_queue == OSEE_RQ_MASK_EMPTY) || (max_queue < queue_index)) {
       head_changed = OSEE_TRUE;
@@ -183,12 +185,14 @@ FUNC_P2VAR(OsEE_preempt, OS_APPL_DATA, OS_CODE)
   if (is_rq_preemption) {
     /* Extract from ready queue */
     if (p_rq_queue->p_head == p_rq_queue->p_tail) {
+      VAR(OsEE_rq_mask, AUTOMATIC) queue_mask = 1U;
+
       /* Prio RQ became empty */
       p_rq_queue->p_head = NULL;
       /* N.B. The following could be evicted for optimization */
       p_rq_queue->p_tail = NULL;
       /* Adjust the Multiqueue Mask */
-      p_rq->mask &= (~((OsEE_rq_mask)(1U << max_queue)));
+      p_rq->mask &= ~(queue_mask << max_queue);
     } else {
       /* Pop the current priority queue head */
       p_rq_queue->p_head = p_rq_queue->p_head->p_next;
@@ -310,7 +314,7 @@ FUNC(OsEE_bool, OS_CODE)
   while (p_curr != NULL) {
     VAR(TaskPrio, AUTOMATIC)                      prio_to_check;
     CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA) p_cur_tdb = p_curr->p_tdb;
-    CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA) p_cur_tcb = p_cur_tdb->p_tcb;
+    CONSTP2CONST(OsEE_TCB, AUTOMATIC, OS_APPL_DATA) p_cur_tcb = p_cur_tdb->p_tcb;
 
     if (as_ready) {
       prio_to_check = p_cur_tdb->ready_prio;
@@ -366,7 +370,7 @@ FUNC_P2VAR(OsEE_SN, OS_APPL_DATA, OS_CODE)
     /* Handle if RQ preempt STK (It manipulate the core data structures) */
     CONSTP2VAR(OsEE_preempt, AUTOMATIC, OS_APPL_DATA)
       p_preempt = osEE_scheduler_core_rq_preempt_stk(p_cdb, p_rq);
-    CONSTP2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA)
+    CONSTP2CONST(OsEE_SN, AUTOMATIC, OS_APPL_DATA)
       p_curr_stk_sn = p_ccb->p_stk_sn;
 
     /* If not, resume current STK first */

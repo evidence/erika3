@@ -532,7 +532,7 @@ FUNC(AppModeType, OS_CODE)
   VAR(AppModeType, AUTOMATIC) app_mode;
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+  CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetActiveApplicationMode);
@@ -560,7 +560,7 @@ FUNC(StatusType, OS_CODE)
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)  p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+  CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_ActivateTask);
@@ -641,7 +641,7 @@ FUNC(StatusType, OS_CODE)
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)  p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+  CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb = p_cdb->p_ccb;
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST)
     p_curr = p_ccb->p_curr;
@@ -752,7 +752,7 @@ FUNC(StatusType, OS_CODE)
   VAR(StatusType, AUTOMATIC)  ev;
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb       = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+  CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb       = p_cdb->p_ccb;
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
     p_curr      = p_ccb->p_curr;
@@ -842,7 +842,7 @@ FUNC(StatusType, OS_CODE)
 {
   VAR(StatusType, AUTOMATIC)                     ev;
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST) p_cdb  = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb  = p_cdb->p_ccb;
+  CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb  = p_cdb->p_ccb;
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST) p_curr = p_ccb->p_curr;
   CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)  p_tcb  = p_curr->p_tcb;
 
@@ -1125,7 +1125,7 @@ FUNC(StatusType, OS_CODE)
 {
   VAR(StatusType, AUTOMATIC)                    ev;
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
+  CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
   CONST(OsEE_reg, AUTOMATIC)  flags = osEE_begin_primitive();
   CONST(OsEE_kernel_status, AUTOMATIC) os_status = p_ccb->os_status;
 
@@ -1173,7 +1173,7 @@ FUNC(StatusType, OS_CODE)
   VAR(StatusType, AUTOMATIC) ev;
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+  CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetTaskID);
@@ -1225,7 +1225,7 @@ FUNC(StatusType, OS_CODE)
     } else if (p_tdb->task_type == OSEE_TASK_TYPE_ISR2) {
       /* In case of ISR2 search the first stacked that is not an
 	 ISR2. it could be a basic/extended task or an IDLE task */
-      P2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA)
+      P2CONST(OsEE_SN, AUTOMATIC, OS_APPL_DATA)
         p_sn = p_ccb->p_stk_sn->p_next;
 
       while (p_sn != NULL) {
@@ -1277,7 +1277,7 @@ FUNC(StatusType, OS_CODE)
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA) p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+  CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetTaskState);
@@ -1318,7 +1318,7 @@ FUNC(StatusType, OS_CODE)
       p_tdb = (*p_kdb->p_tdb_ptr_array)[TaskID];
     /* XXX: This SHALL be atomic. Sure for TriCore,
             visually check generate asm for each architecture */
-    CONST(TaskType, AUTOMATIC) local_state = p_tdb->p_tcb->status;
+    CONST(OsEE_task_status, AUTOMATIC) local_state = p_tdb->p_tcb->status;
     switch (local_state) {
       case OSEE_TASK_SUSPENDED:
         (*State) = SUSPENDED;
@@ -1378,7 +1378,7 @@ FUNC(StatusType, OS_CODE)
     p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+  CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_SetRelAlarm);
@@ -1474,7 +1474,7 @@ FUNC(StatusType, OS_CODE)
     p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+  CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_SetAbsAlarm);
@@ -1562,7 +1562,7 @@ FUNC(StatusType, OS_CODE)
     p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+  CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_CancelAlarm);
@@ -1631,7 +1631,7 @@ FUNC(StatusType, OS_CODE)
     p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+  CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetAlarm);
@@ -1706,7 +1706,7 @@ FUNC(StatusType, OS_CODE)
     p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+  CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetAlarmBase);
@@ -1783,7 +1783,7 @@ FUNC(StatusType, OS_CODE)
   VAR(StatusType, AUTOMATIC)  ev;
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb       = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+  CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb       = p_cdb->p_ccb;
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
     p_curr      = p_ccb->p_curr;
@@ -2039,7 +2039,7 @@ FUNC(StatusType, OS_CODE)
   {
     CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
       p_tdb_event = (*p_kdb->p_tdb_ptr_array)[TaskID];
-    CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
+    CONSTP2CONST(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
       p_tcb_event = p_tdb_event->p_tcb;
     /* XXX: We will accept an harmless race condition here for TASKs that want
      *      read events of TASKs allocated in other cores */
@@ -2092,7 +2092,7 @@ FUNC(StatusType, OS_CODE)
   VAR(StatusType, AUTOMATIC)  ev;
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb       = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+  CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb       = p_cdb->p_ccb;
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
     p_curr      = p_ccb->p_curr;
@@ -2208,7 +2208,7 @@ FUNC(StatusType, OS_CODE)
     p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+  CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetCounterValue);
@@ -2307,7 +2307,7 @@ FUNC(StatusType, OS_CODE)
     p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+  CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetElapsedValue);
@@ -2422,7 +2422,7 @@ FUNC(StatusType, OS_CODE)
     p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+  CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_IncrementCounter);
