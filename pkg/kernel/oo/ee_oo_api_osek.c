@@ -55,12 +55,12 @@
 #if (!defined(OSEE_SINGLECORE))
 /* Synchronization callbacks declarations */
 #if (defined(OSEE_STARTOS_1ST_SYNC_BARRIER_CB))
-extern void OSEE_STRING STARTOS_1ST_SYNC_BARRIER_CB(void);
+extern void OSEE_STARTOS_1ST_SYNC_BARRIER_CB(void);
 #else
-#define STARTOS_1ST_SYNC_BARRIER_CB NULL
-#endif /* STARTOS_1ST_SYNC_BARRIER_CB */
+#define OSEE_STARTOS_1ST_SYNC_BARRIER_CB NULL
+#endif /* OSEE_STARTOS_1ST_SYNC_BARRIER_CB */
 #if (defined(OSEE_STARTOS_2ND_SYNC_BARRIER_CB))
-extern void OSEE_STRING OSEE_STARTOS_2ND_SYNC_BARRIER_CB(void);
+extern void OSEE_STARTOS_2ND_SYNC_BARRIER_CB(void);
 #else
 #define OSEE_STARTOS_2ND_SYNC_BARRIER_CB NULL
 #endif /* OSEE_STARTOS_2ND_SYNC_BARRIER_CB */
@@ -329,7 +329,7 @@ FUNC(StatusType, OS_CODE)
           It is in the responsibility of the integrator to avoid such
           behavior." */
     osEE_hal_sync_barrier(p_kdb->p_barrier, &p_kcb->ar_core_mask,
-      STARTOS_1ST_SYNC_BARRIER_CB);
+      OSEE_STARTOS_1ST_SYNC_BARRIER_CB);
 
     /* Initialize Slaves Hardware after First synchronization point:
        This assure that all the Master Initializations have been done. */
