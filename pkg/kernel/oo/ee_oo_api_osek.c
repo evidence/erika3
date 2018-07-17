@@ -52,6 +52,25 @@
  */
 #include "ee_internal.h"
 
+#if (!defined(OSEE_SINGLECORE))
+/* Synchronization callbacks declarations */
+#if (defined(OSEE_STARTOS_1ST_SYNC_BARRIER_CB))
+extern void OSEE_STRING STARTOS_1ST_SYNC_BARRIER_CB(void);
+#else
+#define STARTOS_1ST_SYNC_BARRIER_CB NULL
+#endif /* STARTOS_1ST_SYNC_BARRIER_CB */
+#if (defined(OSEE_STARTOS_2ND_SYNC_BARRIER_CB))
+extern void OSEE_STRING OSEE_STARTOS_2ND_SYNC_BARRIER_CB(void);
+#else
+#define OSEE_STARTOS_2ND_SYNC_BARRIER_CB NULL
+#endif /* OSEE_STARTOS_2ND_SYNC_BARRIER_CB */
+#if (defined(OSEE_SHUTDOWNOS_SYNC_BARRIER_CB))
+extern void OSEE_SHUTDOWNOS_SYNC_BARRIER_CB(void);
+#else
+#define OSEE_SHUTDOWNOS_SYNC_BARRIER_CB NULL
+#endif /* OSEE_SHUTDOWNOS_SYNC_BARRIER_CB */
+#endif /* !OSEE_SINGLECORE */
+
 /* [SWS_Os_00299] The Operating System module shall provide the services
    DisableAllInterrupts(), EnableAllInterrupts(), SuspendAllInterrupts(),
    ResumeAllInterrupts() prior to calling StartOS() and after calling
@@ -309,7 +328,8 @@ FUNC(StatusType, OS_CODE)
           StartCore but do not call StartOS may cause the system to hang.
           It is in the responsibility of the integrator to avoid such
           behavior." */
-    osEE_hal_sync_barrier(p_kdb->p_barrier, &p_kcb->ar_core_mask);
+    osEE_hal_sync_barrier(p_kdb->p_barrier, &p_kcb->ar_core_mask,
+      STARTOS_1ST_SYNC_BARRIER_CB);
 
     /* Initialize Slaves Hardware after First synchronization point:
        This assure that all the Master Initializations have been done. */
@@ -477,7 +497,8 @@ FUNC(StatusType, OS_CODE)
     during the synchronization phase. Cores that are activated with
     StartCore but do not call StartOS may cause the system to hang.
     It is in the responsibility of the integrator to avoid such behavior." */
-    osEE_hal_sync_barrier(p_kdb->p_barrier, &p_kcb->ar_core_mask);
+    osEE_hal_sync_barrier(p_kdb->p_barrier, &p_kcb->ar_core_mask,
+      OSEE_STARTOS_2ND_SYNC_BARRIER_CB);
 #endif /* OSEE_SINGLECORE */
 
 /* [SWS_Os_00607] StartOS shall start the OS on the core on which it is called.
@@ -544,7 +565,11 @@ FUNC(AppModeType, OS_CODE)
   VAR(AppModeType, AUTOMATIC) app_mode;
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
+#if (!defined(OSEE_HAS_ORTI))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#else
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#endif /* !OSEE_HAS_ORTI */
     p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetActiveApplicationMode);
@@ -572,7 +597,11 @@ FUNC(StatusType, OS_CODE)
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)  p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
+#if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#else
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
     p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_ActivateTask);
@@ -623,10 +652,6 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     VAR(OsEE_api_param, AUTOMATIC)
       param;
-#if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_SERVICE_PROTECTION))
-    CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-      p_ccb = osEE_get_curr_core()->p_ccb;
-#endif /* !OSEE_HAS_ORTI && !OSEE_HAS_SERVICE_PROTECTION */
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_ActivateTask);
@@ -653,7 +678,11 @@ FUNC(StatusType, OS_CODE)
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)  p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
+#if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#else
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
     p_ccb = p_cdb->p_ccb;
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST)
     p_curr = p_ccb->p_curr;
@@ -735,10 +764,6 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     VAR(OsEE_api_param, AUTOMATIC)
       param;
-#if (!defined(OSEE_HAS_ORTI))
-    CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-      p_ccb = osEE_get_curr_core()->p_ccb;
-#endif /* !OSEE_HAS_ORTI */
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_ChainTask);
@@ -748,9 +773,8 @@ FUNC(StatusType, OS_CODE)
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
-#if (defined(OSEE_HAS_ORTI))
+
   osEE_orti_trace_service_exit(p_ccb, OSServiceId_ChainTask);
-#endif /* OSEE_HAS_ORTI */
 
   return ev;
 }
@@ -764,7 +788,11 @@ FUNC(StatusType, OS_CODE)
   VAR(StatusType, AUTOMATIC)  ev;
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb       = osEE_get_curr_core();
+#if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#else
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
     p_ccb       = p_cdb->p_ccb;
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
     p_curr      = p_ccb->p_curr;
@@ -854,7 +882,12 @@ FUNC(StatusType, OS_CODE)
 {
   VAR(StatusType, AUTOMATIC)                     ev;
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST) p_cdb  = osEE_get_curr_core();
-  CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb  = p_cdb->p_ccb;
+#if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
+  CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#else
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
+    p_ccb  = p_cdb->p_ccb;
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST) p_curr = p_ccb->p_curr;
   CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)  p_tcb  = p_curr->p_tcb;
 
@@ -939,7 +972,11 @@ FUNC(StatusType, OS_CODE)
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)  p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
+#if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
+  CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#else
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
     p_ccb = p_cdb->p_ccb;
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST)
     p_curr = p_ccb->p_curr;
@@ -1035,7 +1072,12 @@ FUNC(StatusType, OS_CODE)
   VAR(StatusType, AUTOMATIC)                      ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)  p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)  p_cdb = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)   p_ccb = p_cdb->p_ccb;
+#if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
+  CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#else
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
+    p_ccb = p_cdb->p_ccb;
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST)  p_curr = p_ccb->p_curr;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_ReleaseResource);
@@ -1137,7 +1179,12 @@ FUNC(StatusType, OS_CODE)
 {
   VAR(StatusType, AUTOMATIC)                    ev;
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb = osEE_get_curr_core();
-  CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
+#if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
+  CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#else
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
+    p_ccb = p_cdb->p_ccb;
   CONST(OsEE_reg, AUTOMATIC)  flags = osEE_begin_primitive();
   CONST(OsEE_kernel_status, AUTOMATIC) os_status = p_ccb->os_status;
 
@@ -1154,7 +1201,7 @@ FUNC(StatusType, OS_CODE)
 /* ShutdownOS is callable in Task, ISR2, Error/Startup Hooks */
   if ((p_ccb->os_context > OSEE_ERRORHOOK_CTX) && 
       (p_ccb->os_context != OSEE_STARTUPHOOK_CTX)
-  )     
+  )
   {
     ev = E_OS_CALLEVEL;
   } else
@@ -1185,7 +1232,11 @@ FUNC(StatusType, OS_CODE)
   VAR(StatusType, AUTOMATIC) ev;
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
+#if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#else
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
     p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetTaskID);
@@ -1289,7 +1340,11 @@ FUNC(StatusType, OS_CODE)
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA) p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb = osEE_get_curr_core();
+#if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#else
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
     p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetTaskState);
@@ -1357,8 +1412,6 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     VAR(OsEE_api_param, AUTOMATIC)
       param;
-    CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-      p_ccb = osEE_get_curr_core()->p_ccb;
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_GetTaskState);
@@ -1390,7 +1443,11 @@ FUNC(StatusType, OS_CODE)
     p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb = osEE_get_curr_core();
+#if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#else
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
     p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_SetRelAlarm);
@@ -1449,10 +1506,6 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     VAR(OsEE_api_param, AUTOMATIC)
       param;
-#if (!defined(OSEE_HAS_ORTI))
-    CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-      p_ccb = osEE_get_curr_core()->p_ccb;
-#endif /* !OSEE_HAS_ORTI */
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_SetRelAlarm);
@@ -1466,9 +1519,8 @@ FUNC(StatusType, OS_CODE)
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
-#if (defined(OSEE_HAS_ORTI))
+
   osEE_orti_trace_service_exit(p_ccb, OSServiceId_SetRelAlarm);
-#endif /* OSEE_HAS_ORTI */
 
   return ev;
 }
@@ -1486,7 +1538,11 @@ FUNC(StatusType, OS_CODE)
     p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb = osEE_get_curr_core();
+#if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#else
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
     p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_SetAbsAlarm);
@@ -1574,7 +1630,11 @@ FUNC(StatusType, OS_CODE)
     p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb = osEE_get_curr_core();
+#if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#else
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
     p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_CancelAlarm);
@@ -1643,7 +1703,11 @@ FUNC(StatusType, OS_CODE)
     p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb = osEE_get_curr_core();
+#if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#else
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
     p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetAlarm);
@@ -1718,7 +1782,11 @@ FUNC(StatusType, OS_CODE)
     p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb = osEE_get_curr_core();
+#if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#else
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
     p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetAlarmBase);
@@ -1795,7 +1863,11 @@ FUNC(StatusType, OS_CODE)
   VAR(StatusType, AUTOMATIC)  ev;
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb       = osEE_get_curr_core();
+#if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#else
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
     p_ccb       = p_cdb->p_ccb;
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
     p_curr      = p_ccb->p_curr;
@@ -2104,7 +2176,11 @@ FUNC(StatusType, OS_CODE)
   VAR(StatusType, AUTOMATIC)  ev;
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb       = osEE_get_curr_core();
+#if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#else
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
     p_ccb       = p_cdb->p_ccb;
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
     p_curr      = p_ccb->p_curr;
@@ -2220,7 +2296,11 @@ FUNC(StatusType, OS_CODE)
     p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
+#if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#else
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
     p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetCounterValue);
@@ -2319,7 +2399,11 @@ FUNC(StatusType, OS_CODE)
     p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
+#if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#else
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
     p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetElapsedValue);
@@ -2434,7 +2518,11 @@ FUNC(StatusType, OS_CODE)
     p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
+#if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#else
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
     p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_IncrementCounter);
@@ -2539,7 +2627,11 @@ FUNC(StatusType, OS_CODE)
     p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
+#if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
+  CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#else
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
     p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_StartScheduleTableRel);
@@ -2645,7 +2737,11 @@ FUNC(StatusType, OS_CODE)
     p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
+#if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
+  CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#else
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
     p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_StartScheduleTableAbs);
@@ -2748,7 +2844,11 @@ FUNC(StatusType, OS_CODE)
     p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
+#if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
+  CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#else
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
     p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_StopScheduleTable);
@@ -2928,7 +3028,11 @@ FUNC(StatusType, OS_CODE)
     p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
+#if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
+  CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#else
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
     p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_NextScheduleTable);
@@ -3081,7 +3185,11 @@ FUNC(StatusType, OS_CODE)
     p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
+#if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
+  CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#else
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
     p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_SyncScheduleTable);

@@ -108,6 +108,7 @@ OSEE_GET_MSB_INLINE FUNC(MemSize, OS_CODE)
               7U, 7U, 7U, 7U, 7U, 7U, 7U, 7U,
   };
 
+#if (OSEE_RQ_PRIO_NUM > 16U)
   VAR(OsEE_signed_index,  AUTOMATIC) i;
 
   /* the functions looks at the MSB 8 bit at a time. However, since
@@ -117,16 +118,18 @@ OSEE_GET_MSB_INLINE FUNC(MemSize, OS_CODE)
      oredr to find the MSB (the hypothesis here is that the bits
      higher than OSEE_RQ_PRIO_NUM are 0 */
   CONST(OsEE_reg,         AUTOMATIC) mask_8bit_size =
-    ((OSEE_RQ_PRIO_NUM & 0x7U) == 0U)?
-    (OSEE_RQ_PRIO_NUM / 8U):
+#if ((OSEE_RQ_PRIO_NUM & 0x7U) == 0U)
+    (OSEE_RQ_PRIO_NUM / 8U);
+#else
     (((OSEE_RQ_PRIO_NUM & (~0x7U)) + 8U) / 8U);
+#endif
 
   VAR(MemSize,            AUTOMATIC) msb = (mask_8bit_size * 8U) - 1U;
 
   /* N.B. (x << 3U) == (x * 8U) */
-  for (i = ((mask_8bit_size - 1U) << 3U); i >= 0; (i -= 8)) {
+  for (i = (OsEE_signed_index)((mask_8bit_size - 1U) << 3U); i >= 0; (i -= 8)) {
     CONST(uint8_t, AUTOMATIC) lu_i =
-        (uint8_t)((mask & (OSEE_LU_MASK << i)) >> i);
+        (uint8_t)((mask & ((OsEE_rq_mask)OSEE_LU_MASK << i)) >> i);
     CONST(uint8_t, AUTOMATIC) msb_tmp = osEE_msb_8bit_lookup[lu_i];
 
     if (msb_tmp != OSEE_LU_NULL) {
@@ -137,4 +140,18 @@ OSEE_GET_MSB_INLINE FUNC(MemSize, OS_CODE)
     }
   }
   return msb;
+#elif (OSEE_RQ_PRIO_NUM > 8U)
+  VAR(uint8_t, AUTOMATIC)
+    msb = osEE_msb_8bit_lookup[(mask & 0xFF00U) >> 8];
+
+  if (msb == OSEE_LU_NULL) {
+    msb = osEE_msb_8bit_lookup[mask];
+  } else {
+    msb += (uint8_t)8U;
+  }
+  return msb;
+#else
+  return osEE_msb_8bit_lookup[mask];
+#endif
 }
+

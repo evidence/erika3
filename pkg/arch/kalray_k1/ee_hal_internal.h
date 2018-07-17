@@ -200,7 +200,7 @@ OSEE_STATIC_INLINE MemSize osEE_hal_get_msb (OsEE_rq_mask mask) {
 
 #if (!defined(OSEE_SINGLECORE))
 void osEE_hal_sync_barrier(OsEE_barrier * p_bar,
-  OsEE_reg volatile * p_wait_mask);
+  OsEE_reg volatile * p_wait_mask, OsEE_kernel_cb p_synch_cb);
 
 void osEE_hal_start_core(CoreIdType core_id);
 #endif /* !OSEE_SINGLECORE */
