@@ -555,6 +555,9 @@ typedef struct OsEE_KCB_tag {
   VAR(CoreMaskType, TYPEDEF)              ar_core_mask;
   VAR(CoreMaskType, TYPEDEF)              not_ar_core_mask;
   VAR(CoreIdType,   TYPEDEF)              ar_num_core_started;
+  VAR(CoreMaskType, TYPEDEF)              ar_shutdown_mask;
+  VAR(StatusType, TYPEDEF)                ar_shutdown_all_cores_error;
+  VAR(OsEE_bool, TYPEDEF)                 ar_shutdown_all_cores_flag;
 #endif /* !OSEE_SINGLECORE */
 #if (defined(OSEE_SINGLECORE)) && (!defined(OSEE_API_DYNAMIC))
   /* To not have an empty struct */

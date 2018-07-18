@@ -65,6 +65,25 @@
 extern "C" {
 #endif
 
+#if (!defined(OSEE_SINGLECORE))
+/* Synchronization callbacks declarations */
+#if (defined(OSEE_STARTOS_1ST_SYNC_BARRIER_CB))
+extern void OSEE_STARTOS_1ST_SYNC_BARRIER_CB(void);
+#else
+#define OSEE_STARTOS_1ST_SYNC_BARRIER_CB NULL
+#endif /* OSEE_STARTOS_1ST_SYNC_BARRIER_CB */
+#if (defined(OSEE_STARTOS_2ND_SYNC_BARRIER_CB))
+extern void OSEE_STARTOS_2ND_SYNC_BARRIER_CB(void);
+#else
+#define OSEE_STARTOS_2ND_SYNC_BARRIER_CB NULL
+#endif /* OSEE_STARTOS_2ND_SYNC_BARRIER_CB */
+#if (defined(OSEE_SHUTDOWNOS_SYNC_BARRIER_CB))
+extern void OSEE_SHUTDOWNOS_SYNC_BARRIER_CB(void);
+#else
+#define OSEE_SHUTDOWNOS_SYNC_BARRIER_CB NULL
+#endif /* OSEE_SHUTDOWNOS_SYNC_BARRIER_CB */
+#endif /* !OSEE_SINGLECORE */
+
 FUNC(void, OS_CODE)
   osEE_change_context_from_running
 (
@@ -533,12 +552,53 @@ LOCAL_INLINE FUNC(void, OS_CODE)
 }
 #endif /* OSEE_USEPARAMETERACCESS */
 
+LOCAL_INLINE FUNC(void, OS_CODE)
+  osEE_shutdown_os_extra(void)
+{
+  /* TODO: Stop Timing Protection definitely if configured */
+#if (defined(OSEE_HAS_SPINLOCKS))
+  /* [SWS_Os_00620] ShutdownOS shall release all spinlocks which are occupied
+      by the calling core. (SRS_Os_80021) */
+#endif /* OSEE_HAS_SPINLOCKS */
+#if (defined(OSEE_HAS_OSAPPLICATIONS))
+  /* [SWS_Os_00586]: During the shutdown, the OS-Application specific
+      ShutdownHook shall be called on the core on which the corresponding
+      OS-Application is bound. (BSW4080007) */
+#endif /* OSEE_HAS_OSAPPLICATIONS */
+#if (!defined(OSEE_SINGLECORE))
+  {
+    CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)
+      p_kdb = osEE_lock_and_get_kernel();
+    CONSTP2VAR(OsEE_KCB, AUTOMATIC, OS_APPL_DATA)
+      p_kcb = p_kdb->p_kcb;
+
+    if (p_kcb->ar_shutdown_all_cores_flag) {
+      /* Release the kernel spinlock and synchronize with other core
+         participating to shutdown */
+      osEE_unlock_kernel();
+
+      /* [OS587]: Before calling the global ShutdownHook, all cores shall be
+          synchronized. (BSW4080007) */
+      osEE_hal_sync_barrier(p_kdb->p_barrier, &p_kcb->ar_shutdown_mask,
+        OSEE_SHUTDOWNOS_SYNC_BARRIER_CB);
+    } else {
+      /* Remove this core from the waiting mask: this core has already reached
+         the barrier/ it's already shutdown */
+      p_kcb->ar_shutdown_mask &=
+        (~((CoreMaskType)1U << osEE_get_curr_core_id()));
+      /* Unlock the kernel and continue */
+      osEE_unlock_kernel();
+    }
+  }
+#endif /* !OSEE_SINGLECORE */
+}
+
 #if (defined(OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN))
 
 LOCAL_INLINE FUNC(StatusType, OS_CODE_NO_RETURN)
   osEE_shutdown_os
 (
-  P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)  p_cdb,
+  P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST) p_cdb,
   VAR(StatusType, AUTOMATIC)                Error
 )
 {
@@ -549,18 +609,19 @@ LOCAL_INLINE FUNC(StatusType, OS_CODE_NO_RETURN)
   p_ccb->last_error = Error;
 
   osEE_hal_disableIRQ();
+
+  osEE_shutdown_os_extra();
   osEE_call_shutdown_hook(p_ccb, Error);
   for(;;) {
     ; /* Endless Loop */
   }
 }
-
 #else /* OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN */
 
 LOCAL_INLINE FUNC(StatusType, OS_CODE)
   osEE_shutdown_os
 (
-  P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)  p_cdb,
+  P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST) p_cdb,
   VAR(StatusType, AUTOMATIC)                Error
 )
 {
@@ -574,9 +635,9 @@ LOCAL_INLINE FUNC(StatusType, OS_CODE)
   if (os_status == OSEE_KERNEL_STARTED) {
     osEE_idle_task_terminate(p_cdb->p_idle_task);
   }
+
   return E_OK;
 }
-
 #endif /* OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN */
 
 #if (defined(OSEE_HAS_COUNTERS))

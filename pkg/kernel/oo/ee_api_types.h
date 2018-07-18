@@ -420,18 +420,19 @@ typedef enum OsEE_service_id_type_tag {
   OSServiceId_GetActiveApplicationMode        = (64),
   OSServiceId_ShutdownOS                      = (66),
   OSServiceId_StartOS                         = (68),
+  OSServiceId_ShutdownAllCores                = (70),
 /** Special value to flag an error happened in the Task body
     needed for AR requirement [SWS_Os_00069] */
-  OSId_TaskBody                               = (70),
+  OSId_TaskBody                               = (72),
 /* Special value to flag an error happened in the ISR2 body
    needed for AS requirement [SWS_Os_00368] */
-  OSId_ISR2Body                               = (72),
+  OSId_ISR2Body                               = (74),
 /* Special value to flag an error happened in a Alarm or Schedule Table
    action */
-  OSId_Action                                 = (74),
+  OSId_Action                                 = (76),
 /* Special value to flag an error happened in a Kernel internal service */
-  OSId_Kernel                                 = (76),
-  OsId_Invalid                                = (78)
+  OSId_Kernel                                 = (78),
+  OsId_Invalid                                = (80)
 } OsEE_service_id_type;
 
 /** @typedef This data type represents the identification of system services. */

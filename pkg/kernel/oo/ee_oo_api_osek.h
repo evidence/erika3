@@ -596,6 +596,12 @@ FUNC(void, OS_CODE)
   VAR(CoreIdType, AUTOMATIC)                  CoreID,
   P2VAR(StatusType, AUTOMATIC, OS_APPL_DATA)  Status
 );
+
+FUNC(void, OS_CODE) 
+  ShutdownAllCores
+(
+  VAR(StatusType, AUTOMATIC)  Error
+);
 #endif /* !OSEE_SINGLECORE */
 
 #if (defined(__cplusplus))

@@ -52,25 +52,6 @@
  */
 #include "ee_internal.h"
 
-#if (!defined(OSEE_SINGLECORE))
-/* Synchronization callbacks declarations */
-#if (defined(OSEE_STARTOS_1ST_SYNC_BARRIER_CB))
-extern void OSEE_STARTOS_1ST_SYNC_BARRIER_CB(void);
-#else
-#define OSEE_STARTOS_1ST_SYNC_BARRIER_CB NULL
-#endif /* OSEE_STARTOS_1ST_SYNC_BARRIER_CB */
-#if (defined(OSEE_STARTOS_2ND_SYNC_BARRIER_CB))
-extern void OSEE_STARTOS_2ND_SYNC_BARRIER_CB(void);
-#else
-#define OSEE_STARTOS_2ND_SYNC_BARRIER_CB NULL
-#endif /* OSEE_STARTOS_2ND_SYNC_BARRIER_CB */
-#if (defined(OSEE_SHUTDOWNOS_SYNC_BARRIER_CB))
-extern void OSEE_SHUTDOWNOS_SYNC_BARRIER_CB(void);
-#else
-#define OSEE_SHUTDOWNOS_SYNC_BARRIER_CB NULL
-#endif /* OSEE_SHUTDOWNOS_SYNC_BARRIER_CB */
-#endif /* !OSEE_SINGLECORE */
-
 /* [SWS_Os_00299] The Operating System module shall provide the services
    DisableAllInterrupts(), EnableAllInterrupts(), SuspendAllInterrupts(),
    ResumeAllInterrupts() prior to calling StartOS() and after calling
@@ -346,11 +327,9 @@ FUNC(StatusType, OS_CODE)
     {
       VAR(CoreIdType, AUTOMATIC)  i;
 
-      for (i = 0U; i < OSEE_CORE_ID_MAX; ++i) {
-        CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
-          p_local_cdb = osEE_get_core(i);
-        if (p_local_cdb != NULL) {
-          AppModeType current_mode = p_local_cdb->p_ccb->app_mode;
+      for (i = 0U; i <= OSEE_CORE_ID_MAX; ++i) {
+        if ((p_kcb->ar_core_mask & ((CoreMaskType)1U << i)) != 0U) {
+          AppModeType current_mode = osEE_get_core(i)->p_ccb->app_mode;
 
           if (current_mode != DONOTCARE) {
             if (real_mode == DONOTCARE) {
@@ -499,6 +478,9 @@ FUNC(StatusType, OS_CODE)
     It is in the responsibility of the integrator to avoid such behavior." */
     osEE_hal_sync_barrier(p_kdb->p_barrier, &p_kcb->ar_core_mask,
       OSEE_STARTOS_2ND_SYNC_BARRIER_CB);
+  /* After second synchronization I'm sure that no more AR code will be
+     started: I initialize the Shutdown(AllCores) mask */
+    p_kcb->ar_shutdown_mask = p_kcb->ar_core_mask;
 #endif /* OSEE_SINGLECORE */
 
 /* [SWS_Os_00607] StartOS shall start the OS on the core on which it is called.
@@ -518,6 +500,7 @@ FUNC(StatusType, OS_CODE)
     }
 #if (!defined(OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN))
     osEE_hal_disableIRQ();
+    osEE_shutdown_os_extra();
     osEE_call_shutdown_hook(p_ccb, p_ccb->last_error);
     for(;;); /* Endless Loop */
 #endif /* !OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN */
@@ -3452,4 +3435,87 @@ FUNC(void, OS_CODE)
   return;
 
 }
+
+FUNC(void, OS_CODE) 
+  ShutdownAllCores
+(
+  VAR(StatusType, AUTOMATIC)  Error
+)
+{
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb = osEE_get_curr_core();
+#if (!defined(OSEE_HAS_ORTI))
+  CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#else
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#endif /* !OSEE_HAS_ORTI */
+    p_ccb = p_cdb->p_ccb;
+ 
+  CONST(OsEE_reg, AUTOMATIC)  flags = osEE_begin_primitive();
+  CONST(OsEE_kernel_status, AUTOMATIC) os_status = p_ccb->os_status;
+
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_ShutdownAllCores);
+
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
+  /*  [OS_SWS_00088]: If an OS-Application makes a service call from the wrong
+   *    context AND is currently not inside a Category 1 ISR the Operating
+   *    System module shall not perform the requested action
+   *    (the service call shall have no effect), and return E_OS_CALLEVEL
+   *    (see [12], section 13.1) or the "invalid value" of  the service.
+   *    (BSW11009, BSW11013) */
+/* ShutdownAllCores is callable in Task, ISR2, Error/Startup Hooks */
+  if ((p_ccb->os_context > OSEE_ERRORHOOK_CTX) && 
+      (p_ccb->os_context != OSEE_STARTUPHOOK_CTX)
+  )
+  {
+    ; /* It's an error but I have no way to signal it */
+  } else
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
+#ifdef OSEE_HAS_OSAPPLICATIONS
+  /* [Os_SWS_00716]: If ShutdownAllCores is called from non trusted code the call
+      shall be ignored. (BSW4080007) */
+#endif /* EE_AS_OSAPPLICATIONS__ */
+  if ((os_status == OSEE_KERNEL_STARTED) || (os_status == OSEE_KERNEL_STARTING))
+  {
+    VAR(CoreMaskType, AUTOMATIC) i;
+    CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)
+      p_kdb = osEE_lock_and_get_kernel();
+    CONSTP2VAR(OsEE_KCB, AUTOMATIC, OS_APPL_DATA)
+      p_kcb = p_kdb->p_kcb;
+    /* If the procedure have been already started (by another core), just shut
+       this core down, after have released all spinlocks */
+    if (p_kcb->ar_shutdown_all_cores_flag) {
+      /* Release the kernel spinlock */
+      osEE_unlock_kernel();
+      /* This won't never return */
+      osEE_shutdown_os(osEE_get_curr_core(), p_kcb->ar_shutdown_all_cores_error);
+    } else {
+      /* Save the Error parameter to be used in all other cores */
+      p_kcb->ar_shutdown_all_cores_error = Error;
+      /* Set ShutdownAllCores global flag */
+      p_kcb->ar_shutdown_all_cores_flag = OSEE_TRUE;
+
+      for (i = 0U; i <= OSEE_CORE_ID_MAX; ++i) {
+        if (i != osEE_get_curr_core_id()) {
+          if ((p_kcb->ar_core_mask & ((CoreMaskType)1U << i)) != 0U) {
+            osEE_hal_signal_core(i);
+          }
+        }
+      }
+
+      /* Release the kernel spinlock */
+      osEE_unlock_kernel();
+      /* After signaling the shutdown all cores status: shut this core down:
+         This won't never return */
+      osEE_shutdown_os(osEE_get_curr_core(), Error);
+    }
+  } else {
+    ; /* It's an error but I have no way to signal it */
+  }
+
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_ShutdownAllCores);
+  osEE_end_primitive(flags);
+
+  return;
+}
+
 #endif /* !OSEE_SINGLECORE */
