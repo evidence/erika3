@@ -167,6 +167,7 @@ endif	# OS_EE_VERBOSE
 # OPT_LINK represents the options for the linker invocation
 OPT_LINK += -Wl,-Map=$(TARGET_NAME).map -Os -Wl,--gc-sections \
 -T $(JAILHOUSE_DIR)/inmates/lib/x86/inmate.lds -no-pie -Wl,--no-dynamic-linker
+OPT_LINK += $(LDFLAGS)
 
 ifeq ($(call iseeopt, OS_EE_BUILD), yes)
 OS_EE_DEFS_AS	+= -DOS_EE_BUILD
@@ -201,7 +202,7 @@ LIBDEP += lib/$(ERIKALIB)
 else	# OS_EE_BUILD
 OPT_LIBS += -L $(call short_native_path,$(abspath $(OS_EE_LIB_BASE_DIR)))
 OPT_LIBS += -L $(JAILHOUSE_DIR)/inmates/lib/x86
-OPT_LIBS += -Wl,--start-group -l$(EELIB) -l:lib.a -Wl,--end-group
+OPT_LIBS += -Wl,--start-group -l$(EELIB) -l:lib.a $(LIBS) -Wl,--end-group
 LIBDEP += $(OS_EE_LIB_BASE_DIR)/lib$(EELIB).a $(JAILHOUSE_DIR)/inmates/lib/x86/lib.a
 endif	# OS_EE_BUILD
 

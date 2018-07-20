@@ -274,7 +274,7 @@ LOCAL_INLINE FUNC(OsEE_bool, OS_CODE)
 LOCAL_INLINE FUNC(OsEE_bool, OS_CODE)
   osEE_check_disableint
 (
-  P2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb
+  P2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb
 )
 {
   return (p_ccb->s_isr_all_cnt > 0U) || (p_ccb->s_isr_os_cnt > 0U) ||

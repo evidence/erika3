@@ -68,10 +68,6 @@ extern "C" {
 #define OSEE_ALLOW_TASK_MIGRATION
 #endif /* OSEE_SINGLECORE && OSEE_SCHEDULER_GLOBAL */
 
-#if (defined(OSEE_HAS_RESOURCES)) || (defined(OSEE_HAS_SPINLOCKS))
-#define OSEE_HAS_MUTEX
-#endif /* OSEE_HAS_RESOURCES || OSEE_HAS_SPINLOCKS */
-
 #if (defined(OSEE_HAS_ERRORHOOK)) || (defined(OSEE_HAS_SERVICE_PROTECTION))
 #define OSEE_HAS_CONTEXT
 #endif /* OSEE_HAS_ERRORHOOK || OSEE_HAS_SERVICE_PROTECTION */
@@ -119,52 +115,43 @@ typedef enum {
   OSEE_KERNEL_SHUTDOWN
 } OsEE_kernel_status;
 
-#if (defined(OSEE_HAS_MUTEX))
+#if (defined(OSEE_HAS_RESOURCES))
 /* Forward declaration of MDB & TDB, needed for MCB p_next and p_mtx_owner
    fields. */
-struct OsEE_MDB_tag;
+struct OsEE_ResourceDB_tag;
 #if (!defined(OSEE_SINGLECORE)) || (defined(OSEE_HAS_ORTI))
 struct OsEE_TDB_tag;
 #endif /* !OSEE_SINGLECORE || OSEE_HAS_ORTI */
 
-typedef struct OsEE_MCB_tag {
-  P2VAR(struct OsEE_MDB_tag OSEE_CONST, TYPEDEF, OS_APPL_DATA)  p_next;
-  VAR(TaskPrio, TYPEDEF)                                        prev_prio;
-  P2VAR(struct OsEE_TDB_tag OSEE_CONST, TYPEDEF, OS_APPL_DATA)  p_mtx_owner;
-} OsEE_MCB;
+typedef struct {
+  P2VAR(struct OsEE_ResourceDB_tag OSEE_CONST, TYPEDEF, OS_APPL_DATA)
+    p_next;
+  VAR(TaskPrio, TYPEDEF)
+    prev_prio;
+  P2VAR(struct OsEE_TDB_tag OSEE_CONST, TYPEDEF, OS_APPL_DATA)
+    p_resource_owner;
+} OsEE_ResourceCB;
 
-#if (!defined(OSEE_SINGLECORE))
-typedef enum {
-  OSEE_MUTEX_RESOURCE,
-  OSEE_MUTEX_SPINLOCK
-} OsEE_mutex_type;
-#endif /* !OSEE_SINGLECORE */
-
-typedef struct OsEE_MDB_tag {
-  P2VAR(OsEE_MCB, TYPEDEF, OS_APPL_DATA)        p_mcb;
-  VAR(TaskPrio, TYPEDEF)                        mtx_prio;
-#if (!defined(OSEE_SINGLECORE))
-  P2VAR(OsEE_spin_lock, TYPEDEF, OS_APPL_DATA)  p_lock;
-  VAR(OsEE_mutex_type, TYPEDEF)                 mtx_type;
-  VAR(CoreMaskType, TYPEDEF)                    core_mask;
-#endif /* !OSEE_SINGLECORE */
-} OSEE_CONST OsEE_MDB;
-#endif /* OSEE_HAS_MUTEX */
+typedef struct OsEE_ResourceDB_tag {
+  P2VAR(OsEE_ResourceCB, TYPEDEF, OS_APPL_DATA) p_resource_cb;
+  VAR(TaskPrio, TYPEDEF)                        reso_prio;
+} OSEE_CONST OsEE_ResourceDB;
+#endif /* OSEE_HAS_RESOURCES */
 
 typedef struct OsEE_TCB_tag {
-  VAR(TaskActivation, TYPEDEF)              current_num_of_act;
-  VAR(TaskPrio, TYPEDEF)                    current_prio;
-  VAR(TaskStateType, TYPEDEF)               status;
-#if (defined(OSEE_HAS_MUTEX))
-  P2VAR(OsEE_MDB, TYPEDEF, OS_APPL_DATA)    p_first_mtx;
-#endif /* OSEE_HAS_MUTEX */
+  VAR(TaskActivation, TYPEDEF)                  current_num_of_act;
+  VAR(TaskPrio, TYPEDEF)                        current_prio;
+  VAR(TaskStateType, TYPEDEF)                   status;
+#if (defined(OSEE_HAS_RESOURCES))
+  P2VAR(OsEE_ResourceDB, TYPEDEF, OS_APPL_DATA) p_first_resource;
+#endif /* OSEE_HAS_RESOURCES */
 #if (defined(OSEE_HAS_EVENTS))
-  VAR(EventMaskType, TYPEDEF)               wait_mask;
-  VAR(EventMaskType, TYPEDEF)               event_mask;
-  P2VAR(OsEE_SN, TYPEDEF, OS_APPL_DATA)     p_own_sn;
+  VAR(EventMaskType, TYPEDEF)                   wait_mask;
+  VAR(EventMaskType, TYPEDEF)                   event_mask;
+  P2VAR(OsEE_SN, TYPEDEF, OS_APPL_DATA)         p_own_sn;
 #endif /* OSEE_HAS_EVENTS */
 #if (defined(OSEE_ALLOW_TASK_MIGRATION))
-  VAR(CoreIdType, TYPEDEF)                  current_core_id;
+  VAR(CoreIdType, TYPEDEF)                      current_core_id;
 #endif /* OSEE_ALLOW_TASK_MIGRATION */
 } OsEE_TCB;
 
@@ -584,7 +571,7 @@ typedef struct OsEE_KDB_tag {
 #if (defined(OSEE_ALLOW_TASK_MIGRATION))
 #endif /* OSEE_ALLOW_TASK_MIGRATION */
 #if (defined(OSEE_HAS_RESOURCES))
-  P2SYM_CONSTP2VAR(OsEE_MDB, OS_APPL_CONST,         p_res_ptr_array)[];
+  P2SYM_CONSTP2VAR(OsEE_ResourceDB, OS_APPL_CONST,  p_res_ptr_array)[];
   VAR(MemSize, TYPEDEF)                             res_array_size;
 #endif /* OSEE_HAS_RESOURCES */
 #if (defined(OSEE_HAS_COUNTERS))

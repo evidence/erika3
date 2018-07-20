@@ -478,10 +478,12 @@ FUNC(StatusType, OS_CODE)
     It is in the responsibility of the integrator to avoid such behavior." */
     osEE_hal_sync_barrier(p_kdb->p_barrier, &p_kcb->ar_core_mask,
       OSEE_STARTOS_2ND_SYNC_BARRIER_CB);
-  /* After second synchronization I'm sure that no more AR code will be
-     started: I initialize the Shutdown(AllCores) mask */
-    p_kcb->ar_shutdown_mask = p_kcb->ar_core_mask;
-#endif /* OSEE_SINGLECORE */
+/* After second synchronization I'm sure that no more AR cores will be
+   started: I initialize the Shutdown(AllCores) mask in master core */
+    if (curr_core_id == OS_CORE_ID_MASTER) {
+      p_kcb->ar_shutdown_mask = p_kcb->ar_core_mask;
+    }
+#endif /* !OSEE_SINGLECORE */
 
 /* [SWS_Os_00607] StartOS shall start the OS on the core on which it is called.
     (SRS_Os_80006, SRS_Os_80013) */
@@ -704,21 +706,13 @@ FUNC(StatusType, OS_CODE)
   } else {
     CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
       p_tdb_act = (*p_kdb->p_tdb_ptr_array)[TaskID];
-#if (defined(OSEE_HAS_CHECKS)) && (defined(OSEE_HAS_MUTEX))
+#if (defined(OSEE_HAS_CHECKS)) && (defined(OSEE_HAS_RESOURCES))
     CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
       p_curr_tcb  = p_curr->p_tcb;
-
-    if (p_curr_tcb->p_first_mtx != NULL) {
-#if (!defined(OSEE_SINGLECORE))
-      if (p_curr_tcb->p_first_mtx->mtx_type == OSEE_MUTEX_SPINLOCK) {
-        ev = E_OS_SPINLOCK;
-      } else
-#endif /* !OSEE_SINGLECORE */
-      {
-        ev = E_OS_RESOURCE;
-      }
+    if (p_curr_tcb->p_first_resource != NULL) {
+      ev = E_OS_RESOURCE;
     } else
-#endif /* OSEE_HAS_CHECKS && OSEE_HAS_MUTEX */
+#endif /* OSEE_HAS_CHECKS && OSEE_HAS_RESOURCES */
     if (p_tdb_act->task_type <= OSEE_TASK_TYPE_EXTENDED) {
       CONST(OsEE_reg, AUTOMATIC)  flags = osEE_begin_primitive();
 
@@ -780,10 +774,10 @@ FUNC(StatusType, OS_CODE)
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
     p_curr      = p_ccb->p_curr;
 #if (defined(OSEE_HAS_CHECKS))
-#if (defined(OSEE_HAS_MUTEX))
+#if (defined(OSEE_HAS_RESOURCES))
   CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
     p_curr_tcb  = p_curr->p_tcb;
-#endif /* OSEE_HAS_MUTEX */
+#endif /* OSEE_HAS_RESOURCES */
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_TerminateTask);
 
@@ -811,18 +805,11 @@ FUNC(StatusType, OS_CODE)
   {
     ev = E_OS_CALLEVEL;
   } else
-#if (defined(OSEE_HAS_MUTEX))
-  if (p_curr_tcb->p_first_mtx != NULL) {
-#if (!defined(OSEE_SINGLECORE))
-    if (p_curr_tcb->p_first_mtx->mtx_type == OSEE_MUTEX_SPINLOCK) {
-      ev = E_OS_SPINLOCK;
-    } else
-#endif /* !OSEE_SINGLECORE */
-    {
-      ev = E_OS_RESOURCE;
-    }
+#if (defined(OSEE_HAS_RESOURCES))
+  if (p_curr_tcb->p_first_resource != NULL) {
+    ev = E_OS_RESOURCE;
   } else
-#endif /* OSEE_HAS_MUTEX */
+#endif /* OSEE_HAS_RESOURCES */
 #elif (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_TerminateTask);
 
@@ -902,11 +889,11 @@ FUNC(StatusType, OS_CODE)
   {
     ev = E_OS_CALLEVEL;
   } else
-#if (defined(OSEE_HAS_MUTEX))
-  if (p_tcb->p_first_mtx != NULL) {
+#if (defined(OSEE_HAS_RESOURCES))
+  if (p_tcb->p_first_resource != NULL) {
     ev = E_OS_RESOURCE;
   } else
-#endif /* OSEE_HAS_MUTEX */
+#endif /* OSEE_HAS_RESOURCES */
 #endif /* OSEE_HAS_CHECKS */
   if (p_tcb->current_prio == p_curr->dispatch_prio)
   {
@@ -991,37 +978,40 @@ FUNC(StatusType, OS_CODE)
     ev = E_OS_ID;
   } else
   {
-    CONSTP2VAR(OsEE_MDB, AUTOMATIC, OS_APPL_CONST)
-      p_mtx         = (*p_kdb->p_res_ptr_array)[ResID];
-    CONSTP2VAR(OsEE_MCB, AUTOMATIC, OS_APPL_DATA)
-      p_mtx_mcb     = p_mtx->p_mcb;
+    CONSTP2VAR(OsEE_ResourceDB, AUTOMATIC, OS_APPL_CONST)
+      p_reso_db     = (*p_kdb->p_res_ptr_array)[ResID];
+    CONSTP2VAR(OsEE_ResourceCB, AUTOMATIC, OS_APPL_DATA)
+      p_reso_cb     = p_reso_db->p_resource_cb;
     CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
       p_curr_tcb    = p_curr->p_tcb;
     CONST(TaskPrio, AUTOMATIC)
-      mtx_prio      = p_mtx->mtx_prio;
+      reso_prio     = p_reso_db->reso_prio;
     CONST(TaskPrio, AUTOMATIC)
       current_prio  = p_curr_tcb->current_prio;
     VAR(OsEE_reg, AUTOMATIC)
       flags         = osEE_begin_primitive();
-
-    if ((p_mtx_mcb->p_mtx_owner != NULL) || (p_curr->ready_prio > mtx_prio)) {
+#if (defined(OSEE_HAS_CHECKS))
+    if ((p_reso_cb->p_resource_owner != NULL) ||
+        (p_curr->ready_prio > reso_prio))
+    {
       osEE_end_primitive(flags);
 
       ev = E_OS_ACCESS;
     } else
+#endif /* OSEE_HAS_CHECKS */
     {
-      if (current_prio < mtx_prio) {
-        p_curr_tcb->current_prio = mtx_prio;
-        flags = osEE_hal_prepare_ipl(flags, mtx_prio);
+      if (current_prio < reso_prio) {
+        p_curr_tcb->current_prio = reso_prio;
+        flags = osEE_hal_prepare_ipl(flags, reso_prio);
       }
 
-      p_mtx_mcb->p_mtx_owner  = p_curr;
+      p_reso_cb->p_resource_owner   = p_curr;
 
       osEE_end_primitive(flags);
 
-      p_mtx_mcb->p_next       = p_curr_tcb->p_first_mtx;
-      p_mtx_mcb->prev_prio    = current_prio;
-      p_curr_tcb->p_first_mtx = p_mtx;
+      p_reso_cb->p_next             = p_curr_tcb->p_first_resource;
+      p_reso_cb->prev_prio          = current_prio;
+      p_curr_tcb->p_first_resource  = p_reso_db;
 
       ev = E_OK;
     }
@@ -1091,13 +1081,14 @@ FUNC(StatusType, OS_CODE)
   {
     CONSTP2VAR(OsEE_TCB, AUTOMATIC, TYPEDEF)
       p_curr_tcb  = p_curr->p_tcb;
-    CONSTP2VAR(OsEE_MDB, AUTOMATIC, TYPEDEF)
-      p_mtx       = (*p_kdb->p_res_ptr_array)[ResID];
-    CONSTP2VAR(OsEE_MCB, AUTOMATIC, TYPEDEF)
-      p_mtx_mcb   = p_mtx->p_mcb;
+    CONSTP2VAR(OsEE_ResourceDB, AUTOMATIC, TYPEDEF)
+      p_reso_db   = (*p_kdb->p_res_ptr_array)[ResID];
+    CONSTP2VAR(OsEE_ResourceCB, AUTOMATIC, TYPEDEF)
+      p_reso_cb   = p_reso_db->p_resource_cb;
 
 #if (defined(OSEE_HAS_CHECKS))
-    if ((p_mtx_mcb->p_mtx_owner == NULL) || (p_curr_tcb->p_first_mtx != p_mtx))
+    if ((p_reso_cb->p_resource_owner == NULL) ||\
+        (p_curr_tcb->p_first_resource != p_reso_db))
     {
       ev = E_OS_NOFUNC;
     } else
@@ -1106,12 +1097,13 @@ FUNC(StatusType, OS_CODE)
       VAR(OsEE_reg, AUTOMATIC)
         flags = osEE_begin_primitive();
 
-      /* Pop the MTX head */
-      p_curr_tcb->p_first_mtx = p_curr_tcb->p_first_mtx->p_mcb->p_next;
+      /* Pop the Resources head */
+      p_curr_tcb->p_first_resource = p_curr_tcb->p_first_resource->
+        p_resource_cb->p_next;
 
-      if (p_curr_tcb->p_first_mtx != NULL) {
+      if (p_curr_tcb->p_first_resource != NULL) {
         CONST(TaskPrio, AUTOMATIC)
-          prev_prio = p_mtx_mcb->prev_prio;
+          prev_prio = p_reso_cb->prev_prio;
 
         p_curr_tcb->current_prio = prev_prio;
         flags = osEE_hal_prepare_ipl(flags, prev_prio);
@@ -1123,7 +1115,7 @@ FUNC(StatusType, OS_CODE)
         flags = osEE_hal_prepare_ipl(flags, dispatch_prio);
       }
 
-      p_mtx_mcb->p_mtx_owner  = NULL;
+      p_reso_cb->p_resource_owner = NULL;
 
       /* Preemption point */
       (void)osEE_scheduler_task_preemption_point(p_kdb);
@@ -1881,21 +1873,14 @@ FUNC(StatusType, OS_CODE)
   {
     ev = E_OS_CALLEVEL;
   } else
-#if (defined(OSEE_HAS_MUTEX))
-  if (p_curr_tcb->p_first_mtx != NULL) {
-#if (!defined(OSEE_SINGLECORE))
-    if (p_curr_tcb->p_first_mtx->mtx_type == OSEE_MUTEX_SPINLOCK) {
-      ev = E_OS_SPINLOCK;
-    } else
-#endif /* !OSEE_SINGLECORE */
-    {
-      ev = E_OS_RESOURCE;
-    }
+#if (defined(OSEE_HAS_RESOURCES))
+  if (p_curr_tcb->p_first_resource != NULL) {
+    ev = E_OS_RESOURCE;
   } else
   if (p_curr->task_type != OSEE_TASK_TYPE_EXTENDED) {
     ev = E_OS_ACCESS;
   } else
-#endif /* OSEE_HAS_MUTEX */
+#endif /* OSEE_HAS_RESOURCES */
 #endif /* OSEE_HAS_CHECKS */
   /* Check if we have to wait */
   if ((p_curr_tcb->event_mask & Mask) == 0U) {

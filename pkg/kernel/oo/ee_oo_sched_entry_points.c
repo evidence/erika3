@@ -78,12 +78,12 @@ static FUNC(void, OS_CODE)
   }
 #endif /* OSEE_HAS_SERVICE_PROTECTION && OSEE_HAS_ERRORHOOK */
 
-#if (defined(OSEE_HAS_MUTEX))
+#if (defined(OSEE_HAS_RESOURCES))
   /* [SWS_Os_0070]: If a task returns from the entry function without making a
       TerminateTask() or ChainTask() call and still holds OSEK Resources,
       the Operating System shall release them. */
   /* TODO */
-#endif /* OSEE_HAS_MUTEX */
+#endif /* OSEE_HAS_RESOURCES */
 
 #if (!defined(OSEE_HAS_SERVICE_PROTECTION))
   /* TODO: azzera contatori ISR */
