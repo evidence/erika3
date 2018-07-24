@@ -60,9 +60,8 @@
 extern "C" {
 #endif
 
-/* OSEK Style typedefs */
 #if (!defined(OSEE_APPMODE_TYPE))
-#define OSEE_APPMODE_TYPE                       VAR(unsigned char, TYPEDEF)
+#define OSEE_APPMODE_TYPE                       VAR(uint8_t, TYPEDEF)
 #endif /* !OSEE_APPMODE_TYPE */
 typedef OSEE_APPMODE_TYPE                       AppModeType;
 #define INVALID_APPMODE                         ((AppModeType)-1)
@@ -77,36 +76,68 @@ typedef P2VAR(TaskType, TYPEDEF, OS_APPL_DATA)  TaskRefType;
 #define INVALID_TASK                            ((TaskType)-1)
 #define INVALID_ISR                             INVALID_TASK
 
-#if (!defined(OSEE_TASK_PRIO_TYPE))
-#define OSEE_TASK_PRIO_TYPE                     VAR(unsigned char, TYPEDEF)
-#endif /* !OSEE_TASK_PRIO_TYPE */
-
 /**
-  It represent the priority of TASK and virtual priority for ISR2.
   The priority is an integer number with higher values for higher priorities.
+
+  The same variable maps two types of priorities, in two different value ranges:
+  - The task priority
+
+  It represent the priority of TASK and virtual priority for ISR2.
   Choosen the dimension 'n' in bit of the type (usually n=8),
   the priority space is partitioned in the following way:
+
   0 Idle (Task) Priority,
+
   1 .. 2^(n-1) - 1 Tasks priorities
+    (value for n=8, 1..127)
+
   2^(n-1) .. 2^n-2 ISR2 virtual priorities
     (not all this space need to correspond to an hardware priority)
+    (value for n=8, 128..254)
+
   2^n - 1 Special value used to not reenable interrupts
     (used for internal interrupts when we want prevent preemption,
      like for system timer or for Scheduling Inter Core Interrupts).
+    (value for n=8, 255)
 
   Using priorities in this way we are able to make coesist in the same data
-  structures ISR2 and TASK out of the box.
+  structures both TASK and ISR2 (which are treated like TASKs)
 
   ISR2 virtual priorities are mapped to hardware priorities by a hal porting
   function in the following way:
 
-  Virtual priority 2^(n-1) == lowest_hardware priority
-  2^(n-1) + 1 == second_lowest_harware_priority
+  Virtual priority 2^(n-1)     == lowest_hardware priority
+  Virtual priority 2^(n-1) + 1 == second_lowest_harware_priority
   ...
-  and so on. */
+  and so on. 
+
+  Note that redefining the size of OSEE_TASK_PRIO_TYPE requires also
+  the specific definition of a few constants, as (TaskPrio)-1 violates
+  MISRA 12.4
+*/
+
+#if (!defined(OSEE_TASK_PRIO_TYPE))
+#define OSEE_TASK_PRIO_TYPE                     VAR(uint8_t, TYPEDEF)
+
 typedef OSEE_TASK_PRIO_TYPE                     TaskPrio;
-#define OSEE_ISR2_PRIO_BIT                 ((TaskPrio)(~(((TaskPrio)-1) >> 1U)))
+
+/**
+ This is the most significant bit of a priority
+ A priority that has this bit to 1 is a "virtual priority" of an ISR2
+ */
+#if 0
+#define OSEE_ISR2_PRIO_BIT                      ((TaskPrio)(0x80U))
+#define OSEE_ISR_ALL_PRIO                       ((TaskPrio)(0xFFU))
+#endif
+  
+#define OSEE_ISR2_PRIO_BIT      ((TaskPrio)1U<<(sizeof(TaskPrio)*8-1))
 #define OSEE_ISR_ALL_PRIO                       ((TaskPrio)-1)
+
+
+  
+#endif /* !OSEE_TASK_PRIO_TYPE */
+
+  
 
 #if (!defined(OSEE_ISR_SOURCE_TYPE))
 #define OSEE_ISR_SOURCE_TYPE                    VAR(OsEE_reg, TYPEDEF)
@@ -114,12 +145,12 @@ typedef OSEE_TASK_PRIO_TYPE                     TaskPrio;
 typedef OSEE_ISR_SOURCE_TYPE                    ISRSource;
 
 #if (!defined(OSEE_TASK_ACTIVATION_TYPE))
-#define OSEE_TASK_ACTIVATION_TYPE               VAR(unsigned char, TYPEDEF)
+#define OSEE_TASK_ACTIVATION_TYPE               VAR(uint8_t, TYPEDEF)
 #endif /* !OSEE_TASK_ACTIVATION_TYPE */
 typedef OSEE_TASK_ACTIVATION_TYPE               TaskActivation;
 
 #if (!defined(OSEE_CORE_ID_TYPE))
-#define OSEE_CORE_ID_TYPE                       VAR(unsigned char, TYPEDEF)
+#define OSEE_CORE_ID_TYPE                       VAR(uint8_t, TYPEDEF)
 #endif /* !OSEE_CORE_ID_TYPE */
 typedef OSEE_CORE_ID_TYPE                       CoreIdType;
 
@@ -139,7 +170,7 @@ typedef OSEE_TASK_FUNC_TYPE(TaskFunc) ( void );
 /**
  * \brief TASK types enumeration
  */
-typedef enum OsEE_task_type_tag {
+typedef enum {
   /** \brief Basic Task Type, also known as Run-To-Completition (RTC) TASKs,
              these TASKs cannot call blocking services. */
   OSEE_TASK_TYPE_BASIC,
@@ -157,7 +188,7 @@ typedef enum OsEE_task_type_tag {
 
 typedef VAR(OsEE_task_type, TYPEDEF)                TaskExecutionType;
 
-typedef enum OsEE_task_status_tag {
+typedef enum {
   /** \brief Status of a TASK that's is not activated yet */
   OSEE_TASK_SUSPENDED,
   /** \brief Task activated and present in raeady, but the current activation
@@ -198,10 +229,10 @@ typedef OSEE_TICK_TYPE                              TickType;
 typedef P2VAR(TickType, TYPEDEF, OS_APPL_DATA)      TickRefType;
 
 #if (!defined(OSEE_TICK_DELTA_TYPE))
-#define OSEE_TICK_DELTA_TYPE                        VAR(int, TYPEDEF)
+#define OSEE_TICK_DELTA_TYPE                        VAR(OsEE_reg, TYPEDEF)
 #endif /* !OSEE_TICK_DELTA_TYPE */
 
-typedef signed OSEE_TICK_DELTA_TYPE                 TickDeltaType;
+typedef OSEE_TICK_DELTA_TYPE                        TickDeltaType;
 
 typedef VAR(struct, TYPEDEF) {
 /** Maximum possible allowed count value in ticks */
@@ -319,7 +350,7 @@ typedef OSEE_MEM_SIZE_TYPE                          MemSize;
 #if (!defined(STATUSTYPEDEFINED))
 #define  STATUSTYPEDEFINED  /**< OSEK compliance */
 
-typedef enum OsEE_status_type_tag {
+typedef enum {
   E_OK,                                             /* ((StatusType)0)  */
   E_OS_ACCESS,                                      /* ((StatusType)1)  */
   E_OS_CALLEVEL,                                    /* ((StatusType)2)  */
@@ -374,7 +405,7 @@ typedef union {
  *      too, so I'll use only even identifiers for the service IDs
  *      (leaving the odd values for the ORTI service terminated event tracing).
  */
-typedef enum OsEE_service_id_type_tag {
+typedef enum {
   OSServiceId_ActivateTask                    = (0),
   OSServiceId_TerminateTask                   = (2),
   OSServiceId_ChainTask                       = (4),

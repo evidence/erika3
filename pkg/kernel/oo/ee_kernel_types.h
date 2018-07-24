@@ -83,7 +83,7 @@ extern "C" {
 /* Kernel Callback */
 typedef P2FUNC(void, OS_APPL_DATA, OsEE_kernel_cb) (void);
 /* Byte: the smallest type instantiable */
-typedef VAR(unsigned char, TYPEDEF) OsEE_byte;
+typedef VAR(uint8_t, TYPEDEF) OsEE_byte;
 #define OSEE_MAX_BYTE               ((OsEE_byte)-1)
 
 /*[OS_SWS_088] If an OS-Application makes a service call from the wrong
@@ -95,7 +95,7 @@ typedef VAR(unsigned char, TYPEDEF) OsEE_byte;
 /** @typedef OS-Application contexts enum used to implement Autosar OS
  *  OS_SWS_088 requirement. Used in addition to handle not recursive calls at
  *  ErrorHook */
-typedef enum OsEE_os_context_tag{
+typedef enum {
   OSEE_KERNEL_CTX,
   OSEE_IDLE_CTX,
   OSEE_TASK_CTX,
@@ -151,7 +151,7 @@ typedef struct OsEE_MDB_tag {
 } OSEE_CONST OsEE_MDB;
 #endif /* OSEE_HAS_MUTEX */
 
-typedef struct OsEE_TCB_tag {
+typedef struct {
   VAR(TaskActivation, TYPEDEF)              current_num_of_act;
   VAR(TaskPrio, TYPEDEF)                    current_prio;
   VAR(TaskStateType, TYPEDEF)               status;
@@ -182,7 +182,7 @@ typedef struct OsEE_TDB_tag {
 #endif /* !OSEE_SINGLECORE */
 } OSEE_CONST OsEE_TDB;
 
-typedef struct OsEE_TW_tag {
+typedef struct {
   P2VAR(OsEE_TDB, TYPEDEF, OS_APPL_DATA)  p_tdb;
   VAR(TaskFunc, TYPEDEF)                  real_task_func;
 } OSEE_CONST OsEE_TW;
@@ -201,7 +201,7 @@ struct OsEE_TriggerDB_tag;
 typedef P2VAR(struct OsEE_TriggerDB_tag OSEE_CONST, TYPEDEF, OS_APPL_DATA)
   OsEE_TriggerQ;
 
-typedef struct OsEE_CounterCB_tag {
+typedef struct {
   VAR(OsEE_TriggerQ, TYPEDEF) trigger_queue;
   VAR(TickType, TYPEDEF)      value;
 #if (defined(OSEE_HAS_COUNTER_PRESCALER))
@@ -216,7 +216,7 @@ typedef struct OsEE_CounterHardDB {
 } OSEE_CONST OsEE_CounterHardDB;
 #endif /* OSEE_HAS_COUNTER_HARD */
 
-typedef struct OsEE_CounterDB_tag {
+typedef struct {
   P2VAR(OsEE_CounterCB, TYPEDEF, OS_APPL_DATA)      p_counter_cb;
 #if (defined(OSEE_HAS_COUNTER_HARD))
   P2VAR(OsEE_CounterHardDB, TYPEDEF, OS_APPL_CONST) p_counter_hard;
@@ -234,7 +234,7 @@ typedef enum {
   OSEE_ACTION_CALLBACK
 } OsEE_action_type;
 
-typedef struct OsEE_action_param {
+typedef struct {
   VAR(OsEE_kernel_cb, TYPEDEF)                  f;
   P2VAR(OsEE_TDB, TYPEDEF, OS_APPL_DATA)        p_tdb;
   P2VAR(OsEE_CounterDB, TYPEDEF, OS_APPL_DATA)  p_counter_db;
@@ -243,7 +243,7 @@ typedef struct OsEE_action_param {
 #endif /* OSEE_HAS_EVENTS */
 } OsEE_action_param;
 
-typedef struct OsEE_action_tag {
+typedef struct {
   VAR(OsEE_action_param, TYPEDEF)               param;
   VAR(OsEE_action_type, TYPEDEF)                type;
 } OSEE_CONST OsEE_action;
@@ -347,7 +347,7 @@ typedef struct OsEE_SchedTabDB_tag {
 /**
  * I will handle concurrent updates for triggers thanks this status 
  */
-typedef enum OsEE_trigger_status_tag {
+typedef enum {
   OSEE_TRIGGER_INACTIVE,
   OSEE_TRIGGER_CANCELED,
   OSEE_TRIGGER_ACTIVE,
@@ -355,7 +355,7 @@ typedef enum OsEE_trigger_status_tag {
   OSEE_TRIGGER_REENABLED
 } OsEE_trigger_status;
 
-typedef struct OsEE_TriggerCB_tag {
+typedef struct {
   P2VAR(struct OsEE_TriggerDB_tag OSEE_CONST, TYPEDEF, OS_APPL_DATA)  p_next;
   VAR(TickType, TYPEDEF)                                              when;
   VAR(OsEE_trigger_status, TYPEDEF)                                   status;
@@ -432,7 +432,7 @@ typedef enum osEE_autostart_trigger_info_type_tag {
 } osEE_autostart_trigger_info_type;
 #endif /* OSEE_HAS_SCHEDULE_TABLES */
 
-typedef struct OsEE_autostart_trigger_info_tag {
+typedef struct {
   P2VAR(OsEE_TriggerDB, TYPEDEF, OS_APPL_CONST)   p_trigger_db;
   VAR(TickType, TYPEDEF)                          first_tick_parameter;
 #if (defined(OSEE_HAS_ALARMS))
@@ -443,7 +443,7 @@ typedef struct OsEE_autostart_trigger_info_tag {
 #endif /* OSEE_HAS_SCHEDULE_TABLES */
 } OSEE_CONST OsEE_autostart_trigger_info;
 
-typedef struct OsEE_autostart_trigger_tag {
+typedef struct {
   P2SYM_VAR(OsEE_autostart_trigger_info, OS_APPL_CONST, p_trigger_ptr_array)[];
   VAR(MemSize, TYPEDEF)                                 trigger_array_size;
 } OSEE_CONST OsEE_autostart_trigger;
@@ -457,7 +457,7 @@ typedef struct OsEE_autostart_tdb_tag {
 } OSEE_CONST OsEE_autostart_tdb;
 #endif /* !OSEE_HAS_AUTOSTART_TASK */
 
-typedef struct OsEE_CCB_tag {
+typedef struct {
   P2VAR(OsEE_TDB, TYPEDEF, OS_APPL_CONST)       p_curr;
 #if (!defined(OSEE_SINGLECORE)) && (defined(OSEE_SCHEDULER_GLOBAL))
   P2VAR(OsEE_spin_lock, TYPEDEF, OS_APPL_DATA)  p_lock_to_be_released;
@@ -500,7 +500,7 @@ typedef struct OsEE_CCB_tag {
 #endif /* OSEE_HAS_ORTI */
 } OsEE_CCB;
 
-typedef struct OsEE_CDB_tag {
+typedef struct {
 #if (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
   VAR(OsEE_CHDB, TYPEDEF)                         chdb;
 #endif /* OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
@@ -528,7 +528,7 @@ typedef struct OsEE_CDB_tag {
 #endif /* !OSEE_SINGLECORE */
 } OSEE_CONST OsEE_CDB;
 
-typedef struct OsEE_KCB_tag {
+typedef struct {
 #if (defined(OSEE_SCHEDULER_GLOBAL))
   VAR(OsEE_RQ, TYPEDEF)                   rq;
   P2VAR(OsEE_SN, TYPEDEF, OS_APPL_DATA)   p_free_sn;
@@ -562,7 +562,7 @@ typedef struct OsEE_KCB_tag {
 #endif /* OSEE_SINGLECORE && !OSEE_API_DYNAMIC */
 } OsEE_KCB;
 
-typedef struct OsEE_KDB_tag {
+typedef struct {
   P2VAR(OsEE_KCB, TYPEDEF, OS_APPL_DATA)            p_kcb;
 #if (!defined(OSEE_SINGLECORE))
   P2VAR(OsEE_spin_lock, TYPEDEF,OS_APPL_DATA)       p_lock;

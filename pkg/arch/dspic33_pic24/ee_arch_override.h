@@ -88,7 +88,7 @@
 	)								\
 )
 
-#define OSEE_ADJUST_POOL_BASE(pool, size)	((pool) + (ptrdiff_t)(size))
+#define OSEE_ADJUST_POOL_BASE(pool, poolsize)	((pool) + (ptrdiff_t)(poolsize))
 
 
 #endif	/* !OSEE_ARCH_OVERRIDE_H */

@@ -108,7 +108,7 @@ extern "C" {
  *    \#define E_NOT_OK 0x01U<br>
  *  </code>
  */
-typedef unsigned char StatusType; /* OSEK compliance */
+typedef uint8_t StatusType; /* OSEK compliance */
 #endif /* !STATUSTYPEDEFINED */
 
 #if (!defined(E_NOT_OK))
@@ -130,7 +130,7 @@ typedef unsigned char StatusType; /* OSEK compliance */
     EG: Some DSP architectures have CHAR_BIT equal to 16. So using unsigned char
         (the smallest unsigned integer usable) is less misleading.
  */
-typedef unsigned char Std_ReturnType;
+typedef uint8_t Std_ReturnType;
 
 /*
  * The symbols EE_HIGH and EE_LOW shall be defined as follows:

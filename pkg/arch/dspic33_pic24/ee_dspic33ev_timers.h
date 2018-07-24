@@ -92,7 +92,8 @@ osEE_timer_init(
       T1CONbits.TON = 0U;		/* Disable Timer		  */
       T1CONbits.TCS = 0U;		/* Select internal clock (Fosc/2) */
       T1CONbits.TGATE = 0U;		/* Disable Gated Timer mode	  */
-      T1CONbits.TCKPS = prescaler;	/* Load the prescaler		  */
+      T1CONbits.TCKPS =
+	(uint8_t)prescaler;		/* Load the prescaler		  */
       PR1 = period;			/* Load the period value	  */
       TMR1 = 0U;			/* Clear Timer Counter.		  */
       break;
@@ -100,7 +101,8 @@ osEE_timer_init(
       T2CONbits.TON = 0U;		/* Disable Timer		  */
       T2CONbits.TCS = 0U;		/* Select internal clock (Fosc/2) */
       T2CONbits.TGATE = 0U;		/* Disable Gated Timer mode	  */
-      T2CONbits.TCKPS = prescaler;	/* Load the prescaler		  */
+      T2CONbits.TCKPS =
+	(uint8_t)prescaler;		/* Load the prescaler		  */
       PR2 = period;			/* Load the period value	  */
       TMR2 = 0U;			/* Clear Timer Counter.		  */
       break;
@@ -108,7 +110,8 @@ osEE_timer_init(
       T3CONbits.TON = 0U;		/* Disable Timer		  */
       T3CONbits.TCS = 0U;		/* Select internal clock (Fosc/2) */
       T3CONbits.TGATE = 0U;		/* Disable Gated Timer mode	  */
-      T3CONbits.TCKPS = prescaler;	/* Load the prescaler		  */
+      T3CONbits.TCKPS =
+	(uint8_t)prescaler;		/* Load the prescaler		  */
       PR3 = period;			/* Load the period value	  */
       TMR3 = 0U;			/* Clear Timer Counter.		  */
       break;
@@ -116,7 +119,8 @@ osEE_timer_init(
       T4CONbits.TON = 0U;		/* Disable Timer		  */
       T4CONbits.TCS = 0U;		/* Select internal clock (Fosc/2) */
       T4CONbits.TGATE = 0U;		/* Disable Gated Timer mode	  */
-      T4CONbits.TCKPS = prescaler;	/* Load the prescaler		  */
+      T4CONbits.TCKPS =
+	(uint8_t)prescaler;		/* Load the prescaler		  */
       PR4 = period;			/* Load the period value	  */
       TMR4 = 0U;			/* Clear Timer Counter.		  */
       break;
@@ -124,7 +128,8 @@ osEE_timer_init(
       T5CONbits.TON = 0U;		/* Disable Timer		  */
       T5CONbits.TCS = 0U;		/* Select internal clock (Fosc/2) */
       T5CONbits.TGATE = 0U;		/* Disable Gated Timer mode	  */
-      T5CONbits.TCKPS = prescaler;	/* Load the prescaler		  */
+      T5CONbits.TCKPS =
+	(uint8_t)prescaler;		/* Load the prescaler		  */
       PR5 = period;			/* Load the period value	  */
       TMR5 = 0U;			/* Clear Timer Counter.		  */
       break;

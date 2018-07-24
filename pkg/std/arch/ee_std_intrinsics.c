@@ -52,7 +52,7 @@
 
 #include "ee_internal.h"
 
-#define OSEE_LU_MASK  ((uint8_t)-1U)
+#define OSEE_LU_MASK  ((uint8_t)-1)
 #define OSEE_LU_NULL  OSEE_LU_MASK
 
 typedef int VAR(OsEE_signed_index, TYPEDEF);
@@ -116,21 +116,24 @@ OSEE_GET_MSB_INLINE FUNC(MemSize, OS_CODE)
      contains the number of 8-bit cycles that we have to perform in
      oredr to find the MSB (the hypothesis here is that the bits
      higher than OSEE_RQ_PRIO_NUM are 0 */
-  CONST(OsEE_reg,         AUTOMATIC) mask_8bit_size =
-    ((OSEE_RQ_PRIO_NUM & 0x7U) == 0U)?
-    (OSEE_RQ_PRIO_NUM / 8U):
-    (((OSEE_RQ_PRIO_NUM & (~0x7U)) + 8U) / 8U);
+
+#if ((OSEE_RQ_PRIO_NUM & 0x7U) == 0U)
+  CONST(OsEE_reg,         AUTOMATIC) mask_8bit_size = (OSEE_RQ_PRIO_NUM / 8U);
+#else
+  CONST(OsEE_reg,         AUTOMATIC) mask_8bit_size = (((OSEE_RQ_PRIO_NUM & (~0x7U)) + 8U) / 8U);
+#endif
 
   VAR(MemSize,            AUTOMATIC) msb = (mask_8bit_size * 8U) - 1U;
 
   /* N.B. (x << 3U) == (x * 8U) */
-  for (i = ((mask_8bit_size - 1U) << 3U); i >= 0; (i -= 8)) {
+  for (i = (OsEE_signed_index)((mask_8bit_size - 1U) << 3U); i >= 0; (i -= 8)) {
     CONST(uint8_t, AUTOMATIC) lu_i =
-        (uint8_t)((mask & (OSEE_LU_MASK << i)) >> i);
+      (uint8_t)((mask & ( ((OsEE_rq_mask)OSEE_LU_MASK) << ((uint8_t)i) )) >> ((uint8_t)i) );
     CONST(uint8_t, AUTOMATIC) msb_tmp = osEE_msb_8bit_lookup[lu_i];
 
     if (msb_tmp != OSEE_LU_NULL) {
-      msb -= (7U - msb_tmp);
+      CONST(uint8_t, AUTOMATIC) msb_tmp2 = ((uint8_t)7U) - msb_tmp;
+      msb -= (MemSize)msb_tmp2; /* MISRA 10.8 */
       break;
     } else {
       msb -= 8U;

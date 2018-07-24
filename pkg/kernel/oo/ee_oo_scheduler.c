@@ -99,11 +99,13 @@ FUNC(OsEE_bool, OS_CODE)
 {
   VAR(OsEE_bool, AUTOMATIC)
     head_changed = OSEE_FALSE;
-  CONST(MemSize, AUTOMATIC)
-    queue_index = (MemSize)(p_tdb_new->ready_prio - (TaskPrio)1U);
+  CONST(TaskPrio, AUTOMATIC) tmp_index = p_tdb_new->ready_prio - ((TaskPrio)1U);
+  CONST(MemSize, AUTOMATIC) queue_index = (MemSize)tmp_index; /* MISRA 10.8 */
   CONSTP2VAR(OsEE_rq_queue, AUTOMATIC, OS_APPL_DATA)
     p_rq_queue = &p_rq->queue[queue_index];
 
+  
+  
   p_sn_new->p_tdb = p_tdb_new;
 
   if (p_rq_queue->p_head == NULL) {

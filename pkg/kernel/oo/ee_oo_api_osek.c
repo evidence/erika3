@@ -124,9 +124,9 @@ FUNC(void, OS_CODE)
     ++p_ccb->s_isr_all_cnt;
   } else {
 #if (defined(OSEE_HAS_PROTECTIONHOOK))
-#error Add ProtectionHook call here since it has been implemented
+#error Add ProtectionHook call here once it has been implemented
 #else
-  osEE_shutdown_os(p_cdb, E_OS_SYS_SUSPEND_NESTING_LIMIT);
+    (void)osEE_shutdown_os(p_cdb, E_OS_SYS_SUSPEND_NESTING_LIMIT);
 #endif /* OSEE_HAS_PROTECTIONHOOK */
   }
 
@@ -182,9 +182,9 @@ FUNC(void, OS_CODE)
     ++p_ccb->s_isr_os_cnt;
   } else {
 #if (defined(OSEE_HAS_PROTECTIONHOOK))
-#error Add ProtectionHook call here since it has been implemented
+#error Add ProtectionHook call here once it has been implemented
 #else
-  osEE_shutdown_os(p_cdb, E_OS_SYS_SUSPEND_NESTING_LIMIT);
+    (void)osEE_shutdown_os(p_cdb, E_OS_SYS_SUSPEND_NESTING_LIMIT);
 #endif /* OSEE_HAS_PROTECTIONHOOK */
   }
 
@@ -1220,7 +1220,7 @@ FUNC(StatusType, OS_CODE)
   } else {
     VAR(TaskType, AUTOMATIC)
       tid = INVALID_TASK;
-    CONSTP2CONST(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
+    CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
       p_tdb = p_ccb->p_curr;
 
     /* This function should return the running task. Since ISR2 are in
@@ -1241,7 +1241,7 @@ FUNC(StatusType, OS_CODE)
         p_sn = p_ccb->p_stk_sn->p_next;
 
       while (p_sn != NULL) {
-        CONSTP2CONST(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
+        CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
           p_searched_tdb = p_sn->p_tdb;
         if (p_searched_tdb->task_type <= OSEE_TASK_TYPE_EXTENDED) {
           tid = p_searched_tdb->tid;
@@ -3181,7 +3181,7 @@ FUNC(ISRType, OS_CODE)
 )
 {
   VAR(ISRType, AUTOMATIC) isr_id;
-  CONSTP2CONST(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
+  CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
     p_tdb = osEE_get_curr_task();
 
   if (p_tdb->task_type == OSEE_TASK_TYPE_ISR2) {

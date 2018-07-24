@@ -89,21 +89,25 @@ extern "C" {
  =============================================================================*/
 
 /** \brief	Minimum IPL Value. */
-#define	OSEE_DSPIC33_PIC24_IPL_MIN	0x00U
+#define	OSEE_DSPIC33_PIC24_IPL_MIN	(0x00U)
 
 /** \brief	Maximum IPL Value. */
-#define	OSEE_DSPIC33_PIC24_IPL_MAX	0x07U
+#define	OSEE_DSPIC33_PIC24_IPL_MAX	(0x07U)
 
 #if	(!defined(OSEE_ISR2_MAX_PRIO))
 /* 4 priorities left for ISR2 of the 8 available as default */
-#define	OSEE_ISR2_MAX_PRIO	(OSEE_ISR2_PRIO_BIT + 3U)
+#define	OSEE_ISR2_MAX_PRIO	((TaskPrio)(OSEE_ISR2_PRIO_BIT + 3U))
 #endif	/* OSEE_ISR2_MAX_PRIO */
 
+/**
+ * hardware priority 0 is not consider (tasks are running at hardware priorty 0!)
+ * hardware priority 1 is 0xb 1000 0000 which is also OSEE_ISR2_PRIO_BIT
+ * hardware priority 2 is 0xb 1000 0001
+ * ...
+ * hardware priority 7 is 0xb 1000 0110
+ */
 #define	OSEE_ISR2_VIRT_TO_HW_PRIO(virt_prio)	\
-	(((virt_prio) & (~OSEE_ISR2_PRIO_BIT)) + 1U)
-
-#define	OSEE_ISR2_MAX_HW_PRIO			\
-	OSEE_ISR2_VIRT_TO_HW_PRIO(OSEE_ISR2_MAX_PRIO)
+  ((TaskPrio) (((virt_prio) & (~OSEE_ISR2_PRIO_BIT)) + 1U) )
 
 #define	OSEE_ISR2_MAX_HW_PRIO			\
 	OSEE_ISR2_VIRT_TO_HW_PRIO(OSEE_ISR2_MAX_PRIO)
@@ -162,7 +166,7 @@ osEE_hal_set_ipl(
     SET_CPU_IPL(OSEE_DSPIC33_PIC24_IPL_MIN);
   }
   else {
-    SET_CPU_IPL((uint8_t)(OSEE_ISR2_VIRT_TO_HW_PRIO(virt_prio) & 0x07U));
+    SET_CPU_IPL(((uint8_t)(OSEE_ISR2_VIRT_TO_HW_PRIO(virt_prio) & 0x07U)));
   }
 }
 
@@ -173,12 +177,15 @@ osEE_hal_prepare_ipl(
 )
 {
   OsEE_reg ret_flags;
+  TaskPrio tmp_flags;
+
   /* Touch unused parameter */
   (void)flags;
   if (virt_prio < OSEE_ISR2_PRIO_BIT) {
     ret_flags = 0U;
   } else {
-    ret_flags = (OSEE_ISR2_VIRT_TO_HW_PRIO(virt_prio) & 0xFU);
+    tmp_flags = (OSEE_ISR2_VIRT_TO_HW_PRIO(virt_prio) & ((TaskPrio)0xFU));
+    ret_flags = tmp_flags;
   }
   return ret_flags;
 }
@@ -206,7 +213,7 @@ osEE_hal_end_nested_primitive(
   VAR(OsEE_reg, AUTOMATIC)	flag
 )
 {
-  SET_CPU_IPL((uint8_t)flag);
+  SET_CPU_IPL(((uint8_t)flag));
 }
 
 /*==============================================================================
