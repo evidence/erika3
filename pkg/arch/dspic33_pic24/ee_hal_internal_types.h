@@ -81,16 +81,16 @@ typedef struct OsEE_CTX_tag {
 } OsEE_CTX;
 
 /* Stack Control Block: stores the stack dynamic information */
-typedef struct OsEE_SCB_tag {
+typedef struct {
   OsEE_CTX	* p_tos;	/* Saved Context */
 } OsEE_SCB;
 
-typedef struct OsEE_SDB_tag {
+typedef struct {
   OsEE_CTX	* p_bos;	/* Base Of Stack */
   MemSize	stack_size;
 } OSEE_CONST OsEE_SDB;
 
-typedef struct OsEE_HDB_tag {
+typedef struct {
   OsEE_SDB		* p_sdb;
   OsEE_SCB		* p_scb;
 #if (defined(OSEE_API_DYNAMIC))

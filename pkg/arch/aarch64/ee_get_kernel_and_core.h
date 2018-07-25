@@ -59,10 +59,10 @@
 extern "C" {
 #endif
 
-extern OsEE_KDB osEE_kdb;
-extern OsEE_CDB osEE_cdb;
-extern OsEE_KCB osEE_kcb;
-extern OsEE_CCB osEE_ccb;
+extern OsEE_KDB osEE_kdb_var;
+extern OsEE_CDB osEE_cdb_var;
+extern OsEE_KCB osEE_kcb_var;
+extern OsEE_CCB osEE_ccb_var;
 
 #if (defined(OSEE_API_DYNAMIC))
 extern OsEE_TCB   osEE_tcb_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
@@ -72,15 +72,15 @@ extern OsEE_TDB * osEE_tdb_ptr_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
 #endif /* OSEE_API_DYNAMIC */
 
 OSEE_STATIC_INLINE OsEE_CDB * osEE_get_curr_core ( void ) {
-  return &osEE_cdb;
+  return &osEE_cdb_var;
 }
 
 OSEE_STATIC_INLINE OsEE_CDB * osEE_get_core ( CoreIdType core_id ) {
-  return &osEE_cdb;
+  return &osEE_cdb_var;
 }
 
 OSEE_STATIC_INLINE OsEE_KDB * osEE_get_kernel ( void ) {
-  return &osEE_kdb;
+  return &osEE_kdb_var;
 }
 
 OSEE_STATIC_INLINE void osEE_lock_kernel ( void ) {}

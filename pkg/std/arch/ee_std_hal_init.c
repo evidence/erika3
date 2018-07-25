@@ -55,11 +55,11 @@
 
 #if (defined(OSEE_API_DYNAMIC))
 
-VAR(OsEE_KCB, OS_VAR_CLEARED) osEE_kcb;
-VAR(OsEE_CCB, OS_VAR_CLEARED) osEE_ccb;
+VAR(OsEE_KCB, OS_VAR_CLEARED) osEE_kcb_var;
+VAR(OsEE_CCB, OS_VAR_CLEARED) osEE_ccb_var;
 
-VAR(OsEE_KDB, OS_VAR_CLEARED) osEE_kdb;
-VAR(OsEE_CDB, OS_VAR_CLEARED) osEE_cdb;
+VAR(OsEE_KDB, OS_VAR_CLEARED) osEE_kdb_var;
+VAR(OsEE_CDB, OS_VAR_CLEARED) osEE_cdb_var;
 
 VAR(OsEE_TDB, OS_VAR_CLEARED)
   osEE_tdb_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
@@ -157,15 +157,15 @@ FUNC(void, OS_CODE_INIT)
   VAR(size_t, AUTOMATIC) i;
 
   /* Initialize Kernel Descriptor block */
-  osEE_kdb.p_kcb           = &osEE_kcb;
-  osEE_kdb.p_tdb_ptr_array = (OsEE_TDB * const (*)[])&osEE_tdb_ptr_array;
-  osEE_kdb.tdb_array_size  = OSEE_ARRAY_ELEMENT_COUNT(osEE_tdb_ptr_array);
+  osEE_kdb_var.p_kcb           = &osEE_kcb_var;
+  osEE_kdb_var.p_tdb_ptr_array = (OsEE_TDB * const (*)[])&osEE_tdb_ptr_array;
+  osEE_kdb_var.tdb_array_size  = OSEE_ARRAY_ELEMENT_COUNT(osEE_tdb_ptr_array);
 
   /* Initialize Core Data Structures */
 #if (defined(OSEE_SINGLECORE))
-  osEE_cdb.p_ccb                   = &osEE_ccb;
-  osEE_cdb.p_idle_task             = &osEE_tdb_array[OSEE_TASK_ARRAY_SIZE];
-  osEE_cdb.p_idle_task->task_func  = osEE_idle_hook_wrapper;
+  osEE_cdb_var.p_ccb                   = &osEE_ccb_var;
+  osEE_cdb_var.p_idle_task             = &osEE_tdb_array[OSEE_TASK_ARRAY_SIZE];
+  osEE_cdb_var.p_idle_task->task_func  = osEE_idle_hook_wrapper;
 #else
   /* TODO */
   /* p_idle_task = (*osEE_kdb.tdb_ptr_array)[OSEE_TASK_ARRAY_SIZE + core_id]; */
@@ -188,9 +188,9 @@ FUNC(void, OS_CODE_INIT)
 
 #if (defined(OSEE_SINGLECORE))
   /* Initialize Core Data Structures */
-  osEE_ccb.p_free_sn       = &osEE_sn_array[0U];
-  osEE_ccb.free_sn_counter = OSEE_ARRAY_ELEMENT_COUNT(osEE_sn_array);
-  osEE_ccb.os_status       = OSEE_KERNEL_INITIALIZED;
+  osEE_ccb_var.p_free_sn       = &osEE_sn_array[0U];
+  osEE_ccb_var.free_sn_counter = OSEE_ARRAY_ELEMENT_COUNT(osEE_sn_array);
+  osEE_ccb_var.os_status       = OSEE_KERNEL_INITIALIZED;
 #else
   /* TODO: configure how partition the SN in between Cores and set the core as
            configured*/

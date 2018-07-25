@@ -108,7 +108,7 @@ osEE_hal_suspendIRQ ( void )
 OSEE_STATIC_INLINE FUNC(void, OS_CODE) OSEE_ALWAYS_INLINE
 osEE_hal_resumeIRQ ( OsEE_reg flags )
 {
-  INTCON2bits.GIE = flags;
+  INTCON2bits.GIE = (uint8_t)flags;
 }
 
 #endif	/* OSEE_DSPIC33_PIC24_SOFT_I_BIT - [GS]: Using INTCON2bits.GIE! */

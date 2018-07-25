@@ -146,12 +146,12 @@ typedef OSEE_RQ_MASK_TYPE           OsEE_rq_mask;
  * MemSize (by definition). */
 #define OSEE_RQ_MASK_EMPTY          ((MemSize)-1)
 
-typedef struct OsEE_rq_queue_tag {
+typedef struct {
   P2VAR(OsEE_SN, TYPEDEF, OS_APPL_DATA) p_head;
   P2VAR(OsEE_SN, TYPEDEF, OS_APPL_DATA) p_tail;
 } OsEE_rq_queue;
 
-typedef struct OsEE_RQ_tag {
+typedef struct {
   VAR(OsEE_rq_queue, TYPEDEF) queue[OSEE_RQ_PRIO_NUM];
   VAR(OsEE_rq_mask, TYPEDEF)  mask;
 } OsEE_RQ;

@@ -56,8 +56,8 @@
 
 #if (defined(OSEE_API_DYNAMIC))
 /* Define Control Blocks in any case */
-OsEE_KCB osEE_kcb;
-OsEE_CCB osEE_ccb;
+OsEE_KCB osEE_kcb_var;
+OsEE_CCB osEE_ccb_var;
 
 #if (defined(OSEE_HAS_JOBS))
 OsEE_KCB_WJ osEE_kcb_wj;
@@ -68,9 +68,9 @@ OsEE_SN     osEE_sn_array[OSEE_SN_ARRAY_SIZE];
 OsEE_TDB    osEE_tdb_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
 OsEE_TDB *  osEE_tdb_ptr_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
 
-OsEE_KDB osEE_kdb;
+OsEE_KDB osEE_kdb_var;
 #if (defined(OSEE_SINGLECORE))
-  OsEE_CDB osEE_cdb;
+  OsEE_CDB osEE_cdb_var;
 #else
   /* TODO */
 #endif /* OSEE_SINGLECORE */
@@ -246,14 +246,14 @@ void osEE_os_init (void) {
   size_t i = 0;
 
   /* Initialize Kernel Descriptor block */
-  osEE_kdb.p_kcb           = &osEE_kcb;
-  osEE_kdb.p_tdb_ptr_array = (OsEE_TDB * const (*)[])&osEE_tdb_ptr_array;
-  osEE_kdb.tdb_array_size  = OSEE_ARRAY_ELEMENT_COUNT(osEE_tdb_ptr_array);
+  osEE_kdb_var.p_kcb           = &osEE_kcb_var;
+  osEE_kdb_var.p_tdb_ptr_array = (OsEE_TDB * const (*)[])&osEE_tdb_ptr_array;
+  osEE_kdb_var.tdb_array_size  = OSEE_ARRAY_ELEMENT_COUNT(osEE_tdb_ptr_array);
 
   /* Initialize Core Data Structures */
-  osEE_cdb.p_ccb                   = &osEE_ccb;
-  osEE_cdb.p_idle_task             = &osEE_tdb_array[OSEE_TASK_ARRAY_SIZE];
-  osEE_cdb.p_idle_task->task_func  = osEE_idle_hook_wrapper;
+  osEE_cdb_var.p_ccb                   = &osEE_ccb_var;
+  osEE_cdb_var.p_idle_task             = &osEE_tdb_array[OSEE_TASK_ARRAY_SIZE];
+  osEE_cdb_var.p_idle_task->task_func  = osEE_idle_hook_wrapper;
 
   /* Initialize the Task Description & Control Blocks (TDB & TCB) */
   for ( i = 0U; i < OSEE_ARRAY_ELEMENT_COUNT(osEE_tdb_array); ++i ) {
@@ -272,14 +272,14 @@ void osEE_os_init (void) {
   /* TODO configure how partition the SN in between Cores*/
 
   /* Initialize Core Data Structures */
-  osEE_ccb.p_free_sn       = &osEE_sn_array[0U];
-  osEE_ccb.free_sn_counter = OSEE_ARRAY_ELEMENT_COUNT(osEE_sn_array);
+  osEE_ccb_var.p_free_sn       = &osEE_sn_array[0U];
+  osEE_ccb_var.free_sn_counter = OSEE_ARRAY_ELEMENT_COUNT(osEE_sn_array);
 
   /* Initialize TCBs */
-  for (i = 0; i < (osEE_kdb.tdb_array_size - 1U); ++i)
+  for (i = 0; i < (osEE_kdb_var.tdb_array_size - 1U); ++i)
   {
     /* ISR2 initialization */
-    OsEE_TDB  * const p_tdb = (*osEE_kdb.p_tdb_ptr_array)[i];
+    OsEE_TDB  * const p_tdb = (*osEE_kdb_var.p_tdb_ptr_array)[i];
     OsEE_TCB  * const p_tcb = p_tdb->p_tcb;
 
     /* Set starting priority for TASKs */
@@ -289,7 +289,7 @@ void osEE_os_init (void) {
       osEE_hal_set_isr2_source(p_tdb, p_tdb->hdb.isr_src);
     }
   }
-  osEE_ccb.os_status = OSEE_KERNEL_INITIALIZED;
+  osEE_ccb_var.os_status = OSEE_KERNEL_INITIALIZED;
 }
 #endif /* OSEE_HAS_JOBS */
 #endif /* OSEE_API_DYNAMIC */

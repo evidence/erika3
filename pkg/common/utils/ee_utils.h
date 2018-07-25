@@ -200,8 +200,7 @@ extern "C" {
 
 #if (!defined(OSEE_ARRAY_ELEMENT_COUNT))
 /** \brief Utility macro that Count the number of element for an Array */
-#define OSEE_ARRAY_ELEMENT_COUNT(ar) \
-  ((sizeof(ar)/sizeof(0[ar])) / (!(sizeof(ar) % sizeof(0[ar]))))
+#define OSEE_ARRAY_ELEMENT_COUNT(ar) (sizeof(ar)/sizeof(0[(ar)]))
 #endif /* !OSEE_ARRAY_ELEMENT_COUNT */
 
 /*==============================================================================
@@ -223,8 +222,8 @@ extern "C" {
 
 #if (!defined(OSEE_STACK_WORD_LENGHT))
 /** \brief Used to initialize stack arrays with the right size. */
-#define OSEE_STACK_WORD_LENGHT(size)\
-  (((size) + OSEE_STACK_ALIGN_SIZE - 1U) / sizeof(OsEE_stack))
+#define OSEE_STACK_WORD_LENGHT(varsize)\
+  (((varsize) + OSEE_STACK_ALIGN_SIZE - 1U) / sizeof(OsEE_stack))
 #endif /* !OSEE_STACK_WORD_LENGHT */
 
 #if (!defined(OSEE_STACK_TOS))

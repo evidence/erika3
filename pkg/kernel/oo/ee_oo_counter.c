@@ -157,7 +157,7 @@ FUNC(void, OS_CODE)
 static FUNC(StatusType, OS_CODE)
   osEE_handle_action
 (
-  P2CONST(OsEE_action, AUTOMATIC, OS_APPL_DATA) p_action
+  P2VAR(OsEE_action, AUTOMATIC, OS_APPL_CONST) p_action
 )
 {
   VAR(StatusType, AUTOMATIC) ev;
