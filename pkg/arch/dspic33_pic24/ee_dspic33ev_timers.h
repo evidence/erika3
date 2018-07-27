@@ -225,7 +225,9 @@ osEE_timer_get_counter(
     case OSEE_T5:
       cnt = TMR5;
       break;
-    default:                            /* no other timer on this MCU     */
+    default:
+      /* no other timer on this MCU. default to TMR1 */
+      cnt = TMR1;
       break;
   }
   return cnt;

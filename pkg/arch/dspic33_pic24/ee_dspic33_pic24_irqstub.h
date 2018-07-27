@@ -54,8 +54,13 @@
 #ifndef OSEE_DSPIC33_PIC24_IRQSTUB_H
 #define	OSEE_DSPIC33_PIC24_IRQSTUB_H
 
-/* Plus I need IRQ handling defines */
 #include "ee_dspic33_pic24_irq.h"
+
+/* needed for the osEE_hal_disableIRQ */
+#if (defined(OS_EE_ARCH_DSPIC33_PIC24_DSPIC33EV))
+#include "ee_dspic33ev_internal.h"
+#endif	/* OS_EE_ARCH_DSPIC33_PIC24_DSPIC33EV */
+
 
 #if (defined(__cplusplus))
 extern "C" {
@@ -117,11 +122,13 @@ osEE_hal_saveIrqCtx( void )
 /*
  * ISR pre-stub.
  */
-#define	OSEE_DSPIC33_PIC24_ISR_PRESTUB()	\
-do {						\
-	osEE_hal_disableIRQ();			\
-	osEE_hal_saveIrqCtx();			\
-} while(OSEE_FALSE)
+OSEE_STATIC_INLINE FUNC(void, OS_CODE) OSEE_ALWAYS_INLINE
+OSEE_DSPIC33_PIC24_ISR_PRESTUB( void )
+{
+	osEE_hal_disableIRQ();
+	osEE_hal_saveIrqCtx();
+}
+
 #endif	/* 0 - [GS]: MISRA */
 
 #if	0	/* [GS]: MISRA */
@@ -151,10 +158,12 @@ osEE_hal_restoreIrqCtx( void )
 /*
  * ISR post-stub.
  */
-#define	OSEE_DSPIC33_PIC24_ISR_POSTSTUB()	\
-do {						\
-	osEE_hal_restoreIrqCtx();		\
-} while(OSEE_FALSE)
+OSEE_STATIC_INLINE FUNC(void, OS_CODE) OSEE_ALWAYS_INLINE
+OSEE_DSPIC33_PIC24_ISR_POSTSTUB( void )
+{
+  osEE_hal_restoreIrqCtx();
+}
+
 #endif	/* 0 - [GS]: MISRA */
 
 /* Un-Defined ISR */

@@ -123,7 +123,8 @@ typedef OSEE_TASK_PRIO_TYPE                     TaskPrio;
  This is the most significant bit of a priority
  A priority that has this bit to 1 is a "virtual priority" of an ISR2
  */
-#define OSEE_ISR2_PRIO_BIT    ((TaskPrio)1U << (sizeof(TaskPrio)*CHAR_BIT - 1))
+#define OSEE_ISR2_PRIO_BIT    \
+  ( (TaskPrio)1U << ( (sizeof(TaskPrio)*((size_t)CHAR_BIT)) - ((size_t)1U) ) )
 #define OSEE_ISR_ALL_PRIO                       ((TaskPrio)-1)
 
 #if (!defined(OSEE_ISR_SOURCE_TYPE))
@@ -216,7 +217,7 @@ typedef OSEE_TICK_TYPE                              TickType;
 typedef P2VAR(TickType, TYPEDEF, OS_APPL_DATA)      TickRefType;
 
 #if (!defined(OSEE_TICK_DELTA_TYPE))
-#define OSEE_TICK_DELTA_TYPE                        VAR(int, TYPEDEF)
+#define OSEE_TICK_DELTA_TYPE                        VAR(OsEE_sreg, TYPEDEF)
 #endif /* !OSEE_TICK_DELTA_TYPE */
 
 typedef OSEE_TICK_DELTA_TYPE                        TickDeltaType;

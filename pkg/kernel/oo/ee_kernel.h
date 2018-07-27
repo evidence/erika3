@@ -595,7 +595,7 @@ LOCAL_INLINE FUNC(void, OS_CODE)
 
 #if (defined(OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN))
 
-LOCAL_INLINE FUNC(StatusType, OS_CODE_NO_RETURN)
+LOCAL_INLINE FUNC(void, OS_CODE_NO_RETURN)
   osEE_shutdown_os
 (
   P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST) p_cdb,
@@ -618,7 +618,7 @@ LOCAL_INLINE FUNC(StatusType, OS_CODE_NO_RETURN)
 }
 #else /* OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN */
 
-LOCAL_INLINE FUNC(StatusType, OS_CODE)
+LOCAL_INLINE FUNC(void, OS_CODE)
   osEE_shutdown_os
 (
   P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST) p_cdb,
@@ -635,8 +635,6 @@ LOCAL_INLINE FUNC(StatusType, OS_CODE)
   if (os_status == OSEE_KERNEL_STARTED) {
     osEE_idle_task_terminate(p_cdb->p_idle_task);
   }
-
-  return E_OK;
 }
 #endif /* OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN */
 

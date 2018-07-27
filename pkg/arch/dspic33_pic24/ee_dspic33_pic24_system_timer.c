@@ -135,6 +135,8 @@ FUNC(void, OS_CODE) osEE_dspic33_pic24_system_timer_init(void)
 
 }
 
+/* These two functions are in preparation for the low-poer mode support */
+#if 0
 /** \brief	System Timer Sleep. */
 FUNC(void, OS_CODE) osEE_dspic33_pic24_system_timer_sleep(void)
 {
@@ -146,6 +148,7 @@ FUNC(void, OS_CODE) osEE_dspic33_pic24_system_timer_wakeup(void)
 {
   osEE_timer_start(OSEE_DSPIC33_PIC24_SYSTEM_TIMER_CHANNEL);
 }
+#endif
 
 /*
  * System Timer ISR.

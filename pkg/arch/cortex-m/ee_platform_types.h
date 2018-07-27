@@ -80,6 +80,7 @@ typedef	enum {
 
 /* Define HAL types */
 typedef	void *			OsEE_addr;
+typedef	int32_t		        OsEE_sreg;
 typedef	uint32_t		OsEE_reg;
 typedef	uint32_t		OsEE_stack;
 

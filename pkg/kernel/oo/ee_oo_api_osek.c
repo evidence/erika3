@@ -126,7 +126,7 @@ FUNC(void, OS_CODE)
 #if (defined(OSEE_HAS_PROTECTIONHOOK))
 #error Add ProtectionHook call here once it has been implemented
 #else
-    (void)osEE_shutdown_os(p_cdb, E_OS_SYS_SUSPEND_NESTING_LIMIT);
+    osEE_shutdown_os(p_cdb, E_OS_SYS_SUSPEND_NESTING_LIMIT);
 #endif /* OSEE_HAS_PROTECTIONHOOK */
   }
 
@@ -184,7 +184,7 @@ FUNC(void, OS_CODE)
 #if (defined(OSEE_HAS_PROTECTIONHOOK))
 #error Add ProtectionHook call here once it has been implemented
 #else
-    (void)osEE_shutdown_os(p_cdb, E_OS_SYS_SUSPEND_NESTING_LIMIT);
+    osEE_shutdown_os(p_cdb, E_OS_SYS_SUSPEND_NESTING_LIMIT);
 #endif /* OSEE_HAS_PROTECTIONHOOK */
   }
 
@@ -1152,7 +1152,7 @@ FUNC(StatusType, OS_CODE)
   VAR(StatusType, AUTOMATIC) Error
 )
 {
-  VAR(StatusType, AUTOMATIC)                    ev;
+  VAR(StatusType, AUTOMATIC)                    ev = E_OK;
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb = osEE_get_curr_core();
 #if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
@@ -1183,7 +1183,10 @@ FUNC(StatusType, OS_CODE)
 #endif /* OSEE_HAS_SERVICE_PROTECTION */
   if ((os_status == OSEE_KERNEL_STARTED) || (os_status == OSEE_KERNEL_STARTING))
   {
-    ev = osEE_shutdown_os(p_cdb, Error);
+#if 0
+    ev = E_OK;
+#endif
+    osEE_shutdown_os(p_cdb, Error);
   } else {
     ev = E_OS_STATE;
   }
@@ -1932,7 +1935,7 @@ FUNC(StatusType, OS_CODE)
   VAR(EventMaskType, AUTOMATIC) Mask
 )
 {
-  VAR(StatusType, AUTOMATIC)  ev;
+  VAR(StatusType, AUTOMATIC)  ev = E_OK;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
     p_kdb       = osEE_get_kernel();
 #if (defined(OSEE_HAS_CHECKS)) || (defined(OSEE_HAS_ERRORHOOK)) ||\

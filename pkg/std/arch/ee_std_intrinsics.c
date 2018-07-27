@@ -55,9 +55,6 @@
 #define OSEE_LU_MASK  ((uint8_t)-1)
 #define OSEE_LU_NULL  OSEE_LU_MASK
 
-typedef int VAR(OsEE_signed_index, TYPEDEF);
-
-
 /* this function returns the index of the most significant bit of the mask parameter.
    Example: if the mask value is 0x0100, the function returns 9 */
 OSEE_GET_MSB_INLINE FUNC(MemSize, OS_CODE)
@@ -109,6 +106,8 @@ OSEE_GET_MSB_INLINE FUNC(MemSize, OS_CODE)
   };
 
 #if (OSEE_RQ_PRIO_NUM > 16U)
+  typedef OsEE_sreg VAR(OsEE_signed_index, TYPEDEF);
+
   VAR(OsEE_signed_index,  AUTOMATIC) i;
 
   /* the functions looks at the MSB 8 bit at a time. However, since

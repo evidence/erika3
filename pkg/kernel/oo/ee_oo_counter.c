@@ -160,7 +160,7 @@ static FUNC(StatusType, OS_CODE)
   P2VAR(OsEE_action, AUTOMATIC, OS_APPL_CONST) p_action
 )
 {
-  VAR(StatusType, AUTOMATIC) ev;
+  VAR(StatusType, AUTOMATIC) ev = E_OK;
   switch (p_action->type) {
     case OSEE_ACTION_TASK:
     {

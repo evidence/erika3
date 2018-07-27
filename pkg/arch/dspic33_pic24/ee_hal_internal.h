@@ -106,11 +106,14 @@ extern "C" {
  * ...
  * hardware priority 7 is 0xb 1000 0110
  */
-#define	OSEE_ISR2_VIRT_TO_HW_PRIO(virt_prio)	\
-  ((TaskPrio) (((virt_prio) & (~OSEE_ISR2_PRIO_BIT)) + 1U) )
+OSEE_STATIC_INLINE FUNC(TaskPrio, OS_CODE) OSEE_ALWAYS_INLINE
+OSEE_ISR2_VIRT_TO_HW_PRIO(uint8_t virt_prio)
+{
+  return (TaskPrio) (((virt_prio) & (~OSEE_ISR2_PRIO_BIT)) + 1U) ;
+}
 
 #define	OSEE_ISR2_MAX_HW_PRIO			\
-	OSEE_ISR2_VIRT_TO_HW_PRIO(OSEE_ISR2_MAX_PRIO)
+  (OSEE_ISR2_VIRT_TO_HW_PRIO(OSEE_ISR2_MAX_PRIO))
 
 /*==============================================================================
                         Interrupt handling utilities
