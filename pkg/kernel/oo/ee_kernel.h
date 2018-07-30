@@ -222,6 +222,21 @@ LOCAL_INLINE FUNC(void, OS_CODE)
 }
 #endif /* OSEE_HAS_EVENTS */
 
+#if (!defined(OSEE_SINGLECORE))
+LOCAL_INLINE FUNC(CoreIdType, OS_CODE)
+  osEE_task_get_curr_core_id
+(
+  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_tdb
+)
+{
+#if (!defined(OSEE_ALLOW_TASK_MIGRATION))
+  return p_tdb->orig_core_id;
+#else
+  return p_tdb->p_tcb->current_core_id;
+#endif /* !OSEE_ALLOW_TASK_MIGRATION */
+}
+#endif /* !OSEE_SINGLECORE */
+
 LOCAL_INLINE FUNC(OsEE_reg, OS_CODE)
   osEE_begin_primitive
 (
@@ -618,7 +633,7 @@ LOCAL_INLINE FUNC(void, OS_CODE_NO_RETURN)
 }
 #else /* OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN */
 
-LOCAL_INLINE FUNC(void, OS_CODE)
+LOCAL_INLINE FUNC(void, OS_CODE_NO_RETURN)
   osEE_shutdown_os
 (
   P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST) p_cdb,
@@ -634,6 +649,9 @@ LOCAL_INLINE FUNC(void, OS_CODE)
 
   if (os_status == OSEE_KERNEL_STARTED) {
     osEE_idle_task_terminate(p_cdb->p_idle_task);
+  }
+  for (;;) {
+    ; /* Endless Loop (entered only if Kernel Not Started */
   }
 }
 #endif /* OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN */
@@ -919,6 +937,54 @@ LOCAL_INLINE FUNC(void, OS_CODE) osEE_stack_monitoring
   (void)p_cdb;
 }
 #endif /* OSEE_HAS_STACK_MONITORING */
+
+#if (defined(OSEE_HAS_SPINLOCKS))
+LOCAL_INLINE FUNC(OsEE_bool, OS_CODE)
+  osEE_is_valid_spinlock_id
+(
+  P2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST) p_kdb,
+  VAR(SpinlockIdType, AUTOMATIC)            spinlock_id
+)
+{
+#if (defined(OSEE_API_DYNAMIC))
+  return (spinlock_id < p_kdb->p_kcb->free_spinlock_index);
+#else
+  return (spinlock_id < p_kdb->spinlock_array_size);
+#endif /* OSEE_API_DYNAMIC */
+}
+
+#if (defined(OSEE_HAS_RESOURCES))
+LOCAL_INLINE FUNC_P2VAR(OsEE_SpinlockDB, OS_APPL_CONST, OS_CODE)
+  osEE_task_get_last_spinlock_db
+(
+  CONSTP2CONST(OsEE_TCB, AUTOMATIC, OS_APPL_CONST) p_tcb
+)
+{
+  P2VAR(OsEE_MDB, AUTOMATIC, OS_APPL_CONST) p_mdb = p_tcb->p_last_m;
+
+  while (p_mdb != NULL) {
+    if (p_mdb->m_type == OSEE_M_SPINLOCK) {
+      /* Found the first spinlock */
+      break;
+    } else {
+      /* p_mdb is a Resource move on the stack */
+      p_mdb = p_mdb->p_cb->p_next;
+    }
+  }
+
+  return p_mdb;
+}
+#else
+LOCAL_INLINE FUNC_P2VAR(OsEE_SpinlockDB, OS_APPL_CONST, OS_CODE)
+  osEE_task_get_last_spinlock_db
+(
+  CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST) p_tcb
+)
+{
+  return p_tcb->p_last_m;
+}
+#endif /* OSEE_HAS_RESOURCES */
+#endif /* OSEE_HAS_SPINLOCKS */
 
 #if (defined(OSEE_API_DYNAMIC))
 FUNC(StatusType, OS_CODE)

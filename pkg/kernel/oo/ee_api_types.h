@@ -436,26 +436,47 @@ typedef enum {
   OSServiceId_NextScheduleTable               = (60),
   OSServiceId_SyncScheduleTable               = (62),
 #endif /* OSEE_HAS_SCHEDULE_TABLES */
-  OSServiceId_GetActiveApplicationMode        = (64),
-  OSServiceId_ShutdownOS                      = (66),
-  OSServiceId_StartOS                         = (68),
-  OSServiceId_ShutdownAllCores                = (70),
+#if (defined(OSEE_HAS_SPINLOCKS))
+  OSServiceId_GetSpinlock                     = (64),
+  OSServiceId_ReleaseSpinlock                 = (66),
+  OSServiceId_TryToGetSpinlock                = (68),
+#endif /* OSEE_HAS_SPINLOCKS */
+  OSServiceId_GetActiveApplicationMode        = (70),
+  OSServiceId_ShutdownOS                      = (72),
+  OSServiceId_StartOS                         = (74),
+#if (!defined(OSEE_SINGLECORE))
+  OSServiceId_ShutdownAllCores                = (76),
+#endif /* !OSEE_SINGLECORE */
 /** Special value to flag an error happened in the Task body
     needed for AR requirement [SWS_Os_00069] */
-  OSId_TaskBody                               = (72),
+  OSId_TaskBody                               = (78),
 /* Special value to flag an error happened in the ISR2 body
    needed for AS requirement [SWS_Os_00368] */
-  OSId_ISR2Body                               = (74),
+  OSId_ISR2Body                               = (80),
 /* Special value to flag an error happened in a Alarm or Schedule Table
    action */
-  OSId_Action                                 = (76),
+  OSId_Action                                 = (82),
 /* Special value to flag an error happened in a Kernel internal service */
-  OSId_Kernel                                 = (78),
-  OsId_Invalid                                = (80)
+  OSId_Kernel                                 = (84),
+  OsId_Invalid                                = (86)
 } OsEE_service_id_type;
 
 /** @typedef This data type represents the identification of system services. */
 typedef OsEE_service_id_type                        OSServiceIdType;
+
+
+#if (defined(OSEE_HAS_SPINLOCKS))
+#if (!defined(OSEE_SPINLOCK_ID_TYPE))
+#define OSEE_SPINLOCK_ID_TYPE                       VAR(OsEE_reg, TYPEDEF)
+#endif /* !OSEE_SPINLOCK_ID_TYPE */
+
+typedef OSEE_SPINLOCK_ID_TYPE                       SpinlockIdType;
+
+typedef enum {
+  TRYTOGETSPINLOCK_NOSUCCESS = 0x0,
+  TRYTOGETSPINLOCK_SUCCESS
+}                                                   TryToGetSpinlockType;
+#endif /* OSEE_HAS_SPINLOCKS */
 
 /*  MISRA-C Deviation. We cannot delegate string concatenation to other
  *  macros, otherwise we will incur in TASK IDs macro expansion that will lead

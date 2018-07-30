@@ -267,83 +267,6 @@ extern FUNC(void, OS_CODE)
 );
 #endif /* OSEE_HAS_SHUTDOWNHOOK */
 
-#if (defined(OSEE_USEPARAMETERACCESS))
-FUNC(OSServiceIdType, OS_CODE)
-  osEE_get_service_id
-(
-  void
-);
-
-FUNC(OsEE_api_param, OS_CODE)
-  osEE_get_api_param1
-(
-  void
-);
-
-FUNC(OsEE_api_param, OS_CODE)
-  osEE_get_api_param2
-(
-  void
-);
-
-FUNC(OsEE_api_param, OS_CODE)
-  osEE_get_api_param3
-(
-  void
-);
-
-#define OSErrorGetServiceId() osEE_get_service_id()
-
-#define OSError_ActivateTask_TaskID()\
-  ((TaskType)osEE_get_api_param1().num_param)
-
-#define OSError_ChainTask_TaskID()\
-  ((TaskType)osEE_get_api_param1().num_param)
-
-#if (defined(OSEE_HAS_RESOURCES))
-#define OSError_GetResource_ResID()\
-  ((ResourceType)osEE_get_api_param1().num_param)
-
-#define OSError_ReleaseResource_ResID()\
-  ((ResourceType)osEE_get_api_param1().num_param)
-#endif /* OSEE_HAS_RESOURCES */
-
-#if (defined(OSEE_HAS_ALARMS))
-#define OSError_GetAlarm_AlarmID()\
-  ((AlarmType)osEE_get_api_param1().num_param)
-
-#define OSError_CancelAlarm_AlarmID()\
-  ((AlarmType)osEE_get_api_param1().num_param)
-
-#define OSError_SetRelAlarm_AlarmID()\
-  ((AlarmType)osEE_get_api_param1().num_param)
-
-#define OSError_SetAbsAlarm_AlarmID()\
-  ((AlarmType)osEE_get_api_param1().num_param)
-#endif /* OSEE_HAS_ALARMS */
-
-#if (defined(OSEE_HAS_EVENTS))
-#define OSError_WaitEvent_Mask()\
-  ((EventMaskType)osEE_get_api_param1().num_param)
-
-#define OSError_SetEvent_TaskID()\
-  ((TaskType)osEE_get_api_param1().num_param)
-
-#define OSError_SetEvent_Mask()\
-  ((EventMaskType)osEE_get_api_param2().num_param)
-
-#define OSError_GetEvent_TaskID()\
-  ((TaskType)osEE_get_api_param1().num_param)
-
-#define OSError_GetEvent_Event()\
-  ((EventMaskRefType)osEE_get_api_param2().p_param)
-
-#define OSError_ClearEvent_Mask()\
-  ((EventMaskType)osEE_get_api_param1().num_param)
-#endif /* OSEE_HAS_EVENTS */
-
-#endif /* OSEE_USEPARAMETERACCESS */
-
 #if (defined(OSEE_HAS_COUNTERS))
 FUNC(StatusType, OS_CODE)
   GetCounterValue
@@ -365,7 +288,6 @@ FUNC(StatusType, OS_CODE)
 (
   VAR(CounterType, AUTOMATIC) CounterID
 );
-
 #endif /* OSEE_HAS_COUNTERS */
 
 #if (defined(OSEE_HAS_SCHEDULE_TABLES))
@@ -602,7 +524,202 @@ FUNC(void, OS_CODE)
 (
   VAR(StatusType, AUTOMATIC)  Error
 );
+
+#if (defined(OSEE_HAS_SPINLOCKS))
+FUNC(StatusType, OS_CODE)
+  GetSpinlock
+(
+  VAR(SpinlockIdType, AUTOMATIC) SpinlockID
+);
+
+FUNC(StatusType, OS_CODE)
+  ReleaseSpinlock
+(
+  VAR(SpinlockIdType, AUTOMATIC) SpinlockID
+);
+FUNC(StatusType, OS_CODE)
+  TryToGetSpinlock
+(
+  VAR(SpinlockIdType, AUTOMATIC)                        SpinlockID,
+  P2VAR(TryToGetSpinlockType, AUTOMATIC, OS_APPL_DATA)  Success
+);
+#endif /* OSEE_HAS_SPINLOCKS */
 #endif /* !OSEE_SINGLECORE */
+
+#if (defined(OSEE_USEPARAMETERACCESS))
+FUNC(OSServiceIdType, OS_CODE)
+  osEE_get_service_id
+(
+  void
+);
+
+FUNC(OsEE_api_param, OS_CODE)
+  osEE_get_api_param1
+(
+  void
+);
+
+FUNC(OsEE_api_param, OS_CODE)
+  osEE_get_api_param2
+(
+  void
+);
+
+FUNC(OsEE_api_param, OS_CODE)
+  osEE_get_api_param3
+(
+  void
+);
+
+#define OSErrorGetServiceId() osEE_get_service_id()
+
+#define OSError_ActivateTask_TaskID()\
+  ((TaskType)osEE_get_api_param1().num_param)
+
+#define OSError_ChainTask_TaskID()\
+  ((TaskType)osEE_get_api_param1().num_param)
+
+#define OSError_GetTaskID_TaskID()\
+  ((TaskRefType)osEE_get_api_param1().p_param)
+
+#define OSError_GetTaskState_TaskID()\
+  ((TaskType)osEE_get_api_param1().num_param)
+
+#define OSError_GetTaskState_State()\
+  ((TaskRefType)osEE_get_api_param2().p_param)
+
+#define OSError_ShutdownOS_Error()\
+  ((StatusType)osEE_get_api_param1().num_param)
+
+#if (defined(OSEE_HAS_RESOURCES))
+#define OSError_GetResource_ResID()\
+  ((ResourceType)osEE_get_api_param1().num_param)
+
+#define OSError_ReleaseResource_ResID()\
+  ((ResourceType)osEE_get_api_param1().num_param)
+#endif /* OSEE_HAS_RESOURCES */
+
+#if (defined(OSEE_HAS_ALARMS))
+#define OSError_GetAlarm_AlarmID()\
+  ((AlarmType)osEE_get_api_param1().num_param)
+
+#define OSError_CancelAlarm_AlarmID()\
+  ((AlarmType)osEE_get_api_param1().num_param)
+
+#define OSError_SetRelAlarm_AlarmID()\
+  ((AlarmType)osEE_get_api_param1().num_param)
+
+  #define OSError_SetRelAlarm_increment()\
+  ((TickType)osEE_get_api_param2().num_param)
+
+#define OSError_SetRelAlarm_cycle()\
+  ((TickType)osEE_get_api_param3().num_param)
+
+#define OSError_SetAbsAlarm_AlarmID()\
+  ((AlarmType)osEE_get_api_param1().num_param)
+
+#define OSError_SetAbsAlarm_start()\
+  ((TickType)osEE_get_api_param2().num_param)
+
+#define OSError_SetAbsAlarm_cycle()\
+  ((TickType)osEE_get_api_param3().num_param)
+
+#define OSError_GetAlarmBase_AlarmID()\
+  ((AlarmType)osEE_get_api_param1().num_param)
+
+#define OSError_GetAlarmBase_Info()\
+  ((AlarmBaseRefType)osEE_get_api_param2().p_param)
+#endif /* OSEE_HAS_ALARMS */
+
+#if (defined(OSEE_HAS_EVENTS))
+#define OSError_WaitEvent_Mask()\
+  ((EventMaskType)osEE_get_api_param1().num_param)
+
+#define OSError_SetEvent_TaskID()\
+  ((TaskType)osEE_get_api_param1().num_param)
+
+#define OSError_SetEvent_Mask()\
+  ((EventMaskType)osEE_get_api_param2().num_param)
+
+#define OSError_GetEvent_TaskID()\
+  ((TaskType)osEE_get_api_param1().num_param)
+
+#define OSError_GetEvent_Event()\
+  ((EventMaskRefType)osEE_get_api_param2().p_param)
+
+#define OSError_ClearEvent_Mask()\
+  ((EventMaskType)osEE_get_api_param1().num_param)
+#endif /* OSEE_HAS_EVENTS */
+
+#if (defined(OSEE_HAS_COUNTERS))
+#define OSError_GetCounterValue_CounterID()\
+  ((CounterType)osEE_get_api_param1().num_param)
+
+#define OSError_GetCounterValue_Value()\
+  ((TickRefType)osEE_get_api_param2().p_param)
+
+#define OSError_GetElapsedValue_CounterID()\
+  ((CounterType)osEE_get_api_param1().num_param)
+
+#define OSError_GetElapsedValue_Value()\
+  ((TickRefType)osEE_get_api_param2().p_param)
+
+#define OSError_GetElapsedValue_ElapsedValue()\
+  ((TickRefType)osEE_get_api_param3().p_param)
+
+#define OSError_IncrementCounter_CounterID()\
+  ((CounterType)osEE_get_api_param1().num_param)
+#endif /* OSEE_HAS_COUNTERS */
+
+#if (defined(OSEE_HAS_SCHEDULE_TABLES))
+#define OSError_StartScheduleTableRel_ScheduleTableID()\
+  ((ScheduleTableType)osEE_get_api_param1().num_param)
+
+#define OSError_StartScheduleTableRel_Offset()\
+  ((TickType)osEE_get_api_param2().num_param)
+
+#define OSError_StartScheduleTableAbs_ScheduleTableID()\
+  ((ScheduleTableType)osEE_get_api_param1().num_param)
+
+#define OSError_StartScheduleTableAbs_Start()\
+  ((TickType)osEE_get_api_param2().num_param)
+
+#define OSError_StopScheduleTable_ScheduleTableID()\
+  ((ScheduleTableType)osEE_get_api_param1().num_param)
+
+#define OSError_GetScheduleTableStatus_ScheduleTableID()\
+  ((ScheduleTableType)osEE_get_api_param1().num_param)
+
+#define OSError_GetScheduleTableStatus_ScheduleStatus()\
+  ((ScheduleTableStatusRefType)osEE_get_api_param2().p_param)
+
+#define OSError_NextScheduleTable_ScheduleTableID_From()\
+  ((ScheduleTableType)osEE_get_api_param1().num_param)
+  
+#define OSError_NextScheduleTable_ScheduleTableID_To()\
+  ((ScheduleTableType)osEE_get_api_param2().num_param)
+
+#define OSError_SyncScheduleTable_ScheduleTableID()\
+  ((ScheduleTableType)osEE_get_api_param1().num_param)
+
+#define OSError_SyncScheduleTable_Value()\
+  ((TickType)osEE_get_api_param2().num_param)
+#endif /* OSEE_HAS_SCHEDULE_TABLES */
+
+#if (defined(OSEE_HAS_SPINLOCKS))
+#define OSError_GetSpinlock_SpinlockID()\
+  ((SpinlockIdType)osEE_get_api_param1().num_param)
+
+#define OSError_ReleaseSpinlock_SpinlockID()\
+  ((SpinlockIdType)osEE_get_api_param1().num_param)
+
+#define OSError_TryToGetSpinlock_SpinlockID()\
+  ((SpinlockIdType)osEE_get_api_param1().num_param)
+
+#define OSError_TryToGetSpinlock_Success()\
+  ((TryToGetSpinlockType)osEE_get_api_param2().p_param)
+#endif /* OSEE_HAS_SPINLOCKS */
+#endif /* OSEE_USEPARAMETERACCESS */
 
 #if (defined(__cplusplus))
 }

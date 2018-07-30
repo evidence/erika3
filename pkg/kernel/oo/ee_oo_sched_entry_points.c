@@ -53,41 +53,127 @@
 
 #include "ee_internal.h"
 
+#if (defined(OSEE_HAS_RESOURCES)) || (defined(OSEE_HAS_SPINLOCKS))
+static FUNC_P2VAR(OsEE_MDB, OS_APPL_CONST, OS_CODE)
+  osEE_release_all_m
+(
+  CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST)  p_tdb
+)
+{
+  P2VAR(OsEE_MDB, AUTOMATIC, OS_APPL_CONST)     p_mdb = NULL;
+  CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA) p_tcb = p_tdb->p_tcb;
+
+  while ((p_tcb->p_last_m != NULL)
+#if (defined(OSEE_HAS_SPINLOCKS))
+    && (p_tcb->p_last_m->p_cb->p_owner == p_tdb)
+#endif /* OSEE_HAS_SPINLOCKS */
+  )
+  {
+    CONSTP2VAR(OsEE_ResourceCB, AUTOMATIC, OS_APPL_DATA)
+      p_last_m_cb = p_tcb->p_last_m->p_cb;
+    /* Release the M from the owner */
+    p_last_m_cb->p_owner = NULL;
+    /* Save the first M not realesed */
+    if (p_mdb == NULL) {
+      p_mdb = p_tcb->p_last_m;
+    }
+#if (defined(OSEE_HAS_SPINLOCKS))
+    /* Release arch dependent spinlock */
+    if (p_tcb->p_last_m->p_spinlock_arch != NULL) {
+      osEE_hal_spin_unlock(p_tcb->p_last_m->p_spinlock_arch);
+    }
+#endif /* OSEE_HAS_SPINLOCKS */
+
+    /* Pop the Resources head */
+    p_tcb->p_last_m = p_last_m_cb->p_next;
+    /* No need to work on IPL, it will be the normal context restore to handle
+       that. */
+  }
+#if (defined(OSEE_HAS_SPINLOCKS))
+  /* Restore last spinlock on CCB */
+  if (p_tcb->p_last_m != NULL) {
+    osEE_get_curr_core()->p_ccb->p_last_spinlock = p_tcb->p_last_m;
+    p_tcb->p_last_m = NULL;
+  }
+#endif /* OSEE_HAS_SPINLOCKS */
+
+  return p_mdb;
+}
+#endif /* OSEE_HAS_RESOURCES || OSEE_HAS_SPINLOCKS */
+
 static FUNC(void, OS_CODE)
   osEE_scheduler_task_not_terminated
 (
   P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_to_term
 )
 {
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
+    p_cdb = osEE_get_curr_core();
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+    p_ccb = p_cdb->p_ccb;
+
+  /* Reset ISR Counters */
+/* [SWS_Os_00239] If a task returns from the entry function without making a
+    TerminateTask() or ChainTask() call and interrupts are still disabled,
+    the Operating System module shall enable them. */
+  p_ccb->s_isr_os_cnt  = 0U;
+  /* I won't re-enable OS Interrupts since I'm going to enter rescheduling
+     critical section */
+  if (p_ccb->s_isr_all_cnt > 0U) {
+    p_ccb->s_isr_all_cnt = 0U;
+    osEE_hal_resumeIRQ(p_ccb->prev_s_isr_all_status);
+  }
+  if (p_ccb->d_isr_all_cnt > 0U) {
+    p_ccb->d_isr_all_cnt = 0U;
+    osEE_hal_enableIRQ();
+  }
+
   (void)osEE_begin_primitive();
 
-  osEE_stack_monitoring(osEE_get_curr_core());
+  osEE_stack_monitoring(p_cdb);
 
-#if (defined(OSEE_HAS_SERVICE_PROTECTION)) && (defined(OSEE_HAS_ERRORHOOK))
-  /* [SWS_Os_00069]: If a task returns from its entry function without making a
-      TerminateTask() or ChainTask() call AND the error hook is configured,
-      the Operating System shall call the ErrorHook() 
-      (this is done regardless of whether the task causes other errors,
-       e.g. E_OS_RESOURCE) with status E_OS_MISSINGEND before the task leaves
-      the RUNNING state. */
-  {
-    CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-      p_ccb = osEE_get_curr_core()->p_ccb;
-    osEE_set_service_id(p_ccb, OSId_TaskBody);
-    osEE_call_error_hook(p_ccb, E_OS_MISSINGEND);
-  }
-#endif /* OSEE_HAS_SERVICE_PROTECTION && OSEE_HAS_ERRORHOOK */
+  if (p_to_term->task_type == OSEE_TASK_TYPE_ISR2) {
+#if (defined(OSEE_HAS_RESOURCES)) || (defined(OSEE_HAS_SPINLOCKS))
+  /* [SWS_Os_00369]: If a Category 2 ISR calls GetResource() and ends (returns)
+      without calling the corresponding ReleaseResource(), the Operating System
+      module shall perform the ReleaseResource() call and shall call the
+      ErrorHook() E_OS_RESOURCE */
+    CONSTP2VAR(OsEE_MDB, AUTOMATIC, OS_APPL_CONST)
+      p_mdb = osEE_release_all_m(p_to_term);
 
+    if (p_mdb != NULL) {
+      osEE_set_service_id(p_ccb, OSId_ISR2Body);
 #if (defined(OSEE_HAS_RESOURCES))
-  /* [SWS_Os_0070]: If a task returns from the entry function without making a
-      TerminateTask() or ChainTask() call and still holds OSEK Resources,
-      the Operating System shall release them. */
-  /* TODO */
+#if (defined(OSEE_HAS_SPINLOCKS))
+      if (p_mdb->m_type == OSEE_M_RESOURCE) {
+        osEE_call_error_hook(p_ccb, E_OS_RESOURCE);
+      } else {
+        osEE_call_error_hook(p_ccb, E_OS_SPINLOCK);
+      }
+#else
+      osEE_call_error_hook(p_ccb, E_OS_RESOURCE);
+#endif /* OSEE_HAS_SPINLOCKS */
+#else
+      osEE_call_error_hook(p_ccb, E_OS_SPINLOCK);
 #endif /* OSEE_HAS_RESOURCES */
-
-#if (!defined(OSEE_HAS_SERVICE_PROTECTION))
-  /* TODO: azzera contatori ISR */
-#endif /* !OSEE_HAS_SERVICE_PROTECTION */
+    }
+#endif /* OSEE_HAS_RESOURCES || OSEE_HAS_SPINLOCKS */
+  } else {
+    osEE_set_service_id(p_ccb, OSId_TaskBody);
+/* [SWS_Os_00069]: If a task returns from its entry function without making a
+    TerminateTask() or ChainTask() call AND the error hook is configured,
+    the Operating System shall call the ErrorHook() 
+    (this is done regardless of whether the task causes other errors,
+     e.g. E_OS_RESOURCE) with status E_OS_MISSINGEND before the task leaves
+    the RUNNING state. */
+    osEE_call_error_hook(p_ccb, E_OS_MISSINGEND);
+#if (defined(OSEE_HAS_RESOURCES)) || (defined(OSEE_HAS_SPINLOCKS))
+/* [SWS_Os_0070]: If a task returns from the entry function without making a
+    TerminateTask() or ChainTask() call and still holds OSEK Resources,
+    the Operating System shall release them. */
+    (void)osEE_release_all_m(p_to_term);
+#endif /* OSEE_HAS_RESOURCES || OSEE_HAS_SPINLOCKS */
+  }
 
   osEE_hal_terminate_activation(&p_to_term->hdb,
     OSEE_KERNEL_TERMINATE_ACTIVATION_CB);

@@ -115,36 +115,68 @@ typedef enum {
   OSEE_KERNEL_SHUTDOWN
 } OsEE_kernel_status;
 
-#if (defined(OSEE_HAS_RESOURCES))
-/* Forward declaration of MDB & TDB, needed for MCB p_next and p_mtx_owner
-   fields. */
-struct OsEE_ResourceDB_tag;
-#if (!defined(OSEE_SINGLECORE)) || (defined(OSEE_HAS_ORTI))
+#if (defined(OSEE_HAS_RESOURCES)) || (defined(OS_HAS_SPINLOCKS))
+  /* [SWS_Os_00801] If Spinlocks and Resources are locked by a Task/ISR they
+      have to be unlocked in strict LIFO order. ReleaseResource() shall return
+      E_OS_NOFUNC if the unlock order is violated.
+      No other functionality shall be performed. (SRS_Os_80021) */
+/* Forward declaration of MDB & TDB, needed for MCB p_next and
+   p_owner fields. */
+#if (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_SPINLOCKS))
 struct OsEE_TDB_tag;
-#endif /* !OSEE_SINGLECORE || OSEE_HAS_ORTI */
+#endif /* OSEE_HAS_ORTI || OSEE_HAS_SPINLOCKS */
+struct OsEE_MDB_tag;
 
 typedef struct {
-  P2VAR(struct OsEE_ResourceDB_tag OSEE_CONST, TYPEDEF, OS_APPL_DATA)
+  P2VAR(struct OsEE_MDB_tag OSEE_CONST, TYPEDEF, OS_APPL_CONST)
     p_next;
   VAR(TaskPrio, TYPEDEF)
     prev_prio;
   P2VAR(struct OsEE_TDB_tag OSEE_CONST, TYPEDEF, OS_APPL_DATA)
-    p_resource_owner;
-} OsEE_ResourceCB;
+    p_owner;
+} OsEE_MCB;
 
-typedef struct OsEE_ResourceDB_tag {
-  P2VAR(OsEE_ResourceCB, TYPEDEF, OS_APPL_DATA) p_resource_cb;
-  VAR(TaskPrio, TYPEDEF)                        reso_prio;
-} OSEE_CONST OsEE_ResourceDB;
+#if (defined(OSEE_HAS_RESOURCES)) && (defined(OSEE_HAS_SPINLOCKS))
+typedef enum {
+  OSEE_M_RESOURCE,
+  OSEE_M_SPINLOCK
+} OsEE_m_type;
+#endif /* OSEE_HAS_RESOURCES && OSEE_HAS_SPINLOCKS */
+
+typedef struct OsEE_MDB_tag {
+  P2VAR(OsEE_MCB, TYPEDEF, OS_APPL_DATA)        p_cb;
+#if (defined(OSEE_HAS_SPINLOCKS))
+  P2VAR(OsEE_spin_lock, TYPEDEF, OS_APPL_DATA)  p_spinlock_arch;
+#endif /* OSEE_HAS_SPINLOCKS */
+#if (defined(OSEE_HAS_RESOURCES)) || (defined(OSEE_SPINLOCKS_HAS_LOCK_METHOD))
+  VAR(TaskPrio, TYPEDEF)                        prio;
+#endif /* OSEE_HAS_RESOURCES || OSEE_SPINLOCKS_HAS_LOCK_METHOD */
+#if (!defined(OSEE_SINGLECORE))
+  VAR(CoreMaskType, TYPEDEF)                    allowed_core_mask;
+#endif /* !OSEE_SINGLECORE */
+#if (defined(OSEE_HAS_RESOURCES)) && (defined(OSEE_HAS_SPINLOCKS))
+  VAR(OsEE_m_type, TYPEDEF)                     m_type;
+#endif /* OSEE_HAS_RESOURCES && OSEE_HAS_SPINLOCKS */
+} OSEE_CONST OsEE_MDB;
+
+#if (defined(OSEE_HAS_RESOURCES))
+typedef OsEE_MCB OsEE_ResourceCB;
+typedef OsEE_MDB OsEE_ResourceDB;
 #endif /* OSEE_HAS_RESOURCES */
 
-typedef struct OsEE_TCB_tag {
+#if (defined(OSEE_HAS_SPINLOCKS))
+typedef OsEE_MCB OsEE_SpinlockCB;
+typedef OsEE_MDB OsEE_SpinlockDB;
+#endif /* OSEE_HAS_SPINLOCKS */
+#endif /* OSEE_HAS_RESOURCES || OS_HAS_SPINLOCKS */
+
+typedef struct {
   VAR(TaskActivation, TYPEDEF)                  current_num_of_act;
   VAR(TaskPrio, TYPEDEF)                        current_prio;
   VAR(TaskStateType, TYPEDEF)                   status;
-#if (defined(OSEE_HAS_RESOURCES))
-  P2VAR(OsEE_ResourceDB, TYPEDEF, OS_APPL_DATA) p_first_resource;
-#endif /* OSEE_HAS_RESOURCES */
+#if (defined(OSEE_HAS_RESOURCES)) || (defined(OSEE_HAS_SPINLOCKS))
+  P2VAR(OsEE_MDB, TYPEDEF, OS_APPL_DATA)        p_last_m;
+#endif /* OSEE_HAS_RESOURCES || OSEE_HAS_SPINLOCKS */
 #if (defined(OSEE_HAS_EVENTS))
   VAR(EventMaskType, TYPEDEF)                   wait_mask;
   VAR(EventMaskType, TYPEDEF)                   event_mask;
@@ -155,7 +187,14 @@ typedef struct OsEE_TCB_tag {
 #endif /* OSEE_ALLOW_TASK_MIGRATION */
 } OsEE_TCB;
 
-typedef struct OsEE_TDB_tag {
+/* For MISRA compliance */
+#if ((defined(OSEE_HAS_RESOURCES)) && (defined(OSEE_HAS_ORTI))) ||\
+    (defined(OSEE_HAS_SPINLOCKS))
+typedef struct OsEE_TDB_tag
+#else
+typedef struct
+#endif
+{
   VAR(OsEE_HDB, TYPEDEF)                  hdb;
   P2VAR(OsEE_TCB, TYPEDEF, OS_APPL_DATA)  p_tcb;
   VAR(TaskType, TYPEDEF)                  tid;
@@ -445,45 +484,48 @@ typedef struct OsEE_autostart_tdb_tag {
 #endif /* !OSEE_HAS_AUTOSTART_TASK */
 
 typedef struct {
-  P2VAR(OsEE_TDB, TYPEDEF, OS_APPL_CONST)       p_curr;
+  P2VAR(OsEE_TDB, TYPEDEF, OS_APPL_CONST)         p_curr;
 #if (!defined(OSEE_SINGLECORE)) && (defined(OSEE_SCHEDULER_GLOBAL))
-  P2VAR(OsEE_spin_lock, TYPEDEF, OS_APPL_DATA)  p_lock_to_be_released;
+  P2VAR(OsEE_spin_lock, TYPEDEF, OS_APPL_DATA)    p_lock_to_be_released;
 #endif /* !OSEE_SINGLECORE && OSEE_SCHEDULER_GLOBAL */
 #if (!defined(OSEE_SCHEDULER_GLOBAL))
-  VAR(OsEE_RQ, TYPEDEF)                         rq;
-  P2VAR(OsEE_SN, TYPEDEF, OS_APPL_DATA)         p_free_sn;
+  VAR(OsEE_RQ, TYPEDEF)                           rq;
+  P2VAR(OsEE_SN, TYPEDEF, OS_APPL_DATA)           p_free_sn;
 #if (defined(OSEE_API_DYNAMIC))
-  VAR(MemSize, TYPEDEF)                         free_sn_counter;
+  VAR(MemSize, TYPEDEF)                           free_sn_counter;
 #endif /* OSEE_API_DYNAMIC */
 #endif /* !OSEE_SCHEDULER_GLOBAL */
-  P2VAR(OsEE_SN, TYPEDEF, OS_APPL_DATA)         p_stk_sn;
-  VAR(OsEE_kernel_status volatile, TYPEDEF)     os_status;
-  VAR(AppModeType, TYPEDEF)                     app_mode;
+  P2VAR(OsEE_SN, TYPEDEF, OS_APPL_DATA)           p_stk_sn;
+  VAR(OsEE_kernel_status volatile, TYPEDEF)       os_status;
+  VAR(AppModeType, TYPEDEF)                       app_mode;
   /* Error Handling variables */
-  VAR(StatusType, TYPEDEF)                      last_error;
+  VAR(StatusType, TYPEDEF)                        last_error;
 #if (defined(OSEE_USEPARAMETERACCESS)) || (defined(OSEE_HAS_ORTI))
-  VAR(OSServiceIdType, TYPEDEF)                 service_id;
+  VAR(OSServiceIdType, TYPEDEF)                   service_id;
 #endif /* OSEE_USEPARAMETERACCESS || OSEE_HAS_ORTI */
 #if (defined(OSEE_USEPARAMETERACCESS))
-  VAR(OsEE_api_param, TYPEDEF)                  api_param1;
-  VAR(OsEE_api_param, TYPEDEF)                  api_param2;
-  VAR(OsEE_api_param, TYPEDEF)                  api_param3;
+  VAR(OsEE_api_param, TYPEDEF)                    api_param1;
+  VAR(OsEE_api_param, TYPEDEF)                    api_param2;
+  VAR(OsEE_api_param, TYPEDEF)                    api_param3;
 #endif /* OSEE_USEPARAMETERACCESS */
 #if (defined(OSEE_HAS_CONTEXT))
-  VAR(OsEE_os_context, TYPEDEF)                 os_context;
+  VAR(OsEE_os_context, TYPEDEF)                   os_context;
 #endif /* OSEE_HAS_CONTEXT */
 #if (defined(OSEE_HAS_PRETASKHOOK))
   /* Needed to distinguish that PreTaskHook HAVE NOT to be called after an
    * ISR2 that terminate without a TASK rescheduling */
-  P2VAR(OsEE_TDB, OS_APPL_CONST, TYPEDEF)       p_last_tdb_hook;
+  P2VAR(OsEE_TDB, TYPEDEF, OS_APPL_CONST)         p_last_tdb_hook;
 #endif /* OSEE_HAS_PRETASKHOOK */
-  VAR(OsEE_reg,  TYPEDEF)                       prev_s_isr_all_status;
-  VAR(OsEE_reg,  TYPEDEF)                       prev_s_isr_os_status;
-  VAR(OsEE_byte, TYPEDEF)                       s_isr_all_cnt;
-  VAR(OsEE_byte, TYPEDEF)                       s_isr_os_cnt;
-  VAR(OsEE_byte, TYPEDEF)                       d_isr_all_cnt;
+#if (defined(OSEE_HAS_SPINLOCKS))
+  P2VAR(OsEE_SpinlockDB, TYPEDEF, OS_APPL_CONST)  p_last_spinlock;
+#endif /* OSEE_HAS_SPINLOCKS */
+  VAR(OsEE_reg,  TYPEDEF)                         prev_s_isr_all_status;
+  VAR(OsEE_reg,  TYPEDEF)                         prev_s_isr_os_status;
+  VAR(OsEE_byte, TYPEDEF)                         s_isr_all_cnt;
+  VAR(OsEE_byte, TYPEDEF)                         s_isr_os_cnt;
+  VAR(OsEE_byte, TYPEDEF)                         d_isr_all_cnt;
 #if (defined(OSEE_HAS_ORTI))
-  VAR(OsEE_bool, TYPEDEF)                       orti_service_id_valid;
+  VAR(OsEE_bool, TYPEDEF)                         orti_service_id_valid;
 #endif /* OSEE_HAS_ORTI */
 } OsEE_CCB;
 
@@ -586,6 +628,10 @@ typedef struct {
   VAR(MemSize, TYPEDEF)                             st_array_size;
 #endif /* OSEE_HAS_SCHEDULE_TABLES */
 #endif /* OSEE_HAS_COUNTERS */
+#if (defined(OSEE_HAS_SPINLOCKS))
+  P2SYM_VAR(OsEE_SpinlockDB, OS_APPL_CONST,         p_spinlock_array)[];
+  VAR(MemSize, TYPEDEF)                             spinlock_array_size;
+#endif /* OSEE_HAS_SPINLOCKS */
 } OSEE_CONST OsEE_KDB;
 
 #if (defined(OSEE_API_EXTENSION))

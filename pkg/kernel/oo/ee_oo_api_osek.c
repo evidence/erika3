@@ -593,15 +593,16 @@ FUNC(StatusType, OS_CODE)
   osEE_stack_monitoring(p_cdb);
 
 #if (defined(OSEE_HAS_SERVICE_PROTECTION))
-  /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
+  /*  [SWS_Os_00093]: If interrupts are disabled/suspended by a Task/OsIsr and
    *    the Task/OsIsr calls any OS service (excluding the interrupt services)
-   *    then the Operating System shall ignore the service AND shall return  */
-  /*  [OS_SWS_088]: If an OS-Application makes a service call from the wrong
+   *    then the Operating System shall ignore the service AND shall return.
+   *    (SRS_Os_11009, SRS_Os_11013) */
+  /*  [SWS_Os_00088]: If an OS-Application makes a service call from the wrong
    *    context AND is currently not inside a Category 1 ISR the Operating
    *    System module shall not perform the requested action
    *    (the service call shall have no effect), and return E_OS_CALLEVEL
    *    (see [12], section 13.1) or the "invalid value" of  the service.
-   *    (BSW11009, BSW11013) */
+   *    (SRS_Os_11009, SRS_Os_11013) */
 /* ActivateTask is callable by Task and ISR2 */
   if (osEE_check_disableint(p_ccb)) {
     ev = E_OS_DISABLEDINT;
@@ -676,15 +677,16 @@ FUNC(StatusType, OS_CODE)
   osEE_stack_monitoring(p_cdb);
 
   
-  /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
+  /*  [SWS_Os_00093]: If interrupts are disabled/suspended by a Task/OsIsr and
    *    the Task/OsIsr calls any OS service (excluding the interrupt services)
-   *    then the Operating System shall ignore the service AND shall return  */
-  /*  [OS_SWS_088]: If an OS-Application makes a service call from the wrong
+   *    then the Operating System shall ignore the service AND shall return
+   *    (SRS_Os_11009, SRS_Os_11013) */
+  /*  [SWS_Os_00088]: If an OS-Application makes a service call from the wrong
    *    context AND is currently not inside a Category 1 ISR the Operating
    *    System module shall not perform the requested action
    *    (the service call shall have no effect), and return E_OS_CALLEVEL
    *    (see [12], section 13.1) or the "invalid value" of  the service.
-   *    (BSW11009, BSW11013) */
+   *    (SRS_Os_11009, SRS_Os_11013) */
 /* ChainTask is callable by Task */
 #if (defined(OSEE_HAS_SERVICE_PROTECTION))
   if (osEE_check_disableint(p_ccb)) {
@@ -706,15 +708,43 @@ FUNC(StatusType, OS_CODE)
   } else {
     CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
       p_tdb_act = (*p_kdb->p_tdb_ptr_array)[TaskID];
-#if (defined(OSEE_HAS_CHECKS)) && (defined(OSEE_HAS_RESOURCES))
+#if (defined(OSEE_HAS_CHECKS))
+#if (defined(OSEE_HAS_RESOURCES)) || (defined(OSEE_HAS_SPINLOCKS))
     CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
       p_curr_tcb  = p_curr->p_tcb;
-    if (p_curr_tcb->p_first_resource != NULL) {
+    if (p_curr_tcb->p_last_m != NULL) {
+#if (defined(OSEE_HAS_RESOURCES))
+#if (defined(OSEE_HAS_SPINLOCKS))
+      if (p_curr_tcb->p_last_m->m_type == OSEE_M_RESOURCE) {
+        ev = E_OS_RESOURCE;
+      } else {
+        ev = E_OS_SPINLOCK;
+      }
+#else
       ev = E_OS_RESOURCE;
+#endif /* OSEE_HAS_SPINLOCKS */
+#else
+      ev = E_OS_SPINLOCK;
+#endif /* OSEE_HAS_RESOURCES */
     } else
-#endif /* OSEE_HAS_CHECKS && OSEE_HAS_RESOURCES */
+#endif /* OSEE_HAS_RESOURCES || OSEE_HAS_SPINLOCKS */
+#endif /* OSEE_HAS_CHECKS */
     if (p_tdb_act->task_type <= OSEE_TASK_TYPE_EXTENDED) {
-      CONST(OsEE_reg, AUTOMATIC)  flags = osEE_begin_primitive();
+      VAR(OsEE_reg, AUTOMATIC)  flags;
+#if (!defined(OSEE_HAS_SERVICE_PROTECTION))
+      /* Reset ISR Counters */
+      p_ccb->s_isr_all_cnt = 0U;
+      if (p_ccb->s_isr_all_cnt > 0U) {
+        p_ccb->s_isr_all_cnt = 0U;
+        osEE_hal_resumeIRQ(p_ccb->prev_s_isr_all_status);
+      }
+      if (p_ccb->d_isr_all_cnt > 0U) {
+        p_ccb->d_isr_all_cnt = 0U;
+        osEE_hal_enableIRQ();
+      }
+#endif /* !OSEE_HAS_SERVICE_PROTECTION */
+
+      flags = osEE_begin_primitive();
 
       if (p_tdb_act == p_curr) {
         /* If the Task chain on it self, flag it. */
@@ -774,23 +804,24 @@ FUNC(StatusType, OS_CODE)
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
     p_curr      = p_ccb->p_curr;
 #if (defined(OSEE_HAS_CHECKS))
-#if (defined(OSEE_HAS_RESOURCES))
+#if (defined(OSEE_HAS_RESOURCES)) || (defined(OSEE_HAS_SPINLOCKS))
   CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
     p_curr_tcb  = p_curr->p_tcb;
-#endif /* OSEE_HAS_RESOURCES */
+#endif /* OSEE_HAS_RESOURCES || OSEE_HAS_SPINLOCKS */
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_TerminateTask);
 
   osEE_stack_monitoring(p_cdb);
-  /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
+  /*  [SWS_Os_00093]: If interrupts are disabled/suspended by a Task/OsIsr and
    *    the Task/OsIsr calls any OS service (excluding the interrupt services)
-   *    then the Operating System shall ignore the service AND shall return  */
-  /*  [OS_SWS_088]: If an OS-Application makes a service call from the wrong
+   *    then the Operating System shall ignore the service AND shall return
+   *    (SRS_Os_11009, SRS_Os_11013) */
+  /*  [SWS_Os_00088]: If an OS-Application makes a service call from the wrong
    *    context AND is currently not inside a Category 1 ISR the Operating
    *    System module shall not perform the requested action
    *    (the service call shall have no effect), and return E_OS_CALLEVEL
    *    (see [12], section 13.1) or the "invalid value" of  the service.
-   *    (BSW11009, BSW11013) */
+   *    (SRS_Os_11009, SRS_Os_11013) */
 /* TerminateTask is callable by Task */
 #if (defined(OSEE_HAS_SERVICE_PROTECTION))
   if (osEE_check_disableint(p_ccb)) {
@@ -805,19 +836,44 @@ FUNC(StatusType, OS_CODE)
   {
     ev = E_OS_CALLEVEL;
   } else
+#if (defined(OSEE_HAS_RESOURCES)) || (defined(OSEE_HAS_SPINLOCKS))
+  if (p_curr_tcb->p_last_m != NULL) {
 #if (defined(OSEE_HAS_RESOURCES))
-  if (p_curr_tcb->p_first_resource != NULL) {
+#if (defined(OSEE_HAS_SPINLOCKS))
+    if (p_curr_tcb->p_last_m->m_type == OSEE_M_RESOURCE) {
+      ev = E_OS_RESOURCE;
+    } else {
+      ev = E_OS_SPINLOCK;
+    }
+#else
     ev = E_OS_RESOURCE;
-  } else
+#endif /* OSEE_HAS_SPINLOCKS */
+#else
+    ev = E_OS_SPINLOCK;
 #endif /* OSEE_HAS_RESOURCES */
+  } else
+#endif /* OSEE_HAS_RESOURCES || OSEE_HAS_SPINLOCKS */
 #elif (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_TerminateTask);
 
   osEE_stack_monitoring(p_cdb);
 #endif /* OSEE_HAS_CHECKS elif (OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING) */
   {
-    CONST(OsEE_reg, AUTOMATIC)
-      flags = osEE_begin_primitive();
+    VAR(OsEE_reg, AUTOMATIC) flags;
+#if (!defined(OSEE_HAS_SERVICE_PROTECTION))
+      /* Reset ISR Counters */
+      p_ccb->s_isr_all_cnt = 0U;
+      if (p_ccb->s_isr_all_cnt > 0U) {
+        p_ccb->s_isr_all_cnt = 0U;
+        osEE_hal_resumeIRQ(p_ccb->prev_s_isr_all_status);
+      }
+      if (p_ccb->d_isr_all_cnt > 0U) {
+        p_ccb->d_isr_all_cnt = 0U;
+        osEE_hal_enableIRQ();
+      }
+#endif /* !OSEE_HAS_SERVICE_PROTECTION */
+
+    flags = osEE_begin_primitive();
 
     /* The following does not return! */
     osEE_hal_terminate_activation(
@@ -866,15 +922,16 @@ FUNC(StatusType, OS_CODE)
   osEE_stack_monitoring(p_cdb);
 
 #if (defined(OSEE_HAS_CHECKS))
-  /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
+  /*  [SWS_Os_00093]: If interrupts are disabled/suspended by a Task/OsIsr and
    *    the Task/OsIsr calls any OS service (excluding the interrupt services)
-   *    then the Operating System shall ignore the service AND shall return  */
-  /*  [OS_SWS_088]: If an OS-Application makes a service call from the wrong
+   *    then the Operating System shall ignore the service AND shall return
+   *    (SRS_Os_11009, SRS_Os_11013) */
+  /*  [SWS_Os_00088]: If an OS-Application makes a service call from the wrong
    *    context AND is currently not inside a Category 1 ISR the Operating
    *    System module shall not perform the requested action
    *    (the service call shall have no effect), and return E_OS_CALLEVEL
    *    (see [12], section 13.1) or the "invalid value" of  the service.
-   *    (BSW11009, BSW11013) */
+   *    (SRS_Os_11009, SRS_Os_11013) */
 /* Schedule is callable by Task */
 #if (defined(OSEE_HAS_SERVICE_PROTECTION))
   if (osEE_check_disableint(p_curr_ccb)) {
@@ -889,11 +946,23 @@ FUNC(StatusType, OS_CODE)
   {
     ev = E_OS_CALLEVEL;
   } else
+#if (defined(OSEE_HAS_RESOURCES)) || (defined(OSEE_HAS_SPINLOCKS))
+  if (p_tcb->p_last_m != NULL) {
 #if (defined(OSEE_HAS_RESOURCES))
-  if (p_tcb->p_first_resource != NULL) {
+#if (defined(OSEE_HAS_SPINLOCKS))
+    if (p_tcb->p_last_m->m_type == OSEE_M_RESOURCE) {
+      ev = E_OS_RESOURCE;
+    } else {
+      ev = E_OS_SPINLOCK;
+    }
+#else
     ev = E_OS_RESOURCE;
-  } else
+#endif /* OSEE_HAS_SPINLOCKS */
+#else
+    ev = E_OS_SPINLOCK;
 #endif /* OSEE_HAS_RESOURCES */
+  } else
+#endif /* OSEE_HAS_RESOURCES || OSEE_HAS_SPINLOCKS */
 #endif /* OSEE_HAS_CHECKS */
   if (p_tcb->current_prio == p_curr->dispatch_prio)
   {
@@ -956,15 +1025,16 @@ FUNC(StatusType, OS_CODE)
   osEE_stack_monitoring(p_cdb);
 
 #if (defined(OSEE_HAS_SERVICE_PROTECTION))
-  /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
+  /*  [SWS_Os_00093]: If interrupts are disabled/suspended by a Task/OsIsr and
    *    the Task/OsIsr calls any OS service (excluding the interrupt services)
-   *    then the Operating System shall ignore the service AND shall return  */
-  /*  [OS_SWS_088]: If an OS-Application makes a service call from the wrong
+   *    then the Operating System shall ignore the service AND shall return
+   *    (SRS_Os_11009, SRS_Os_11013) */
+  /*  [SWS_Os_00088]: If an OS-Application makes a service call from the wrong
    *    context AND is currently not inside a Category 1 ISR the Operating
    *    System module shall not perform the requested action
    *    (the service call shall have no effect), and return E_OS_CALLEVEL
    *    (see [12], section 13.1) or the "invalid value" of  the service.
-   *    (BSW11009, BSW11013) */
+   *    (SRS_Os_11009, SRS_Os_11013) */
 /* GetResource is callable by Task and ISR2 */
   if (osEE_check_disableint(p_ccb)) {
     ev = E_OS_DISABLEDINT;
@@ -981,23 +1051,30 @@ FUNC(StatusType, OS_CODE)
     CONSTP2VAR(OsEE_ResourceDB, AUTOMATIC, OS_APPL_CONST)
       p_reso_db     = (*p_kdb->p_res_ptr_array)[ResID];
     CONSTP2VAR(OsEE_ResourceCB, AUTOMATIC, OS_APPL_DATA)
-      p_reso_cb     = p_reso_db->p_resource_cb;
+      p_reso_cb     = p_reso_db->p_cb;
     CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
       p_curr_tcb    = p_curr->p_tcb;
     CONST(TaskPrio, AUTOMATIC)
-      reso_prio     = p_reso_db->reso_prio;
+      reso_prio     = p_reso_db->prio;
     CONST(TaskPrio, AUTOMATIC)
       current_prio  = p_curr_tcb->current_prio;
     VAR(OsEE_reg, AUTOMATIC)
       flags         = osEE_begin_primitive();
 #if (defined(OSEE_HAS_CHECKS))
-    if ((p_reso_cb->p_resource_owner != NULL) ||
+    if ((p_reso_cb->p_owner != NULL) ||
         (p_curr->ready_prio > reso_prio))
     {
       osEE_end_primitive(flags);
 
       ev = E_OS_ACCESS;
     } else
+#if (!defined(OSEE_SINGLECORE))
+    if ((p_reso_db->allowed_core_mask &
+        ((CoreMaskType)1U << osEE_get_curr_core_id())) != 0U)
+    {
+      ev = E_OS_CORE;
+    } else
+#endif /* !OSEE_SINGLECORE */
 #endif /* OSEE_HAS_CHECKS */
     {
       if (current_prio < reso_prio) {
@@ -1005,13 +1082,13 @@ FUNC(StatusType, OS_CODE)
         flags = osEE_hal_prepare_ipl(flags, reso_prio);
       }
 
-      p_reso_cb->p_resource_owner   = p_curr;
+      p_reso_cb->p_owner    = p_curr;
 
       osEE_end_primitive(flags);
 
-      p_reso_cb->p_next             = p_curr_tcb->p_first_resource;
-      p_reso_cb->prev_prio          = current_prio;
-      p_curr_tcb->p_first_resource  = p_reso_db;
+      p_reso_cb->p_next     = p_curr_tcb->p_last_m;
+      p_reso_cb->prev_prio  = current_prio;
+      p_curr_tcb->p_last_m  = p_reso_db;
 
       ev = E_OK;
     }
@@ -1057,15 +1134,16 @@ FUNC(StatusType, OS_CODE)
   osEE_stack_monitoring(p_cdb);
 
 #if (defined(OSEE_HAS_SERVICE_PROTECTION))
-  /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
+  /*  [SWS_Os_00093]: If interrupts are disabled/suspended by a Task/OsIsr and
    *    the Task/OsIsr calls any OS service (excluding the interrupt services)
-   *    then the Operating System shall ignore the service AND shall return  */
-  /*  [OS_SWS_088]: If an OS-Application makes a service call from the wrong
+   *    then the Operating System shall ignore the service AND shall return
+   *    (SRS_Os_11009, SRS_Os_11013) */
+  /*  [SWS_Os_00088]: If an OS-Application makes a service call from the wrong
    *    context AND is currently not inside a Category 1 ISR the Operating
    *    System module shall not perform the requested action
    *    (the service call shall have no effect), and return E_OS_CALLEVEL
    *    (see [12], section 13.1) or the "invalid value" of  the service.
-   *    (BSW11009, BSW11013) */
+   *    (SRS_Os_11009, SRS_Os_11013) */
 /* ReleaseResource is callable by Task and ISR2 */
   if (osEE_check_disableint(p_ccb)) {
     ev = E_OS_DISABLEDINT;
@@ -1084,12 +1162,16 @@ FUNC(StatusType, OS_CODE)
     CONSTP2VAR(OsEE_ResourceDB, AUTOMATIC, TYPEDEF)
       p_reso_db   = (*p_kdb->p_res_ptr_array)[ResID];
     CONSTP2VAR(OsEE_ResourceCB, AUTOMATIC, TYPEDEF)
-      p_reso_cb   = p_reso_db->p_resource_cb;
+      p_reso_cb   = p_reso_db->p_cb;
 
 #if (defined(OSEE_HAS_CHECKS))
-    if ((p_reso_cb->p_resource_owner == NULL) ||\
-        (p_curr_tcb->p_first_resource != p_reso_db))
+    if ((p_reso_cb->p_owner == NULL) ||\
+        (p_curr_tcb->p_last_m != p_reso_db))
     {
+/* [SWS_Os_00801] If Spinlocks and Resources are locked by a Task/ISR they
+    have to be unlocked in strict LIFO order. ReleaseResource() shall return
+    E_OS_NOFUNC if the unlock order is violated.
+    No other functionality shall be performed. (SRS_Os_80021) */
       ev = E_OS_NOFUNC;
     } else
 #endif /* OSEE_HAS_CHECKS */
@@ -1098,10 +1180,9 @@ FUNC(StatusType, OS_CODE)
         flags = osEE_begin_primitive();
 
       /* Pop the Resources head */
-      p_curr_tcb->p_first_resource = p_curr_tcb->p_first_resource->
-        p_resource_cb->p_next;
+      p_curr_tcb->p_last_m = p_curr_tcb->p_last_m->p_cb->p_next;
 
-      if (p_curr_tcb->p_first_resource != NULL) {
+      if (p_curr_tcb->p_last_m != NULL) {
         CONST(TaskPrio, AUTOMATIC)
           prev_prio = p_reso_cb->prev_prio;
 
@@ -1115,7 +1196,7 @@ FUNC(StatusType, OS_CODE)
         flags = osEE_hal_prepare_ipl(flags, dispatch_prio);
       }
 
-      p_reso_cb->p_resource_owner = NULL;
+      p_reso_cb->p_owner = NULL;
 
       /* Preemption point */
       (void)osEE_scheduler_task_preemption_point(p_kdb);
@@ -1152,7 +1233,7 @@ FUNC(StatusType, OS_CODE)
   VAR(StatusType, AUTOMATIC) Error
 )
 {
-  VAR(StatusType, AUTOMATIC)                    ev = E_OK;
+  VAR(StatusType, AUTOMATIC)                    ev;
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb = osEE_get_curr_core();
 #if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
@@ -1167,13 +1248,20 @@ FUNC(StatusType, OS_CODE)
   osEE_stack_monitoring(p_cdb);
 
 #if (defined(OSEE_HAS_SERVICE_PROTECTION))
-  /*  [OS_SWS_088]: If an OS-Application makes a service call from the wrong
+  /*  [SWS_Os_00093]: If interrupts are disabled/suspended by a Task/OsIsr and
+   *    the Task/OsIsr calls any OS service (excluding the interrupt services)
+   *    then the Operating System shall ignore the service AND shall return
+   *    (SRS_Os_11009, SRS_Os_11013) */
+  /*  [OS_SWS_00088]: If an OS-Application makes a service call from the wrong
    *    context AND is currently not inside a Category 1 ISR the Operating
    *    System module shall not perform the requested action
    *    (the service call shall have no effect), and return E_OS_CALLEVEL
    *    (see [12], section 13.1) or the "invalid value" of  the service.
-   *    (BSW11009, BSW11013) */
+   *    (SRS_Os_11009, SRS_Os_11013) */
 /* ShutdownOS is callable in Task, ISR2, Error/Startup Hooks */
+  if (osEE_check_disableint(p_ccb)) {
+    ev = E_OS_DISABLEDINT;
+  } else
   if ((p_ccb->os_context > OSEE_ERRORHOOK_CTX) && 
       (p_ccb->os_context != OSEE_STARTUPHOOK_CTX)
   )
@@ -1183,15 +1271,18 @@ FUNC(StatusType, OS_CODE)
 #endif /* OSEE_HAS_SERVICE_PROTECTION */
   if ((os_status == OSEE_KERNEL_STARTED) || (os_status == OSEE_KERNEL_STARTING))
   {
-#if 0
     ev = E_OK;
-#endif
     osEE_shutdown_os(p_cdb, Error);
   } else {
     ev = E_OS_STATE;
   }
 
   if (ev != E_OK) {
+    VAR(OsEE_api_param, AUTOMATIC)
+      param;
+    osEE_set_service_id(p_ccb, OSServiceId_ShutdownOS);
+    param.num_param = Error;
+    osEE_set_api_param1(p_ccb, param);
     osEE_call_error_hook(p_ccb, ev);
   }
 
@@ -1221,15 +1312,16 @@ FUNC(StatusType, OS_CODE)
   osEE_stack_monitoring(p_cdb);
 
 #if (defined(OSEE_HAS_SERVICE_PROTECTION))
-  /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
+  /*  [SWS_Os_00093]: If interrupts are disabled/suspended by a Task/OsIsr and
    *    the Task/OsIsr calls any OS service (excluding the interrupt services)
-   *    then the Operating System shall ignore the service AND shall return  */
-  /*  [OS_SWS_088]: If an OS-Application makes a service call from the wrong
+   *    then the Operating System shall ignore the service AND shall return
+   *    (SRS_Os_11009, SRS_Os_11013) */
+  /*  [SWS_Os_00088]: If an OS-Application makes a service call from the wrong
    *    context AND is currently not inside a Category 1 ISR the Operating
    *    System module shall not perform the requested action
    *    (the service call shall have no effect), and return E_OS_CALLEVEL
    *    (see [12], section 13.1) or the "invalid value" of  the service.
-   *    (BSW11009, BSW11013) */
+   *    (SRS_Os_11009, SRS_Os_11013) */
 /* GetTaskID is callable by Task and ISR2, Error/PreTask/PostTask Hooks */
   if (osEE_check_disableint(p_ccb)) {
     ev = E_OS_DISABLEDINT;
@@ -1329,15 +1421,16 @@ FUNC(StatusType, OS_CODE)
   osEE_stack_monitoring(p_cdb);
 
 #if (defined(OSEE_HAS_SERVICE_PROTECTION))
-  /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
+  /*  [SWS_Os_00093]: If interrupts are disabled/suspended by a Task/OsIsr and
    *    the Task/OsIsr calls any OS service (excluding the interrupt services)
-   *    then the Operating System shall ignore the service AND shall return  */
-  /*  [OS_SWS_088]: If an OS-Application makes a service call from the wrong
+   *    then the Operating System shall ignore the service AND shall return
+   *    (SRS_Os_11009, SRS_Os_11013) */
+  /*  [SWS_Os_00088]: If an OS-Application makes a service call from the wrong
    *    context AND is currently not inside a Category 1 ISR the Operating
    *    System module shall not perform the requested action
    *    (the service call shall have no effect), and return E_OS_CALLEVEL
    *    (see [12], section 13.1) or the "invalid value" of  the service.
-   *    (BSW11009, BSW11013) */
+   *    (SRS_Os_11009, SRS_Os_11013) */
 /* GetTaskState is callable by Task and ISR2, Error/PreTask/PostTask Hooks */
   if (osEE_check_disableint(p_ccb)) {
     ev = E_OS_DISABLEDINT;
@@ -1347,8 +1440,8 @@ FUNC(StatusType, OS_CODE)
     ev = E_OS_CALLEVEL;
   } else
 #endif /* OSEE_HAS_SERVICE_PROTECTION */
-  /* [OS566]: The Operating System API shall check in extended mode all pointer
-     argument for NULL pointer and return OS_E_PARAMETER_POINTER
+  /* [SWS_Os_00566]: The Operating System API shall check in extended mode all
+     pointer argument for NULL pointer and return OS_E_PARAMETER_POINTER
      if such argument is NULL.
      +
      MISRA dictate NULL check for pointers always. */
@@ -1432,15 +1525,16 @@ FUNC(StatusType, OS_CODE)
   osEE_stack_monitoring(p_cdb);
 
 #if (defined(OSEE_HAS_SERVICE_PROTECTION))
-  /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
+  /*  [SWS_Os_00093]: If interrupts are disabled/suspended by a Task/OsIsr and
    *    the Task/OsIsr calls any OS service (excluding the interrupt services)
-   *    then the Operating System shall ignore the service AND shall return  */
-  /*  [OS_SWS_088]: If an OS-Application makes a service call from the wrong
+   *    then the Operating System shall ignore the service AND shall return
+   *    (SRS_Os_11009, SRS_Os_11013) */
+  /*  [SWS_Os_00088]: If an OS-Application makes a service call from the wrong
    *    context AND is currently not inside a Category 1 ISR the Operating
    *    System module shall not perform the requested action
    *    (the service call shall have no effect), and return E_OS_CALLEVEL
    *    (see [12], section 13.1) or the "invalid value" of  the service.
-   *    (BSW11009, BSW11013) */
+   *    (SRS_Os_11009, SRS_Os_11013) */
 /* SetRelAlarm is callable by Task and ISR2 */
   if (osEE_check_disableint(p_ccb)) {
     ev = E_OS_DISABLEDINT;
@@ -1527,15 +1621,16 @@ FUNC(StatusType, OS_CODE)
   osEE_stack_monitoring(p_cdb);
 
 #if (defined(OSEE_HAS_SERVICE_PROTECTION))
-  /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
+  /*  [SWS_Os_00093]: If interrupts are disabled/suspended by a Task/OsIsr and
    *    the Task/OsIsr calls any OS service (excluding the interrupt services)
-   *    then the Operating System shall ignore the service AND shall return  */
-  /*  [OS_SWS_088]: If an OS-Application makes a service call from the wrong
+   *    then the Operating System shall ignore the service AND shall return
+   *    (SRS_Os_11009, SRS_Os_11013) */
+  /*  [SWS_Os_00088]: If an OS-Application makes a service call from the wrong
    *    context AND is currently not inside a Category 1 ISR the Operating
    *    System module shall not perform the requested action
    *    (the service call shall have no effect), and return E_OS_CALLEVEL
    *    (see [12], section 13.1) or the "invalid value" of  the service.
-   *    (BSW11009, BSW11013) */
+   *    (SRS_Os_11009, SRS_Os_11013) */
 /* SetAbsAlarm is callable by Task and ISR2 */
   if (osEE_check_disableint(p_ccb)) {
     ev = E_OS_DISABLEDINT;
@@ -1619,15 +1714,16 @@ FUNC(StatusType, OS_CODE)
   osEE_stack_monitoring(p_cdb);
 
 #if (defined(OSEE_HAS_SERVICE_PROTECTION))
-  /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
+  /*  [SWS_Os_00093]: If interrupts are disabled/suspended by a Task/OsIsr and
    *    the Task/OsIsr calls any OS service (excluding the interrupt services)
-   *    then the Operating System shall ignore the service AND shall return  */
-  /*  [OS_SWS_088]: If an OS-Application makes a service call from the wrong
+   *    then the Operating System shall ignore the service AND shall return
+   *    (SRS_Os_11009, SRS_Os_11013) */
+  /*  [SWS_Os_00088]: If an OS-Application makes a service call from the wrong
    *    context AND is currently not inside a Category 1 ISR the Operating
    *    System module shall not perform the requested action
    *    (the service call shall have no effect), and return E_OS_CALLEVEL
    *    (see [12], section 13.1) or the "invalid value" of  the service.
-   *    (BSW11009, BSW11013) */
+   *    (SRS_Os_11009, SRS_Os_11013) */
 /* CancelAlarm is callable by Task and ISR2 */
   if (osEE_check_disableint(p_ccb)) {
     ev = E_OS_DISABLEDINT;
@@ -1692,15 +1788,16 @@ FUNC(StatusType, OS_CODE)
   osEE_stack_monitoring(p_cdb);
 
 #if (defined(OSEE_HAS_SERVICE_PROTECTION))
-  /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
+  /*  [SWS_Os_00093]: If interrupts are disabled/suspended by a Task/OsIsr and
    *    the Task/OsIsr calls any OS service (excluding the interrupt services)
-   *    then the Operating System shall ignore the service AND shall return  */
-  /*  [OS_SWS_088]: If an OS-Application makes a service call from the wrong
+   *    then the Operating System shall ignore the service AND shall return
+   *    (SRS_Os_11009, SRS_Os_11013) */
+  /*  [SWS_Os_00088]: If an OS-Application makes a service call from the wrong
    *    context AND is currently not inside a Category 1 ISR the Operating
    *    System module shall not perform the requested action
    *    (the service call shall have no effect), and return E_OS_CALLEVEL
    *    (see [12], section 13.1) or the "invalid value" of  the service.
-   *    (BSW11009, BSW11013) */
+   *    (SRS_Os_11009, SRS_Os_11013) */
 /* GetAlarm is callable by Task, ISR2, Error/PreTask/PostTask Hooks */
   if (osEE_check_disableint(p_ccb)) {
     ev = E_OS_DISABLEDINT;
@@ -1771,15 +1868,16 @@ FUNC(StatusType, OS_CODE)
   osEE_stack_monitoring(p_cdb);
 
 #if (defined(OSEE_HAS_SERVICE_PROTECTION))
-  /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
+  /*  [SWS_Os_00093]: If interrupts are disabled/suspended by a Task/OsIsr and
    *    the Task/OsIsr calls any OS service (excluding the interrupt services)
-   *    then the Operating System shall ignore the service AND shall return  */
-  /*  [OS_SWS_088]: If an OS-Application makes a service call from the wrong
+   *    then the Operating System shall ignore the service AND shall return
+   *    (SRS_Os_11009, SRS_Os_11013) */
+  /*  [SWS_Os_00088]: If an OS-Application makes a service call from the wrong
    *    context AND is currently not inside a Category 1 ISR the Operating
    *    System module shall not perform the requested action
    *    (the service call shall have no effect), and return E_OS_CALLEVEL
    *    (see [12], section 13.1) or the "invalid value" of  the service.
-   *    (BSW11009, BSW11013) */
+   *    (SRS_Os_11009, SRS_Os_11013) */
 /* GetAlarmBase is callable by Task, ISR2, Error/PreTask/PostTask Hooks */
   if (osEE_check_disableint(p_ccb)) {
     ev = E_OS_DISABLEDINT;
@@ -1856,15 +1954,16 @@ FUNC(StatusType, OS_CODE)
   osEE_stack_monitoring(p_cdb);
 
 #if (defined(OSEE_HAS_CHECKS))
-  /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
+  /*  [SWS_Os_00093]: If interrupts are disabled/suspended by a Task/OsIsr and
    *    the Task/OsIsr calls any OS service (excluding the interrupt services)
-   *    then the Operating System shall ignore the service AND shall return */
-  /*  [OS_SWS_088]: If an OS-Application makes a service call from the wrong
+   *    then the Operating System shall ignore the service AND shall return
+   *    (SRS_Os_11009, SRS_Os_11013) */
+  /*  [SWS_Os_00088]: If an OS-Application makes a service call from the wrong
    *    context AND is currently not inside a Category 1 ISR the Operating
    *    System module shall not perform the requested action
    *    (the service call shall have no effect), and return E_OS_CALLEVEL
    *    (see [12], section 13.1) or the "invalid value" of  the service.
-   *    (BSW11009, BSW11013) */
+   *    (SRS_Os_11009, SRS_Os_11013) */
   if (osEE_check_disableint(p_ccb)) {
     ev = E_OS_DISABLEDINT;
   } else
@@ -1876,14 +1975,26 @@ FUNC(StatusType, OS_CODE)
   {
     ev = E_OS_CALLEVEL;
   } else
+#if (defined(OSEE_HAS_RESOURCES)) || (defined(OSEE_HAS_SPINLOCKS))
+  if (p_curr_tcb->p_last_m != NULL) {
 #if (defined(OSEE_HAS_RESOURCES))
-  if (p_curr_tcb->p_first_resource != NULL) {
+#if (defined(OSEE_HAS_SPINLOCKS))
+    if (p_curr_tcb->p_last_m->m_type == OSEE_M_RESOURCE) {
+      ev = E_OS_RESOURCE;
+    } else {
+      ev = E_OS_SPINLOCK;
+    }
+#else
     ev = E_OS_RESOURCE;
+#endif /* OSEE_HAS_SPINLOCKS */
+#else
+    ev = E_OS_SPINLOCK;
+#endif /* OSEE_HAS_RESOURCES */
   } else
+#endif /* OSEE_HAS_RESOURCES || OSEE_HAS_SPINLOCKS */
   if (p_curr->task_type != OSEE_TASK_TYPE_EXTENDED) {
     ev = E_OS_ACCESS;
   } else
-#endif /* OSEE_HAS_RESOURCES */
 #endif /* OSEE_HAS_CHECKS */
   /* Check if we have to wait */
   if ((p_curr_tcb->event_mask & Mask) == 0U) {
@@ -1935,7 +2046,7 @@ FUNC(StatusType, OS_CODE)
   VAR(EventMaskType, AUTOMATIC) Mask
 )
 {
-  VAR(StatusType, AUTOMATIC)  ev = E_OK;
+  VAR(StatusType, AUTOMATIC)  ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
     p_kdb       = osEE_get_kernel();
 #if (defined(OSEE_HAS_CHECKS)) || (defined(OSEE_HAS_ERRORHOOK)) ||\
@@ -1955,15 +2066,16 @@ FUNC(StatusType, OS_CODE)
   osEE_orti_trace_service_entry(p_curr_ccb, OSServiceId_SetEvent);
   osEE_stack_monitoring(p_curr_cdb);
 
-  /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
+  /*  [SWS_Os_00093]: If interrupts are disabled/suspended by a Task/OsIsr and
    *    the Task/OsIsr calls any OS service (excluding the interrupt services)
-   *    then the Operating System shall ignore the service AND shall return  */
-  /*  [OS_SWS_088]: If an OS-Application makes a service call from the wrong
+   *    then the Operating System shall ignore the service AND shall return
+   *    (SRS_Os_11009, SRS_Os_11013) */
+  /*  [SWS_Os_00088]: If an OS-Application makes a service call from the wrong
    *    context AND is currently not inside a Category 1 ISR the Operating
    *    System module shall not perform the requested action
    *    (the service call shall have no effect), and return E_OS_CALLEVEL
    *    (see [12], section 13.1) or the "invalid value" of  the service.
-   *    (BSW11009, BSW11013) */
+   *    (SRS_Os_11009, SRS_Os_11013) */
 /* SetEvent is callable by Task and ISR2 */
   if (osEE_check_disableint(p_curr_ccb)) {
     ev = E_OS_DISABLEDINT;
@@ -1982,6 +2094,8 @@ FUNC(StatusType, OS_CODE)
 #endif /* OSEE_HAS_ORTI */
   osEE_stack_monitoring(p_curr_cdb);
 #endif /* OSEE_HAS_CHECKS */
+#else
+  osEE_stack_monitoring(p_curr_cdb);
 #endif /* OSEE_HAS_CHECKS || OSEE_HAS_ERRORHOOK || OSEE_HAS_ORTI */
   if (!osEE_is_valid_tid(p_kdb, TaskID)) {
     ev = E_OS_ID;
@@ -2059,15 +2173,15 @@ FUNC(StatusType, OS_CODE)
 
   osEE_stack_monitoring(p_cdb);
 
-  /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
+  /*  [SWS_Os_00093]: If interrupts are disabled/suspended by a Task/OsIsr and
    *    the Task/OsIsr calls any OS service (excluding the interrupt services)
    *    then the Operating System shall ignore the service AND shall return */
-  /*  [OS_SWS_088]: If an OS-Application makes a service call from the wrong
+  /*  [SWS_Os_00088]: If an OS-Application makes a service call from the wrong
    *    context AND is currently not inside a Category 1 ISR the Operating
    *    System module shall not perform the requested action
    *    (the service call shall have no effect), and return E_OS_CALLEVEL
    *    (see [12], section 13.1) or the "invalid value" of  the service.
-   *    (BSW11009, BSW11013) */
+   *    (SRS_Os_11009, SRS_Os_11013) */
   if (osEE_check_disableint(p_ccb)) {
     ev = E_OS_DISABLEDINT;
   } else
@@ -2087,6 +2201,8 @@ FUNC(StatusType, OS_CODE)
 #endif /* OSEE_HAS_ORTI */
   osEE_stack_monitoring(p_cdb);
 #endif /* OSEE_HAS_CHECKS */
+#else
+  osEE_stack_monitoring(p_cdb);
 #endif /* OSEE_HAS_CHECKS || OSEE_HAS_ERRORHOOK || OSEE_HAS_ORTI */
   if (!osEE_is_valid_tid(p_kdb, TaskID)) {
     ev = E_OS_ID;
@@ -2162,15 +2278,16 @@ FUNC(StatusType, OS_CODE)
   osEE_stack_monitoring(p_cdb);
 
 #if (defined(OSEE_HAS_CHECKS))
-  /*  [OS_SWS_093]: If interrupts are disabled/suspended by a Task/OsIsr and
+  /*  [SWS_Os_00093]: If interrupts are disabled/suspended by a Task/OsIsr and
    *    the Task/OsIsr calls any OS service (excluding the interrupt services)
-   *    then the Operating System shall ignore the service AND shall return */
-  /*  [OS_SWS_088]: If an OS-Application makes a service call from the wrong
+   *    then the Operating System shall ignore the service AND shall return
+   *    (SRS_Os_11009, SRS_Os_11013) */
+  /*  [SWS_Os_00088]: If an OS-Application makes a service call from the wrong
    *    context AND is currently not inside a Category 1 ISR the Operating
    *    System module shall not perform the requested action
    *    (the service call shall have no effect), and return E_OS_CALLEVEL
    *    (see [12], section 13.1) or the "invalid value" of  the service.
-   *    (BSW11009, BSW11013) */
+   *    (SRS_Os_11009, SRS_Os_11013) */
   if (osEE_check_disableint(p_ccb)) {
     ev = E_OS_DISABLEDINT;
   } else
@@ -2212,48 +2329,6 @@ FUNC(StatusType, OS_CODE)
 }
 #endif /* OSEE_HAS_EVENTS */
 
-#if (defined(OSEE_USEPARAMETERACCESS))
-FUNC(OSServiceIdType, OS_CODE)
-  osEE_get_service_id
-(
-  void
-)
-{
-#if (defined(OSEE_HAS_ORTI))
-  return (OSServiceIdType)(
-    ((OsEE_reg)osEE_get_curr_core()->p_ccb->service_id) & (~((OsEE_reg)0x1U))
-  );
-#else
-  return osEE_get_curr_core()->p_ccb->service_id;
-#endif /* OSEE_HAS_ORTI */
-}
-
-FUNC(OsEE_api_param, OS_CODE)
-  osEE_get_api_param1
-(
-  void
-)
-{
-  return osEE_get_curr_core()->p_ccb->api_param1;
-}
-FUNC(OsEE_api_param, OS_CODE)
-  osEE_get_api_param2
-(
-  void
-)
-{
-  return osEE_get_curr_core()->p_ccb->api_param2;
-}
-FUNC(OsEE_api_param, OS_CODE)
-  osEE_get_api_param3
-(
-  void
-)
-{
-  return osEE_get_curr_core()->p_ccb->api_param3;
-}
-#endif /* OSEE_USEPARAMETERACCESS */
-
 #if (defined(OSEE_HAS_COUNTERS))
 FUNC(StatusType, OS_CODE)
   GetCounterValue
@@ -2278,15 +2353,16 @@ FUNC(StatusType, OS_CODE)
   osEE_stack_monitoring(p_cdb);
 
 #if (defined(OSEE_HAS_SERVICE_PROTECTION))
-  /*  [OS_SWS_0093]: If interrupts are disabled/suspended by a Task/OsIsr and
+  /*  [SWS_Os_00093]: If interrupts are disabled/suspended by a Task/OsIsr and
    *    the Task/OsIsr calls any OS service (excluding the interrupt services)
-   *    then the Operating System shall ignore the service AND shall return  */
-  /*  [OS_SWS_0088]: If an OS-Application makes a service call from the wrong
+   *    then the Operating System shall ignore the service AND shall return
+   *    (SRS_Os_11009, SRS_Os_11013) */
+  /*  [SWS_Os_00088]: If an OS-Application makes a service call from the wrong
    *    context AND is currently not inside a Category 1 ISR the Operating
    *    System module shall not perform the requested action
    *    (the service call shall have no effect), and return E_OS_CALLEVEL
    *    (see [12], section 13.1) or the "invalid value" of  the service.
-   *    (BSW11009, BSW11013) */
+   *    (SRS_Os_11009, SRS_Os_11013) */
 /* GetCounterValue is callable by Task and ISR2 */
   if (osEE_check_disableint(p_ccb)) {
     ev = E_OS_DISABLEDINT;
@@ -2321,7 +2397,7 @@ FUNC(StatusType, OS_CODE)
     value of the counter via <Value> and return E_OK. (SRS_Frt_00033) */
 /* [SWS_Os_00531] Caveats of GetCounterValue(): Note that for counters of
     OsCounterType = HARDWARE the real timer value
-   (the – possibly adjusted – hardware value, see SWS_Os_00384) is returned,
+   (the "possibly adjusted" hardware value, see SWS_Os_00384) is returned,
    whereas for counters of OsCounterType = SOFTWARE the current "software"
    tick value is returned. */
 /* [SWS_Os_00384] The Operating System module shall adjust the read out values
@@ -2380,15 +2456,16 @@ FUNC(StatusType, OS_CODE)
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetElapsedValue);
   osEE_stack_monitoring(p_cdb);
 #if (defined(OSEE_HAS_SERVICE_PROTECTION))
-  /*  [OS_SWS_0093]: If interrupts are disabled/suspended by a Task/OsIsr and
+  /*  [SWS_Os_00093]: If interrupts are disabled/suspended by a Task/OsIsr and
    *    the Task/OsIsr calls any OS service (excluding the interrupt services)
-   *    then the Operating System shall ignore the service AND shall return  */
-  /*  [OS_SWS_0088]: If an OS-Application makes a service call from the wrong
+   *    then the Operating System shall ignore the service AND shall return
+   *    (SRS_Os_11009, SRS_Os_11013) */
+  /*  [SWS_Os_00088]: If an OS-Application makes a service call from the wrong
    *    context AND is currently not inside a Category 1 ISR the Operating
    *    System module shall not perform the requested action
    *    (the service call shall have no effect), and return E_OS_CALLEVEL
    *    (see [12], section 13.1) or the "invalid value" of  the service.
-   *    (BSW11009, BSW11013) */
+   *    (SRS_Os_11009, SRS_Os_11013) */
 /* GetElapsedValue is callable by Task and ISR2 */
   if (osEE_check_disableint(p_ccb)) {
     ev = E_OS_DISABLEDINT;
@@ -2500,15 +2577,16 @@ FUNC(StatusType, OS_CODE)
   osEE_stack_monitoring(p_cdb);
 
 #if (defined(OSEE_HAS_SERVICE_PROTECTION))
-  /*  [OS_SWS_0093]: If interrupts are disabled/suspended by a Task/OsIsr and
+  /*  [SWS_Os_00093]: If interrupts are disabled/suspended by a Task/OsIsr and
    *    the Task/OsIsr calls any OS service (excluding the interrupt services)
-   *    then the Operating System shall ignore the service AND shall return  */
-  /*  [OS_SWS_0088]: If an OS-Application makes a service call from the wrong
+   *    then the Operating System shall ignore the service AND shall return
+   *    (SRS_Os_11009, SRS_Os_11013) */
+  /*  [SWS_Os_00088]: If an OS-Application makes a service call from the wrong
    *    context AND is currently not inside a Category 1 ISR the Operating
    *    System module shall not perform the requested action
    *    (the service call shall have no effect), and return E_OS_CALLEVEL
    *    (see [12], section 13.1) or the "invalid value" of  the service.
-   *    (BSW11009, BSW11013) */
+   *    (SRS_Os_11009, SRS_Os_11013) */
 /* IncrementCounter is callable by Task and ISR2 */
   if (osEE_check_disableint(p_ccb)) {
     ev = E_OS_DISABLEDINT;
@@ -2609,15 +2687,16 @@ FUNC(StatusType, OS_CODE)
   osEE_stack_monitoring(p_cdb);
 
 #if (defined(OSEE_HAS_SERVICE_PROTECTION))
-  /*  [OS_SWS_0093]: If interrupts are disabled/suspended by a Task/OsIsr and
+  /*  [SWS_Os_00093]: If interrupts are disabled/suspended by a Task/OsIsr and
    *    the Task/OsIsr calls any OS service (excluding the interrupt services)
-   *    then the Operating System shall ignore the service AND shall return  */
-  /*  [OS_SWS_0088]: If an OS-Application makes a service call from the wrong
+   *    then the Operating System shall ignore the service AND shall return
+   *    (SRS_Os_11009, SRS_Os_11013) */
+  /*  [SWS_Os_00088]: If an OS-Application makes a service call from the wrong
    *    context AND is currently not inside a Category 1 ISR the Operating
    *    System module shall not perform the requested action
    *    (the service call shall have no effect), and return E_OS_CALLEVEL
    *    (see [12], section 13.1) or the "invalid value" of  the service.
-   *    (BSW11009, BSW11013) */
+   *    (SRS_Os_11009, SRS_Os_11013) */
 /* StartScheduleTableRel is callable by Task and ISR2 */
   if (osEE_check_disableint(p_ccb)) {
     ev = E_OS_DISABLEDINT;
@@ -2719,15 +2798,16 @@ FUNC(StatusType, OS_CODE)
   osEE_stack_monitoring(p_cdb);
 
 #if (defined(OSEE_HAS_SERVICE_PROTECTION))
-  /*  [OS_SWS_0093]: If interrupts are disabled/suspended by a Task/OsIsr and
+  /*  [SWS_Os_00093]: If interrupts are disabled/suspended by a Task/OsIsr and
    *    the Task/OsIsr calls any OS service (excluding the interrupt services)
-   *    then the Operating System shall ignore the service AND shall return  */
-  /*  [OS_SWS_0088]: If an OS-Application makes a service call from the wrong
+   *    then the Operating System shall ignore the service AND shall return
+   *    (SRS_Os_11009, SRS_Os_11013) */
+  /*  [SWS_Os_00088]: If an OS-Application makes a service call from the wrong
    *    context AND is currently not inside a Category 1 ISR the Operating
    *    System module shall not perform the requested action
    *    (the service call shall have no effect), and return E_OS_CALLEVEL
    *    (see [12], section 13.1) or the "invalid value" of  the service.
-   *    (BSW11009, BSW11013) */
+   *    (SRS_Os_11009, SRS_Os_11013) */
 /* StartScheduleTableAbs is callable by Task and ISR2 */
   if (osEE_check_disableint(p_ccb)) {
     ev = E_OS_DISABLEDINT;
@@ -2826,15 +2906,16 @@ FUNC(StatusType, OS_CODE)
   osEE_stack_monitoring(p_cdb);
 
 #if (defined(OSEE_HAS_SERVICE_PROTECTION))
-  /*  [OS_SWS_0093]: If interrupts are disabled/suspended by a Task/OsIsr and
+  /*  [SWS_Os_00093]: If interrupts are disabled/suspended by a Task/OsIsr and
    *    the Task/OsIsr calls any OS service (excluding the interrupt services)
-   *    then the Operating System shall ignore the service AND shall return  */
-  /*  [OS_SWS_0088]: If an OS-Application makes a service call from the wrong
+   *    then the Operating System shall ignore the service AND shall return
+   *    (SRS_Os_11009, SRS_Os_11013) */
+  /*  [SWS_Os_00088]: If an OS-Application makes a service call from the wrong
    *    context AND is currently not inside a Category 1 ISR the Operating
    *    System module shall not perform the requested action
    *    (the service call shall have no effect), and return E_OS_CALLEVEL
    *    (see [12], section 13.1) or the "invalid value" of  the service.
-   *    (BSW11009, BSW11013) */
+   *    (SRS_Os_11009, SRS_Os_11013) */
 /* StopScheduleTable is callable by Task and ISR2 */
   if (osEE_check_disableint(p_ccb)) {
     ev = E_OS_DISABLEDINT;
@@ -2905,15 +2986,16 @@ FUNC(StatusType, OS_CODE)
   osEE_stack_monitoring(p_cdb);
 
 #if (defined(OSEE_HAS_SERVICE_PROTECTION))
-  /*  [OS_SWS_0093]: If interrupts are disabled/suspended by a Task/OsIsr and
+  /*  [SWS_Os_00093]: If interrupts are disabled/suspended by a Task/OsIsr and
    *    the Task/OsIsr calls any OS service (excluding the interrupt services)
-   *    then the Operating System shall ignore the service AND shall return  */
-  /*  [OS_SWS_0088]: If an OS-Application makes a service call from the wrong
+   *    then the Operating System shall ignore the service AND shall return
+   *    (SRS_Os_11009, SRS_Os_11013) */
+  /*  [SWS_Os_00088]: If an OS-Application makes a service call from the wrong
    *    context AND is currently not inside a Category 1 ISR the Operating
    *    System module shall not perform the requested action
    *    (the service call shall have no effect), and return E_OS_CALLEVEL
    *    (see [12], section 13.1) or the "invalid value" of  the service.
-   *    (BSW11009, BSW11013) */
+   *    (SRS_Os_11009, SRS_Os_11013) */
 /* GetScheduleTableStatus is callable by Task and ISR2 */
   if (osEE_check_disableint(p_ccb)) {
     ev = E_OS_DISABLEDINT;
@@ -3010,15 +3092,16 @@ FUNC(StatusType, OS_CODE)
   osEE_stack_monitoring(p_cdb);
 
 #if (defined(OSEE_HAS_SERVICE_PROTECTION))
-  /*  [OS_SWS_0093]: If interrupts are disabled/suspended by a Task/OsIsr and
+  /*  [SWS_Os_00093]: If interrupts are disabled/suspended by a Task/OsIsr and
    *    the Task/OsIsr calls any OS service (excluding the interrupt services)
-   *    then the Operating System shall ignore the service AND shall return  */
-  /*  [OS_SWS_0088]: If an OS-Application makes a service call from the wrong
+   *    then the Operating System shall ignore the service AND shall return
+   *    (SRS_Os_11009, SRS_Os_11013) */
+  /*  [SWS_Os_00088]: If an OS-Application makes a service call from the wrong
    *    context AND is currently not inside a Category 1 ISR the Operating
    *    System module shall not perform the requested action
    *    (the service call shall have no effect), and return E_OS_CALLEVEL
    *    (see [12], section 13.1) or the "invalid value" of  the service.
-   *    (BSW11009, BSW11013) */
+   *    (SRS_Os_11009, SRS_Os_11013) */
 /* NextScheduleTable is callable by Task and ISR2 */
   if (osEE_check_disableint(p_ccb)) {
     ev = E_OS_DISABLEDINT;
@@ -3167,15 +3250,16 @@ FUNC(StatusType, OS_CODE)
   osEE_stack_monitoring(p_cdb);
 
 #if (defined(OSEE_HAS_SERVICE_PROTECTION))
-  /*  [OS_SWS_0093]: If interrupts are disabled/suspended by a Task/OsIsr and
+  /*  [SWS_Os_00093]: If interrupts are disabled/suspended by a Task/OsIsr and
    *    the Task/OsIsr calls any OS service (excluding the interrupt services)
-   *    then the Operating System shall ignore the service AND shall return  */
-  /*  [OS_SWS_0088]: If an OS-Application makes a service call from the wrong
+   *    then the Operating System shall ignore the service AND shall return
+   *    (SRS_Os_11009, SRS_Os_11013) */
+  /*  [SWS_Os_00088]: If an OS-Application makes a service call from the wrong
    *    context AND is currently not inside a Category 1 ISR the Operating
    *    System module shall not perform the requested action
    *    (the service call shall have no effect), and return E_OS_CALLEVEL
    *    (see [12], section 13.1) or the "invalid value" of  the service.
-   *    (BSW11009, BSW11013) */
+   *    (SRS_Os_11009, SRS_Os_11013) */
 /* NextScheduleTable is callable by Task and ISR2 */
   if (osEE_check_disableint(p_ccb)) {
     ev = E_OS_DISABLEDINT;
@@ -3444,13 +3528,20 @@ FUNC(void, OS_CODE)
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_ShutdownAllCores);
 
 #if (defined(OSEE_HAS_SERVICE_PROTECTION))
+  /*  [SWS_Os_00093]: If interrupts are disabled/suspended by a Task/OsIsr and
+   *    the Task/OsIsr calls any OS service (excluding the interrupt services)
+   *    then the Operating System shall ignore the service AND shall return
+   *    (SRS_Os_11009, SRS_Os_11013) */
   /*  [OS_SWS_00088]: If an OS-Application makes a service call from the wrong
    *    context AND is currently not inside a Category 1 ISR the Operating
    *    System module shall not perform the requested action
    *    (the service call shall have no effect), and return E_OS_CALLEVEL
    *    (see [12], section 13.1) or the "invalid value" of  the service.
-   *    (BSW11009, BSW11013) */
+   *    (SRS_Os_11009, SRS_Os_11013) */
 /* ShutdownAllCores is callable in Task, ISR2, Error/Startup Hooks */
+  if (osEE_check_disableint(p_ccb)) {
+    ev = E_OS_DISABLEDINT;
+  } else
   if ((p_ccb->os_context > OSEE_ERRORHOOK_CTX) && 
       (p_ccb->os_context != OSEE_STARTUPHOOK_CTX)
   )
@@ -3460,7 +3551,7 @@ FUNC(void, OS_CODE)
 #endif /* OSEE_HAS_SERVICE_PROTECTION */
 #ifdef OSEE_HAS_OSAPPLICATIONS
   /* [Os_SWS_00716]: If ShutdownAllCores is called from non trusted code the call
-      shall be ignored. (BSW4080007) */
+      shall be ignored. (SRS_Os_80007) */
 #endif /* EE_AS_OSAPPLICATIONS__ */
   if ((os_status == OSEE_KERNEL_STARTED) || (os_status == OSEE_KERNEL_STARTING))
   {
@@ -3506,4 +3597,502 @@ FUNC(void, OS_CODE)
   return;
 }
 
+#if (defined(OSEE_HAS_SPINLOCKS))
+FUNC(StatusType, OS_CODE)
+  GetSpinlock
+(
+  VAR(SpinlockIdType, AUTOMATIC) SpinlockID
+)
+{
+  /* Error Value */
+  VAR(StatusType, AUTOMATIC)  ev;
+  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)
+    p_kdb = osEE_get_kernel();
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
+    p_cdb = osEE_get_curr_core();
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+    p_ccb = p_cdb->p_ccb;
+
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetSpinlock);
+  osEE_stack_monitoring(p_cdb);
+
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
+  /*  [SWS_Os_00088]: If an OS-Application makes a service call from the wrong
+   *    context AND is currently not inside a Category 1 ISR the Operating
+   *    System module shall not perform the requested action
+   *    (the service call shall have no effect), and return E_OS_CALLEVEL
+   *    (see [12], section 13.1) or the "invalid value" of  the service.
+   *    (SRS_Os_11009, SRS_Os_11013) */
+  /* [SWS_Os_00650]: GetSpinlock shall be callable from TASK level.
+     (SRS_Os_80018, SRS_Os_80021) */
+  /* [SWS_Os_00651]: GetSpinlock shall be callable from ISR2 level.
+     (SRS_Os_80021) */
+  /* The behavior of GetSpinlock is undefined if called from a category 1 ISR */
+  /* [OS_SWS_00693]: It shall be allowed to call the function GetSpinlock while
+     interrupts are disabled. (SRS_Os_80021) */
+/* GetSpinlock is callable in Task, ISR2 */
+  if (p_ccb->os_context > OSEE_TASK_ISR2_CTX) {
+    ev = E_OS_CALLEVEL;
+  } else
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
+/* [SWS_Os_00689]: The function GetSpinlock shall return E_OS_ID if the parameter
+      SpinlockID refers to a spinlock that does not exist. (SRS_Os_80021) */
+  if (!osEE_is_valid_spinlock_id(p_kdb, SpinlockID)) {
+    ev = E_OS_ID;
+  } else {
+    CONSTP2VAR(OsEE_SpinlockDB, AUTOMATIC, OS_APPL_CONST)
+      p_spinlock_db = &(*p_kdb->p_spinlock_array)[SpinlockID];
+    CONSTP2VAR(OsEE_SpinlockCB, AUTOMATIC, OS_APPL_DATA)
+      p_spinlock_cb = p_spinlock_db->p_cb;
+    CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST)
+      p_curr = p_ccb->p_curr;
+    CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_CONST)
+      p_curr_tcb = p_curr->p_tcb;
+    CONSTP2VAR(OsEE_SpinlockDB, AUTOMATIC, OS_APPL_CONST)
+      p_core_last_spinlock_db = p_ccb->p_last_spinlock;
+    CONSTP2VAR(OsEE_SpinlockDB, AUTOMATIC, OS_APPL_CONST)
+      p_task_last_spinlock_db = osEE_task_get_last_spinlock_db(p_curr_tcb);
+    CONST(OsEE_reg, AUTOMATIC)
+      flags = osEE_begin_primitive();
+#if (defined(OSEE_HAS_OSAPPLICATIONS))
+/* [SWS_Os_00692]: The function GetSpinlock shall return E_OS_ACCESS if the
+     accessing OS-Application was not listed in the configuration (OsSpinlock).
+    (SRS_Os_80021) */
+  /* TODO: */
+#endif /* OSEE_HAS_OSAPPLICATIONS */
+#if (defined(OSEE_HAS_CHECKS))
+  /* [SWS_Os_000658]: The AUTOSAR Operating System shall generate an error if a
+      TASK tries to occupy a spinlock that is assigned to a TASK/ISR2 on the
+      same core (including itself). (SRS_Os_80018, SRS_Os_80021) */
+  /* [SWS_Os_000659]: The AUTOSAR Operating System shall generate an error if
+      an ISR2 tries to occupy a spinlock that is assigned to a TASK/ISR2 on the
+      same core. (SRS_Os_80018, SRS_Os_80021) */
+  /* [SWS_Os_000690]: The function GetSpinlock shall return
+      E_OS_INTERFERENCE_DEADLOCK if the spinlock referred by the parameter
+      SpinlockID is already occupied by a TASK/ISR2 on the same core.
+      (SRS_Os_80021) */
+  /* [SWS_Os_000660]: A unique order in which multiple spinlocks can be
+      occupied by a TASK/ISR2 should be configurable in the AUTOSAR Operating
+      System. This might be realized by the configuration item
+      (OsSpinlockSuccessor{NEXT_SPINLOCK}) where "NEXT_SPINLOCK" refers to the
+      consecutive spinlock.
+      (See chapter 10.2.5) (SRS_Os_80018, SRS_Os_80021) */
+  /* [SWS_Os_000661]: The AUTOSAR Operating System shall generate an error if
+      a TASK/ISR2 that currently holds a spinlock tries to seize another
+      spinlock that has not been configured as a direct or indirect successor
+      of the latest acquired spinlock (by means of the OsSpinlockSuccessor
+      configuration parameter) or if no successor is configured.
+      (SRS_Os_80018, SRS_Os_80021) */
+  /* [SWS_Os_000691]: The function GetSpinlock shall return
+      E_OS_NESTING_DEADLOCK if the sequence by which multiple spinlocks are
+      occupied at the same time do not comply with the configured order.
+      (SRS_Os_80021) */
+    if ((p_spinlock_cb->p_owner != NULL) &&
+        (osEE_task_get_curr_core_id(p_spinlock_cb->p_owner) ==
+          osEE_get_curr_core_id()))
+    {
+      ev = E_OS_INTERFERENCE_DEADLOCK;
+    } else
+#if (defined(OSEE_SPINLOCKS_ORDERED))
+    if (
+      ((p_task_last_spinlock_db != NULL) &&
+        (p_task_last_spinlock_db >= p_spinlock_db))
+      ||
+      ((p_core_last_spinlock_db != NULL) &&
+        (p_core_last_spinlock_db >= p_spinlock_db))
+    )
+#else /* OSEE_SPINLOCKS_ORDERED */
+    if ((p_task_last_spinlock_db != NULL) || (p_core_last_spinlock_db != NULL))
+#endif /* OSEE_SPINLOCKS_ORDERED */
+    {
+      ev = E_OS_NESTING_DEADLOCK;
+    } else
+#endif /* OSEE_HAS_CHECKS */
+    {
+    /* [SWS_Os_00694]: It shall be allowed to call the function GetSpinlock
+        while a RESOURCE is occupied. (SRS_Os_80021) */
+    /* [SWS_Os_00649]: The AUTOSAR Operating System shall provide a
+          GetSpinlock function which occupies a spinlock. If the spinlock is
+          already occupied, GetSpinlock shall keep on trying to occupy the
+          spinlock until it succeeds. (SRS_Os_80018, SRS_Os_80021)
+          Same of [SWS_Os_00687] */
+
+      /* Spin until get the lock */
+      osEE_hal_spin_lock(p_spinlock_db->p_spinlock_arch);
+
+      /* Populate Spinlocks Stack for Current TASK and for CCB */
+      p_spinlock_cb->p_next = (p_task_last_spinlock_db != NULL)?
+        p_task_last_spinlock_db: p_core_last_spinlock_db;
+
+      /* Update Heads pointers: Current TASK and CCB */
+      p_curr_tcb->p_last_m = p_spinlock_db;
+      p_ccb->p_last_spinlock = p_spinlock_db;
+
+      /* Set Current TASK/ISR2 as spinlock locker */
+      p_spinlock_cb->p_owner = p_curr;
+
+    /* [SWS_Os_00688]: The function GetSpinlock shall return E_OK if no error
+        was detected. The spinlock is now occupied by the calling TASK/ISR2 on
+        the calling core. */
+      ev = E_OK;
+    }
+    
+    /* TODO: Handle Spinlock Lock Methods (OSEE_SPINLOCKS_HAS_LOCK_METHOD) */
+    osEE_end_primitive(flags);
+  }
+
+#if (defined(OSEE_HAS_ERRORHOOK))
+  if (ev != E_OK) {
+    VAR(OsEE_api_param, AUTOMATIC)
+      param;
+    CONST(OsEE_reg, AUTOMATIC)
+      flags = osEE_begin_primitive();
+    osEE_set_service_id(p_ccb, OSServiceId_GetSpinlock);
+    param.num_param = SpinlockID;
+    osEE_set_api_param1(p_ccb, param);
+    osEE_call_error_hook(p_ccb, ev);
+    osEE_end_primitive(flags);
+  }
+#endif /* OSEE_HAS_ERRORHOOK */
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_GetSpinlock);
+
+  return ev;
+}
+
+FUNC(StatusType, OS_CODE)
+  ReleaseSpinlock
+(
+  VAR(SpinlockIdType, AUTOMATIC) SpinlockID
+)
+{
+  /* Error Value */
+  VAR(StatusType, AUTOMATIC)  ev;
+  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)
+    p_kdb = osEE_get_kernel();
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
+    p_cdb = osEE_get_curr_core();
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+    p_ccb = p_cdb->p_ccb;
+
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_ReleaseSpinlock);
+  osEE_stack_monitoring(p_cdb);
+
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
+  /*  [SWS_Os_00088]: If an OS-Application makes a service call from the wrong
+   *    context AND is currently not inside a Category 1 ISR the Operating
+   *    System module shall not perform the requested action
+   *    (the service call shall have no effect), and return E_OS_CALLEVEL
+   *    (see [12], section 13.1) or the "invalid value" of  the service.
+   *    (SRS_Os_11009, SRS_Os_11013) */
+  /* [SWS_Os_00656] ReleaseSpinlock shall be callable from TASK level. 
+      (SRS_Os_80018, SRS_Os_80021) */
+  /* [SWS_Os_00657] ReleaseSpinlock shall be callable from ISR2 level.
+      (SRS_Os_80018, SRS_Os_80021) */
+/* ReleaseSpinlock is callable in Task, ISR2 */
+  if (p_ccb->os_context > OSEE_TASK_ISR2_CTX) {
+    ev = E_OS_CALLEVEL;
+  } else
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
+/* [SWS_Os_00698] The function ReleaseSpinlock shall return E_OS_ID if the
+    parameter SpinlockID refers to a spinlock that does not exist.
+    (SRS_Os_80021) */
+  if (!osEE_is_valid_spinlock_id(p_kdb, SpinlockID)) {
+    ev = E_OS_ID;
+  } else {
+    CONSTP2VAR(OsEE_SpinlockDB, AUTOMATIC, OS_APPL_CONST)
+      p_spinlock_db = &(*p_kdb->p_spinlock_array)[SpinlockID];
+    CONSTP2VAR(OsEE_SpinlockCB, AUTOMATIC, OS_APPL_DATA)
+      p_spinlock_cb = p_spinlock_db->p_cb;
+    CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST)
+      p_curr = p_ccb->p_curr;
+    CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_CONST)
+      p_curr_tcb = p_curr->p_tcb;
+    CONST(OsEE_reg, AUTOMATIC)
+      flags = osEE_begin_primitive();
+#if (defined(OSEE_HAS_OSAPPLICATIONS))
+/* [SWS_Os_00700] The function ReleaseSpinlock shall return E_OS_ACCESS if the
+    TASK has no access to the spinlock referred by the parameter SpinlockID
+   (SRS_Os_80021) */
+  /* TODO: */
+#endif /* OSEE_HAS_OSAPPLICATIONS */
+#if (defined(OSEE_HAS_CHECKS))
+/*  [SWS_Os_00655] The AUTOSAR Operating System shall provide a
+      ReleaseSpinlock function which releases an occupied spinlock.
+      If the spinlock is not occupied an error shall be returned.
+      (SRS_Os_80018, SRS_Os_80021) */
+/*  [SWS_Os_00699] The function ReleaseSpinlock shall return E_OS_STATE if the
+      parameter SpinlockID refers to a spinlock that is not occupied by the
+      calling TASK. (SRS_Os_80021) */
+/*  [SWS_Os_00701] The function ReleaseSpinlock shall return E_OS_NOFUNC if the
+      TASK tries to release a spinlock while another spinlock (or resource)
+      has to be released before. No functionality shall be performed.
+      (SRS_Os_80021) */
+    if (p_spinlock_cb->p_owner != p_curr) {
+      ev = E_OS_STATE;
+    } else
+    if (p_spinlock_db != osEE_task_get_last_spinlock_db(p_curr_tcb)) {
+      ev = E_OS_NOFUNC;
+    } else
+#endif /* OSEE_HAS_CHECKS */
+    {
+/*  [SWS_Os_00696] The function ReleaseSpinlock shall release a spinlock that
+     has been occupied by the same (calling) TASK.
+     If the related GetSpinlock call used configured locks (ECUC_Os_01038)
+     the function shall also perform the undo of the used lock.
+     (SRS_Os_80021) */
+/*  [SWS_Os_00697] The function ReleaseSpinlock shall return E_OK if no error
+     was detected. The spinlock is now free and can be occupied by the same or
+     other TASKs. (SRS_Os_80021) */
+
+      /* Release the spinlock from its owner */
+      p_spinlock_cb->p_owner = NULL;
+
+      /* Pop M Stack for Current TASK */
+      p_curr_tcb->p_last_m = p_spinlock_cb->p_next;
+
+      /* Look for the new last spinlock */
+      p_ccb->p_last_spinlock = osEE_task_get_last_spinlock_db(p_curr_tcb);
+
+      /* Release the spinlock */
+      osEE_hal_spin_unlock(p_spinlock_db->p_spinlock_arch);
+
+      ev = E_OK;
+    }
+
+    /* TODO: Handle Spinlock Lock Methods (OSEE_SPINLOCKS_HAS_LOCK_METHOD)
+      ECUC_Os_01038 */
+    osEE_end_primitive(flags);
+  }
+
+#if (defined(OSEE_HAS_ERRORHOOK))
+  if (ev != E_OK) {
+    VAR(OsEE_api_param, AUTOMATIC)
+      param;
+    CONST(OsEE_reg, AUTOMATIC)
+      flags = osEE_begin_primitive();
+    osEE_set_service_id(p_ccb, OSServiceId_ReleaseSpinlock);
+    param.num_param = SpinlockID;
+    osEE_set_api_param1(p_ccb, param);
+    osEE_call_error_hook(p_ccb, ev);
+    osEE_end_primitive(flags);
+  }
+#endif /* OSEE_HAS_ERRORHOOK */
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_ReleaseSpinlock);
+
+  return ev;
+}
+
+FUNC(StatusType, OS_CODE)
+  TryToGetSpinlock
+(
+  VAR(SpinlockIdType, AUTOMATIC)                        SpinlockID,
+  P2VAR(TryToGetSpinlockType, AUTOMATIC, OS_APPL_DATA)  Success
+)
+{
+  /* Error Value */
+  VAR(StatusType, AUTOMATIC)  ev;
+  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)
+    p_kdb = osEE_get_kernel();
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
+    p_cdb = osEE_get_curr_core();
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+    p_ccb = p_cdb->p_ccb;
+
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_TryToGetSpinlock);
+  osEE_stack_monitoring(p_cdb);
+
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
+  /*  [SWS_Os_00088]: If an OS-Application makes a service call from the wrong
+   *    context AND is currently not inside a Category 1 ISR the Operating
+   *    System module shall not perform the requested action
+   *    (the service call shall have no effect), and return E_OS_CALLEVEL
+   *    (see [12], section 13.1) or the "invalid value" of  the service.
+   *    (SRS_Os_11009, SRS_Os_11013) */
+  /* [SWS_Os_00653]: TryToGetSpinlock shall be callable from TASK level.
+     (SRS_Os_80018, SRS_Os_80021) */
+  /* [SWS_Os_00654]: TryToGetSpinlock shall be callable from ISR2 level.
+     (SRS_Os_80021) */
+  /* The behavior of TryToGetSpinlock is undefined if called from a
+     category 1 ISR */
+  /* [OS_SWS_00711]: It shall be allowed to call the function TryToGetSpinlock
+      while interrupts are disabled. (SRS_Os_80021) */
+/* TryToGetSpinlock is callable in Task, ISR2 */
+  if (p_ccb->os_context > OSEE_TASK_ISR2_CTX) {
+    ev = E_OS_CALLEVEL;
+  } else
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
+/* [SWS_Os_00707] The function TryToGetSpinlock shall return E_OS_ID if the
+    parameter SpinlockID refers to a spinlock that does not exist.
+   (SRS_Os_80021) */
+  if (!osEE_is_valid_spinlock_id(p_kdb, SpinlockID)) {
+    ev = E_OS_ID;
+  } else {
+    CONSTP2VAR(OsEE_SpinlockDB, AUTOMATIC, OS_APPL_CONST)
+      p_spinlock_db = &(*p_kdb->p_spinlock_array)[SpinlockID];
+    CONSTP2VAR(OsEE_SpinlockCB, AUTOMATIC, OS_APPL_DATA)
+      p_spinlock_cb = p_spinlock_db->p_cb;
+    CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST)
+      p_curr = p_ccb->p_curr;
+    CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_CONST)
+      p_curr_tcb = p_curr->p_tcb;
+    CONSTP2VAR(OsEE_SpinlockDB, AUTOMATIC, OS_APPL_CONST)
+      p_core_last_spinlock_db = p_ccb->p_last_spinlock;
+    CONSTP2VAR(OsEE_SpinlockDB, AUTOMATIC, OS_APPL_CONST)
+      p_task_last_spinlock_db = osEE_task_get_last_spinlock_db(p_curr_tcb);
+    CONST(OsEE_reg, AUTOMATIC)
+      flags = osEE_begin_primitive();
+#if (defined(OSEE_HAS_OSAPPLICATIONS))
+/* [SWS_Os_00710] The function TryToGetSpinlock shall return E_OS_ACCESS if the
+    TASK has no access to the spinlock referred by the parameter SpinlockID
+    (SRS_Os_80021) */
+  /* TODO: */
+#endif /* OSEE_HAS_OSAPPLICATIONS */
+#if (defined(OSEE_HAS_CHECKS))
+  /* [SWS_Os_00708] The function TryToGetSpinlock shall return
+      E_OS_INTERFERENCE_DEADLOCK if the spinlock referred by the parameter
+      SpinlockID is already occupied by a TASK on the same core.
+      (SRS_Os_80021) */
+  /* [SWS_Os_00709] The function TryToGetSpinlock shall return
+      E_OS_NESTING_DEADLOCK if a TASK tries to occupy a spinlock while holding
+      a different spinlock in a way that may cause a deadlock.
+      (SRS_Os_80021) */
+  /* [SWS_Os_000660]: A unique order in which multiple spinlocks can be
+      occupied by a TASK/ISR2 should be configurable in the AUTOSAR Operating
+      System. This might be realized by the configuration item
+      (OsSpinlockSuccessor{NEXT_SPINLOCK}) where "NEXT_SPINLOCK" refers to the
+      consecutive spinlock.
+      (See chapter 10.2.5) (SRS_Os_80018, SRS_Os_80021) */
+  /* [SWS_Os_000661]: The AUTOSAR Operating System shall generate an error if a
+      TASK/ISR2 that currently holds a spinlock tries to seize another spinlock
+      that has not been configured as a direct or indirect successor of the
+      latest acquired spinlock (by means of the OsSpinlockSuccessor
+      configuration parameter) or if no successor is configured.
+      (SRS_Os_80018, SRS_Os_80021) */
+    if ((p_spinlock_cb->p_owner != NULL) &&
+        (osEE_task_get_curr_core_id(p_spinlock_cb->p_owner) ==
+          osEE_get_curr_core_id()))
+    {
+      ev = E_OS_INTERFERENCE_DEADLOCK;
+    } else
+#if (defined(OSEE_SPINLOCKS_ORDERED))
+    if (
+      ((p_task_last_spinlock_db != NULL) &&
+        (p_task_last_spinlock_db >= p_spinlock_db))
+      ||
+      ((p_core_last_spinlock_db != NULL) &&
+        (p_core_last_spinlock_db >= p_spinlock_db))
+    )
+#else /* OSEE_SPINLOCKS_ORDERED */
+    if ((p_task_last_spinlock_db != NULL) || (p_core_last_spinlock_db != NULL))
+#endif /* OSEE_SPINLOCKS_ORDERED */
+    {
+      ev = E_OS_NESTING_DEADLOCK;
+    } else
+#endif /* OSEE_HAS_CHECKS */
+  /* [SWS_Os_00566]: The Operating System API shall check in extended mode all
+      pointer argument for NULL pointer and return OS_E_PARAMETER_POINTER 
+      if such argument is NULL. +
+      MISRA dictate NULL check for pointers always. */
+  /* [SWS_Os_706]: If the function TryToGetSpinlock does not return E_OK, the
+      OUT parameter "Success" shall be undefined. (SRS_Os_80021) */
+    if (Success == NULL) {
+      ev = E_OS_PARAM_POINTER;
+    } else {
+/* [SWS_Os_00712] It shall be allowed to call the function TryToGetSpinlock
+      while a RESOURCE is occupied. (SRS_Os_80021) */
+/* [SWS_Os_00704] The function TryToGetSpinlock shall atomically test the
+    availability of the spinlock and if available occupy it. The result of
+    success is returned. (SRS_Os_80021) */
+      /* Try to get the lock */
+      if (osEE_hal_try_spin_lock(p_spinlock_db->p_spinlock_arch)) {
+        /* Populate Spinlocks Stack for Current TASK and for CCB */
+        p_spinlock_cb->p_next = (p_task_last_spinlock_db != NULL)?
+          p_task_last_spinlock_db: p_core_last_spinlock_db;
+
+        /* Update Heads pointers: Current TASK and CCB */
+        p_curr_tcb->p_last_m = p_spinlock_db;
+        p_ccb->p_last_spinlock = p_spinlock_db;
+
+        /* Set Current TASK/ISR2 as spinlock locker */
+        p_spinlock_cb->p_owner = p_curr;
+
+      /* [SWS_Os_00705] The function TryToGetSpinlock shall set the OUT
+           parameter "Success" to TRYTOGETSPINLOCK_SUCCESS if the spinlock was
+           successfully occupied, and TRYTOGETSPINLOCK_NOSUCCESS if not.
+           In both cases E_OK shall be returned. (SRS_Os_80021) */
+        *Success = TRYTOGETSPINLOCK_SUCCESS;
+      } else {
+        *Success = TRYTOGETSPINLOCK_NOSUCCESS;
+      }
+
+      ev = E_OK;
+    }
+    
+    /* TODO: Handle Spinlock Lock Methods (OSEE_SPINLOCKS_HAS_LOCK_METHOD) */
+    osEE_end_primitive(flags);
+  }
+
+#if (defined(OSEE_HAS_ERRORHOOK))
+  if (ev != E_OK) {
+    VAR(OsEE_api_param, AUTOMATIC)
+      param;
+    CONST(OsEE_reg, AUTOMATIC)
+      flags = osEE_begin_primitive();
+    osEE_set_service_id(p_ccb, OSServiceId_TryToGetSpinlock);
+    param.num_param = SpinlockID;
+    osEE_set_api_param1(p_ccb, param);
+    param.p_param = Success;
+    osEE_set_api_param2(p_ccb, param);
+    osEE_call_error_hook(p_ccb, ev);
+    osEE_end_primitive(flags);
+  }
+#endif /* OSEE_HAS_ERRORHOOK */
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_TryToGetSpinlock);
+
+  return ev;
+
+}
+#endif /* OSEE_HAS_SPINLOCKS */
 #endif /* !OSEE_SINGLECORE */
+
+#if (defined(OSEE_USEPARAMETERACCESS))
+FUNC(OSServiceIdType, OS_CODE)
+  osEE_get_service_id
+(
+  void
+)
+{
+#if (defined(OSEE_HAS_ORTI))
+  return (OSServiceIdType)(
+    ((OsEE_reg)osEE_get_curr_core()->p_ccb->service_id) & (~((OsEE_reg)0x1U))
+  );
+#else
+  return osEE_get_curr_core()->p_ccb->service_id;
+#endif /* OSEE_HAS_ORTI */
+}
+
+FUNC(OsEE_api_param, OS_CODE)
+  osEE_get_api_param1
+(
+  void
+)
+{
+  return osEE_get_curr_core()->p_ccb->api_param1;
+}
+FUNC(OsEE_api_param, OS_CODE)
+  osEE_get_api_param2
+(
+  void
+)
+{
+  return osEE_get_curr_core()->p_ccb->api_param2;
+}
+FUNC(OsEE_api_param, OS_CODE)
+  osEE_get_api_param3
+(
+  void
+)
+{
+  return osEE_get_curr_core()->p_ccb->api_param3;
+}
+#endif /* OSEE_USEPARAMETERACCESS */
