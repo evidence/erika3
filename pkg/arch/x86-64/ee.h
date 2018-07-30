@@ -61,5 +61,8 @@
 #if (defined(OSEE_ASSERT))
 #include "ee_assert.h"
 #endif  /* OSEE_ASSERT */
+#if (!defined(OS_EE_BUILD))
+#include "ee_declcfg.h"
+#endif /* !OS_EE_BUILD */
 
 #endif /* !OSEE_H */
