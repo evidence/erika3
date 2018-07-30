@@ -665,12 +665,12 @@ FUNC(StatusType, OS_CODE)
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
 #if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK)) &&\
-    (!defined(OSEE_HAS_SERVICE_PROTECTION))
+    (defined(OSEE_HAS_SERVICE_PROTECTION))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #else
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK &&
-          !OSEE_HAS_SERVICE_PROTECTION */
+          OSEE_HAS_SERVICE_PROTECTION */
     p_ccb = p_cdb->p_ccb;
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST)
     p_curr = p_ccb->p_curr;
@@ -798,12 +798,12 @@ FUNC(StatusType, OS_CODE)
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb       = osEE_get_curr_core();
 #if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK)) &&\
-    (!defined(OSEE_HAS_SERVICE_PROTECTION))
+    (defined(OSEE_HAS_SERVICE_PROTECTION))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #else
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK &&
-          !OSEE_HAS_SERVICE_PROTECTION */
+          OSEE_HAS_SERVICE_PROTECTION */
     p_ccb       = p_cdb->p_ccb;
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
     p_curr      = p_ccb->p_curr;

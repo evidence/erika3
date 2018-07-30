@@ -187,13 +187,7 @@ typedef struct {
 #endif /* OSEE_ALLOW_TASK_MIGRATION */
 } OsEE_TCB;
 
-/* For MISRA compliance */
-#if ((defined(OSEE_HAS_RESOURCES)) && (defined(OSEE_HAS_ORTI))) ||\
-    (defined(OSEE_HAS_SPINLOCKS))
 typedef struct OsEE_TDB_tag
-#else
-typedef struct
-#endif
 {
   VAR(OsEE_HDB, TYPEDEF)                  hdb;
   P2VAR(OsEE_TCB, TYPEDEF, OS_APPL_DATA)  p_tcb;
