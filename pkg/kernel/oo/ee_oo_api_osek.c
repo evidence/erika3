@@ -664,11 +664,13 @@ FUNC(StatusType, OS_CODE)
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)  p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
-#if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
+#if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK)) &&\
+    (!defined(OSEE_HAS_SERVICE_PROTECTION))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #else
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-#endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
+#endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK &&
+          !OSEE_HAS_SERVICE_PROTECTION */
     p_ccb = p_cdb->p_ccb;
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST)
     p_curr = p_ccb->p_curr;
@@ -795,11 +797,13 @@ FUNC(StatusType, OS_CODE)
   VAR(StatusType, AUTOMATIC)  ev;
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb       = osEE_get_curr_core();
-#if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
+#if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK)) &&\
+    (!defined(OSEE_HAS_SERVICE_PROTECTION))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #else
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-#endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
+#endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK &&
+          !OSEE_HAS_SERVICE_PROTECTION */
     p_ccb       = p_cdb->p_ccb;
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
     p_curr      = p_ccb->p_curr;
@@ -1347,7 +1351,7 @@ FUNC(StatusType, OS_CODE)
     /* This function should return the running task. Since ISR2 are in
        the stacked queue as "tasks", we have the following cases: If
        the task is BASIC or EXTENDED, then we immediately found the
-       value tu return. If it its ISR2 we have to follow the chain and
+       value to return. If it its ISR2 we have to follow the chain and
        find the first task in the list (which is the running task
        which was preempted by the ISR, which could be the idle task),
        or we are idle. */
@@ -1357,8 +1361,8 @@ FUNC(StatusType, OS_CODE)
       tid = p_tdb->tid;
     } else if (p_tdb->task_type == OSEE_TASK_TYPE_ISR2) {
       /* In case of ISR2 search the first stacked that is not an
-	 ISR2. it could be a basic/extended task or an IDLE task */
-      P2CONST(OsEE_SN, AUTOMATIC, OS_APPL_DATA)
+         ISR2. it could be a basic/extended task or an IDLE task */
+      P2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA)
         p_sn = p_ccb->p_stk_sn->p_next;
 
       while (p_sn != NULL) {
@@ -2048,23 +2052,19 @@ FUNC(StatusType, OS_CODE)
 {
   VAR(StatusType, AUTOMATIC)  ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
-    p_kdb       = osEE_get_kernel();
-#if (defined(OSEE_HAS_CHECKS)) || (defined(OSEE_HAS_ERRORHOOK)) ||\
-    (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
+    p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
-    p_curr_cdb  = osEE_get_curr_core();
-#endif /* OSEE_HAS_CHECKS || OSEE_HAS_ERRORHOOK || OSEE_HAS_ORTI 
-          OSEE_HAS_STACK_MONITORING */
+    p_cdb = osEE_get_curr_core();
 #if (defined(OSEE_HAS_CHECKS)) || (defined(OSEE_HAS_ERRORHOOK)) ||\
     (defined(OSEE_HAS_ORTI))
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-    p_curr_ccb  = p_curr_cdb->p_ccb;
+    p_ccb  = p_cdb->p_ccb;
 #if (defined(OSEE_HAS_CHECKS))
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
-    p_curr      = p_curr_ccb->p_curr;
+    p_curr = p_ccb->p_curr;
 
-  osEE_orti_trace_service_entry(p_curr_ccb, OSServiceId_SetEvent);
-  osEE_stack_monitoring(p_curr_cdb);
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_SetEvent);
+  osEE_stack_monitoring(p_cdb);
 
   /*  [SWS_Os_00093]: If interrupts are disabled/suspended by a Task/OsIsr and
    *    the Task/OsIsr calls any OS service (excluding the interrupt services)
@@ -2077,12 +2077,12 @@ FUNC(StatusType, OS_CODE)
    *    (see [12], section 13.1) or the "invalid value" of  the service.
    *    (SRS_Os_11009, SRS_Os_11013) */
 /* SetEvent is callable by Task and ISR2 */
-  if (osEE_check_disableint(p_curr_ccb)) {
+  if (osEE_check_disableint(p_ccb)) {
     ev = E_OS_DISABLEDINT;
   } else
   if ((p_curr->task_type > OSEE_TASK_TYPE_ISR2)
 #if (defined(OSEE_SERVICE_PROTECTION))
-    || (p_curr_ccb->os_context > OSEE_TASK_ISR2_CTX)
+    || (p_ccb->os_context > OSEE_TASK_ISR2_CTX)
 #endif /* OSEE_SERVICE_PROTECTION */
   )
   {
@@ -2090,12 +2090,12 @@ FUNC(StatusType, OS_CODE)
   } else
 #else
 #if (defined(OSEE_HAS_ORTI))
-  osEE_orti_trace_service_entry(p_curr_ccb, OSServiceId_SetEvent);
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_SetEvent);
 #endif /* OSEE_HAS_ORTI */
-  osEE_stack_monitoring(p_curr_cdb);
+  osEE_stack_monitoring(p_cdb);
 #endif /* OSEE_HAS_CHECKS */
 #else
-  osEE_stack_monitoring(p_curr_cdb);
+  osEE_stack_monitoring(p_cdb);
 #endif /* OSEE_HAS_CHECKS || OSEE_HAS_ERRORHOOK || OSEE_HAS_ORTI */
   if (!osEE_is_valid_tid(p_kdb, TaskID)) {
     ev = E_OS_ID;
@@ -2125,17 +2125,17 @@ FUNC(StatusType, OS_CODE)
       param;
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
-    osEE_set_service_id(p_curr_ccb, OSServiceId_SetEvent);
+    osEE_set_service_id(p_ccb, OSServiceId_SetEvent);
     param.num_param = TaskID;
-    osEE_set_api_param1(p_curr_ccb, param);
+    osEE_set_api_param1(p_ccb, param);
     param.num_param = Mask;
-    osEE_set_api_param2(p_curr_ccb, param);
-    osEE_call_error_hook(p_curr_ccb, ev);
+    osEE_set_api_param2(p_ccb, param);
+    osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
 #if (defined(OSEE_HAS_ORTI))
-  osEE_orti_trace_service_exit(p_curr_ccb, OSServiceId_SetEvent);
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_SetEvent);
 #endif /* OSEE_HAS_ORTI */
 
   return ev;
@@ -2151,12 +2151,8 @@ FUNC(StatusType, OS_CODE)
   VAR(StatusType, AUTOMATIC)  ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
     p_kdb       = osEE_get_kernel();
-#if (defined(OSEE_HAS_CHECKS)) || (defined(OSEE_HAS_ERRORHOOK)) ||\
-    (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb       = osEE_get_curr_core();
-#endif /* OSEE_HAS_CHECKS || OSEE_HAS_ERRORHOOK || OSEE_HAS_ORTI ||
-          OSEE_HAS_STACK_MONITORING */
 #if (defined(OSEE_HAS_CHECKS)) || (defined(OSEE_HAS_ERRORHOOK)) ||\
     (defined(OSEE_HAS_ORTI))
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
