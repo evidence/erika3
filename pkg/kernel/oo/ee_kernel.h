@@ -649,9 +649,11 @@ LOCAL_INLINE FUNC(void, OS_CODE_NO_RETURN)
 
   if (os_status == OSEE_KERNEL_STARTED) {
     osEE_idle_task_terminate(p_cdb->p_idle_task);
+  } else {
+    osEE_call_shutdown_hook(p_ccb, Error);
   }
   for (;;) {
-    ; /* Endless Loop (entered only if Kernel Not Started */
+    ; /* Endless Loop (entered only if Kernel Not Started) */
   }
 }
 #endif /* OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN */
