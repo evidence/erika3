@@ -1362,7 +1362,7 @@ FUNC(StatusType, OS_CODE)
     } else if (p_tdb->task_type == OSEE_TASK_TYPE_ISR2) {
       /* In case of ISR2 search the first stacked that is not an
          ISR2. it could be a basic/extended task or an IDLE task */
-      P2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA)
+      P2CONST(OsEE_SN, AUTOMATIC, OS_APPL_DATA)
         p_sn = p_ccb->p_stk_sn->p_next;
 
       while (p_sn != NULL) {
