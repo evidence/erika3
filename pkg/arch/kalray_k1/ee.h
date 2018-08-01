@@ -71,8 +71,8 @@
 #include "ee_api_k1.h"
 #endif /* !OSEE_SINGLECORE && OSEE_API_EXTENSION_ */
 
-#if (!defined(OS_EE_BUILD))
+#if (!defined(OS_EE_BUILD)) && (!defined(OSEE_API_DYNAMIC))
 #include "ee_declcfg.h"
-#endif /* !OS_EE_BUILD */
+#endif /* !OS_EE_BUILD && !OSEE_API_DYNAMIC */
 
 #endif /* !OSEE_H */

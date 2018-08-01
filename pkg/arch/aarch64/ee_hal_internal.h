@@ -54,7 +54,7 @@
 #ifndef OSEE_HAL_INTERNAL_H
 #define OSEE_HAL_INTERNAL_H
 
-#include "arch_override.h"
+#include "ee_arch_override.h"
 #include "ee_utils.h"
 #include "ee_platform_types.h"
 #include "ee_hal.h"

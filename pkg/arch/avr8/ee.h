@@ -65,8 +65,8 @@
 #include "ee_assert.h"
 #endif  /* OSEE_ASSERT */
 #include "ee_avr8_irq.h"
-#if (!defined(OS_EE_BUILD))
+#if (!defined(OS_EE_BUILD)) && (!defined(OSEE_API_DYNAMIC))
 #include "ee_declcfg.h"
-#endif /* !OS_EE_BUILD */
+#endif /* !OS_EE_BUILD  && !OSEE_API_DYNAMIC */
 
 #endif /* !OSEE_H */

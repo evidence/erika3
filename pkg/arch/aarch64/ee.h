@@ -59,8 +59,8 @@
 #include "ee_platform_types.h"
 #include "ee_hal.h"
 #include "ee_api.h"
-#if (!defined(OS_EE_BUILD))
+#if (!defined(OS_EE_BUILD)) && (!defined(OSEE_API_DYNAMIC))
 #include "ee_declcfg.h"
-#endif /* !OS_EE_BUILD */
+#endif /* !OS_EE_BUILD && !OSEE_API_DYNAMIC */
 
 #endif /* !OSEE_H */
