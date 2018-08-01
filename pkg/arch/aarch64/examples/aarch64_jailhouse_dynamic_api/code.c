@@ -68,7 +68,7 @@ enum OSEE_ASSERTIONS {
   OSEE_ASSERT_TASKS_ENDED,
   OSEE_ASSERT_DIM
 };
-OSEE_TYPEASSERTVALUE OSEE_assertions[OSEE_ASSERT_DIM];
+OSEE_TYPEASSERTVALUE osEE_assertions[OSEE_ASSERT_DIM];
 
 /* Final result */
 volatile OSEE_TYPEASSERTVALUE result;
@@ -171,7 +171,7 @@ void idle_hook(void) {
   printk("MAIN | After  | Interrupt Enabled? (0=No)<%d>, PMR:<%x>\n",
     osEE_hal_is_enabledIRQ(), osEE_gicc_read_pmr());
 
-  OSEE_assert(OSEE_ASSERT_INIT, OSEE_TRUE, OSEE_ASSERT_NIL);
+  osEE_assert(OSEE_ASSERT_INIT, OSEE_TRUE, OSEE_ASSERT_NIL);
 
   curr_sp = osEE_get_SP();
   printk("MAIN | BEFORE | TASK1 Activation Stack Pointer:<%p>\n", curr_sp);
@@ -185,13 +185,13 @@ void idle_hook(void) {
     OSEE_BREAK_POINT();
   }
 
-  OSEE_assert(
+  osEE_assert(
     OSEE_ASSERT_TASKS_ENDED,
     task1_ended && task2_ended && task3_ended,
     OSEE_ASSERT_TASK3_FIRED
   );
-  OSEE_assert_range(OSEE_ASSERT_FIN, OSEE_ASSERT_INIT, OSEE_ASSERT_TASKS_ENDED);
-  result = OSEE_assert_last();
+  osEE_assert_range(OSEE_ASSERT_FIN, OSEE_ASSERT_INIT, OSEE_ASSERT_TASKS_ENDED);
+  result = osEE_assert_last();
 
   if (result == OSEE_ASSERT_YES) {
     printk("MAIN | TEST SUCCESS!!!\n");
@@ -292,7 +292,7 @@ TASK(Task1)
 
   task1_fired++;
   if (task1_fired == 1) {
-    OSEE_assert(OSEE_ASSERT_TASK1_FIRED, OSEE_TRUE, OSEE_ASSERT_INIT);
+    osEE_assert(OSEE_ASSERT_TASK1_FIRED, OSEE_TRUE, OSEE_ASSERT_INIT);
   } else {
     isr2_armed = 1U;
   }
@@ -312,7 +312,7 @@ TASK(Task1)
   printk("TASK1 | After  | Stack Pointer:<%p>\n", osEE_get_SP());
 
   if (task1_fired == 1) {
-    OSEE_assert(OSEE_ASSERT_TASK1_POST, OSEE_TRUE, OSEE_ASSERT_TASK2_FIRED);
+    osEE_assert(OSEE_ASSERT_TASK1_POST, OSEE_TRUE, OSEE_ASSERT_TASK2_FIRED);
   }
 
   printk("TASK1 | Before | Post Semaphore for TASK2\n");
@@ -322,8 +322,8 @@ TASK(Task1)
   printk("TASK1 | After  | Stack Pointer:<%p>\n", osEE_get_SP());
 
   if (task1_fired == 1) {
-    OSEE_assert(OSEE_ASSERT_TASK1_ENDED, OSEE_TRUE, OSEE_ASSERT_TASK2_ENDED);
-    OSEE_assert(OSEE_ASSERT_TASK3_NOT_FIRED, task3_fired == 0, OSEE_ASSERT_TASK1_ENDED);
+    osEE_assert(OSEE_ASSERT_TASK1_ENDED, OSEE_TRUE, OSEE_ASSERT_TASK2_ENDED);
+    osEE_assert(OSEE_ASSERT_TASK3_NOT_FIRED, task3_fired == 0, OSEE_ASSERT_TASK1_ENDED);
   } else {
     printk("TASK1 | Before | Wait for release from ISR\n");
     printk("TASK1 | Before | Interrupt Enabled? (0=No)<%d>, PMR:<%x>\n",
@@ -358,7 +358,7 @@ TASK(Task2)
 
   task2_fired++;
   if (task2_fired == 1) {
-    OSEE_assert(OSEE_ASSERT_TASK2_FIRED, OSEE_TRUE, OSEE_ASSERT_TASK1_FIRED);
+    osEE_assert(OSEE_ASSERT_TASK2_FIRED, OSEE_TRUE, OSEE_ASSERT_TASK1_FIRED);
   }
 
   printk("TASK2 | Before | SCB TOS:<%p>\n", osEE_get_curr_task()->hdb.p_scb->p_tos);
@@ -370,7 +370,7 @@ TASK(Task2)
   printk("TASK2 | After  | Stack Pointer:<%p>\n", osEE_get_SP());
 
   if (task2_fired == 1) {
-    OSEE_assert(OSEE_ASSERT_TASK2_ENDED, OSEE_TRUE, OSEE_ASSERT_TASK1_POST);
+    osEE_assert(OSEE_ASSERT_TASK2_ENDED, OSEE_TRUE, OSEE_ASSERT_TASK1_POST);
   }
   printk("TASK2 | Before | Activating TASK3\n");
   ActivateTask(task3_id);
@@ -395,7 +395,7 @@ TASK(Task3) {
   printk("TASK3 | Before | Stack Pointer:<%p>\n", osEE_get_SP());
   ActivateTask(task4_id);
   if (task3_fired == 1) {
-    OSEE_assert(OSEE_ASSERT_TASK3_FIRED, OSEE_TRUE, OSEE_ASSERT_TASK3_NOT_FIRED);
+    osEE_assert(OSEE_ASSERT_TASK3_FIRED, OSEE_TRUE, OSEE_ASSERT_TASK3_NOT_FIRED);
   }
   ++task3_ended;
   printk("TASK3 Termination\n");

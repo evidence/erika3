@@ -162,9 +162,9 @@ extern "C" {
 
 #if (defined(ASSERT_LENGTH))
 /* the assertion array */
-extern OSEE_TYPEASSERTVALUE OSEE_assertions[ASSERT_LENGTH];
+extern OSEE_TYPEASSERTVALUE osEE_assertions[ASSERT_LENGTH];
 #else
-extern OSEE_TYPEASSERTVALUE OSEE_assertions[];
+extern OSEE_TYPEASSERTVALUE osEE_assertions[];
 #endif
 
 /* This is the simplest assertion that can be made:
@@ -177,7 +177,7 @@ extern OSEE_TYPEASSERTVALUE OSEE_assertions[];
  *
  * The return value is either YES or NO depending on the result.
  */
-OSEE_TYPEASSERTVALUE OSEE_assert(OSEE_TYPEASSERT id,
+OSEE_TYPEASSERTVALUE osEE_assert(OSEE_TYPEASSERT id,
            int test,
            OSEE_TYPEASSERT prev);
 
@@ -186,11 +186,11 @@ OSEE_TYPEASSERTVALUE OSEE_assert(OSEE_TYPEASSERT id,
  * the assertion "id" become YES if the prev1 or/and prev2
  * assertions are YES.
  */
-OSEE_TYPEASSERTVALUE OSEE_assert_or(OSEE_TYPEASSERT id,
+OSEE_TYPEASSERTVALUE osEE_assert_or(OSEE_TYPEASSERT id,
         OSEE_TYPEASSERT prev1,
         OSEE_TYPEASSERT prev2);
 
-OSEE_TYPEASSERTVALUE OSEE_assert_and(OSEE_TYPEASSERT id,
+OSEE_TYPEASSERTVALUE osEE_assert_and(OSEE_TYPEASSERT id,
          OSEE_TYPEASSERT prev1,
          OSEE_TYPEASSERT prev2);
 
@@ -200,7 +200,7 @@ OSEE_TYPEASSERTVALUE OSEE_assert_and(OSEE_TYPEASSERT id,
  * and end are YES.
  */
 
-OSEE_TYPEASSERTVALUE OSEE_assert_range(OSEE_TYPEASSERT id,
+OSEE_TYPEASSERTVALUE osEE_assert_range(OSEE_TYPEASSERT id,
            OSEE_TYPEASSERT begin,
            OSEE_TYPEASSERT end);
 
@@ -208,7 +208,7 @@ OSEE_TYPEASSERTVALUE OSEE_assert_range(OSEE_TYPEASSERT id,
  * included in all the examples with the purpose of setting a
  * breakpoint there.
  */
-OSEE_TYPEASSERTVALUE OSEE_assert_last(void);
+OSEE_TYPEASSERTVALUE osEE_assert_last(void);
 
 /* If MemMap.h support is enabled (i.e. because memory protection): use it */
 #ifdef OSEE_SUPPORT_MEMMAP_H
