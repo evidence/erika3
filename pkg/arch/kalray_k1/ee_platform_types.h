@@ -88,7 +88,7 @@ extern "C" {
 #if (!defined(OSEE_SINGLECORE)) &&\
   ((defined(OSEE_API_EXTENSION)) && defined(OSEE_API_DYNAMIC))
 #define OSEE_HAS_JOBS
-#endif /* !EE_SINGLECORE && (EE_API_EXTENSION && EE_API_DYNAMIC) */
+#endif /* !OSEE_SINGLECORE && (OSEE_API_EXTENSION && OSEE_API_DYNAMIC) */
 
 #if (!defined(OSEE_BOOL_TYPE))
 typedef enum {

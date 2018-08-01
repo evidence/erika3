@@ -258,13 +258,13 @@ osEE_cortex_m_systick_delay_us(
   VAR(OsEE_reg, AUTOMATIC) usDelay
 ) {
   CONST(OsEE_reg, AUTOMATIC) start = osEE_cortex_m_systick_get_value();
-#ifdef	EE_CPU_CLOCK
+#ifdef	OSEE_CPU_CLOCK
   VAR(OsEE_reg, AUTOMATIC) ticks =
-  OSEE_MICRO_TO_TICKS(usDelay, EE_CPU_CLOCK);
-#else	/* EE_CPU_CLOCK */
+  OSEE_MICRO_TO_TICKS(usDelay, OSEE_CPU_CLOCK);
+#else	/* OSEE_CPU_CLOCK */
   VAR(OsEE_reg, AUTOMATIC) ticks =
   OSEE_MICRO_TO_TICKS(usDelay, OSEE_CORTEX_X_DEFAULT_CPU_CLOCK);
-#endif	/* EE_CPU_CLOCK */
+#endif	/* OSEE_CPU_CLOCK */
   /* Bound the delay to max one whole run */
   if (
     (ticks == OSEE_CORTEX_X_SYSTICK_RELOAD_S) ||

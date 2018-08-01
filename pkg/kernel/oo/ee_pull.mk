@@ -68,7 +68,7 @@ OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/kernel/oo/ee_oo_kernel.c
 
 ifeq ($(call iseeopt, OSEE_API_DYNAMIC), yes)
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/kernel/oo/ee_oo_api_dynamic.c
-endif # EE_API_DYNAMIC
+endif # OSEE_API_DYNAMIC
 ifeq ($(call iseeopt, OSEE_API_EXTENSION), yes)
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/kernel/oo/ee_oo_api_extension.c
 endif # EE_API_EXTENSION

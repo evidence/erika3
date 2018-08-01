@@ -150,7 +150,7 @@ void _pe_init ( void ) {
 }
 
 /* Communication Hook Handler Body */
-#if (defined(EE_HAS_COMM_HOOK))
+#if (defined(OSEE_HAS_COMM_HOOK))
 
 void communication_hook_handler_body ( void ) {
   /* Put this in some kind of cycle */
@@ -162,7 +162,7 @@ void communication_hook_handler_body ( void ) {
     EE_k1_optimized_task_preemption_point();
   }
 }
-#endif /* EE_HAS_COMM_HOOK */
+#endif /* OSEE_HAS_COMM_HOOK */
 
 void __attribute__((section(TARGET_TEXT)))
   _do_master_pe(uint32_t old_sp __attribute__((unused)))

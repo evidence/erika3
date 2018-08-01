@@ -115,7 +115,7 @@ typedef enum {
   OSEE_KERNEL_SHUTDOWN
 } OsEE_kernel_status;
 
-#if (defined(OSEE_HAS_RESOURCES)) || (defined(OS_HAS_SPINLOCKS))
+#if (defined(OSEE_HAS_RESOURCES)) || (defined(OSEE_HAS_SPINLOCKS))
   /* [SWS_Os_00801] If Spinlocks and Resources are locked by a Task/ISR they
       have to be unlocked in strict LIFO order. ReleaseResource() shall return
       E_OS_NOFUNC if the unlock order is violated.
@@ -168,7 +168,7 @@ typedef OsEE_MDB OsEE_ResourceDB;
 typedef OsEE_MCB OsEE_SpinlockCB;
 typedef OsEE_MDB OsEE_SpinlockDB;
 #endif /* OSEE_HAS_SPINLOCKS */
-#endif /* OSEE_HAS_RESOURCES || OS_HAS_SPINLOCKS */
+#endif /* OSEE_HAS_RESOURCES || OSEE_HAS_SPINLOCKS */
 
 typedef struct {
   VAR(TaskActivation, TYPEDEF)                  current_num_of_act;

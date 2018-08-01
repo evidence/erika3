@@ -362,12 +362,12 @@ FUNC(StatusType, OS_CODE)
 
     osEE_call_startup_hook(p_ccb);
 
-#if (defined(OSEE_AS_OSAPPLICATIONS))
+#if (defined(OSEE_HAS_OSAPPLICATIONS))
 /* [SWS_Os_00582] The OS-Application-specific StartupHooks shall be called
     after the global StartupHook but only on the cores to which the
     OS-Application is bound. (SRS_Os_80006, SRS_Os_80008) */
 /* TODO: Implement this when OS-Applications will be implemented */
-#endif /* OSEE_AS_OSAPPLICATIONS */
+#endif /* OSEE_HAS_OSAPPLICATIONS */
 #if (defined(OSEE_HAS_AUTOSTART_TRIGGER))
     {
       VAR(MemSize, AUTOMATIC) i;
@@ -1285,7 +1285,7 @@ FUNC(StatusType, OS_CODE)
     VAR(OsEE_api_param, AUTOMATIC)
       param;
     osEE_set_service_id(p_ccb, OSServiceId_ShutdownOS);
-    param.num_param = Error;
+    param.num_param = (ObjectIDType)Error;
     osEE_set_api_param1(p_ccb, param);
     osEE_call_error_hook(p_ccb, ev);
   }
@@ -3548,7 +3548,7 @@ FUNC(void, OS_CODE)
 #ifdef OSEE_HAS_OSAPPLICATIONS
   /* [Os_SWS_00716]: If ShutdownAllCores is called from non trusted code the call
       shall be ignored. (SRS_Os_80007) */
-#endif /* EE_AS_OSAPPLICATIONS__ */
+#endif /* EE_HAS_OSAPPLICATIONS__ */
   if ((os_status == OSEE_KERNEL_STARTED) || (os_status == OSEE_KERNEL_STARTING))
   {
     VAR(CoreMaskType, AUTOMATIC) i;

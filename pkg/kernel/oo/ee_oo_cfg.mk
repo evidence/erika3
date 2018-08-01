@@ -52,11 +52,11 @@ ifeq	($(call iseeopt, OS_EE_KERNEL_OSEK), yes)
 
 ifeq	($(call iseeopt, OSEE_API_DYNAMIC), yes)
 EE_SRCS += ee_oo_api_dynamic.c
-endif	# EE_API_DYNAMIC
+endif	# OSEE_API_DYNAMIC
 
 ifeq ($(call iseeopt, OSEE_API_EXTENSION), yes)
 EE_SRCS += ee_oo_api_extension.c
-endif	# EE_API_EXTENSION
+endif	# OSEE_API_EXTENSION
 
 EE_SRCS += ee_oo_api_osek.c
 EE_SRCS += ee_oo_sched_entry_points.c

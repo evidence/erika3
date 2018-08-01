@@ -109,12 +109,12 @@
  *
  *  Types that have to be defined in types.h
  *
- *  - \c EE_TYPEASSERT is the type used for the assertion index.
+ *  - \c OSEE_TYPEASSERT is the type used for the assertion index.
  *    MUST BE SIGNED!!!
  *
- *  - \c EE_TYPEASSERTVALUE contains at least 3 values:
- *    \c 0, \c EE_ASSERT_NO, \c EE_ASSERT_YES
- *    The type \c EE_INT8 should work for most architectures.
+ *  - \c OSEE_TYPEASSERTVALUE contains at least 3 values:
+ *    \c 0, \c OSEE_ASSERT_NO, \c OSEE_ASSERT_YES
+ *    The type \c OSEE_INT8 should work for most architectures.
  *
  *  \note  TO BE DOCUMENTED!!!
  *
@@ -133,38 +133,38 @@ extern "C" {
 
 
 /* types.h */
-#ifndef EE_TYPEASSERT
-#define EE_TYPEASSERT OsEE_reg
+#ifndef OSEE_TYPEASSERT
+#define OSEE_TYPEASSERT OsEE_reg
 #endif
 
-#ifndef EE_TYPEASSERTVALUE
-#define EE_TYPEASSERTVALUE uint8_t
+#ifndef OSEE_TYPEASSERTVALUE
+#define OSEE_TYPEASSERTVALUE uint8_t
 #endif
 
 
 
 
 /* this is an invalid value for the index */
-#define EE_ASSERT_NIL      ((EE_TYPEASSERT)(-1))
+#define OSEE_ASSERT_NIL      ((OSEE_TYPEASSERT)(-1))
 
 /* these are the results of each assertion test */
-#define EE_ASSERT_INITVALUE   ((EE_TYPEASSERTVALUE)0)
-#define EE_ASSERT_YES         ((EE_TYPEASSERTVALUE)1)
-#define EE_ASSERT_NO          ((EE_TYPEASSERTVALUE)2)
-#define EE_ASSERT_ALREADYUSED ((EE_TYPEASSERTVALUE)3)
+#define OSEE_ASSERT_INITVALUE   ((OSEE_TYPEASSERTVALUE)0)
+#define OSEE_ASSERT_YES         ((OSEE_TYPEASSERTVALUE)1)
+#define OSEE_ASSERT_NO          ((OSEE_TYPEASSERTVALUE)2)
+#define OSEE_ASSERT_ALREADYUSED ((OSEE_TYPEASSERTVALUE)3)
 
 /* If MemMap.h support is enabled (i.e. because memory protection): use it */
-#ifdef EE_SUPPORT_MEMMAP_H
+#ifdef OSEE_SUPPORT_MEMMAP_H
 #define API_START_SEC_VAR_NOINIT
 #define API_START_SEC_CODE
 #include "MemMap.h"
-#endif /* EE_SUPPORT_MEMMAP_H */
+#endif /* OSEE_SUPPORT_MEMMAP_H */
 
 #if (defined(ASSERT_LENGTH))
 /* the assertion array */
-extern EE_TYPEASSERTVALUE EE_assertions[ASSERT_LENGTH];
+extern OSEE_TYPEASSERTVALUE OSEE_assertions[ASSERT_LENGTH];
 #else
-extern EE_TYPEASSERTVALUE EE_assertions[];
+extern OSEE_TYPEASSERTVALUE OSEE_assertions[];
 #endif
 
 /* This is the simplest assertion that can be made:
@@ -173,32 +173,26 @@ extern EE_TYPEASSERTVALUE EE_assertions[];
  * assertion is YES.
  *
  * If no PREVious assertion has to be checked, the prev parameter
- * should be EE_ASSERT_NIL.
+ * should be OSEE_ASSERT_NIL.
  *
  * The return value is either YES or NO depending on the result.
  */
-#ifndef __PRIVATE_ASSERT__
-EE_TYPEASSERTVALUE EE_assert(EE_TYPEASSERT id,
+OSEE_TYPEASSERTVALUE OSEE_assert(OSEE_TYPEASSERT id,
            int test,
-           EE_TYPEASSERT prev);
-#endif
+           OSEE_TYPEASSERT prev);
 
 /* These are a simple or/and assertion:
  *
  * the assertion "id" become YES if the prev1 or/and prev2
  * assertions are YES.
  */
-#ifndef __PRIVATE_ASSERT_OR__
-EE_TYPEASSERTVALUE EE_assert_or(EE_TYPEASSERT id,
-        EE_TYPEASSERT prev1,
-        EE_TYPEASSERT prev2);
-#endif
+OSEE_TYPEASSERTVALUE OSEE_assert_or(OSEE_TYPEASSERT id,
+        OSEE_TYPEASSERT prev1,
+        OSEE_TYPEASSERT prev2);
 
-#ifndef __PRIVATE_ASSERT_AND__
-EE_TYPEASSERTVALUE EE_assert_and(EE_TYPEASSERT id,
-         EE_TYPEASSERT prev1,
-         EE_TYPEASSERT prev2);
-#endif
+OSEE_TYPEASSERTVALUE OSEE_assert_and(OSEE_TYPEASSERT id,
+         OSEE_TYPEASSERT prev1,
+         OSEE_TYPEASSERT prev2);
 
 /* This is a range assertion, typically used as last assertion.
  *
@@ -206,26 +200,22 @@ EE_TYPEASSERTVALUE EE_assert_and(EE_TYPEASSERT id,
  * and end are YES.
  */
 
-#ifndef __PRIVATE_ASSERT_RANGE__
-EE_TYPEASSERTVALUE EE_assert_range(EE_TYPEASSERT id,
-           EE_TYPEASSERT begin,
-           EE_TYPEASSERT end);
-#endif
+OSEE_TYPEASSERTVALUE OSEE_assert_range(OSEE_TYPEASSERT id,
+           OSEE_TYPEASSERT begin,
+           OSEE_TYPEASSERT end);
 
 /* This is the last assertion. It simply does nothing, and must be
  * included in all the examples with the purpose of setting a
  * breakpoint there.
  */
-#ifndef __PRIVATE_ASSERT_LAST__
-EE_TYPEASSERTVALUE EE_assert_last(void);
-#endif
+OSEE_TYPEASSERTVALUE OSEE_assert_last(void);
 
 /* If MemMap.h support is enabled (i.e. because memory protection): use it */
-#ifdef EE_SUPPORT_MEMMAP_H
+#ifdef OSEE_SUPPORT_MEMMAP_H
 #define API_STOP_SEC_VAR_NOINIT
 #define API_STOP_SEC_CODE
 #include "MemMap.h"
-#endif /* EE_SUPPORT_MEMMAP_H */
+#endif /* OSEE_SUPPORT_MEMMAP_H */
 
 #if (defined(__cplusplus))
 }

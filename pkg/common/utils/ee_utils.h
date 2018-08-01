@@ -92,7 +92,7 @@ extern "C" {
 #if (!defined(OSEE_RUN_ASSERT))
 #if (defined(OSEE_ENABLE_RUN_ASSERT))
 /* TODO: Add some kind of assertion libs */
-#if (defined(__STDC_VERSION_)) && (__STDC_VERSION__ >= 199901L)
+#if (defined(__STDC_VERSION__)) && (__STDC_VERSION__ >= 199901L)
   /* C99 */
 #define OSEE_RUN_ASSERT(cond,MSG) \
   (void)OSEE_S_J(OSEE_S_J(OSEE_S_J(OSEE_S_J(OSEE_S_J(OSEE_S_J(__FILE__,"-"),

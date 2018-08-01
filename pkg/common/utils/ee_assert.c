@@ -51,110 +51,100 @@
  */
 #include "ee_assert.h"
 
-#ifndef __PRIVATE_ASSERT__
-EE_TYPEASSERTVALUE EE_assert(EE_TYPEASSERT id,
+OSEE_TYPEASSERTVALUE OSEE_assert(OSEE_TYPEASSERT id,
            int test,
-           EE_TYPEASSERT prev)
+           OSEE_TYPEASSERT prev)
 {
   /* I can use id into an assertion only once */
-  if (EE_assertions[id] != EE_ASSERT_INITVALUE) {
-    EE_assertions[id] = EE_ASSERT_ALREADYUSED;
-    return EE_ASSERT_ALREADYUSED;
+  if (OSEE_assertions[id] != OSEE_ASSERT_INITVALUE) {
+    OSEE_assertions[id] = OSEE_ASSERT_ALREADYUSED;
+    return OSEE_ASSERT_ALREADYUSED;
   }
 
   if (test) {
-    if (prev != EE_ASSERT_NIL) {
-      if (EE_assertions[prev] == EE_ASSERT_YES) {
+    if (prev != OSEE_ASSERT_NIL) {
+      if (OSEE_assertions[prev] == OSEE_ASSERT_YES) {
   /* test is true and the prev assertion is YES */
-  EE_assertions[id] = EE_ASSERT_YES;
-  return EE_ASSERT_YES;
+  OSEE_assertions[id] = OSEE_ASSERT_YES;
+  return OSEE_ASSERT_YES;
       }
       else {
   /* test is true but the prev assertion is != YES */
-  EE_assertions[id] = EE_ASSERT_NO;
-  return EE_ASSERT_NO;
+  OSEE_assertions[id] = OSEE_ASSERT_NO;
+  return OSEE_ASSERT_NO;
       }
     } else {
-      /* test is true and prev is EE_ASSERT_NIL */
-      EE_assertions[id] = EE_ASSERT_YES;
-      return EE_ASSERT_YES;
+      /* test is true and prev is OSEE_ASSERT_NIL */
+      OSEE_assertions[id] = OSEE_ASSERT_YES;
+      return OSEE_ASSERT_YES;
     }
   } else {
     /* test is false */
-    EE_assertions[id] = EE_ASSERT_NO;
-    return EE_ASSERT_NO;
+    OSEE_assertions[id] = OSEE_ASSERT_NO;
+    return OSEE_ASSERT_NO;
   }
 }
-#endif
 
-#ifndef __PRIVATE_ASSERT_OR__
-EE_TYPEASSERTVALUE EE_assert_or(EE_TYPEASSERT id,
-        EE_TYPEASSERT prev1,
-        EE_TYPEASSERT prev2)
+OSEE_TYPEASSERTVALUE OSEE_assert_or(OSEE_TYPEASSERT id,
+        OSEE_TYPEASSERT prev1,
+        OSEE_TYPEASSERT prev2)
 {
   /* I can use id into an assertion only once */
-  if (EE_assertions[id] != EE_ASSERT_INITVALUE) {
-    EE_assertions[id] = EE_ASSERT_ALREADYUSED;
-    return EE_ASSERT_ALREADYUSED;
+  if (OSEE_assertions[id] != OSEE_ASSERT_INITVALUE) {
+    OSEE_assertions[id] = OSEE_ASSERT_ALREADYUSED;
+    return OSEE_ASSERT_ALREADYUSED;
   }
 
-  if ((EE_assertions[prev1] == EE_ASSERT_YES) ||
-      (EE_assertions[prev2] == EE_ASSERT_YES)) {
-    EE_assertions[id] = EE_ASSERT_YES;
-    return EE_ASSERT_YES;
+  if ((OSEE_assertions[prev1] == OSEE_ASSERT_YES) ||
+      (OSEE_assertions[prev2] == OSEE_ASSERT_YES)) {
+    OSEE_assertions[id] = OSEE_ASSERT_YES;
+    return OSEE_ASSERT_YES;
   }
   else {
-    EE_assertions[id] = EE_ASSERT_NO;
-    return EE_ASSERT_NO;
+    OSEE_assertions[id] = OSEE_ASSERT_NO;
+    return OSEE_ASSERT_NO;
   }
 }
-#endif
 
-#ifndef __PRIVATE_ASSERT_AND__
-EE_TYPEASSERTVALUE EE_assert_and(EE_TYPEASSERT id,
-         EE_TYPEASSERT prev1,
-         EE_TYPEASSERT prev2)
+OSEE_TYPEASSERTVALUE OSEE_assert_and(OSEE_TYPEASSERT id,
+         OSEE_TYPEASSERT prev1,
+         OSEE_TYPEASSERT prev2)
 {
   /* I can use id into an assertion only once */
-  if (EE_assertions[id] != EE_ASSERT_INITVALUE) {
-    EE_assertions[id] = EE_ASSERT_ALREADYUSED;
-    return EE_ASSERT_ALREADYUSED;
+  if (OSEE_assertions[id] != OSEE_ASSERT_INITVALUE) {
+    OSEE_assertions[id] = OSEE_ASSERT_ALREADYUSED;
+    return OSEE_ASSERT_ALREADYUSED;
   }
 
-  if ((EE_assertions[prev1] == EE_ASSERT_YES) &&
-      (EE_assertions[prev2] == EE_ASSERT_YES)) {
-    EE_assertions[id] = EE_ASSERT_YES;
-    return EE_ASSERT_YES;
+  if ((OSEE_assertions[prev1] == OSEE_ASSERT_YES) &&
+      (OSEE_assertions[prev2] == OSEE_ASSERT_YES)) {
+    OSEE_assertions[id] = OSEE_ASSERT_YES;
+    return OSEE_ASSERT_YES;
   }
   else {
-    EE_assertions[id] = EE_ASSERT_NO;
-    return EE_ASSERT_NO;
+    OSEE_assertions[id] = OSEE_ASSERT_NO;
+    return OSEE_ASSERT_NO;
   }
 }
-#endif
 
-#ifndef __PRIVATE_ASSERT_RANGE__
-EE_TYPEASSERTVALUE EE_assert_range(EE_TYPEASSERT id,
-           EE_TYPEASSERT begin,
-           EE_TYPEASSERT end)
+OSEE_TYPEASSERTVALUE OSEE_assert_range(OSEE_TYPEASSERT id,
+           OSEE_TYPEASSERT begin,
+           OSEE_TYPEASSERT end)
 {
-  EE_TYPEASSERT i;
+  OSEE_TYPEASSERT i;
 
   for (i=begin; i<=end; i++) {
-    if (EE_assertions[i] != EE_ASSERT_YES) {
-      EE_assertions[id] = EE_ASSERT_NO;
-      return EE_ASSERT_NO;
+    if (OSEE_assertions[i] != OSEE_ASSERT_YES) {
+      OSEE_assertions[id] = OSEE_ASSERT_NO;
+      return OSEE_ASSERT_NO;
     }
   }
 
-  EE_assertions[id] = EE_ASSERT_YES;
-  return EE_ASSERT_YES;
+  OSEE_assertions[id] = OSEE_ASSERT_YES;
+  return OSEE_ASSERT_YES;
 }
-#endif
 
-#ifndef __PRIVATE_ASSERT_ALL__
-EE_TYPEASSERTVALUE EE_assert_last(void)
+OSEE_TYPEASSERTVALUE OSEE_assert_last(void)
 {
-  return EE_assertions[0];
+  return OSEE_assertions[0];
 }
-#endif

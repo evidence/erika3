@@ -170,11 +170,11 @@ FUNC(void, OS_CODE) osEE_stack_monitoring
 )
 {
   if (osEE_hal_check_stack_overflow(p_cdb)) {
-#if (defined(OSEE_HAS_PROTECTION_HOOK))
+#if (defined(OSEE_HAS_PROTECTIONHOOK))
   /* TODO */
 #else
   osEE_shutdown_os(p_cdb, E_OS_STACKFAULT);
-#endif /*  OSEE_HAS_PROTECTION_HOOK */
+#endif /*  OSEE_HAS_PROTECTIONHOOK */
   }
 }
 #endif /* OSEE_HAS_STACK_MONITORING */

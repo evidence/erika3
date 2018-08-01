@@ -54,19 +54,19 @@
 #define JOB_TASK_STACK_SIZE 2048
 
 #define ASSERT_LENGTH 70U
-EE_TYPEASSERTVALUE EE_assertions[ASSERT_LENGTH];
+OSEE_TYPEASSERTVALUE OSEE_assertions[ASSERT_LENGTH];
 
 
 #define ASSERT_LENGTH 70U
 OsEE_spin_lock     assertions_lock;
 
-int volatile assert_count = EE_ASSERT_NIL;
+int volatile assert_count = OSEE_ASSERT_NIL;
 void test_assert(int test)
 {
   register int next_assert;
   osEE_hal_spin_lock(&assertions_lock);
-  next_assert = (assert_count == EE_ASSERT_NIL) ? 1 : assert_count + 1;
-  EE_assert(next_assert, test, EE_ASSERT_NIL);
+  next_assert = (assert_count == OSEE_ASSERT_NIL) ? 1 : assert_count + 1;
+  OSEE_assert(next_assert, test, OSEE_ASSERT_NIL);
   assert_count = next_assert;
   osEE_hal_spin_unlock(&assertions_lock);
 }
@@ -193,16 +193,16 @@ int main ( void ) {
     }
   }
 
-  EE_assert_range(0, 1, assert_count);
+  OSEE_assert_range(0, 1, assert_count);
 
-  if ( EE_assert_last() == EE_ASSERT_YES ) {
+  if ( OSEE_assert_last() == OSEE_ASSERT_YES ) {
     printf("Job Test -- Passed\n");
   } else {
     printf("Job Test -- FAILED !!!\n");
   }
 
   /*
-  while ( EE_TRUE ) {
+  while ( OSEE_TRUE ) {
     ;
   }
   */
