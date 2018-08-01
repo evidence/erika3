@@ -46,7 +46,6 @@
  *****************************************************************************/
 /*#define UART_SET_BAUDRATE*/ /* Enable this for baudrate set in DLL, DLM */
 
-#define UART_MAX_NUMBER (4)
 
 /* Devices base addresses */
 #define UART_A_BASE	(uint64_t*)(0x70006000)
@@ -92,7 +91,6 @@
 #define UART_DIV_9600	(156)
 #define UART_DIV_38400	(39)
 #define UART_DIV_115200	(13)
-#define UART_DIV_VALUES	(3)
 
 #if 0 
 #define UART1_CLOCK_REGISTER  (0x60006000 + 0x32c)
@@ -127,7 +125,7 @@ static void UART_ISR_UART_D(void);
 /******************************************************************************
  * Internal structures
  *****************************************************************************/
-static UART_dev_t devices[UART_MAX_NUMBER] = {
+static UART_dev_t devices[MAX_UART_ID] = {
 				/* UART A */
 				{
 					.base = UART_A_BASE,
@@ -163,7 +161,7 @@ static UART_dev_t devices[UART_MAX_NUMBER] = {
 
 #ifdef UART_SET_BAUDRATE
 /* Divider map */
-static uint32_t divider_values[UART_DIV_VALUES] = {UART_DIV_9600, UART_DIV_38400,
+static uint32_t divider_values[MAX_UART_BAUD] = {UART_DIV_9600, UART_DIV_38400,
 							 UART_DIV_115200};
 #endif
 
@@ -179,7 +177,6 @@ static void UART_ISR_UART_A(void)
 static void UART_ISR_UART_B(void)
 {
 	uart_read(UART_B);
-
 }
 
 static void UART_ISR_UART_C(void)
@@ -190,7 +187,6 @@ static void UART_ISR_UART_C(void)
 static void UART_ISR_UART_D(void)
 {
 	uart_read(UART_D);
-
 }
 
 
@@ -205,7 +201,7 @@ static void uart_write_char(uint64_t *base, char c)
 }
 
 static void uart_read( UART_id_t id ){
-	if( id >= 0 && id < UART_MAX_NUMBER ){
+	if( id >= 0 && id < MAX_UART_ID ){
 		/* getting chars */
 		UART_dev_t *device = devices + id;
 		while((osEE_mmio_read32((uint64_t) device->base + UART_LSR) & UART_RX_DATA) ){
@@ -220,7 +216,6 @@ static void uart_read( UART_id_t id ){
 	}
 }
 
-
 /******************************************************************************
  * API
  *****************************************************************************/
@@ -231,16 +226,18 @@ uint8_t UART_init( UART_id_t id,
 				UART_baudrate_t baudrate)
 {
 	uint8_t result = 0;
-	if((id >= 0) && (id < UART_MAX_NUMBER)){
+	if((id >= 0) && (id < MAX_UART_ID)){
 		UART_dev_t *dev = devices +id;
 		uint64_t base = (uint64_t) dev->base;
 #ifdef UART_SET_BAUDRATE
 		uint32_t divider = divider_values[UART_BAUD_9600];
 #endif
 
-		/*Setting MCR in order to disable loopback mode*/
-  		osEE_mmio_write32(base + UART_MCR, 0);
- 		/*Setting FCR in order to enable FIFO mode and disable DMA mode*/
+		/* MMU setup for device access*/
+		map_range((void*) base, PAGE_SIZE, MAP_UNCACHED);
+		/*Setting MCR in order to disable loopback mode*/;
+		osEE_mmio_write32(base + UART_MCR, 0);
+		/*Setting FCR in order to enable FIFO mode and disable DMA mode*/
 		osEE_mmio_write32(base + UART_FCR, UART_FIFO_EN);
   		/* Enabling the interrut on Rx data */
   		osEE_mmio_write32(base + UART_LCR, 0);
@@ -249,7 +246,7 @@ uint8_t UART_init( UART_id_t id,
   		osEE_mmio_write32(base + UART_RX_FIFO_CFG, UART_RX_TRIG_VAL | UART_RX_TRIG_ENBL);
 
 #ifdef UART_SET_BAUDRATE		
-		if( baudrate >= 0 || baudrate < UART_DIV_VALUES)
+		if( baudrate >= 0 || baudrate < MAX_UART_BAUD)
 			/*setting default baudrate */
 			divider = divider_values[baudrate];
 
@@ -277,7 +274,7 @@ uint8_t UART_init( UART_id_t id,
 uint32_t UART_write( UART_id_t id, const void * buffer, uint32_t size)
 {
 	uint32_t written = 0;
-	if(( id >= 0 && id < UART_MAX_NUMBER) && (buffer != NULL) && (size > 0)){
+	if(( id >= 0 && id < MAX_UART_ID) && (buffer != NULL) && (size > 0)){
 		UART_dev_t *device = devices + id;
 		uint64_t *base = device->base;
 		uint32_t to_be_written = size;
@@ -296,11 +293,10 @@ uint32_t UART_write( UART_id_t id, const void * buffer, uint32_t size)
 
 void UART_set_callback( UART_id_t id, UART_callback_t rx_callback)
 {
-	if(( id >= 0 && id < UART_MAX_NUMBER) && (rx_callback != NULL)){
+	if(( id >= 0 && id < MAX_UART_ID) && (rx_callback != NULL)){
 		UART_dev_t *device = devices + id;
                 device->callback = rx_callback;
 	}
 	return;
 }
-
 

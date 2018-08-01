@@ -77,7 +77,7 @@ int main(void){
   /* Tie ISR2 With IRQ */
   SetISR2Source(isr_clock_id, OSEE_GTIMER_IRQ);
 
-  /* 1. Setup the UART */
+  /* Setup the UART */
   uint8_t result = UART_init(UART_C, UART_BAUD_38400);
   if(result > 0){
     printk("UART driver init OK\n");
