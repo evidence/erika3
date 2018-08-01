@@ -46,7 +46,7 @@
 <evidence_example version="1" ID="aarch64_jailhouse_tegraX1_uart">
 
  <category>aarch64/Jailhouse/TegraX1</category>
- <title>UART demo</title>
+ <title>UART demo  for Tegra X1</title>
 
  <small_descr>
   Test a small UART driver.
@@ -62,6 +62,7 @@
   <file     name="uart-driver.h"/>
   <!-- <file     name="appl.oil"/> -->
   <file     name="conf.oil"/>
+  <file     name="README.md"/>
   <!-- <file     name="os.oil"/> -->
   <!-- <file     name="makefile"/> -->
   <!-- <file     name="rtd.properties"/> -->
