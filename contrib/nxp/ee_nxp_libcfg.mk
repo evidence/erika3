@@ -142,7 +142,9 @@ EE_SRCS_S32_SDK += platform/drivers/src/lpi2c/lpi2c_driver.c
 EE_SRCS_S32_SDK += platform/drivers/src/lpi2c/lpi2c_hw_access.c
 EE_SRCS_S32_SDK += platform/drivers/src/lpi2c/lpi2c_irq.c
 EE_SRCS_S32_SDK += platform/drivers/src/lpit/lpit_driver.c
+ifneq	($(call islibopt, OS_EE_LIB_S32_SDK_0_8_6_EAR), yes)
 EE_SRCS_S32_SDK += platform/drivers/src/lpit/lpit_hw_access.c
+endif	# OS_EE_LIB_S32_SDK_0_8_6_EAR
 EE_SRCS_S32_SDK += platform/drivers/src/lpspi/lpspi_hw_access.c
 EE_SRCS_S32_SDK += platform/drivers/src/lpspi/lpspi_irq.c
 EE_SRCS_S32_SDK += platform/drivers/src/lpspi/lpspi_master_driver.c

@@ -64,7 +64,11 @@ ifndef	S32_SDK_FILES
 ifeq	($(call islibopt, OS_EE_LIB_S32_SDK_0_8_4_EAR), yes)
 export	S32_SDK_FILES = C:/NXP/S32DS_ARM_v2.0/S32DS/S32SDK_S32K14x_EAR_0.8.4
 else	# OS_EE_LIB_S32_SDK_0_8_4_EAR
+ifeq	($(call islibopt, OS_EE_LIB_S32_SDK_0_8_6_EAR), yes)
+export	S32_SDK_FILES = C:/NXP/S32DS_ARM_v2.0/S32DS/S32SDK_S32K14x_EAR_0.8.6
+else	# OS_EE_LIB_S32_SDK_0_8_6_EAR
 export	S32_SDK_FILES = C:/NXP/S32DS_ARM_v2.0/S32DS/S32SDK_S32K14x_EAR_0.8.4
+endif	# OS_EE_LIB_S32_SDK_0_8_6_EAR
 endif	# OS_EE_LIB_S32_SDK_0_8_4_EAR
 endif	# S32_SDK_FILES
 
@@ -149,7 +153,7 @@ endif	# OS_EE_CORTEX_M_MCU == S32K148
 ##
 ## Linker Script
 ##
-
+ifndef	OS_EE_LINKER_SCRIPT
 ifeq	($(findstring S32K144, $(OS_EE_CORTEX_M_MCU)), S32K144)
 ifeq	($(call iseeopt, OS_EE_ARCH_CORTEX_M_RAM), yes)
 OS_EE_LINKER_SCRIPT := \
@@ -169,6 +173,7 @@ OS_EE_LINKER_SCRIPT := \
 $(S32_SDK_ROOT)/platform/devices/S32K148/linker/gcc/S32K148_256_flash.ld
 endif
 endif	# OS_EE_CORTEX_M_MCU == S32K148
+endif	# OS_EE_LINKER_SCRIPT
 
 ifneq	($(if $(filter OS_EE_BUILD,$(OS_EE_OPT)),yes,), yes)
 ifeq	($(call islibopt, OS_EE_LIB_S32_SDK_SA), yes)
