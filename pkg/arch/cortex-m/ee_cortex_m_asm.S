@@ -320,7 +320,6 @@ osEE_hal_terminate_ctx:
 	/* This is a NORETURN Function */
 	.size	osEE_hal_terminate_ctx, .-osEE_hal_terminate_ctx
 
-#if	1	/* [GS]: New Context-Switch using PendSV. */
 /*
 FUNC(void, OS_CODE)
 	osEE_cortex_m_restore_ctx
@@ -340,7 +339,6 @@ osEE_cortex_m_restore_ctx:
 	osEE_hal_restore_vcontext_m R1
 	BX	LR
 	.size	osEE_cortex_m_restore_ctx, .-osEE_cortex_m_restore_ctx
-#endif	/* 1 - [GS]: New Context-Switch using PendSV. */
 
 /******************************************************************************
  *				END
