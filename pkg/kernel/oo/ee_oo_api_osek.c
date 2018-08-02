@@ -1972,9 +1972,9 @@ FUNC(StatusType, OS_CODE)
     ev = E_OS_DISABLEDINT;
   } else
   if ((p_curr->task_type > OSEE_TASK_TYPE_EXTENDED)
-#if (defined(OSEE_SERVICE_PROTECTION))
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
     || (p_ccb->os_context > OSEE_TASK_CTX)
-#endif /* OSEE_SERVICE_PROTECTION */
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
   )
   {
     ev = E_OS_CALLEVEL;
@@ -2081,9 +2081,9 @@ FUNC(StatusType, OS_CODE)
     ev = E_OS_DISABLEDINT;
   } else
   if ((p_curr->task_type > OSEE_TASK_TYPE_ISR2)
-#if (defined(OSEE_SERVICE_PROTECTION))
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
     || (p_ccb->os_context > OSEE_TASK_ISR2_CTX)
-#endif /* OSEE_SERVICE_PROTECTION */
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
   )
   {
     ev = E_OS_CALLEVEL;
@@ -2157,10 +2157,10 @@ FUNC(StatusType, OS_CODE)
     (defined(OSEE_HAS_ORTI))
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb       = p_cdb->p_ccb;
-#if (defined(OSEE_SERVICE_PROTECTION))
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
   CONST(OsEE_os_context, AUTOMATIC)
     os_context  = p_ccb->os_context;
-#endif /* OSEE_SERVICE_PROTECTION */
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
 #if (defined(OSEE_HAS_CHECKS))
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
     p_curr      = p_ccb->p_curr;
@@ -2182,11 +2182,11 @@ FUNC(StatusType, OS_CODE)
     ev = E_OS_DISABLEDINT;
   } else
   if ((p_curr->task_type > OSEE_TASK_TYPE_ISR2)
-#if (defined(OSEE_SERVICE_PROTECTION))
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
     || ((os_context > OSEE_ERRORHOOK_CTX) &&
         (os_context != OSEE_PRETASKHOOK_CTX) &&
         (os_context != OSEE_POSTTASKHOOK_CTX))
-#endif /* OSEE_SERVICE_PROTECTION */
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
   )
   {
     ev = E_OS_CALLEVEL;
@@ -2288,9 +2288,9 @@ FUNC(StatusType, OS_CODE)
     ev = E_OS_DISABLEDINT;
   } else
   if ((p_curr->task_type >= OSEE_TASK_TYPE_ISR2)
-#if (defined(OSEE_SERVICE_PROTECTION))
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
       || (p_ccb->os_context > OSEE_TASK_CTX)
-#endif /* OSEE_SERVICE_PROTECTION */
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
   )
   {
     ev = E_OS_CALLEVEL;
