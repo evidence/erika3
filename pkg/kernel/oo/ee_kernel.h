@@ -493,33 +493,63 @@ LOCAL_INLINE FUNC(void, OS_CODE)
 }
 
 LOCAL_INLINE FUNC(void, OS_CODE)
-  osEE_set_api_param1
+  osEE_set_api_param1_num_param
 (
   P2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb,
-  VAR(OsEE_api_param, AUTOMATIC)            api_param
+  CONST(ObjectIDType, AUTOMATIC)            num_param
 )
 {
-  p_ccb->api_param1 = api_param;
+  p_ccb->api_param1.num_param = num_param;
 }
 
 LOCAL_INLINE FUNC(void, OS_CODE)
-  osEE_set_api_param2
+  osEE_set_api_param1_p_param
 (
   P2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb,
-  VAR(OsEE_api_param, AUTOMATIC)            api_param
+  CONST(OsEE_addr, AUTOMATIC)               p_param
 )
 {
-  p_ccb->api_param2 = api_param;
+  p_ccb->api_param1.p_param = p_param;
 }
 
 LOCAL_INLINE FUNC(void, OS_CODE)
-  osEE_set_api_param3
+  osEE_set_api_param2_num_param
 (
   P2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb,
-  VAR(OsEE_api_param, AUTOMATIC)            api_param
+  CONST(ObjectIDType, AUTOMATIC)            num_param
 )
 {
-  p_ccb->api_param3 = api_param;
+  p_ccb->api_param2.num_param = num_param;
+}
+
+LOCAL_INLINE FUNC(void, OS_CODE)
+  osEE_set_api_param2_p_param
+(
+  P2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb,
+  CONST(OsEE_addr, AUTOMATIC)               p_param
+)
+{
+  p_ccb->api_param2.p_param = p_param;
+}
+
+LOCAL_INLINE FUNC(void, OS_CODE)
+  osEE_set_api_param3_num_param
+(
+  P2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb,
+  CONST(ObjectIDType, AUTOMATIC)            num_param
+)
+{
+  p_ccb->api_param3.num_param = num_param;
+}
+
+LOCAL_INLINE FUNC(void, OS_CODE)
+  osEE_set_api_param3_num_param
+(
+  P2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb,
+  CONST(OsEE_addr, AUTOMATIC)               p_param
+)
+{
+  p_ccb->api_param3.p_param = p_param;
 }
 #else /* OSEE_USEPARAMETERACCESS */
 LOCAL_INLINE FUNC(void, OS_CODE)
@@ -534,36 +564,69 @@ LOCAL_INLINE FUNC(void, OS_CODE)
 }
 
 LOCAL_INLINE FUNC(void, OS_CODE)
-  osEE_set_api_param1
+  osEE_set_api_param1_num_param
 (
   P2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb,
-  VAR(OsEE_api_param, AUTOMATIC)              api_param
+  CONST(ObjectIDType, AUTOMATIC)              num_param
 )
 {
   ((void)p_ccb);
-  ((void)api_param);
+  ((void)num_param);
 }
 
 LOCAL_INLINE FUNC(void, OS_CODE)
-  osEE_set_api_param2
+  osEE_set_api_param1_p_param
 (
   P2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb,
-  VAR(OsEE_api_param, AUTOMATIC)              api_param
+  CONST(OsEE_addr, AUTOMATIC)                 p_param
 )
 {
   ((void)p_ccb);
-  ((void)api_param);
+  ((void)p_param);
 }
 
 LOCAL_INLINE FUNC(void, OS_CODE)
-  osEE_set_api_param3
+  osEE_set_api_param2_num_param
 (
   P2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb,
-  VAR(OsEE_api_param, AUTOMATIC)              api_param
+  CONST(ObjectIDType, AUTOMATIC)              num_param
 )
 {
   ((void)p_ccb);
-  ((void)api_param);
+  ((void)num_param);
+}
+
+LOCAL_INLINE FUNC(void, OS_CODE)
+  osEE_set_api_param2_p_param
+(
+  P2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb,
+  CONST(OsEE_addr, AUTOMATIC)                 p_param
+)
+{
+  ((void)p_ccb);
+  ((void)p_param);
+}
+
+LOCAL_INLINE FUNC(void, OS_CODE)
+  osEE_set_api_param3_num_param
+(
+  P2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb,
+  CONST(ObjectIDType, AUTOMATIC)              num_param
+)
+{
+  ((void)p_ccb);
+  ((void)num_param);
+}
+
+LOCAL_INLINE FUNC(void, OS_CODE)
+  osEE_set_api_param3_p_param
+(
+  P2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb,
+  CONST(OsEE_addr, AUTOMATIC)                 p_param
+)
+{
+  ((void)p_ccb);
+  ((void)p_param);
 }
 #endif /* OSEE_USEPARAMETERACCESS */
 

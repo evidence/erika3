@@ -221,6 +221,11 @@ extern FUNC(void, OS_CODE) osEE_hal_cortex_m4f_enable_fpu( void );
 #endif	/* OS_EE_ARCH_CORTEX_M_M4F_FPU */
 #endif	/* 0 - [GS]: T.B.C. */
 
+#if (defined(OS_EE_LIB_S32_SDK))
+/* Original vector table symbol, valid when S32 SDK is configured */
+extern OsEE_reg __VECTOR_TABLE;
+#endif /* OS_EE_LIB_S32_SDK */
+
 /* Nothing to do. All the initialiazation is done in osEE_os_init */
 OSEE_CPU_STARTOS_INLINE FUNC(OsEE_bool, OS_CODE) OSEE_ALWAYS_INLINE
 osEE_cpu_startos ( void )
@@ -228,6 +233,10 @@ osEE_cpu_startos ( void )
   OsEE_bool const cpu_startos_ok  = osEE_std_cpu_startos();
   if (cpu_startos_ok)
   {
+#if (defined(OS_EE_LIB_S32_SDK))
+    /* Restore original vector table (offset) (VTOR) */
+    OSEE_CORTEX_M_NVIC_VTOR = (OsEE_reg)&__VECTOR_TABLE;
+#endif /* OS_EE_LIB_S32_SDK */
 #if	0	/* [GS]: T.B.C. */
 #if	(defined(OS_EE_ARCH_CORTEX_M_M4F_FPU))
     osEE_hal_cortex_m4f_enable_fpu();

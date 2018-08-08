@@ -110,6 +110,7 @@ endif	# OS_EE_CORTEX_M_MCU == S32K148
 INCLUDE_PATH :=	\
 $(S32_SDK_ROOT)/platform/drivers/inc		\
 $(S32_SDK_ROOT)/platform/drivers/src/ftm	\
+$(S32_SDK_ROOT)/rtos/osif					\
 $(INCLUDE_PATH)
 
 ##

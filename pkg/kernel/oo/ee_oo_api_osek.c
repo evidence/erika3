@@ -647,13 +647,10 @@ FUNC(StatusType, OS_CODE)
 
 #if (defined(OSEE_HAS_ERRORHOOK))
   if (ev != E_OK) {
-    VAR(OsEE_api_param, AUTOMATIC)
-      param;
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_ActivateTask);
-    param.num_param = TaskID;
-    osEE_set_api_param1(p_ccb, param);
+    osEE_set_api_param1_num_param(p_ccb, TaskID);
     osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
@@ -782,13 +779,10 @@ FUNC(StatusType, OS_CODE)
 
 #if (defined(OSEE_HAS_ERRORHOOK))
   if (ev != E_OK) {
-    VAR(OsEE_api_param, AUTOMATIC)
-      param;
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_ChainTask);
-    param.num_param = TaskID;
-    osEE_set_api_param1(p_ccb, param);
+    osEE_set_api_param1_num_param(p_ccb, TaskID);
     osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
@@ -1111,13 +1105,10 @@ FUNC(StatusType, OS_CODE)
 
 #if (defined(OSEE_HAS_ERRORHOOK))
   if (ev != E_OK) {
-    VAR(OsEE_api_param, AUTOMATIC)
-      param;
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_GetResource);
-    param.num_param = ResID;
-    osEE_set_api_param1(p_ccb, param);
+    osEE_set_api_param1_num_param(p_ccb, ResID);
     osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
@@ -1224,13 +1215,10 @@ FUNC(StatusType, OS_CODE)
 
 #if (defined(OSEE_HAS_ERRORHOOK))
   if (ev != E_OK) {
-    VAR(OsEE_api_param, AUTOMATIC)
-      param;
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_ReleaseResource);
-    param.num_param = ResID;
-    osEE_set_api_param1(p_ccb, param);
+    osEE_set_api_param1_num_param(p_ccb, ResID);
     osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
@@ -1294,11 +1282,8 @@ FUNC(StatusType, OS_CODE)
 
 #if (defined(OSEE_HAS_ERRORHOOK))
   if (ev != E_OK) {
-    VAR(OsEE_api_param, AUTOMATIC)
-      param;
     osEE_set_service_id(p_ccb, OSServiceId_ShutdownOS);
-    param.num_param = (ObjectIDType)Error;
-    osEE_set_api_param1(p_ccb, param);
+    osEE_set_api_param1_num_param(p_ccb, (ObjectIDType)Error);
     osEE_call_error_hook(p_ccb, ev);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
@@ -1399,13 +1384,10 @@ FUNC(StatusType, OS_CODE)
 
 #if (defined(OSEE_HAS_ERRORHOOK))
   if (ev != E_OK) {
-    VAR(OsEE_api_param, AUTOMATIC)
-      param;
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_GetTaskID);
-    param.p_param = TaskID;
-    osEE_set_api_param1(p_ccb, param);
+    osEE_set_api_param1_p_param(p_ccb, TaskID);
     osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
@@ -1498,15 +1480,11 @@ FUNC(StatusType, OS_CODE)
 
 #if (defined(OSEE_HAS_ERRORHOOK))
   if (ev != E_OK) {
-    VAR(OsEE_api_param, AUTOMATIC)
-      param;
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_GetTaskState);
-    param.num_param = TaskID;
-    osEE_set_api_param1(p_ccb, param);
-    param.p_param = State;
-    osEE_set_api_param2(p_ccb, param);
+    osEE_set_api_param1_num_param(p_ccb, TaskID);
+    osEE_set_api_param2_p_param(p_ccb, State);
     osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
@@ -1593,17 +1571,12 @@ FUNC(StatusType, OS_CODE)
 
 #if (defined(OSEE_HAS_ERRORHOOK))
   if (ev != E_OK) {
-    VAR(OsEE_api_param, AUTOMATIC)
-      param;
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_SetRelAlarm);
-    param.num_param = AlarmID;
-    osEE_set_api_param1(p_ccb, param);
-    param.num_param = increment;
-    osEE_set_api_param2(p_ccb, param);
-    param.num_param = cycle;
-    osEE_set_api_param3(p_ccb, param);
+    osEE_set_api_param1_num_param(p_ccb, AlarmID);
+    osEE_set_api_param2_num_param(p_ccb, increment);
+    osEE_set_api_param3_num_param(p_ccb, cycle);
     osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
@@ -1688,17 +1661,12 @@ FUNC(StatusType, OS_CODE)
 
 #if (defined(OSEE_HAS_ERRORHOOK))
   if (ev != E_OK) {
-    VAR(OsEE_api_param, AUTOMATIC)
-      param;
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_SetAbsAlarm);
-    param.num_param = AlarmID;
-    osEE_set_api_param1(p_ccb, param);
-    param.num_param = start;
-    osEE_set_api_param2(p_ccb, param);
-    param.num_param = cycle;
-    osEE_set_api_param3(p_ccb, param);
+    osEE_set_api_param1_num_param(p_ccb, AlarmID);
+    osEE_set_api_param2_num_param(p_ccb, start);
+    osEE_set_api_param3_num_param(p_ccb, cycle);
     osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
@@ -1765,13 +1733,10 @@ FUNC(StatusType, OS_CODE)
 
 #if (defined(OSEE_HAS_ERRORHOOK))
   if (ev != E_OK) {
-    VAR(OsEE_api_param, AUTOMATIC)
-      param;
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_CancelAlarm);
-    param.num_param = AlarmID;
-    osEE_set_api_param1(p_ccb, param);
+    osEE_set_api_param1_num_param(p_ccb, AlarmID);
     osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
@@ -1843,15 +1808,11 @@ FUNC(StatusType, OS_CODE)
 
 #if (defined(OSEE_HAS_ERRORHOOK))
   if (ev != E_OK) {
-    VAR(OsEE_api_param, AUTOMATIC)
-      param;
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_GetAlarm);
-    param.num_param = AlarmID;
-    osEE_set_api_param1(p_ccb, param);
-    param.p_param = Tick;
-    osEE_set_api_param2(p_ccb, param);
+    osEE_set_api_param1_num_param(p_ccb, AlarmID);
+    osEE_set_api_param2_p_param(p_ccb, Tick);
     osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
@@ -1925,15 +1886,11 @@ FUNC(StatusType, OS_CODE)
 
 #if (defined(OSEE_HAS_ERRORHOOK))
   if (ev != E_OK) {
-    VAR(OsEE_api_param, AUTOMATIC)
-      param;
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_GetAlarmBase);
-    param.num_param = AlarmID;
-    osEE_set_api_param1(p_ccb, param);
-    param.p_param = Info;
-    osEE_set_api_param2(p_ccb, param);
+    osEE_set_api_param1_num_param(p_ccb, AlarmID);
+    osEE_set_api_param2_p_param(p_ccb, Info);
     osEE_call_error_hook(osEE_get_curr_core()->p_ccb, ev);
     osEE_end_primitive(flags);
   }
@@ -2039,13 +1996,10 @@ FUNC(StatusType, OS_CODE)
 
 #if (defined(OSEE_HAS_ERRORHOOK))
   if (ev != E_OK) {
-    VAR(OsEE_api_param, AUTOMATIC)
-      param;
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_WaitEvent);
-    param.num_param = Mask;
-    osEE_set_api_param1(p_ccb, param);
+    osEE_set_api_param1_num_param(p_ccb, Mask);
     osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
@@ -2134,15 +2088,11 @@ FUNC(StatusType, OS_CODE)
 
 #if (defined(OSEE_HAS_ERRORHOOK))
   if (ev != E_OK) {
-    VAR(OsEE_api_param, AUTOMATIC)
-      param;
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_SetEvent);
-    param.num_param = TaskID;
-    osEE_set_api_param1(p_ccb, param);
-    param.num_param = Mask;
-    osEE_set_api_param2(p_ccb, param);
+    osEE_set_api_param1_num_param(p_ccb, TaskID);
+    osEE_set_api_param2_num_param(p_ccb, Mask);
     osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
@@ -2243,15 +2193,11 @@ FUNC(StatusType, OS_CODE)
 
 #if (defined(OSEE_HAS_ERRORHOOK))
   if (ev != E_OK) {
-    VAR(OsEE_api_param, AUTOMATIC)
-      param;
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_GetEvent);
-    param.num_param = TaskID;
-    osEE_set_api_param1(p_ccb, param);
-    param.p_param   = Event;
-    osEE_set_api_param2(p_ccb, param);
+    osEE_set_api_param1_num_param(p_ccb, TaskID);
+    osEE_set_api_param2_p_param(p_ccb, Event);
     osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
@@ -2320,13 +2266,10 @@ FUNC(StatusType, OS_CODE)
   }
 #if (defined(OSEE_HAS_ERRORHOOK))
   if (ev != E_OK) {
-    VAR(OsEE_api_param, AUTOMATIC)
-      param;
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_ClearEvent);
-    param.num_param = Mask;
-    osEE_set_api_param1(p_ccb, param);
+    osEE_set_api_param1_num_param(p_ccb, Mask);
     osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
@@ -2423,15 +2366,11 @@ FUNC(StatusType, OS_CODE)
 
 #if (defined(OSEE_HAS_ERRORHOOK))
   if (ev != E_OK) {
-    VAR(OsEE_api_param, AUTOMATIC)
-      param;
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_GetCounterValue);
-    param.num_param = CounterID;
-    osEE_set_api_param1(p_ccb, param);
-    param.p_param   = Value;
-    osEE_set_api_param2(p_ccb, param);
+    osEE_set_api_param1_num_param(p_ccb, CounterID);
+    osEE_set_api_param2_p_param(p_ccb, Value);
     osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
@@ -2543,17 +2482,12 @@ FUNC(StatusType, OS_CODE)
 
 #if (defined(OSEE_HAS_ERRORHOOK))
   if (ev != E_OK) {
-    VAR(OsEE_api_param, AUTOMATIC)
-      param;
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_GetElapsedValue);
-    param.num_param = CounterID;
-    osEE_set_api_param1(p_ccb, param);
-    param.p_param   = Value;
-    osEE_set_api_param2(p_ccb, param);
-    param.p_param   = ElapsedValue;
-    osEE_set_api_param3(p_ccb, param);
+    osEE_set_api_param1_num_param(p_ccb, CounterID);
+    osEE_set_api_param2_p_param(p_ccb, Value);
+    osEE_set_api_param3_p_param(p_ccb, ElapsedValue);
     osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
@@ -2653,13 +2587,10 @@ FUNC(StatusType, OS_CODE)
 
 #if (defined(OSEE_HAS_ERRORHOOK))
   if (ev != E_OK) {
-    VAR(OsEE_api_param, AUTOMATIC)
-      param;
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_IncrementCounter);
-    param.num_param = CounterID;
-    osEE_set_api_param1(p_ccb, param);
+    osEE_set_api_param1_num_param(p_ccb, CounterID);
     osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
@@ -2765,15 +2696,11 @@ FUNC(StatusType, OS_CODE)
 
 #if (defined(OSEE_HAS_ERRORHOOK))
   if (ev != E_OK) {
-    VAR(OsEE_api_param, AUTOMATIC)
-      param;
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_StartScheduleTableRel);
-    param.num_param = ScheduleTableID;
-    osEE_set_api_param1(p_ccb, param);
-    param.num_param = Offset;
-    osEE_set_api_param3(p_ccb, param);
+    osEE_set_api_param1_num_param(p_ccb, ScheduleTableID);
+    osEE_set_api_param2_num_param(p_ccb, Offset);
     osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
@@ -2874,15 +2801,11 @@ FUNC(StatusType, OS_CODE)
 
 #if (defined(OSEE_HAS_ERRORHOOK))
   if (ev != E_OK) {
-    VAR(OsEE_api_param, AUTOMATIC)
-      param;
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_StartScheduleTableAbs);
-    param.num_param = ScheduleTableID;
-    osEE_set_api_param1(p_ccb, param);
-    param.num_param = Start;
-    osEE_set_api_param3(p_ccb, param);
+    osEE_set_api_param1_num_param(p_ccb, ScheduleTableID);
+    osEE_set_api_param2_num_param(p_ccb, Start);
     osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
@@ -2959,13 +2882,10 @@ FUNC(StatusType, OS_CODE)
 
 #if (defined(OSEE_HAS_ERRORHOOK))
   if (ev != E_OK) {
-    VAR(OsEE_api_param, AUTOMATIC)
-      param;
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_StopScheduleTable);
-    param.num_param = ScheduleTableID;
-    osEE_set_api_param1(p_ccb, param);
+    osEE_set_api_param1_num_param(p_ccb, ScheduleTableID);
     osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
@@ -3059,15 +2979,11 @@ FUNC(StatusType, OS_CODE)
 
 #if (defined(OSEE_HAS_ERRORHOOK))
   if (ev != E_OK) {
-    VAR(OsEE_api_param, AUTOMATIC)
-      param;
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_GetScheduleTableStatus);
-    param.num_param = ScheduleTableID;
-    osEE_set_api_param1(p_ccb, param);
-    param.p_param = ScheduleStatus;
-    osEE_set_api_param2(p_ccb, param);
+    osEE_set_api_param1_num_param(p_ccb, ScheduleTableID);
+    osEE_set_api_param2_p_param(p_ccb, ScheduleStatus);
     osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
@@ -3219,15 +3135,11 @@ FUNC(StatusType, OS_CODE)
   }
 #if (defined(OSEE_HAS_ERRORHOOK))
   if (ev != E_OK) {
-    VAR(OsEE_api_param, AUTOMATIC)
-      param;
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_NextScheduleTable);
-    param.num_param = ScheduleTableID_From;
-    osEE_set_api_param1(p_ccb, param);
-    param.num_param = ScheduleTableID_To;
-    osEE_set_api_param2(p_ccb, param);
+    osEE_set_api_param1_num_param(p_ccb, ScheduleTableID_From);
+    osEE_set_api_param2_num_param(p_ccb, ScheduleTableID_To);
     osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
@@ -3328,15 +3240,10 @@ FUNC(StatusType, OS_CODE)
   }
 #if (defined(OSEE_HAS_ERRORHOOK))
   if (ev != E_OK) {
-    VAR(OsEE_api_param, AUTOMATIC)
-      param;
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
-    osEE_set_service_id(p_ccb, OSServiceId_SyncScheduleTable);
-    param.num_param = ScheduleTableID;
-    osEE_set_api_param1(p_ccb, param);
-    param.num_param = Value;
-    osEE_set_api_param2(p_ccb, param);
+    osEE_set_api_param1_num_param(p_ccb, ScheduleTableID);
+    osEE_set_api_param2_num_param(p_ccb, Value);
     osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
@@ -3755,13 +3662,10 @@ FUNC(StatusType, OS_CODE)
 
 #if (defined(OSEE_HAS_ERRORHOOK))
   if (ev != E_OK) {
-    VAR(OsEE_api_param, AUTOMATIC)
-      param;
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_GetSpinlock);
-    param.num_param = SpinlockID;
-    osEE_set_api_param1(p_ccb, param);
+    osEE_set_api_param1_num_param(p_ccb, SpinlockID);
     osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
@@ -3878,13 +3782,10 @@ FUNC(StatusType, OS_CODE)
 
 #if (defined(OSEE_HAS_ERRORHOOK))
   if (ev != E_OK) {
-    VAR(OsEE_api_param, AUTOMATIC)
-      param;
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_ReleaseSpinlock);
-    param.num_param = SpinlockID;
-    osEE_set_api_param1(p_ccb, param);
+    osEE_set_api_param1_num_param(p_ccb, SpinlockID);
     osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
@@ -4046,15 +3947,11 @@ FUNC(StatusType, OS_CODE)
 
 #if (defined(OSEE_HAS_ERRORHOOK))
   if (ev != E_OK) {
-    VAR(OsEE_api_param, AUTOMATIC)
-      param;
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_TryToGetSpinlock);
-    param.num_param = SpinlockID;
-    osEE_set_api_param1(p_ccb, param);
-    param.p_param = Success;
-    osEE_set_api_param2(p_ccb, param);
+    osEE_set_api_param1_num_param(p_ccb, SpinlockID);
+    osEE_set_api_param2_p_param(p_ccb, Success);
     osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }

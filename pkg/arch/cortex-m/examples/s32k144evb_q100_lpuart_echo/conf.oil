@@ -61,7 +61,7 @@ CPU mySystem {
       IDLEHOOK = TRUE {
         HOOKNAME = "idle_hook";
       };
-      EXECUTE_FROM_RAM = TRUE;
+      //EXECUTE_FROM_RAM = TRUE;
       TRACER = OFF;
     };
 
@@ -94,9 +94,11 @@ CPU mySystem {
     POSTTASKHOOK = FALSE;
     USEGETSERVICEID = FALSE;
     USEPARAMETERACCESS = FALSE;
-    USERESSCHEDULER = TRUE;
+    USERESSCHEDULER = FALSE;
 
-    USEORTI = TRUE;
+    USEORTI = FALSE;
+
+    KERNEL_TYPE = OSEK { CLASS = BCC1; };
   };
 
   APPDATA myApp {
@@ -104,82 +106,13 @@ CPU mySystem {
     APP_SRC  = "hal.c";
   };
 
-  /* this is the OIL part for the task displaying the christmas tree */
-  TASK Task1 {
-    PRIORITY = 1;	/* Low priority */
-    AUTOSTART = FALSE;
-    STACK = SHARED;
-    ACTIVATION = 1;	/* only one pending activation */
-  };
-
-  /* this is the OIL part for the task activated by the button press */
-  TASK Task2 {
-    PRIORITY = 2;	/* High priority */
-    SCHEDULE = FULL;
-    AUTOSTART = TRUE;
-    STACK = SHARED;
-  };
-
-  ISR TimerISR {
-    CATEGORY = 2;
-    SOURCE	 = "FTM0_OVF_RELOAD";
+  TASK ReceiveTask {
     PRIORITY = 1;
   };
 
-  ISR ButtonsISR {
-    CATEGORY = 2;
-    SOURCE   = "PORTC";
+  ISR LPURAT1_ISR2 {
     PRIORITY = 1;
+    CATEGORY = 2;
+    SOURCE   = "LPUART1";
   };
-
-  /*
-   * Please uncomment ONLY one of the following configurations at a time!
-   */
-
-  /* CONFIGURATION 1:
-   * Kernel is BCC1
-   * Task 1 is full preemptive
-   */
-  OS myOs { KERNEL_TYPE = OSEK { CLASS = BCC1; }; }; 
-  TASK Task1 { SCHEDULE = FULL; };
-  TASK Task2 { ACTIVATION = 1; };
-
-  /* ----------------------------------------------------------- */
-
-  /* CONFIGURATION 2:
-   * Same as Configuration 1, BUT Task 1 is NON preemptive
-   */
-
-//  OS myOs { KERNEL_TYPE = OSEK { CLASS = BCC1; }; }; 
-//  TASK Task1 { SCHEDULE = NON; };
-//  TASK Task2 { ACTIVATION = 1; };
-
-  /* ----------------------------------------------------------- */
-
-  /* CONFIGURATION 3:
-   * Same as Configuration 2, BUT the code is compiled with an additional #define
-   * that controls the presence of the Schedule() function inside Task1
-   *
-   * The additional define is added with the EEOPT = "..."; statement inside 
-   * the OS object.
-   */
-
-//  OS myOs { CFLAGS = "-DMYSCHEDULE"; KERNEL_TYPE = OSEK { CLASS =  BCC1; }; };
-//  TASK Task1 { SCHEDULE = NON; };
-//  TASK Task2 { ACTIVATION = 1; };
-
-  /* ----------------------------------------------------------- */
-
-  /* CONFIGURATION 4:
-   * Same as Configuration 3, BUT Task2 supports three pending activations.
-   * The kernel type has to be BCC2 to support more than one pending activation!
-   *
-   * Note: This configuration does not work with the Demo version 
-   * (which includes only a BCC1 kernel)
-   */
-
-//  OS myOs { CFLAGS = "-DMYSCHEDULE"; KERNEL_TYPE = OSEK { CLASS = BCC2; RQ = MQ; }; };
-//  TASK Task1 { SCHEDULE = NON; };
-//  TASK Task2 { ACTIVATION = 6; };
-
 };
