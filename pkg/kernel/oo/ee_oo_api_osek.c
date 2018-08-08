@@ -374,6 +374,12 @@ FUNC(StatusType, OS_CODE)
       VAR(MemSize, AUTOMATIC) trigger_size;
       CONSTP2VAR(OsEE_autostart_trigger, AUTOMATIC, OS_APPL_CONST)
         p_auto_triggers = &(*p_cdb->p_autostart_trigger_array)[real_mode];
+#if (defined(OSEE_HAS_SCHEDULE_TABLES))
+#if (defined(OSEE_HAS_ALARMS))
+      P2VAR(OsEE_AlarmDB, AUTOMATIC, OS_APPL_CONST) p_alarm_db_tmp;  /* MISRA R13.2 */
+#endif /* OSEE_HAS_ALARMS */
+      P2VAR(OsEE_SchedTabDB, AUTOMATIC, OS_APPL_CONST) p_st_db_tmp;   /* MISRA R13.2 */
+#endif /* OSEE_HAS_SCHEDULE_TABLES */
 
       trigger_size = p_auto_triggers->trigger_array_size;
       for (i = 0U; i < trigger_size; ++i) {
@@ -392,25 +398,28 @@ FUNC(StatusType, OS_CODE)
         switch (p_trigger_to_act_info->autostart_type) {
 #if (defined(OSEE_HAS_ALARMS))
           case OSEE_AUTOSTART_ALARM:
+	    p_alarm_db_tmp = osEE_trigger_get_alarm_db(p_trigger_to_act_db);
             (void)osEE_alarm_set_rel(
               p_trigger_to_act_db->p_counter_db,
-              osEE_trigger_get_alarm_db(p_trigger_to_act_db),
+	      p_alarm_db_tmp,                               /* MISRA R13.2 */
               p_trigger_to_act_info->first_tick_parameter,
               p_trigger_to_act_info->second_tick_parameter
             );
           break;
 #endif /* OSEE_HAS_ALARMS */
           case OSEE_AUTOSTART_SCHEDULE_TABLE_ABS:
+	    p_st_db_tmp = osEE_trigger_get_st_db(p_trigger_to_act_db);
             (void)osEE_st_start_abs(
               p_trigger_to_act_db->p_counter_db,
-              osEE_trigger_get_st_db(p_trigger_to_act_db),
+              p_st_db_tmp,                                  /* MISRA R13.2 */
               p_trigger_to_act_info->first_tick_parameter
             );
           break;
           case OSEE_AUTOSTART_SCHEDULE_TABLE_REL:
+	    p_st_db_tmp = osEE_trigger_get_st_db(p_trigger_to_act_db);
             (void)osEE_st_start_rel(
               p_trigger_to_act_db->p_counter_db,
-              osEE_trigger_get_st_db(p_trigger_to_act_db),
+              p_st_db_tmp,                                  /* MISRA R13.2 */
               p_trigger_to_act_info->first_tick_parameter
             );
           break;
@@ -418,7 +427,7 @@ FUNC(StatusType, OS_CODE)
             /* XXX: TODO: Global Synchronism to be handled */
           break;
           default:
-            /* You never get here */
+            /* You will never get here */
           break;
         }
 #endif /* !OSEE_HAS_SCHEDULE_TABLES */
@@ -428,6 +437,7 @@ FUNC(StatusType, OS_CODE)
 #if (defined(OSEE_HAS_AUTOSTART_TASK))
     {
       VAR(MemSize, AUTOMATIC) i;
+      VAR(MemSize, AUTOMATIC) tdbsize;
       CONSTP2VAR(OsEE_autostart_tdb, AUTOMATIC, OS_APPL_CONST)
         p_auto_tdb  = &(*p_cdb->p_autostart_tdb_array)[real_mode];
 #if (!defined(OSEE_ALLOW_TASK_MIGRATION))
@@ -444,7 +454,8 @@ FUNC(StatusType, OS_CODE)
         pp_free_sn  = &p_ccb->p_free_sn;
 #endif /* !OSEE_ALLOW_TASK_MIGRATION */
 
-      for (i = 0U; i < p_auto_tdb->tdb_array_size; ++i) {
+      tdbsize = p_auto_tdb->tdb_array_size;
+      for (i = 0U; i < tdbsize; ++i) {
         CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
           p_tdb_to_act = (*p_auto_tdb->p_tdb_ptr_array)[i];
         CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
@@ -712,7 +723,7 @@ FUNC(StatusType, OS_CODE)
       p_tdb_act = (*p_kdb->p_tdb_ptr_array)[TaskID];
 #if (defined(OSEE_HAS_CHECKS))
 #if (defined(OSEE_HAS_RESOURCES)) || (defined(OSEE_HAS_SPINLOCKS))
-    CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
+    CONSTP2CONST(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
       p_curr_tcb  = p_curr->p_tcb;
     if (p_curr_tcb->p_last_m != NULL) {
 #if (defined(OSEE_HAS_RESOURCES))
@@ -809,7 +820,7 @@ FUNC(StatusType, OS_CODE)
     p_curr      = p_ccb->p_curr;
 #if (defined(OSEE_HAS_CHECKS))
 #if (defined(OSEE_HAS_RESOURCES)) || (defined(OSEE_HAS_SPINLOCKS))
-  CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
+  CONSTP2CONST(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
     p_curr_tcb  = p_curr->p_tcb;
 #endif /* OSEE_HAS_RESOURCES || OSEE_HAS_SPINLOCKS */
 
@@ -1281,6 +1292,7 @@ FUNC(StatusType, OS_CODE)
     ev = E_OS_STATE;
   }
 
+#if (defined(OSEE_HAS_ERRORHOOK))
   if (ev != E_OK) {
     VAR(OsEE_api_param, AUTOMATIC)
       param;
@@ -1289,6 +1301,7 @@ FUNC(StatusType, OS_CODE)
     osEE_set_api_param1(p_ccb, param);
     osEE_call_error_hook(p_ccb, ev);
   }
+#endif /* OSEE_HAS_ERRORHOOK */
 
   osEE_orti_trace_service_exit(p_ccb, OSServiceId_ShutdownOS);
   osEE_end_primitive(flags);
@@ -2975,7 +2988,7 @@ FUNC(StatusType, OS_CODE)
     p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+  CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
     p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetScheduleTableStatus);
@@ -3010,7 +3023,7 @@ FUNC(StatusType, OS_CODE)
   {
     CONSTP2VAR(OsEE_SchedTabDB, AUTOMATIC, OS_APPL_CONST)
       p_st_db = (*p_kdb->p_st_ptr_array)[ScheduleTableID];
-    CONSTP2VAR(OsEE_SchedTabCB, AUTOMATIC, OS_APPL_DATA)
+    CONSTP2CONST(OsEE_SchedTabCB, AUTOMATIC, OS_APPL_DATA)
       p_st_cb = osEE_st_get_cb(p_st_db);
     /* [SWS_Os_00289] If the schedule table <ScheduleTableID> in a call of
         GetScheduleTableStatus() is NOT started, GetScheduleTableStatus()
@@ -3083,6 +3096,11 @@ FUNC(StatusType, OS_CODE)
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
     p_ccb = p_cdb->p_ccb;
+  /* MISRA R13.5 */
+  CONST(OsEE_bool, AUTOMATIC) valid_st_id_from =
+    osEE_is_valid_st_id(p_kdb, ScheduleTableID_From);
+  CONST(OsEE_bool, AUTOMATIC) valid_st_id_to   =
+    osEE_is_valid_st_id(p_kdb, ScheduleTableID_To);
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_NextScheduleTable);
   osEE_stack_monitoring(p_cdb);
@@ -3109,9 +3127,7 @@ FUNC(StatusType, OS_CODE)
 /* [SWS_Os_00282] If the input parameter <ScheduleTableID_From> or
     <ScheduleTableID_To> in a call of NextScheduleTable() is not valid,
     NextScheduleTable() shall return E_OS_ID. */
-  if (!osEE_is_valid_st_id(p_kdb, ScheduleTableID_From) ||
-      !osEE_is_valid_st_id(p_kdb, ScheduleTableID_To))
-  {
+  if ((!valid_st_id_from) || (!valid_st_id_to)) {
     ev = E_OS_ID;
   } else
   {

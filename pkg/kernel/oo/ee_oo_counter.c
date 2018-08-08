@@ -296,7 +296,7 @@ static FUNC(void, OS_CODE)
     P2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_CONST)
       p_trigger_to_reinsert = NULL;
     /* When the new trigger has to expire */
-    VAR(TickType, AUTOMATIC)  next_when;
+    VAR(TickType, AUTOMATIC)  next_when = 0U;
 
     /* Enter in Critical Section to Handle Expiry Point */
     osEE_lock_core(p_cdb);

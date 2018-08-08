@@ -69,8 +69,9 @@ ifeq ($(call iseeopt, OSEE_API_DYNAMIC), yes)
 EE_SRCS += ee_std_hal_init.c
 endif	# OSEE_DYNAMIC_API
 
-ifeq ($(call iseeopt, OSEE_RQ_MULTIQUEUE), yes)
-EE_SRCS += ee_std_intrinsics.c
-endif	# OSEE_RQ_MULTIQUEUE
+#EG: dspic33 now uses hardware intrinsincs, non need to emulate them in software
+#ifeq ($(call iseeopt, OSEE_RQ_MULTIQUEUE), yes)
+#EE_SRCS += ee_std_intrinsics.c
+#endif	# OSEE_RQ_MULTIQUEUE
 
 endif	# OS_EE_ARCH_DSPIC33_PIC24

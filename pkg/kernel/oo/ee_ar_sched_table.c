@@ -81,7 +81,7 @@ FUNC(StatusType, OS_CODE)
     
     p_st_cb->p_next_table = NULL;
     p_st_cb->position     = 0U;
-    p_st_cb->deviation    = 0U;
+    p_st_cb->deviation    = 0;
     p_st_cb->st_status    = SCHEDULETABLE_RUNNING;
     p_st_cb->start        = osEE_counter_eval_when(p_counter_db, offset);
 
@@ -135,7 +135,7 @@ FUNC(StatusType, OS_CODE)
    (Even though the ST is Reenabled it has to restart from the beginning) */
     p_st_cb->p_next_table = NULL;
     p_st_cb->position     = 0U;
-    p_st_cb->deviation    = 0U;
+    p_st_cb->deviation    = 0;
     p_st_cb->st_status    =
       (p_st_db->sync_strategy == OSEE_SCHEDTABLE_SYNC_IMPLICIT)?
         SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS:
@@ -234,7 +234,7 @@ FUNC(StatusType, OS_CODE)
     p_trigger_db = osEE_st_get_trigger_db(p_st_db);
   CONSTP2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_CONST)
     p_counter_db = p_trigger_db->p_counter_db;
-  CONSTP2VAR(OsEE_TriggerCB, AUTOMATIC, OS_APPL_DATA)
+  CONSTP2CONST(OsEE_TriggerCB, AUTOMATIC, OS_APPL_DATA)
     p_trigger_cb = p_trigger_db->p_trigger_cb;
   CONSTP2VAR(OsEE_SchedTabCB, AUTOMATIC, OS_APPL_DATA)
     p_st_cb = osEE_st_get_cb(p_st_db);
@@ -244,6 +244,7 @@ FUNC(StatusType, OS_CODE)
 /* Schedule Table position locals */
     VAR(TickType, AUTOMATIC)      st_pos;
     VAR(TickType, AUTOMATIC)      next_when;
+    VAR(TickType, AUTOMATIC)      temp_deviation_unsigned; /* MISRA C 10.8 */
     VAR(TickDeltaType, AUTOMATIC) temp_deviation;
     CONST(MemSize, AUTOMATIC) position = p_st_cb->position;
 
@@ -257,7 +258,8 @@ FUNC(StatusType, OS_CODE)
     st_pos = next_when - p_st_cb->start;
 
 /* Evaluate Schedule Table Deviation before synchronization */
-    temp_deviation = st_pos - value;
+    temp_deviation_unsigned = st_pos - value;
+    temp_deviation = (TickDeltaType)temp_deviation_unsigned;
 /* [SWS_Os_00420]: IF the deviation is non-zero AND the next expiry point
     is adjustable AND the table is behind the sync counter
     (TableTicksAheadOfSyncCounter <= TableTicksBehindOfSyncCounter)

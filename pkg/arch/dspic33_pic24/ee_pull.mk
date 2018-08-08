@@ -118,9 +118,10 @@ endif	# OSEE_HAS_SYSTEM_TIMER
 endif	# OS_EE_ARCH_DSPIC33_PIC24_DSPIC33EV
 
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/std/arch/ee_std_hal_init.c
-ifeq ($(call iseeopt, OSEE_RQ_MULTIQUEUE), yes)
-OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/std/arch/ee_std_intrinsics.c
-endif # OSEE_RQ_MULTIQUEUE
+#EG: dspic33 now uses hardware intrinsincs, non need to emulate them in software
+#ifeq ($(call iseeopt, OSEE_RQ_MULTIQUEUE), yes)
+#OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/std/arch/ee_std_intrinsics.c
+#endif # OSEE_RQ_MULTIQUEUE
 
 ifeq	($(call iseeopt, OS_EE_ARCH_DSPIC33_PIC24_DSPIC33EV), yes)
 OS_EE_PULL_DBG_FILES += \

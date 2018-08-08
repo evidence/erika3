@@ -194,6 +194,51 @@ osEE_hal_prepare_ipl(
 }
 
 /*==============================================================================
+                          Ready Queue utilities
+ =============================================================================*/
+
+#if (defined(OSEE_RQ_MULTIQUEUE))
+OSEE_STATIC_INLINE MemSize
+  osEE_dspic33_pic24_get_msb_internal(uint16_t mask)
+{
+  MemSize msb;
+  if ((mask & 0x8000U) != 0U) {
+    msb = 15U;
+  } else {
+    /* FBCL return value in the ranges [-15:0] */
+    VAR(int16_t, AUTOMATIC) msb_tmp = 14 + __builtin_fbcl((int16_t)mask);
+    msb = (MemSize)msb_tmp;
+  }
+  return msb;
+}
+
+OSEE_STATIC_INLINE MemSize osEE_hal_get_msb(OsEE_rq_mask mask) {
+/* FBCL instruction read leading zeros, if MSB is 0,
+        or leading 1, if MSB is 1. */
+  MemSize msb;
+  if (mask == 0U) {
+    msb = OSEE_RQ_MASK_EMPTY;
+  } else {
+#if (OSEE_RQ_PRIO_NUM <= 16U)
+    msb = osEE_dspic33_pic24_get_msb_internal(mask);
+#elif (OSEE_RQ_PRIO_NUM <= 32U)
+    uint16_t temp_mask = (uint16_t)(mask >> 16);
+    if (temp_mask == 0U) {
+      temp_mask = (uint16_t)(mask & 0xFFFFU);
+      msb = osEE_dspic33_pic24_get_msb_internal(temp_mask);
+    } else {
+      msb = (MemSize)16U + osEE_dspic33_pic24_get_msb_internal(temp_mask);
+    }
+#else
+#error For dspic33 ISA only 32 priorities are supported for Multiqueue RQ
+#endif
+  }
+
+  return msb;
+}
+#endif /* OSEE_RQ_MULTIQUEUE */
+
+/*==============================================================================
                     HAL For Primitives Synchronization
  =============================================================================*/
 

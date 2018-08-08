@@ -174,7 +174,7 @@ FUNC(void, OS_CODE) OSEE_ISR_NO_AUTO_PSV (v)(void)	\
 	/* Disables IRQ  */				\
 	osEE_hal_disableIRQ();				\
 	/* Hangs in a infinite loop!!! */		\
-	for(;;);					\
+	for(;;) {}					\
 }
 
 #if (defined(__cplusplus))

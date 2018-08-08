@@ -288,31 +288,34 @@ typedef P2VAR(EventMaskType, TYPEDEF, OS_APPL_DATA) EventMaskRefType;
 
 typedef OSEE_SCHEDULETABLE_TYPE                     ScheduleTableType;
 
-/** @typedef This type describes the status of a schedule. The status can be
-    one of the following: */
-typedef enum OsEE_schedule_table_status_tag {
 /** The schedule table is not started. */
-  SCHEDULETABLE_STOPPED     = (0x00U),
+#define SCHEDULETABLE_STOPPED     (0x00U)
+  
 /** The schedule table will be started after the end of currently running
     schedule table (schedule table was used in NextScheduleTable() service). */
-  SCHEDULETABLE_NEXT        = (0x01U),
+#define SCHEDULETABLE_NEXT        (0x01U)
+
 /** The schedule table uses explicit synchronization, has been started and is
     waiting for the global time. */
-  SCHEDULETABLE_WAITING     = (0x02U),
+#define SCHEDULETABLE_WAITING     (0x02U)
+
 /** The schedule table is running, but is currently not synchronous to a
     global time source. */
-  SCHEDULETABLE_RUNNING     = (0x03U),
+#define SCHEDULETABLE_RUNNING     (0x03U)
+
 /** Used as bit-mask, flag if the schedule table is synchronized */
-  SCHEDULETABLE_SYNCHRONOUS = (0x04U),
+#define SCHEDULETABLE_SYNCHRONOUS (0x04U)
+
 /** Used as bit-mask, flag if the schedule table shall be not synchronized */
-  SCHEDULETABLE_ASYNC       = (0x08U),
+#define SCHEDULETABLE_ASYNC       (0x08U)
+
 /** The schedule table is running and is synchronous to a global time source
     (SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS) */
-  SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS =
-    (SCHEDULETABLE_RUNNING + SCHEDULETABLE_SYNCHRONOUS)
-} OsEE_schedule_table_status;
-
-typedef VAR(OsEE_schedule_table_status, TYPEDEF)  ScheduleTableStatusType;
+#define SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS (SCHEDULETABLE_RUNNING | SCHEDULETABLE_SYNCHRONOUS)
+  
+/** @typedef This type describes the status of a schedule. The status can be
+    one of the above */
+typedef VAR(OsEE_reg, TYPEDEF)  ScheduleTableStatusType;
 
 typedef P2VAR(ScheduleTableStatusType, TYPEDEF, OS_APPL_DATA)
   ScheduleTableStatusRefType;

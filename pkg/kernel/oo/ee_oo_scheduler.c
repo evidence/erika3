@@ -179,6 +179,7 @@ FUNC_P2VAR(OsEE_preempt, OS_APPL_DATA, OS_CODE)
     is_rq_preemption          = OSEE_TRUE;
   } else {
     /* Needed for Misra */
+    p_ret_tdb = NULL;
   }
 
   if (is_rq_preemption) {
@@ -235,7 +236,7 @@ FUNC_P2VAR(OsEE_preempt, OS_APPL_DATA, OS_CODE)
 {
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
   CONSTP2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA)  p_rq_sn  = (*p_rq);
-  P2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA)       p_ret_sn = p_ccb->p_stk_sn;
+  P2CONST(OsEE_SN, AUTOMATIC, OS_APPL_DATA)       p_ret_sn = p_ccb->p_stk_sn;
 
   VAR(OsEE_bool, AUTOMATIC)                     is_rq_preemption = OSEE_FALSE;
   P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)      p_ret_tdb;
@@ -268,6 +269,7 @@ FUNC_P2VAR(OsEE_preempt, OS_APPL_DATA, OS_CODE)
     is_rq_preemption          = OSEE_TRUE;
   } else {
     /* Needed for Misra */
+    p_ret_tdb = NULL;
   }
 
   if (is_rq_preemption) {
