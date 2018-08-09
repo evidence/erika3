@@ -543,7 +543,7 @@ LOCAL_INLINE FUNC(void, OS_CODE)
 }
 
 LOCAL_INLINE FUNC(void, OS_CODE)
-  osEE_set_api_param3_num_param
+  osEE_set_api_param3_p_param
 (
   P2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb,
   CONST(OsEE_addr, AUTOMATIC)               p_param
@@ -578,7 +578,7 @@ LOCAL_INLINE FUNC(void, OS_CODE)
   osEE_set_api_param1_p_param
 (
   P2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb,
-  CONST(OsEE_addr, AUTOMATIC)                 p_param
+  CONSTP2CONST(void, AUTOMATIC, OS_APPL_DATA) p_param
 )
 {
   ((void)p_ccb);
@@ -600,7 +600,7 @@ LOCAL_INLINE FUNC(void, OS_CODE)
   osEE_set_api_param2_p_param
 (
   P2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb,
-  CONST(OsEE_addr, AUTOMATIC)                 p_param
+  CONSTP2CONST(void, AUTOMATIC, OS_APPL_DATA) p_param
 )
 {
   ((void)p_ccb);
@@ -622,7 +622,7 @@ LOCAL_INLINE FUNC(void, OS_CODE)
   osEE_set_api_param3_p_param
 (
   P2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb,
-  CONST(OsEE_addr, AUTOMATIC)                 p_param
+  CONSTP2CONST(void, AUTOMATIC, OS_APPL_DATA) p_param
 )
 {
   ((void)p_ccb);
