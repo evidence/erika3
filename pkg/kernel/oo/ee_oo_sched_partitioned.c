@@ -131,8 +131,13 @@ FUNC(OsEE_bool, OS_CODE)
     CONSTP2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA)
       p_new_stk = osEE_sn_alloc(&p_ccb->p_free_sn);
 
-    /* Call PostTaskHook before switching active TASK */
-    osEE_call_post_task_hook(p_ccb);
+#if (defined(OSEE_HAS_POSTTASKHOOK))
+      /* Call PostTaskHook before switching active TASK, if the preempted TASK
+         is a real TASK and not the idle task */
+      if (p_curr->task_type <= OSEE_TASK_TYPE_EXTENDED) {
+        osEE_call_post_task_hook(p_ccb);
+      }
+#endif /* OSEE_HAS_POSTTASKHOOK */
 
     /* Set Previous TASK status as Ready but stacked */
     p_curr_tcb->status = OSEE_TASK_READY_STACKED;
