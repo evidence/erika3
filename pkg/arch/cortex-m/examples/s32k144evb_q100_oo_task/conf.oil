@@ -129,7 +129,7 @@ CPU mySystem {
   ISR ButtonsISR {
     CATEGORY = 2;
     SOURCE   = "PORTC";
-    PRIORITY = 1;
+    PRIORITY = 2;
   };
 
   /*

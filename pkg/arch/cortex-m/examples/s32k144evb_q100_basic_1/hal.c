@@ -698,8 +698,13 @@ FUNC(void, APPL_CODE) DemoHAL_TimerDelay( VAR(MemSize, AUTOMATIC) interval )
 FUNC(void, APPL_CODE) DemoHAL_TimerAck( void )
 {
 #ifdef	OS_EE_LIB_S32_SDK
+#ifdef	OS_EE_LIB_S32_SDK_0_8_6_EAR
+	/* Clear FTM Timer Overflow flag */
+	FTM_DRV_ClearStatusFlags(INST_FLEXTIMER1, FTM_TIME_OVER_FLOW_FLAG);
+#else	/* OS_EE_LIB_S32_SDK_0_8_6_EAR */
 	/* Clear FTM Timer Overflow flag */
 	FTM_DRV_ClearTimerOverflow(g_ftmBase[INST_FLEXTIMER1]);
+#endif	/* OS_EE_LIB_S32_SDK_0_8_6_EAR */
 #endif	/* OS_EE_LIB_S32_SDK */
 }
 

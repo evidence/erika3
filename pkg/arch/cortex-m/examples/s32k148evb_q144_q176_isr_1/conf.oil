@@ -83,7 +83,7 @@ CPU mySystem {
       /* Used to select Board: S32K148EVB-Q144-Q176 */
       BOARD = S32K148EVB_Q144_Q176;
       /* Used to select library version. */
-      VERSION = "0.8.4 EAR";
+      VERSION = "0.8.6 EAR";
       /* Create libstm32cubef4.a */
       STAND_ALONE = TRUE;
     };

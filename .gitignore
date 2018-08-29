@@ -1,0 +1,4 @@
+pkg/arch/tricore
+pkg/arch/armv7r
+rtdruid-gen
+.gitmodules

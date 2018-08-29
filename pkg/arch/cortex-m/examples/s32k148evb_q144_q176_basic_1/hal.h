@@ -55,7 +55,6 @@
 extern "C" {
 #endif
 
-
 /* Application Code Memory Class */
 #define APPL_CODE	TYPEDEF
 

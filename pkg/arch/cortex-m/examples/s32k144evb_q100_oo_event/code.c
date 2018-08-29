@@ -55,8 +55,6 @@
 /* HAL */
 #include "hal.h"
 
-#define	HAL_DELAY_MS	250U
-
 #define	HAL_DELAY_MS	   200U
 #define	HAL_SMALLDELAY_MS	25U
 
