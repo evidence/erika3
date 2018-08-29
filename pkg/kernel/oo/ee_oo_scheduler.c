@@ -163,6 +163,9 @@ FUNC_P2VAR(OsEE_preempt, OS_APPL_DATA, OS_CODE)
       if (p_ret_tcb->current_prio < (max_queue + 1U))
       {
         /* RQ preempt STK */
+        /* Call PostTaskHook before switching active TASK */
+        osEE_call_post_task_hook(p_ccb);
+
         p_ret_tcb->status = OSEE_TASK_READY_STACKED;
         is_rq_preemption  = OSEE_TRUE;
       }
@@ -172,8 +175,6 @@ FUNC_P2VAR(OsEE_preempt, OS_APPL_DATA, OS_CODE)
     /* Don't use p_ccb->p_curr, is not reliable here,
      * It points to the terminated TASK, we are still evaluating
      * the next one. */
-    /* Call PostTaskHook before switching active TASK */
-    osEE_call_post_task_hook(p_ccb);
     p_ret_tdb                 = p_cdb->p_idle_task;
     p_ret_tdb->p_tcb->status  = OSEE_TASK_READY_STACKED;
     is_rq_preemption          = OSEE_TRUE;
@@ -262,8 +263,6 @@ FUNC_P2VAR(OsEE_preempt, OS_APPL_DATA, OS_CODE)
     /* Don't use p_ccb->p_curr, is not reliable here,
      * It points to the terminated TASK, we are still evaluating
      * the next one. */
-    /* Call PostTaskHook before switching active TASK */
-    osEE_call_post_task_hook(p_ccb);
     p_ret_tdb                 = p_cdb->p_idle_task;
     p_ret_tdb->p_tcb->status  = OSEE_TASK_READY_STACKED;
     is_rq_preemption          = OSEE_TRUE;
@@ -357,6 +356,17 @@ FUNC_P2VAR(OsEE_SN, OS_APPL_DATA, OS_CODE)
   /* Pop the current STK SN, if not IDLE TASK. This function MUST not be
    * called inside IDLE TASK. */
   p_ccb->p_stk_sn = p_next_stk_sn;
+#if (defined(OSEE_HAS_POSTTASKHOOK))
+  /* Call PostTaskHook before switching active TASK, if the next stacked
+     is IdleTask and the Task Terminated is not an ISR2
+     (Case not handled inside osEE_scheduler_core_rq_preempt_stk) */
+  if ((p_next_stk_sn == NULL) &&
+      (p_ccb->p_curr->task_type <= OSEE_TASK_TYPE_EXTENDED)
+  )
+  {
+    osEE_call_post_task_hook(p_ccb);
+  }
+#endif /* OSEE_HAS_POSTTASKHOOK */
 
   /* No need to set Temporary ccb.p_curr, obtaining coherence, since
    * osEE_scheduler_core_rq_preempt_stk won't rely on that.
@@ -384,7 +394,7 @@ FUNC_P2VAR(OsEE_SN, OS_APPL_DATA, OS_CODE)
       }
 #endif /* OSEE_HAS_POSTTASKHOOK */
 
-      if ( p_curr_stk_sn != NULL ) {
+      if (p_curr_stk_sn != NULL) {
         /* Resume STK TASK */
         p_tdb_stk = p_curr_stk_sn->p_tdb;
       } else {
