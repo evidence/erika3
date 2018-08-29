@@ -56,7 +56,7 @@ OSEE_TYPEASSERTVALUE osEE_assert(OSEE_TYPEASSERT id,
            OSEE_TYPEASSERT prev)
 {
   /* I can use id into an assertion only once */
-  if (oSEE_assertions[id] != OSEE_ASSERT_INITVALUE) {
+  if (osEE_assertions[id] != OSEE_ASSERT_INITVALUE) {
     osEE_assertions[id] = OSEE_ASSERT_ALREADYUSED;
     return OSEE_ASSERT_ALREADYUSED;
   }
