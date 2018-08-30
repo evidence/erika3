@@ -63,24 +63,28 @@ CPU mySystem {
       IDLEHOOK = TRUE {
         HOOKNAME = "idle_hook";
       };
+      COMPILER = GCC {
+        LINKER_SCRIPT = "custom_ram.ld";
+        /* LINKER_SCRIPT = "custom_flash.ld"; */
+      };
       EXECUTE_FROM_RAM = TRUE;
+      TRACER = OFFCHIP;
+      CPU_CLOCK = 48.00;
     };
 
     MCU_DATA = S32K1XX {
-      MODEL = S32K144;
+      MODEL = S32K148;
     };
 
-    BOARD_DATA = S32K144EVB_Q100;
+    BOARD_DATA = S32K148EVB_Q144_Q176;
 
-//    USEDYNAMICAPI = TRUE {
-//      TASK_ARRAY_SIZE		= 6;
-//      SN_ARRAY_SIZE		= 6;
-//      STACKS_MEMORY_SIZE	= 1024;
-//    };
+    USEEXTENSIONAPI = TRUE {
+      SEMAPHORE = DEFAULT { NAME = "V"; COUNT=0; };
+    };
 
     LIB = S32_SDK {
-      /* Used to select Board: S32K144EVB-Q100 */
-      BOARD = S32K144EVB_Q100;
+      /* Used to select Board: S32K148EVB-Q144-Q176 */
+      BOARD = S32K148EVB_Q144_Q176;
       /* Used to select library version. */
       VERSION = "0.8.6 EAR";
       /* Create libs32sdk.a */
@@ -88,28 +92,82 @@ CPU mySystem {
     };
 
     KERNEL_TYPE = OSEK {
-      CLASS = BCC1;
+      CLASS = ECC1;
+      RQ = MQ { PRIORITIES = 10; };
     };
+
+    STARTUPHOOK = TRUE;
 
   };
 
   APPDATA myApp {
-    APP_SRC = "hal.c";
-    APP_SRC = "code.c";
-    APP_SRC = "task1.c";
-    APP_SRC = "task2.c";
+    APP_SRC  = "code.c";
+    APP_SRC  = "hal.c";
+  };
+
+  COUNTER SystemTimer {
+    MINCYCLE = 1;
+    MAXALLOWEDVALUE = 65535;
+    TICKSPERBASE = 1;
+    TYPE = HARDWARE {
+      SYSTEM_TIMER = TRUE;
+      PRIORITY     = 1;
+      DEVICE       = "SYSTICK";
+    };
+    SECONDSPERTICK = 0.001;
+  };
+
+  ALARM AlarmTask1 {
+    COUNTER = SystemTimer;
+    ACTION = ACTIVATETASK {
+      TASK = Task1;
+    };
+    AUTOSTART = TRUE {
+      ALARMTIME = 500;
+      CYCLETIME = 100;
+    };
+  };
+
+  ALARM AlarmFreeTask1 {
+    COUNTER = SystemTimer;
+    ACTION = ALARMCALLBACK {
+      ALARMCALLBACKNAME = "free_task1";
+    };
+    AUTOSTART = TRUE {
+      ALARMTIME = 1000;
+      CYCLETIME = 1000;
+    };
   };
 
   TASK Task1 {
     PRIORITY = 1;
-    STACK = SHARED;
+    STACK = PRIVATE {
+      SIZE = 512;
+    };
     SCHEDULE = FULL;
   };
 
   TASK Task2 {
     PRIORITY = 2;
-    STACK = SHARED;
+    STACK = PRIVATE {
+      SIZE = 512;
+      EXTENDED = TRUE;
+    };
     SCHEDULE = FULL;
   };
 
+  TASK Task3 {
+    PRIORITY = 1;
+    SCHEDULE = FULL;
+  };
+
+  TASK Task4 {
+    PRIORITY = 1;
+    SCHEDULE = FULL;
+  };
+
+  TASK Task5 {
+    PRIORITY = 1;
+    SCHEDULE = FULL;
+  };
 };

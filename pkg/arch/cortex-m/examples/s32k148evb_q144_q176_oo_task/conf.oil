@@ -82,7 +82,7 @@ CPU mySystem {
       BOARD = S32K148EVB_Q144_Q176;
       /* Used to select library version. */
       VERSION = "0.8.6 EAR";
-      /* Create libstm32cubef4.a */
+      /* Create libs32sdk.a */
       STAND_ALONE = TRUE;
     };
 
