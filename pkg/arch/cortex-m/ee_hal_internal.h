@@ -256,11 +256,6 @@ osEE_cpu_startos ( void )
 /* Switch-Context control block instanced in ee_cortex_m_irqstub.c. */
 extern VAR(OsEE_SCCB, OS_VAR_NO_INIT)	osEE_cortex_m_sccb;
 
-#if	0	/* [GS]: New Context-Switch using PendSV. */
-/* Switch-Context Trigger implemented in ee_cortex_mx_irq_asm.S. */
-extern FUNC(void, OS_CODE) osEE_cortex_m_switch_context( void );
-#endif	/* 0 - [GS]: New Context-Switch using PendSV. */
-
 /* Trigger PendSV. */
 extern FUNC(void, OS_CODE) osEE_cortex_m_trigger_pend_sv( void );
 
@@ -274,27 +269,6 @@ extern FUNC(void, OS_CODE) osEE_cortex_m_restore_ctx
 
 /* Scheduler Entry Point at Task/ISR2 termination. */
 extern FUNC(void, OS_CODE) osEE_cortex_m_scheduler_task_end( void );
-
-#if	0	/* [GS]: New Context-Switch using PendSV. */
-OSEE_STATIC_INLINE FUNC(void, OS_CODE) OSEE_ALWAYS_INLINE
-osEE_change_context_from_isr2_end
-(
-  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST) p_from,
-  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST) p_to
-)
-{
-#if	0	/* [GS]: Context Switch using PendSV! */
-  osEE_change_context_from_task_end(p_from, p_to);
-#else	/* 0 - [GS]: Context Switch using PendSV! */
-  /* Save Context-Switch informetions. */
-  osEE_cortex_m_sccb.p_from = p_from;
-  osEE_cortex_m_sccb.p_to   = p_to;
-
-  /* Triggers the Context-Switch. */
-  osEE_cortex_m_switch_context();
-#endif	/* 0 - [GS]: Context Switch using PendSV! */
-}
-#endif	/* 0 - [GS]: New Context-Switch using PendSV. */
 
 #if (defined(__cplusplus))
 }

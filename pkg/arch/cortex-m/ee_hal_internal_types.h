@@ -67,22 +67,12 @@ extern "C" {
 /* R0-R3 and R12 are scratch registers, R13 ->(MSP), R14 ->(LR), R15 -> (PC) */
 typedef struct OsEE_CTX_tag {
   struct OsEE_CTX_tag * p_ctx;
-  OsEE_reg dummy;
+  OsEE_reg dummy0;
 #if (defined(OSEE_CORTEX_MX_FP))
-  /* [GS]: T.B.D. */
+  OsEE_reg control;
+  OsEE_reg dummy1;
 #endif	/* OSEE_CORTEX_MX_FP */
   OsEE_reg psr;		/* PSR */
-#if	0
-  OsEE_reg r14;		/* LR */
-  OsEE_reg r11;
-  OsEE_reg r10;
-  OsEE_reg r9;
-  OsEE_reg r8;
-  OsEE_reg r7;
-  OsEE_reg r6;
-  OsEE_reg r5;
-  OsEE_reg r4;
-#else
   OsEE_reg r4;
   OsEE_reg r5;
   OsEE_reg r6;
@@ -92,20 +82,14 @@ typedef struct OsEE_CTX_tag {
   OsEE_reg r10;
   OsEE_reg r11;
   OsEE_reg r14;		/* LR */
-#endif
 } OsEE_CTX;
 
 struct OsEE_TDB_tag;
 
 /** @brief	Switch-Context Control Block. */
 typedef struct OsEE_SCCB_tag {
-#if	0
-  OsEE_TDB	* p_from;
-  OsEE_TDB	* p_to
-#else
   P2VAR(struct OsEE_TDB_tag OSEE_CONST, TYPEDEF, OS_APPL_DATA)	p_from;
   P2VAR(struct OsEE_TDB_tag OSEE_CONST, TYPEDEF, OS_APPL_DATA)	p_to;
-#endif
 } OsEE_SCCB;
 
 /* Stack Control Block: contine le informazioni dinamiche relative allo stack */
@@ -144,7 +128,6 @@ typedef struct OsEE_CHDB_tag {
 extern FUNC(void, OS_CODE) osEE_cortex_m_system_timer_handler( void );
 #endif	/* OSTICKDURATION */
 
-#if	1	/* [GS]: New Context-Switch using PendSV. */
 /*
  * Used to override default definition of osEE_scheduler_task_end,
  * in ee_std_change_context.c, that is not inlined
@@ -153,7 +136,6 @@ extern FUNC(void, OS_CODE) osEE_cortex_m_system_timer_handler( void );
 
 /* Override Terminate Activation Kernel Callback (CB). */
 #define OSEE_KERNEL_TERMINATE_ACTIVATION_CB osEE_cortex_m_scheduler_task_end
-#endif	/* 1 - [GS]: New Context-Switch using PendSV. */
 
 #if (defined(__cplusplus))
 }

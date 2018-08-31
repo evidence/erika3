@@ -80,40 +80,12 @@ typedef	enum {
 
 /* Define HAL types */
 typedef	void *			OsEE_addr;
-typedef	int32_t		        OsEE_sreg;
+typedef	int32_t			OsEE_sreg;
 typedef	uint32_t		OsEE_reg;
 typedef	uint32_t		OsEE_stack;
 
-typedef uint8_t		OsEE_isr_src_id;
+typedef uint8_t			OsEE_isr_src_id;
 #define	OSEE_ISR_SOURCE_TYPE	OsEE_isr_src_id
-
-#if	0	/* [GS]: No Int Types! */
-/* Int Types */
-typedef uint16_t              OsEE_uint16;
-#endif	/* 0 - [GS]: No Int Types! */
-
-#if	0	/* [GS]: Nothing to override! */
-/* Override default implementation for some Kernel Types */
-typedef uint16_t              OsEE_object_id_type;
-#define OSEE_OBJECT_ID_TYPE   OsEE_object_id_type
-
-typedef uint16_t              OsEE_mem_size;
-#define OSEE_MEM_SIZE_TYPE    OsEE_mem_size
-
-typedef uint16_t              OsEE_tick_type;
-#if (!defined(OSEE_TICK_TYPE))
-#define OSEE_TICK_TYPE        OsEE_tick_type
-#endif /* OSEE_TICK_TYPE */
-
-typedef uint16_t              OsEE_event_mask;
-#define OSEE_EVENT_MASK_TYPE  OsEE_event_mask
-
-typedef uint8_t               OsEE_isr_src_id;
-#define OSEE_ISR_SOURCE_TYPE  OsEE_isr_src_id
-
-typedef uint8_t               OsEE_core_id;
-#define OSEE_CORE_ID_TYPE     OsEE_core_id
-#endif	/* 0 - [GS]: Nothing to override! */
 
 typedef void (* OsEE_void_cb) (void);
 

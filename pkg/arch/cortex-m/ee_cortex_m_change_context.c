@@ -52,94 +52,12 @@
  */
 #include "ee_internal.h"
 
-#if	0	/* [GS]: New Context Switch */
-FUNC(void, OS_CODE)
-  osEE_change_context_from_running
-(
-  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST) p_from,
-  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST) p_to
-)
-{
-  CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA) p_to_tcb  = p_to->p_tcb;
-  CONST(TaskStateType, AUTOMATIC)     status_prev_running = p_to_tcb->status;
-
-  p_to_tcb->status = OSEE_TASK_RUNNING;
-
-  if (status_prev_running == OSEE_TASK_READY_STACKED) {
-    osEE_hal_save_ctx_and_restore_ctx(p_to, p_to->hdb.p_scb,
-      p_from->hdb.p_scb);
-  } else {
-    osEE_hal_save_ctx_and_ready2stacked(p_to, p_to->hdb.p_scb,
-      p_from->hdb.p_scb);
-  }
-}
-
-FUNC(void, OS_CODE)
-  osEE_change_context_from_task_end
-(
-  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST) p_from,
-  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST) p_to
-)
-{
-  CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA) p_to_tcb  = p_to->p_tcb;
-  CONST(TaskStateType, AUTOMATIC)     status_prev_running = p_to_tcb->status;
-
-  p_to_tcb->status = OSEE_TASK_RUNNING;
-
-  if (status_prev_running == OSEE_TASK_READY_STACKED) {
-    osEE_hal_restore_ctx(p_to, p_to->hdb.p_scb);
-  } else {
-    osEE_hal_ready2stacked(p_to, p_to->hdb.p_scb);
-  }
-  /* STD Implementation do not use p_from here, but I cannot assure
-     that any implementation won't do that */
-  (void)p_from;
-}
-
-FUNC(void, OS_CODE)
-  osEE_idle_task_terminate
-(
-  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA) p_idle_tdb
-)
-{
-  P2VAR(OsEE_CTX, AUTOMATIC, OS_APPL_DATA)      p_ctx;
-
-  CONSTP2VAR(OsEE_HDB, AUTOMATIC, OS_APPL_DATA) p_idle_hdb  = &p_idle_tdb->hdb;
-  CONSTP2VAR(OsEE_SDB, AUTOMATIC, OS_APPL_DATA) p_sdb       = p_idle_hdb->p_sdb;
-  CONSTP2VAR(OsEE_SCB, AUTOMATIC, OS_APPL_DATA) p_scb       = p_idle_hdb->p_scb;
-  CONSTP2VAR(OsEE_CTX, AUTOMATIC, OS_APPL_DATA) p_bos       = p_sdb->p_bos;
-  P2VAR(OsEE_CTX, AUTOMATIC, OS_APPL_DATA)      p_tos       = p_scb->p_tos;
-
-  do {
-    p_ctx = p_tos;
-    p_tos = p_tos->p_ctx;
-  } while ((p_tos != NULL) && (p_tos != p_bos));
-
-  /* Unwind the stack until the last context*/
-  p_scb->p_tos = p_ctx;
-
-  osEE_hal_restore_ctx(p_idle_tdb, p_scb);
-}
-#endif	/* 0 - [GS]: New Context Switch */
-
 FUNC(void, OS_CODE)
   osEE_cortex_m_scheduler_task_end
 (
   void
 )
 {
-#if	0	/* [GS]: New Context Switch */
-    P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_to;
-    P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_from;
-
-    p_to = osEE_scheduler_task_terminated(osEE_get_kernel(), &p_from);
-
-    if (p_from->task_type != OSEE_TASK_TYPE_ISR2) {
-      osEE_change_context_from_task_end(p_from, p_to);
-    } else {
-      osEE_change_context_from_isr2_end(p_from, p_to);
-    }
-#else	/* 0 - [GS]: New Context Switch */
 
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)  p_cdb = osEE_get_curr_core();
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb = p_cdb->p_ccb;
@@ -173,5 +91,5 @@ FUNC(void, OS_CODE)
       osEE_cortex_m_restore_ctx(p_orig_tdb, p_orig_tdb->hdb.p_scb);
     }
   }
-#endif	/* 0 - [GS]: New Context Switch */
+
 }

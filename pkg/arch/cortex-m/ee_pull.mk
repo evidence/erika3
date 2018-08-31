@@ -69,7 +69,8 @@ ifeq	($(call iseeopt, OSEE_HAS_SYSTEM_TIMER), yes)
 OS_EE_PULL_INC_FILES += \
 		$(ERIKA_FILES)/pkg/arch/cortex-m/ee_cortex_m_system_timer.h
 endif	# OSEE_HAS_SYSTEM_TIMER
-OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/cortex-m/ee_cortex_m_utils.h
+#[GS]: Not used for now!
+#OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/cortex-m/ee_cortex_m_utils.h
 
 ifeq	($(call iseeopt, OS_EE_ARCH_CORTEX_M_S32K1XX), yes)
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/cortex-m/ee_s32k1xx_irq.h
@@ -93,7 +94,8 @@ OS_EE_PULL_SRC_FILES += \
 OS_EE_PULL_SRC_FILES += \
 		$(ERIKA_FILES)/pkg/arch/cortex-m/ee_cortex_m_system_timer.c
 endif	# OSEE_HAS_SYSTEM_TIMER
-OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/cortex-m/ee_cortex_m_utils.c
+#[GS]: Not used for now!
+#OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/cortex-m/ee_cortex_m_utils.c
 
 ifeq	($(call iseeopt, OS_EE_ARCH_CORTEX_M_S32K1XX), yes)
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/cortex-m/ee_s32k1xx_internal.h

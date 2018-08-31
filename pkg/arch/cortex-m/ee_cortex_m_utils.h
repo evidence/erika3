@@ -70,26 +70,6 @@ extern "C" {
  Functions
  *************************************************************************/
 
-#define	EE_DELAY(_us)	\
-	__builtin_avr_delay_cycles(EE_MCU_US_2_TICKS((_us), F_CPU))
-
-/** @brief	Write to a CCP-protected 8-bit I/O register.
- *  @param[in]	addr	Address of the I/O register.
- *  @param[in]	value	Value to be written.
- *  @return	Nothing.
- *
- *  @note	This function is written in assembly because of the timecritial
- *  		operation of writing to the registers.
- *
- *  @note	CCP Register Address:	0x0034U
- *
- *  @note	CCP I/O register signature:	0xD8U
- *
- *  @note	INTERRUPTS MUST BE DISABLED!!!
- *
- */
-void EE_cortex_m_WriteCCPReg(volatile EE_UREG * addr, EE_UREG value);
-
 #if (defined(__cplusplus))
 }
 #endif
