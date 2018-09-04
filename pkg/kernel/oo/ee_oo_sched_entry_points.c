@@ -69,7 +69,7 @@ static FUNC_P2VAR(OsEE_MDB, OS_APPL_CONST, OS_CODE)
 #endif /* OSEE_HAS_SPINLOCKS */
   )
   {
-    CONSTP2VAR(OsEE_ResourceCB, AUTOMATIC, OS_APPL_DATA)
+    CONSTP2VAR(OsEE_MCB, AUTOMATIC, OS_APPL_DATA)
       p_last_m_cb = p_tcb->p_last_m->p_cb;
     /* Release the M from the owner */
     p_last_m_cb->p_owner = NULL;

@@ -2908,7 +2908,11 @@ FUNC(StatusType, OS_CODE)
     p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
+#if (!defined(OSEE_HAS_ERRORHOOK))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#else
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#endif /* !OSEE_HAS_ERRORHOOK */
     p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetScheduleTableStatus);
