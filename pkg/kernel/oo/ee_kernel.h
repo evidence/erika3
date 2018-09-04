@@ -157,7 +157,7 @@ LOCAL_INLINE FUNC(void, OS_CODE)
 }
 #endif /* OSEE_HAS_ORTI */
 
-FUNC(StatusType, OS_CODE)
+FUNC(void, OS_CODE)
   osEE_activate_isr2
 (
   VAR(TaskType, AUTOMATIC) isr2_id

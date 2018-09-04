@@ -179,7 +179,7 @@ FUNC(void, OS_CODE) osEE_stack_monitoring
 }
 #endif /* OSEE_HAS_STACK_MONITORING */
 
-FUNC(StatusType, OS_CODE)
+FUNC(void, OS_CODE)
   osEE_activate_isr2
 (
   VAR(TaskType, AUTOMATIC) isr2_id
@@ -198,6 +198,5 @@ FUNC(StatusType, OS_CODE)
 
     osEE_scheduler_task_set_running(p_kdb, p_act_tdb, NULL);
   }
-  return E_OK;
 }
 

@@ -164,34 +164,35 @@ extern "C" {
 
 #if (!defined(OSEE_BIT))
 /* \brief Single bit bitmask generator. */
-#define OSEE_BIT(type,bit)     (((type)1) << (bit))
+#define OSEE_BIT(type, bit)     (((type)1U) << (bit))
 #endif /* !OSEE_BIT */
 
 #if (!defined(OSEE_ONES))
 /* \brief Generate a Single bit bitmask generator. */
-#define OSEE_ONES(num)         ((1U << (num)) - 1U)
+#define OSEE_ONES(num)          ((((OsEE_reg)1U) << (num)) - ((OsEE_reg)1U))
 #endif /* !OSEE_ONES */
 
 #if (!defined(OSEE_B_MASK))
-#define OSEE_B_MASK(length, lower_bit)      (OSEE_ONES(length) << (lower_bit))
+#define OSEE_B_MASK(length, lower_bit)\
+  (OSEE_ONES(length) << (lower_bit))
 #endif /* !OSEE_B_MASK */
 
 #if (!defined(OSEE_B_GET))
-#define OSEE_B_GET(x, length, lower_bit)    \
-  ((x) & OSEE_B_MASK((length), (lower_bit)))
+#define OSEE_B_GET(x, length, lower_bit)\
+  (((OsEE_reg)(x)) & OSEE_B_MASK((length), (lower_bit)))
 #endif /* !OSEE_B_GET */
 
 #if (!defined(OSEE_B_CLEAR))
-#define OSEE_B_CLEAR(x, length, lower_bit)  \
-  ((x) & (~OSEE_B_MASK((length), (lower_bit))))
+#define OSEE_B_CLEAR(x, length, lower_bit)\
+  (((OsEE_reg)(x)) & (~OSEE_B_MASK((length), (lower_bit))))
 #endif /* OSEE_B_CLEAR */
 
 #if (!defined(OSEE_B_SET))
-#define OSEE_B_SET(x, length, lower_bit, v) \
-  (OSEE_B_CLEAR((x),(length),(lower_bit)) | \
-    (((v) & OSEE_ONES(length)) << (lower_bit))\
+#define OSEE_B_SET(x, length, lower_bit, v)\
+  (OSEE_B_CLEAR((x),(length),(lower_bit)) |\
+    ((((OsEE_reg)(v)) & OSEE_ONES(length)) << (lower_bit))\
   )
-#endif /* !OSEE_B_SET*/
+#endif /* !OSEE_B_SET */
 
 
 /*==============================================================================
@@ -228,12 +229,12 @@ extern "C" {
 
 #if (!defined(OSEE_STACK_TOS))
 #define OSEE_STACK_TOS(stack) \
-  ((OsEE_addr)&stack[((sizeof(stack)/sizeof(stack[0])) - 1U) & \
+    ((OsEE_addr)&(stack)[((sizeof(stack)/sizeof((stack)[0])) - 1U) & \
     OSEE_STACK_ALIGN_INDEX])
 #endif /* OSEE_STACK_TOS */
 
 #if (!defined(OSEE_STACK_BOS))
-#define OSEE_STACK_BOS(stack)   ((OsEE_addr)&stack[0U])
+#define OSEE_STACK_BOS(stack)   ((OsEE_addr)&(stack)[0U])
 #endif /* !OSEE_STACK_BOS */
 
 #if (!defined(OSEE_GUARD_AREA))

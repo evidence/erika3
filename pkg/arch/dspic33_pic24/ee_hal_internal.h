@@ -100,7 +100,7 @@ extern "C" {
 #endif	/* OSEE_ISR2_MAX_PRIO */
 
 /**
- * hardware priority 0 is not consider (tasks are running at hardware priorty 0!)
+ * hardware priority 0 is not considered (tasks are running at hardware priorty 0!)
  * hardware priority 1 is 0xb 1000 0000 which is also OSEE_ISR2_PRIO_BIT
  * hardware priority 2 is 0xb 1000 0001
  * ...
