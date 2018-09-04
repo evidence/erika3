@@ -65,6 +65,10 @@ FUNC(void, OS_CODE) osEE_cortex_m_change_context_from_task_end(
 {
   OsEE_reg f = osEE_hal_begin_nested_primitive();
 
+#if	1	/* [GS]: To Be Checked. */
+  osEE_hal_enableIRQ();
+#endif
+
   if (p_orig_tdb->p_tcb->status == OSEE_TASK_READY) {
     osEE_change_context_from_task_end(
       p_orig_tdb, osEE_get_curr_core()->p_ccb->p_curr

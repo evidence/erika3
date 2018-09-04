@@ -173,7 +173,9 @@ osEE_cortex_m_trigger_pend_sv:
 PendSV_Handler:
 
 	/* Disable interrupts (set PRIMASK) */
+#if	1	/* [GS]: To Be Checked. */
 	CPSID	I
+#endif
 
 	/* Clear the PendSV exception (preventing 2nd triggering) */
 	LDR	R2, =NVIC_INT_CTRL
