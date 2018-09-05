@@ -88,10 +88,6 @@ FUNC(void, APPL_CODE) DemoHAL_LedToggle( VAR(DemoHAL_Led, AUTOMATIC) led );
 
 /* Buttons HAL */
 
-#if	(defined(OSEE_API_DYNAMIC))
-#define	BUTTONS_ISR_ID	OSEE_CORTEX_M_PORTC_ISR_ID
-#endif	/* OSEE_API_DYNAMIC */
-
 typedef enum {
 	DEMO_HAL_BUTTON_0,
 	DEMO_HAL_BUTTON_1,
@@ -123,10 +119,6 @@ FUNC(void, APPL_CODE) DemoHAL_ButtonInterruptAck(
 );
 
 /* Timer HAL */
-
-#if	(defined(OSEE_API_DYNAMIC))
-#define	TIMER_ISR_ID	OSEE_CORTEX_M_FTM0_OVF_RELOAD_ISR_ID
-#endif	/* OSEE_API_DYNAMIC */
 
 FUNC(void, APPL_CODE) DemoHAL_TimerInit( VAR(MemSize, AUTOMATIC) period );
 

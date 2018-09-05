@@ -71,7 +71,6 @@
 /*
  * FPCA bits
  */
-#define	CONTROL_FPCA		0x00000004
 #define	CONTROL_FPCA_NEG	0xFFFFFFFB
 
 /******************************************************************************

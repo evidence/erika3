@@ -146,4 +146,3 @@ FUNC(void, APPL_CODE) DemoHAL_SerialWrite(
 #if (defined(__cplusplus))
 }
 #endif
-
