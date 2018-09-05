@@ -529,7 +529,7 @@ FUNC(StatusType, OS_CODE)
       (void)osEE_scheduler_task_preemption_point(osEE_get_kernel(), p_cdb);
     }
 #endif /* !OSEE_STARTOS_RETURN && !OSEE_API_DYNAMIC && !OSEE_HAS_AUTOSTART_TASK */
-
+#if (defined(OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN))
     ev = E_OK;
 
     if (p_ccb->os_status == OSEE_KERNEL_STARTED) {
@@ -540,6 +540,7 @@ FUNC(StatusType, OS_CODE)
       /* OS started correctly: Enable IRQ */
       osEE_hal_enableIRQ();
     }
+#endif /* OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN */
   }
 
   if (ev != E_OK) {
@@ -1375,7 +1376,7 @@ FUNC(StatusType, OS_CODE)
       }
     } else {
       /* This is the case of the IDLE task. we do nothing because tid
-	 is already initialized */
+         is already initialized */
     }
     /* XXX: This SHALL be atomic. */
     (*TaskID) = tid;

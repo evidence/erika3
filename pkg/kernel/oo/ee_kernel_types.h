@@ -667,11 +667,15 @@ extern FUNC(void, OS_CODE)
   void
 );
 
+/* Definition of default terminate activation "kernel" callback (CB), and
+   override declaration handling */
 #if (!defined(OSEE_KERNEL_TERMINATE_ACTIVATION_CB))
 #define OSEE_KERNEL_TERMINATE_ACTIVATION_CB &osEE_scheduler_task_end
 #else
+#if (!defined(OSEE_KERNEL_TERMINATE_ACTIVATION_OVERRIDE))
 #define OSEE_KERNEL_TERMINATE_ACTIVATION_OVERRIDE
-#endif
+#endif /* !OSEE_KERNEL_TERMINATE_ACTIVATION_OVERRIDE */
+#endif /* !OSEE_KERNEL_TERMINATE_ACTIVATION_CB */
 
 #if (defined(__cplusplus))
 }
