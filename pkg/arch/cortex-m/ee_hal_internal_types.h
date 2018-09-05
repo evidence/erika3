@@ -118,24 +118,9 @@ typedef struct OsEE_CHDB_tag {
 } OSEE_CONST OsEE_CHDB;
 #endif /* OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
 
-/*
- * Used to override default definition of osEE_change_context_from_isr2,
- * in ee_kernel_types.h, that is not inlined
- */
-#define	OSEE_ISR2_INLINE	OSEE_STATIC_INLINE
-
 #if	(defined(OSTICKDURATION))
 extern FUNC(void, OS_CODE) osEE_cortex_m_system_timer_handler( void );
 #endif	/* OSTICKDURATION */
-
-/*
- * Used to override default definition of osEE_scheduler_task_end,
- * in ee_std_change_context.c, that is not inlined
- */
-#define	OSEE_KERNEL_TERMINATE_ACTIVATION_OVERRIDE
-
-/* Override Terminate Activation Kernel Callback (CB). */
-#define OSEE_KERNEL_TERMINATE_ACTIVATION_CB osEE_cortex_m_scheduler_task_end
 
 #if (defined(__cplusplus))
 }
