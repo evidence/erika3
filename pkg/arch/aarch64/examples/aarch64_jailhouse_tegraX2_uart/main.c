@@ -1,7 +1,7 @@
 /* ###*B*###
  * Erika Enterprise, version 3
  * 
- * Copyright (C) 2017 Evidence s.r.l.
+ * Copyright (C) 2017 - 2018 Evidence s.r.l.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
  * 
  * You should have received a copy of the GNU General Public License,
  * version 2, along with this program; if not, see
- * <https://www.gnu.org/licenses/old-licenses/gpl-2.0.html >.
+ * < www.gnu.org/licenses/old-licenses/gpl-2.0.html >.
  * 
  * This program is distributed to you subject to the following
  * clarifications and special exceptions to the GNU General Public
