@@ -59,7 +59,6 @@ extern OsEE_stack stack_bottom[];
 OsEE_isr_prio osEE_gic_max_num_prio;
 #endif /* OSEE_GIC_HAS_MAX_NUM_PRIO_DISCOVERY */
 
-#define INVALID_CORE_ID ((OsEE_core_id)-1)
 OsEE_core_id osEE_aarch64_vcore_id_offset = INVALID_CORE_ID;
 
 void osEE_c_start(void)
