@@ -174,7 +174,7 @@ EE_SRCS_S32_SDK += platform/drivers/src/trgmux/trgmux_driver.c
 EE_SRCS_S32_SDK += platform/drivers/src/trgmux/trgmux_hw_access.c
 EE_SRCS_S32_SDK += platform/drivers/src/wdog/wdog_driver.c
 EE_SRCS_S32_SDK += platform/drivers/src/wdog/wdog_hw_access.c
-EE_SRCS_S32_SDK += rtos/osif/osif_baremetal.c
+EE_SRCS_S32_SDK += ee3_s32sdk_osif.c
 
 ifeq	($(findstring S32K148, $(OS_EE_CORTEX_M_MCU)), S32K148)
 EE_SRCS_S32_SDK += platform/drivers/src/enet/enet_driver.c

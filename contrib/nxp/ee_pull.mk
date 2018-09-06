@@ -55,4 +55,6 @@ ifeq	($(call islibopt, OS_EE_LIB_S32_SDK), yes)
 OS_EE_PULL_MK_FILES += $(ERIKA_FILES)/contrib/nxp/ee_nxp_libcfg.mk
 OS_EE_PULL_MK_FILES += $(ERIKA_FILES)/contrib/nxp/ee_nxp_linkcfg.mk
 
+OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/contrib/nxp/src/ee3_s32sdk_osif.c
+
 endif	# OS_EE_LIB_S32_SDK
