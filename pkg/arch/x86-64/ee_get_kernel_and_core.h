@@ -42,14 +42,14 @@
 /** \file   ee_get_kernel_and_core.h
  *  \brief  HAL internal.
  *
- *  This files contains kernal and core HAL for a specific Architecture in
- *  Erika Enterprise.
+ *  This files contains kernel and core entry points data structures retrieving
+ *  and locking functions.
  *
- *  \author Michele Pes
- *  \date 2017
+ *  \author Errico Guidieri
+ *  \date   2017
  */
 
-#if (!defined(OSEE_GET_CURRENT_CORE_H))
+#ifndef OSEE_GET_CURRENT_CORE_H
 #define OSEE_GET_CURRENT_CORE_H
 
 #include "ee_platform_types.h"
@@ -59,28 +59,28 @@
 extern "C" {
 #endif
 
-extern OsEE_KDB KDB;
-extern OsEE_CDB CDB;
-extern OsEE_KCB KCB;
-extern OsEE_CCB CCB;
+extern OsEE_KDB osEE_kdb_var;
+extern OsEE_CDB osEE_cdb_var;
+extern OsEE_KCB osEE_kcb_var;
+extern OsEE_CCB osEE_ccb_var;
 
 #if (defined(OSEE_API_DYNAMIC))
-extern OsEE_TCB   osEE_tcb_array[OSEE_TASK_ARRAY_SIZE + OSEE_USED_CORES];
+extern OsEE_TCB   osEE_tcb_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
 extern OsEE_SN    osEE_sn_array[OSEE_SN_ARRAY_SIZE];
-extern OsEE_TDB   osEE_tdb_array[OSEE_TASK_ARRAY_SIZE + OSEE_USED_CORES];
+extern OsEE_TDB   osEE_tdb_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
 extern OsEE_TDB * osEE_tdb_ptr_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
 #endif /* OSEE_API_DYNAMIC */
 
 OSEE_STATIC_INLINE OsEE_CDB * osEE_get_curr_core ( void ) {
-  return &CDB;
+  return &osEE_cdb_var;
 }
 
 OSEE_STATIC_INLINE OsEE_CDB * osEE_get_core ( CoreIdType core_id ) {
-  return &CDB;
+  return &osEE_cdb_var;
 }
 
 OSEE_STATIC_INLINE OsEE_KDB * osEE_get_kernel ( void ) {
-  return &KDB;
+  return &osEE_kdb_var;
 }
 
 OSEE_STATIC_INLINE void osEE_lock_kernel ( void ) {}
