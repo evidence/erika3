@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<evidence_example version="1" ID="tricore_schedule_tables">
+  <category>TriCore</category>
+  <title>Schedule Table</title>
+
+  <small_descr>
+  Schedule Table example
+  </small_descr>
+
+  <long_descr>
+    This an example that use Schedule Table feature in a multicore
+    configuration (to show cross core TASKs activation and EVENTs setting).
+  </long_descr>
+
+  <file_section>
+    <file     name="conf.oil"/>
+    <file     name="code.c"/>
+    <file     name="shared.h"/>
+    <file     name="ee_tc2x5_board.h"/>
+    <!-- <file     name="appl.oil"/> -->
+    <!-- <file     name="os.oil"/> -->
+    <!-- <file     name="makefile"/> -->
+  </file_section>
+
+</evidence_example>
