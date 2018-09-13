@@ -69,7 +69,6 @@ CPU mySystem {
 		USEDYNAMICAPI = TRUE {
 			TASK_ARRAY_SIZE		= 6;
 			SN_ARRAY_SIZE		= 6;
-			STACK_ARRAY_SIZE	= 3;
 			STACKS_MEMORY_SIZE	= 128;
 		};
 */

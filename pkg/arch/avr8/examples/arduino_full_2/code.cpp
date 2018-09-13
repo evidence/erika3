@@ -91,7 +91,6 @@ OsEE_reg volatile task3_fired;
 OsEE_reg volatile task3_ended;
 OsEE_reg volatile task4_fired;
 OsEE_reg volatile task5_fired;
-OsEE_reg volatile isr2_fired;
 OsEE_reg volatile isr2_armed;
 
 /* Stack Pointers */
@@ -190,28 +189,6 @@ int main(void)
 #if defined(USBCON)
   USBDevice.attach();
 #endif
-
-#if (defined(OSEE_API_DYNAMIC))
-  CreateTask( &Task1, OSEE_TASK_TYPE_BASIC, TASK_FUNC(Task1),
-      1U, 1U, 1U, 128 );
-  CreateTask( &Task2, OSEE_TASK_TYPE_EXTENDED, TASK_FUNC(Task2),
-      2U, 2U, 1U, 128 );
-  CreateTask( &Task3, OSEE_TASK_TYPE_BASIC, TASK_FUNC(Task3),
-      1U, 1U, 1U, OSEE_SYSTEM_STACK );
-  CreateTask( &isr2_clock_id, OSEE_TASK_TYPE_ISR2, clock_handler,
-      1U, 1U, 1U, OSEE_SYSTEM_STACK );
-  CreateTask( &Task4, OSEE_TASK_TYPE_BASIC, TASK_FUNC(Task4),
-      1U, 1U, 1U, OSEE_SYSTEM_STACK );
-  CreateTask( &Task5, OSEE_TASK_TYPE_BASIC, TASK_FUNC(Task5),
-      2U, 2U, 1U, OSEE_SYSTEM_STACK );
-
-  /* Prio settate a 1 dalla BSP all'avvio */
-  SetISR2Source(isr2_clock_id, OSEE_AVR8_TIMER1_COMPA_ISR_ID);
-
-  InitSem(&V, 0);
-
-  SetIdleHook(idle_hook);
-#endif /* OSEE_API_DYNAMIC */
 
   StartOS(OSDEFAULTAPPMODE);
 

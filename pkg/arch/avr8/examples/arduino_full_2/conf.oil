@@ -67,14 +67,6 @@ CPU mySystem {
       MODEL = MEGA_328p;
     };
 
-/*
-    USEDYNAMICAPI = TRUE {
-      TASK_ARRAY_SIZE     = 6;
-      SN_ARRAY_SIZE       = 6;
-      STACKS_MEMORY_SIZE  = 256;
-    };
-*/
-
     USEEXTENSIONAPI = TRUE {
       SEMAPHORE = DEFAULT { NAME = "V"; COUNT=0; };
     };

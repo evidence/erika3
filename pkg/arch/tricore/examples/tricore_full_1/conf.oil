@@ -71,14 +71,6 @@ CPU mySystem {
       REVISION = "D";
     };
 
-/*
-    USEDYNAMICAPI = TRUE {
-      TASK_ARRAY_SIZE     = 8;
-      SN_ARRAY_SIZE       = 8;
-      STACKS_MEMORY_SIZE  = 8192;
-    };
-*/
-
     USEEXTENSIONAPI = TRUE {
       SEMAPHORE = DEFAULT { NAME = "V"; };
     };
