@@ -71,48 +71,58 @@ extern OsEE_TDB   osEE_tdb_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
 extern OsEE_TDB * osEE_tdb_ptr_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
 #endif /* OSEE_API_DYNAMIC */
 
-OSEE_STATIC_INLINE OsEE_CDB * osEE_get_curr_core ( void ) {
+OSEE_STATIC_INLINE OsEE_CDB * osEE_get_curr_core(void) {
   return &osEE_cdb_var;
 }
 
-OSEE_STATIC_INLINE OsEE_CDB * osEE_get_core ( CoreIdType core_id ) {
+OSEE_STATIC_INLINE OsEE_CDB * osEE_get_core(CoreIdType core_id) {
+  (void)core_id;
   return &osEE_cdb_var;
 }
 
-OSEE_STATIC_INLINE OsEE_KDB * osEE_get_kernel ( void ) {
+OSEE_STATIC_INLINE OsEE_KDB * osEE_get_kernel(void) {
   return &osEE_kdb_var;
 }
 
-OSEE_STATIC_INLINE void osEE_lock_kernel ( void ) {}
+OSEE_STATIC_INLINE void osEE_lock_kernel(void) {}
 
-OSEE_STATIC_INLINE OsEE_KDB * osEE_lock_and_get_kernel ( void ) {
+OSEE_STATIC_INLINE OsEE_KDB * osEE_lock_and_get_kernel(void) {
   osEE_lock_kernel ();
   return osEE_get_kernel();
 }
 
-OSEE_STATIC_INLINE void osEE_unlock_kernel ( void ) {}
+OSEE_STATIC_INLINE void osEE_unlock_kernel(void) {}
 
-OSEE_STATIC_INLINE CoreIdType osEE_lock_and_get_curr_core_id ( void ) {
+OSEE_STATIC_INLINE CoreIdType osEE_lock_and_get_curr_core_id(void) {
   return 0;
 }
 
-OSEE_STATIC_INLINE void osEE_lock_core_id ( CoreIdType core_id ) {}
+OSEE_STATIC_INLINE void osEE_lock_core_id(CoreIdType core_id) {
+  (void)core_id;
+}
 
-OSEE_STATIC_INLINE void osEE_lock_core ( OsEE_CDB * const p_cdb ) {}
+OSEE_STATIC_INLINE void osEE_lock_core(OsEE_CDB * const p_cdb) {
+  (void)p_cdb;
+}
 
-OSEE_STATIC_INLINE OsEE_CDB * osEE_lock_and_get_core ( CoreIdType core_id ) {
+OSEE_STATIC_INLINE OsEE_CDB * osEE_lock_and_get_core(CoreIdType core_id) {
+  (void)core_id;
   return osEE_get_curr_core();
 }
 
-OSEE_STATIC_INLINE OsEE_CDB * osEE_lock_and_get_curr_core ( void ) {
+OSEE_STATIC_INLINE OsEE_CDB * osEE_lock_and_get_curr_core(void) {
   return osEE_get_curr_core();
 }
 
-OSEE_STATIC_INLINE void osEE_unlock_core_id ( CoreIdType core_id ) {}
+OSEE_STATIC_INLINE void osEE_unlock_core_id(CoreIdType core_id) {
+  (void)core_id;
+}
 
-OSEE_STATIC_INLINE void osEE_unlock_core ( OsEE_CDB * const p_cdb ) {}
+OSEE_STATIC_INLINE void osEE_unlock_core(OsEE_CDB * const p_cdb) {
+  (void)p_cdb;
+}
 
-OSEE_STATIC_INLINE void osEE_unlock_curr_core ( void ) {}
+OSEE_STATIC_INLINE void osEE_unlock_curr_core(void) {}
 
 #if (defined(__cplusplus))
 }

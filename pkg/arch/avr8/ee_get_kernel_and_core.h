@@ -42,8 +42,8 @@
 /** \file   ee_get_kernel_and_core.h
  *  \brief  HAL internal.
  *
- *  This files contains kernal and core HAL for a specific Architecture in
- *  Erika Enterprise.
+ *  This files contains kernel and core entry points data structures retrieving
+ *  and locking functions.
  *
  *  \author Errico Guidieri
  *  \author Giuseppe Serano
@@ -77,6 +77,7 @@ OSEE_STATIC_INLINE OsEE_CDB * osEE_get_curr_core(void) {
 }
 
 OSEE_STATIC_INLINE OsEE_CDB * osEE_get_core(CoreIdType core_id) {
+  (void)core_id;
   return &osEE_cdb_var;
 }
 
@@ -97,11 +98,16 @@ OSEE_STATIC_INLINE CoreIdType osEE_lock_and_get_curr_core_id(void) {
   return 0;
 }
 
-OSEE_STATIC_INLINE void osEE_lock_core_id(CoreIdType core_id) {}
+OSEE_STATIC_INLINE void osEE_lock_core_id(CoreIdType core_id) {
+  (void)core_id;
+}
 
-OSEE_STATIC_INLINE void osEE_lock_core(OsEE_CDB * const p_cdb) {}
+OSEE_STATIC_INLINE void osEE_lock_core(OsEE_CDB * const p_cdb) {
+  (void)p_cdb;
+}
 
 OSEE_STATIC_INLINE OsEE_CDB * osEE_lock_and_get_core(CoreIdType core_id) {
+  (void)core_id;
   return osEE_get_curr_core();
 }
 
@@ -109,9 +115,13 @@ OSEE_STATIC_INLINE OsEE_CDB * osEE_lock_and_get_curr_core(void) {
   return osEE_get_curr_core();
 }
 
-OSEE_STATIC_INLINE void osEE_unlock_core_id(CoreIdType core_id) {}
+OSEE_STATIC_INLINE void osEE_unlock_core_id(CoreIdType core_id) {
+  (void)core_id;
+}
 
-OSEE_STATIC_INLINE void osEE_unlock_core(OsEE_CDB * const p_cdb) {}
+OSEE_STATIC_INLINE void osEE_unlock_core(OsEE_CDB * const p_cdb) {
+  (void)p_cdb;
+}
 
 OSEE_STATIC_INLINE void osEE_unlock_curr_core(void) {}
 

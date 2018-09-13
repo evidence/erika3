@@ -39,19 +39,19 @@
  * project.
  * ###*E*### */
 
-/** \file	ee_get_kernel_and_core.h
- *  \brief	HAL internal.
+/** \file   ee_get_kernel_and_core.h
+ *  \brief  HAL internal.
  *
- *  This files contains kernal and core HAL for a specific Architecture in
- *  Erika Enterprise.
+ *  This files contains kernel and core entry points data structures retrieving
+ *  and locking functions.
  *
- *  \author	Errico Guidieri
- *  \author	Giuseppe Serano
- *  \date	2018
+ *  \author Errico Guidieri
+ *  \author Giuseppe Serano
+ *  \date   2018
  */
 
 #ifndef OSEE_GET_CURRENT_CORE_H
-#define	OSEE_GET_CURRENT_CORE_H
+#define OSEE_GET_CURRENT_CORE_H
 
 #include "ee_platform_types.h"
 #include "ee_kernel_types.h"
@@ -66,9 +66,9 @@ extern OsEE_KCB osEE_kcb_var;
 extern OsEE_CCB osEE_ccb_var;
 
 #if (defined(OSEE_API_DYNAMIC))
-extern OsEE_TCB   osEE_tcb_array[OSEE_TASK_ARRAY_SIZE + OSEE_USED_CORES];
+extern OsEE_TCB   osEE_tcb_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
 extern OsEE_SN    osEE_sn_array[OSEE_SN_ARRAY_SIZE];
-extern OsEE_TDB   osEE_tdb_array[OSEE_TASK_ARRAY_SIZE + OSEE_USED_CORES];
+extern OsEE_TDB   osEE_tdb_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
 extern OsEE_TDB * osEE_tdb_ptr_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
 #endif /* OSEE_API_DYNAMIC */
 
@@ -129,4 +129,4 @@ OSEE_STATIC_INLINE void osEE_unlock_curr_core(void) {}
 }
 #endif
 
-#endif	/* OSEE_GET_CURRENT_CORE_H */
+#endif /* OSEE_GET_CURRENT_CORE_H */
