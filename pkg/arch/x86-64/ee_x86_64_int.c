@@ -172,7 +172,7 @@ void set_interrupt_handler(uint32_t source_id, OsEE_void_cb callback)
 
 void call_int(unsigned int source_id)
 {
-  osEE_x86_64_int_send_ipi(osEE_get_curr_core_id(), source_id);
+  osEE_x86_64_int_send_ipi(osEE_x86_64_get_core_id_raw(), source_id);
 }
 
 #if (defined(OSEE_API_DYNAMIC))
