@@ -98,6 +98,7 @@ CPU mySystem {
 
   APPDATA x86_64_jailhouse_hello_world {
     APP_SRC = "main.c";
+    APP_SRC = "hal.c";
   };
 
   TASK Task1 {

@@ -39,74 +39,81 @@
  * project.
  * ###*E*### */
 
-#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 #include <inmate.h>
 #include "ee.h"
-#include "platform.h"
+#include "hal.h"
+
+#define ee_print(...) printk(__VA_ARGS__)
 
 DeclareTask(Task1);
 DeclareTask(Task2);
 
-ee_time_t task_t2, isr_t2;
+OSEE_TICK_TYPE task_t2, isr_t2;
 
 
 /* First task */
 TASK(Task1)
 {
-	static ee_time_t task_act_min = 1000000;
-	static ee_time_t task_act_max = 0;
-	static ee_time_t task_exit_min = 1000000;
-	static ee_time_t task_exit_max = 0;
-	static ee_time_t isr_act_min = 1000000;
-	static ee_time_t isr_act_max = 0;
-	static ee_time_t isr_exit_min = 1000000;
-	static ee_time_t isr_exit_max = 0;
+	static OSEE_TICK_TYPE task_act_min = 1000000;
+	static OSEE_TICK_TYPE task_act_max = 0;
+	static OSEE_TICK_TYPE task_exit_min = 1000000;
+	static OSEE_TICK_TYPE task_exit_max = 0;
+	static OSEE_TICK_TYPE isr_act_min = 1000000;
+	static OSEE_TICK_TYPE isr_act_max = 0;
+	static OSEE_TICK_TYPE isr_exit_min = 1000000;
+	static OSEE_TICK_TYPE isr_exit_max = 0;
 
-	ee_time_t task_t1, task_t3, isr_t1, isr_t3;
+	OSEE_TICK_TYPE task_t1, task_t3, isr_t1, isr_t3;
 
-	task_t1 = ee_get_time();
+	task_t1 = DemoHAL_TimerGetValue();
 	ActivateTask(Task2);
-	task_t3 = ee_get_time();
+	task_t3 = DemoHAL_TimerGetValue();
 
-	isr_t1 = ee_get_time();
-	call_int(CUSTOM_ISR);
-	isr_t3 = ee_get_time();
+	isr_t1 = DemoHAL_TimerGetValue();
+	DemoHAL_ISRTrigger(DEMO_HAL_ISR_0);
+	isr_t3 = DemoHAL_TimerGetValue();
 
 
 	if (task_t2 > task_t1) {
-		ee_time_t task_act = task_t2 - task_t1;
+		OSEE_TICK_TYPE task_act = task_t2 - task_t1;
 		if (task_act < task_act_min)
 			task_act_min = task_act;
 		if (task_act > task_act_max)
 			task_act_max = task_act;
-		ee_print("Task act. time (ns):\tMin=%lu\tCurrent=%lu\tMax=%lu\n", task_act_min, task_act, task_act_max);
+		ee_print("Task act. time (ns):\tMin=%lu\tCurrent=%lu\tMax=%lu\n",
+				task_act_min, task_act, task_act_max);
 	}
 
 	if (task_t3 > task_t2) {
-		ee_time_t task_exit = task_t3 - task_t2;
+		OSEE_TICK_TYPE task_exit = task_t3 - task_t2;
 		if (task_exit < task_exit_min)
 			task_exit_min = task_exit;
 		if (task_exit > task_exit_max)
 			task_exit_max = task_exit;
-		ee_print("Task exit time (ns):\tMin=%lu\tCurrent=%lu\tMax=%lu\n", task_exit_min, task_exit, task_exit_max);
+		ee_print("Task exit time (ns):\tMin=%lu\tCurrent=%lu\tMax=%lu\n",
+				task_exit_min, task_exit, task_exit_max);
 	}
 
 	if (isr_t2 > isr_t1) {
-		ee_time_t isr_act = isr_t2 - isr_t1;
+		OSEE_TICK_TYPE isr_act = isr_t2 - isr_t1;
 		if (isr_act < isr_act_min)
 			isr_act_min = isr_act;
 		if (isr_act > isr_act_max)
 			isr_act_max = isr_act;
-		ee_print("ISR call time (ns):\tMin=%lu\tCurrent=%lu\tMax=%lu\n", isr_act_min, isr_act, isr_act_max);
+		ee_print("ISR call time (ns):\tMin=%lu\tCurrent=%lu\tMax=%lu\n",
+				isr_act_min, isr_act, isr_act_max);
 	}
 
 	if (isr_t3 > isr_t2) {
-		ee_time_t isr_exit = isr_t3 - isr_t2;
+		OSEE_TICK_TYPE isr_exit = isr_t3 - isr_t2;
 		if (isr_exit < isr_exit_min)
 			isr_exit_min = isr_exit;
 		if (isr_exit > isr_exit_max)
 			isr_exit_max = isr_exit;
-		ee_print("ISR exit time (ns):\tMin=%lu\tCurrent=%lu\tMax=%lu\n", isr_exit_min, isr_exit, isr_exit_max);
+		ee_print("ISR exit time (ns):\tMin=%lu\tCurrent=%lu\tMax=%lu\n",
+				isr_exit_min, isr_exit, isr_exit_max);
 	}
 
 	TerminateTask();
@@ -116,14 +123,14 @@ TASK(Task1)
 /* Activated task */
 TASK(Task2)
 {
-	task_t2 = ee_get_time();
+	task_t2 = DemoHAL_TimerGetValue();
 	TerminateTask();
 }
 
 
 void isr_handler(void)
 {
-	isr_t2 = ee_get_time();
+	isr_t2 = DemoHAL_TimerGetValue();
 }
 
 

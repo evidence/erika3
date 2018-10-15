@@ -58,7 +58,8 @@
 
  <file_section>
   <file     name="main.c"/>
-  <file     name="platform.h"/>
+  <file     name="hal.c"/>
+  <file     name="hal.h"/>
   <file     name="conf.oil"/>
  </file_section>
 
