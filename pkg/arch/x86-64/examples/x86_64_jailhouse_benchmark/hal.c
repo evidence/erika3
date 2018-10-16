@@ -77,6 +77,7 @@ FUNC(void, APPL_CODE) DemoHAL_ISRTrigger(
 /* Timer HAL */
 FUNC(void, APPL_CODE) DemoHAL_TimerInit( VAR(MemSize, AUTOMATIC) period ) {}
 
+/*! \brief      Return timer value (expressed in ns) */
 FUNC(OSEE_TICK_TYPE, APPL_CODE) DemoHAL_TimerGetValue( void ) {
 	return tsc_read();
 }
