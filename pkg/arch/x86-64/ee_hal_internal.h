@@ -166,14 +166,7 @@ OSEE_STATIC_INLINE MemSize osEE_hal_get_msb (OsEE_rq_mask mask) {
 /*==============================================================================
                               Start-up and ISR2
  =============================================================================*/
-#define X2APIC_EOI        0x80b
-#define X2APIC_SPIV       0x80f
-#define X2APIC_ICR        0x830
 
-#define APIC_EOI_ACK      0
-
-extern void osEE_x86_64_int_init(void);
-extern void osEE_x86_64_int_send_ipi(unsigned int cpu_id, unsigned int vector);
 
 #if (defined(OSEE_HAS_SYSTEM_TIMER))
 extern void osEE_x86_64_system_timer_init(void);
@@ -186,8 +179,7 @@ OSEE_STATIC_INLINE FUNC(void, OS_CODE)
   P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST) p_to
 )
 {
-  osEE_x86_64_write_msr(X2APIC_EOI, APIC_EOI_ACK);
-
+  osEE_x86_64_int_send_eoi();
   osEE_change_context_from_task_end(p_from, p_to);
 }
 

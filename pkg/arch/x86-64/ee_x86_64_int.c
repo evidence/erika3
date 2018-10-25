@@ -50,10 +50,9 @@
  */
 
 #include "ee_internal.h"
+#include "ee_platform_config.h"
 
-#define NUM_IDT_DESC            64
-#define APIC_LVL_ASSERT         (1 << 14)
-#define INMATE_CS64             0x10
+#define NUM_IDT_DESC            256
 
 #define IDT_ATTR_PRESENT        0x80
 #define IDT_ATTR_I386_INT_GATE  0xE
@@ -102,22 +101,12 @@ static inline void osEE_x86_64_write_idtr(struct OsEE_x86_64_dtr *val)
     asm volatile("lidt %0" : : "m" (*val));
 }
 
-void osEE_x86_64_int_send_ipi(unsigned int cpu_id, unsigned int vector)
-{
-    /* Fig. 10-28 Intel vol 3, set parameters + assert level */
-    osEE_x86_64_write_msr(X2APIC_ICR,
-                          ((uint64_t)cpu_id << 32) | APIC_LVL_ASSERT | vector);
-}
-
 void osEE_x86_64_int_init(void)
 {
     struct OsEE_x86_64_dtr dtr;
 
     dtr.limit = sizeof(osEE_x86_64_idt_entry) - 1;
     dtr.base = osEE_x86_64_idt_entry;
-
-    /* Set spurious interrupt vector 255 */
-    osEE_x86_64_write_msr(X2APIC_SPIV, 0x1ff);
 
     osEE_x86_64_write_idtr(&dtr);
 }
@@ -130,7 +119,8 @@ static void __attribute__((used)) osEE_x86_64_isr_wrapper(unsigned int vector)
     if (p_int->category == INT_CAT_ISR1) {
         OsEE_void_cb handler = (OsEE_void_cb)p_int->isr_hnd;
         (*handler)();
-        osEE_x86_64_write_msr(X2APIC_EOI, APIC_EOI_ACK);
+	//TODO !spurious
+        osEE_x86_64_int_send_eoi();
     }
     else
         osEE_activate_isr2(p_int->isr_hnd);
@@ -150,7 +140,7 @@ static void osEE_x86_64_set_int_handler_(uint32_t  source_id,
                                 + (source_id * 16);
 
     p_idt_entry->offset_1 = entry & 0xffff;
-    p_idt_entry->selector = X86_TABLE_GDT | X86_PRIV_LEVEL_0 | INMATE_CS64;
+    p_idt_entry->selector = X86_TABLE_GDT | X86_PRIV_LEVEL_0 | CODE_SELECTOR_64;
     p_idt_entry->ist = 0;
     p_idt_entry->type_attr = IDT_ATTR_PRESENT | IDT_ATTR_I386_INT_GATE;
     p_idt_entry->offset_2 = (entry >> 16) & 0xffff;
@@ -236,7 +226,7 @@ asm(
 
 "osEE_x86_64_irq_base: \n"
 "vector=0   \n"
-".rept 64   \n"
+".rept 256   \n"
     "irq_prologue vector    \n\t"
     "vector = vector + 1    \n\t"
     ".balign 16             \n\t"

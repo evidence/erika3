@@ -1,4 +1,3 @@
-# ###*B*###
 # Erika Enterprise, version 3
 # 
 # Copyright (C) 2017 - 2018 Evidence s.r.l.
@@ -15,7 +14,7 @@
 # 
 # You should have received a copy of the GNU General Public License,
 # version 2, along with this program; if not, see
-# < www.gnu.org/licenses/old-licenses/gpl-2.0.html >.
+# <https://www.gnu.org/licenses/old-licenses/gpl-2.0.html >.
 # 
 # This program is distributed to you subject to the following
 # clarifications and special exceptions to the GNU General Public
@@ -45,20 +44,26 @@
 ## This makefile contains the list of file for a specific Architecture to be
 ## compiled in Erika Enterprise library.
 ##
-## \author	Michele Pes
-## \date	2017
+## \author	Ida Savino
+## \date	2018
 
 ifeq	($(call iseeopt, OSEE_ARCH_X86_64), yes)
 
+EE_SRCS += ee_x86_64_startup.S
 EE_SRCS += ee_x86_64_boot.c
 EE_SRCS += ee_x86_64_ctx.S
+EE_SRCS += ee_x86_64_libc_syscall.c
+
+EE_SRCS += ee_x86_64_memory_mgmt.c
 
 EE_SRCS += ee_x86_64_int.c
-EE_SRCS += ee_x86_64_tsc.c
-EE_SRCS += ee_x86_64_x2apic.c
+EE_SRCS += ee_x86_64_apic.c
+EE_SRCS += ee_x86_64_ioapic.c
 
+EE_SRCS += src/ee_uart.c
+EE_SRCS += src/ee_pci.c
 ifeq ($(call iseeopt, OSEE_API_DYNAMIC), yes)
-EE_SRCS += ee_std_hal_init.c
+	EE_SRCS += ee_std_hal_init.c
 endif # OSEE_DYNAMIC_API
 
 ifeq ($(call iseeopt, OSEE_HAS_SYSTEM_TIMER), yes)

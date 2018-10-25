@@ -54,6 +54,10 @@ ifeq ($(call iseeopt, OSEE_PLATFORM_JAILHOUSE), yes)
 OSEE_PLATFORM := jailhouse
 endif
 
+ifeq ($(call iseeopt, OSEE_PLATFORM_X86_64_BARE), yes)
+OSEE_PLATFORM := bare
+endif
+
 ifndef OSEE_PLATFORM
 $(error "Not valid platform provided!")
 endif
@@ -71,6 +75,7 @@ OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/ee_get_kernel_and_core.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/ee_hal.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/ee_hal_internal_types.h
 
+OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/$(OSEE_PLATFORM)/ee_platform_config.h
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/$(OSEE_PLATFORM)/ee_x86_64_boot.c
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/std/arch/ee_std_hal_init.c
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/ee_x86_64_int.c
@@ -81,12 +86,44 @@ OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/ee_hal_internal.h
 
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/ee_internal.h
 
+ifeq    ($(call iseeopt, OSEE_PLATFORM_X86_64_BARE), yes)
+OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/$(OSEE_PLATFORM)/ee_x86_64_startup.S
+OS_EE_PULL_MK_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/$(OSEE_PLATFORM)/ee_x86_64_linker.lds
+
+OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/$(OSEE_PLATFORM)/ee_x86_64_libc_syscall.c
+
+OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/$(OSEE_PLATFORM)/ee_ioport.h
+OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/$(OSEE_PLATFORM)/ee_uart.h
+OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/$(OSEE_PLATFORM)/ee_uart.c
+
+OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/$(OSEE_PLATFORM)/ee_x86_64_memory_mgmt.h
+OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/$(OSEE_PLATFORM)/ee_x86_64_memory_mgmt.c
+
+OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/$(OSEE_PLATFORM)/ee_x86_64_ioapic.c
+endif
+
+OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/ee_pci.h
+OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/ee_pci.c
+
+OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/$(OSEE_PLATFORM)/ee_print.h
+
 ifneq ($(OSEE_X86_64_BOARD),)
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/$(OSEE_X86_64_BOARD)/ee_board.h
 endif # OSEE_X86_64_BOARD
 
+OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/ee_x86_64_tsc.h
+OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/ee_x86_64_tsc.c
+
 ifeq ($(call iseeopt, OSEE_HAS_SYSTEM_TIMER), yes)
-OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/$(OSEE_PLATFORM)/ee_x86_64_apic_timer.c
+OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/ee_x86_64_system_timer.c
 endif # OSEE_HAS_SYSTEM_TIMER
+
+#INTERRUPT CONTROLLER
+ifeq ($(call iseeopt, OSEE_PLATFORM_X86_64_BARE), yes)
+OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/ee_x86_64_apic.c
+endif
+ifeq ($(call iseeopt, OSEE_PLATFORM_JAILHOUSE), yes)
+OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/ee_x86_64_x2apic.c
+endif
 
 endif # OSEE_ARCH_X86_64
