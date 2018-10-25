@@ -209,6 +209,8 @@ FUNC(void, OS_CODE_NO_RETURN)
         stack for "nothing", this seems deadly, but indeed it's not a big
         deal: it will be CSA restoring ("ret" instruction after
         osEE_hal_restore_ctx) to fix this. */
+/* Touch unused parameter */
+  (void)kernel_cb;
 /* Unwind CSA list */
   {
 /* Obtain Free CSA list head */
@@ -261,8 +263,6 @@ FUNC(void, OS_CODE_NO_RETURN)
   for(;;) {
     ;
   }
-/* Touch unused parameter */
-  (void)kernel_cb;
 }
 
 FUNC(void, OS_CODE) OSEE_NEVER_INLINE

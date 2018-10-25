@@ -115,7 +115,7 @@ typedef void (* OsEE_void_cb) ( void );
 typedef __k1_fspinlock_t      OsEE_spin_lock __attribute__((aligned (8)));
 #define OSEE_SPIN_UNLOCKED    _K1_FSPIN_UNLOCKED
 
-typedef struct  OsEE_barrier_tag {
+typedef struct {
   OsEE_spin_lock        barrier_lock;
   uint32_t volatile     value;
 } OsEE_barrier;

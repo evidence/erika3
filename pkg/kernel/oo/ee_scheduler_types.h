@@ -143,8 +143,11 @@ OSEE_STATIC_ASSERT(
 typedef OSEE_RQ_MASK_TYPE           OsEE_rq_mask;
 /* The following Macro is used against the result of osEE_hal_get_msb
  * that return an integer value that can be safely used as array index so a
- * MemSize (by definition). */
+ * MemSize (by definition). Can be overridden by porting with a most
+ * meaningful value */
+#if (!defined(OSEE_RQ_MASK_EMPTY))
 #define OSEE_RQ_MASK_EMPTY          ((MemSize)-1)
+#endif /* !OSEE_RQ_MASK_EMPTY */
 
 typedef struct {
   P2VAR(OsEE_SN, TYPEDEF, OS_APPL_DATA) p_head;

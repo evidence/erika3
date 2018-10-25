@@ -47,7 +47,7 @@
  *  \date   2018
  */
 
-#if (!defined(OSEE_HAL_MC_INTERNAL_H))
+#ifndef OSEE_HAL_MC_INTERNAL_H
 #define OSEE_HAL_MC_INTERNAL_H
 
 #include "ee_cfg.h"
@@ -56,6 +56,10 @@
 
 #include "ee_hal_mc.h"
 #include "ee_kernel_types.h"
+
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
 void osEE_hal_sync_barrier(OsEE_barrier * p_bar,
   OsEE_reg volatile * p_wait_mask, OsEE_kernel_cb p_synch_cb);
@@ -70,7 +74,7 @@ typedef struct OsEE_tc_CPU_PC_bits_tag
 } OsEE_tc_CPU_PC_bits;
 
 /** \brief Program Counter Register */
-typedef union OsEE_tc_CPU_PC_tag
+typedef union
 {
 /** \brief Unsigned access */
   OsEE_reg            reg;
@@ -105,7 +109,7 @@ typedef struct OsEE_tc_CPU_DBGSR_bits_tag
 } OsEE_tc_CPU_DBGSR_bits;
 
 /** \brief Debug Status Register */
-typedef union OsEE_tc_CPU_DBGSR_tag
+typedef union
 {
 /** \brief Unsigned access */
   OsEE_reg               reg;
@@ -116,7 +120,7 @@ typedef union OsEE_tc_CPU_DBGSR_tag
 #define OSEE_TC_CPU1_DBGSR (*(OsEE_tc_CPU_DBGSR volatile *)0xF883FD00U)
 #define OSEE_TC_CPU2_DBGSR (*(OsEE_tc_CPU_DBGSR volatile *)0xF885FD00U)
 
-/* Value that have to be write to DBGSR to put the Core on RUN at reset time */
+/* Value that have to be written to DBGSR to put the Core on RUN at reset time */
 #define OSEE_RESET_DBGSR_HALT (2U)
 /** @brief start the core represented by id parameter from the statically
            configured start-up address */
@@ -140,6 +144,7 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_hal_start_core(
     break;
 #endif /* OSEE_CORE_ID_VALID_MASK & 0x4U */
     default:
+      /* there are only three registers in the CPU */
     break;
   }
 }
@@ -158,7 +163,7 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_hal_start_core(
 
 #define OSEE_TC_GPSR_ADDR_SR(g, n)\
   (OSEE_TC_GPSR_BASE + OSEE_TC_GPSR_GROUP_OFFSET(g) + \
-    ((((OsEE_reg)n <= 2U)? (OsEE_reg)n: (OsEE_reg)0U) * 0x4U))
+   ((((OsEE_reg)(n) <= 2U)? (OsEE_reg)(n): (OsEE_reg)0U) * 0x4U))
 
 #define OSEE_TC_GPSR_SRC(c, n)\
   (*(OsEE_reg volatile *)OSEE_TC_GPSR_ADDR_SR(c, n))
@@ -251,6 +256,10 @@ OSEE_TC_INT_SRB2 = OSEE_CORE_ID_VALID_MASK;
 #endif
 #endif /* OSEE_TC_GPSR_G */
 }
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* !OSEE_SINGLECORE */
 #endif /* !OSEE_HAL_MC_INTERNAL_H */

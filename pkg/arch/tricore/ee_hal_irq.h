@@ -45,7 +45,7 @@
  *  \author Errico Guidieri
  *  \date   2017
  */
-#if (!defined(OSEE_HAL_IRQ_H))
+#ifndef OSEE_HAL_IRQ_H
 #define OSEE_HAL_IRQ_H
 
 #include "ee_cfg.h"

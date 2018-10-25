@@ -141,42 +141,48 @@ LIBDEP += $(LDDEPS)
 # Boot code containing _start should stay outside of the library in
 # case of normal compilation
 
-# [GS]: Added %.s pattern to build not prerocessed assembly sources.
-
+# [GS]: Added %.s pattern to build not preprocessed assembly sources.
+# [EG]: Added %.asm as alternative pattern for assembly sources.
 LIBEESRCS	+= $(EE_SRCS) $(OS_EE_CFG_SRCS)
-LIBEEOBJS	:=							       \
-	$(addprefix $(OS_EE_OBJ_DIR)/,					       \
-		$(patsubst %.cpp,%.cpp.o,				       \
-			$(patsubst %.c,%.c.o,				       \
-				$(patsubst %.s,%.s.o,			       \
-					$(patsubst %.S,%.S.o,$(LIBEESRCS))     \
-				)					       \
-			)						       \
-		)							       \
+LIBEEOBJS	:=												\
+	$(addprefix $(OS_EE_OBJ_DIR)/,							\
+		$(patsubst %.cpp,%.cpp.o,							\
+			$(patsubst %.c,%.c.o,							\
+				$(patsubst %.s,%.s.o,						\
+					$(patsubst %.asm,%.asm.o,				\
+						$(patsubst %.S,%.S.o,$(LIBEESRCS))	\
+					)										\
+				)											\
+			)												\
+		)													\
 	)
 
 LIBSRCS		+= $(LIB_SRCS)
-LIBOBJS		:=							       \
-	$(addprefix $(OS_EE_OBJ_DIR)/,					       \
-		$(patsubst %.cpp,%.cpp.o,				       \
-			$(patsubst %.c,%.c.o,				       \
-				$(patsubst %.s,%.s.o,			       \
-					$(patsubst %.S,%.S.o,$(LIBSRCS))       \
-				)					       \
-			)						       \
-		)							       \
+LIBOBJS		:=											\
+	$(addprefix $(OS_EE_OBJ_DIR)/,						\
+		$(patsubst %.cpp,%.cpp.o,						\
+			$(patsubst %.c,%.c.o,						\
+				$(patsubst %.s,%.s.o,					\
+					$(patsubst %.asm,%.asm.o,			\
+						$(patsubst %.S,%.S.o,$(LIBSRCS))\
+					)									\
+				)										\
+			)											\
+		)												\
 	)
 
 SRCS		+= $(sort $(OS_EE_APP_CFG_SRCS))
-OBJS		:=							       \
-	$(addprefix $(OS_EE_OBJ_DIR)/,					       \
-		$(patsubst %.cpp,%.cpp.o,				       \
-			$(patsubst %.c,%.c.o,				       \
-				$(patsubst %.s,%.s.o,			       \
-					$(patsubst %.S,%.S.o,$(SRCS))	       \
-				)					       \
-			)						       \
-		)							       \
+OBJS		:=											\
+	$(addprefix $(OS_EE_OBJ_DIR)/,						\
+		$(patsubst %.cpp,%.cpp.o,						\
+			$(patsubst %.c,%.c.o,						\
+				$(patsubst %.s,%.s.o,					\
+					$(patsubst %.asm,%.asm.o,			\
+						$(patsubst %.S,%.S.o,$(SRCS))	\
+					)									\
+				)										\
+			)											\
+		)												\
 	)
 
 # Variable used to import dependencies
@@ -207,12 +213,15 @@ EE_VPATH +=	$(call short_native_path,$(abspath $(OS_EE_APP_BASE_DIR))) \
 		$(call short_native_path,$(abspath $(OS_EE_APP_OUT_DIR)))
 endif	# OS_EE_BUILD
 
-# [GS]: Added %.s pattern to build not prerocessed assembly sources.
+# [GS]: Added %.s pattern to build not preprocessed assembly sources.
+# [EG]: Added %.asm as alternative pattern to build not preprocessed assembly
+#       sources.
 
 vpath %.c	$(EE_VPATH)
 vpath %.s	$(EE_VPATH)
 vpath %.S	$(EE_VPATH)
 vpath %.cpp	$(EE_VPATH)
+vpath %.asm	$(EE_VPATH)
 
 ##
 ## Directories

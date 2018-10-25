@@ -499,7 +499,7 @@ LOCAL_INLINE FUNC(CoreIdType, OS_CODE)
 }
 
 /* FIXME: from specification return value should be uint32 */
-FUNC(CoreIdType, OS_CODE)
+FUNC(CoreNumType, OS_CODE)
   GetNumberOfActivatedCores
 (
   void

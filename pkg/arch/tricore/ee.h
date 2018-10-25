@@ -49,7 +49,7 @@
  *  \date   2017
  */
 
-#if (!defined(OSEE_H))
+#ifndef OSEE_H
 #define OSEE_H
 
 #include "ee_cfg.h"

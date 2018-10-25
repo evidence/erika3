@@ -54,7 +54,10 @@ ifneq	($(call iseeopt, OS_EE_2), yes)
 
 ifeq	($(call iseeopt, OS_EE_GCC), yes)
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/common/compilers/ee_compiler_gcc.h
-endif	# OS_EE_ARCH_AVR8
+endif	# OS_EE_GCC
+ifeq	($(call iseeopt, OSEE_WR_DIAB), yes)
+OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/common/compilers/ee_compiler_wr_diab.h
+endif	# OSEE_WR_DIAB
 
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/common/compilers/ee_compiler_cfg.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/common/compilers/ee_compiler.h

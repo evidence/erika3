@@ -53,7 +53,7 @@
  *  \date   2017
  */
 
-#if (!defined(OSEE_PLATFORM_TYPES_H))
+#ifndef OSEE_PLATFORM_TYPES_H
 #define OSEE_PLATFORM_TYPES_H
 
 #include "ee_cfg.h"
@@ -103,19 +103,19 @@ typedef uint32_t              OsEE_stack;
     An implementation shall offer a constant OS_CORE_ID_MASTER of the
     type CoreIDType that refers to the master core. (SRS_Os_80001) */
 /** @brief ID type for cores */
-typedef enum OsEE_core_id_tag {
-  OS_CORE_ID_0 = 0x0,
+typedef enum {
+  OS_CORE_ID_0 = 0,
   OS_CORE_ID_MASTER = OS_CORE_ID_0,
 #if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x2U)
-  OS_CORE_ID_1 = (OS_CORE_ID_MASTER + 0x1),
+  OS_CORE_ID_1 = 1,
 #endif /* OSEE_CORE_ID_VALID_MASK & 0x2U */
 #if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x4U)
-  OS_CORE_ID_2 = (OS_CORE_ID_MASTER + 0x2),
+  OS_CORE_ID_2 = 2,
 #endif /* OSEE_CORE_ID_VALID_MASK & 0x4U */
   OS_CORE_ID_ARR_SIZE
 } OsEE_core_id;
 
-#define OSEE_CORE_ID_MAX ((OsEE_core_id)(OS_CORE_ID_ARR_SIZE - 1))
+#define OSEE_CORE_ID_MAX      ((CoreNumType)OS_CORE_ID_ARR_SIZE - 1U)
 #define OSEE_CORE_ID_TYPE     OsEE_core_id
 
 typedef uint8_t               OsEE_prio;
@@ -131,8 +131,8 @@ typedef uint16_t              OsEE_isr_src_id;
 typedef OsEE_reg volatile OsEE_spin_lock;
 
 /** @brief Type for inter cpu barriers */
-typedef struct OsEE_barrier_tag {
-  volatile OsEE_reg volatile value;
+typedef struct {
+  OsEE_reg volatile value;
 } OsEE_barrier;
 #endif /* !OSEE_SINGLECORE */
 

@@ -199,7 +199,7 @@ FUNC_P2VAR(OsEE_SN, OS_APPL_DATA, OS_CODE)
 (
   P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST)   p_tdb_waking_up,
   VAR(EventMaskType, AUTOMATIC)               Mask,
-  P2VAR(StatusType, AUTOMATIC, OS_APPL_DATA)  p_ev  
+  P2VAR(StatusType, AUTOMATIC, OS_APPL_DATA)  p_ev
 );
 
 LOCAL_INLINE FUNC(void, OS_CODE)
@@ -663,7 +663,7 @@ LOCAL_INLINE FUNC(void, OS_CODE)
       /* Remove this core from the waiting mask: this core has already reached
          the barrier/ it's already shutdown */
       p_kcb->ar_shutdown_mask &=
-        (~((CoreMaskType)1U << osEE_get_curr_core_id()));
+        (~((CoreMaskType)1U << (OsEE_reg)osEE_get_curr_core_id()));
       /* Unlock the kernel and continue */
       osEE_unlock_kernel();
     }
@@ -1043,7 +1043,7 @@ LOCAL_INLINE FUNC_P2VAR(OsEE_SpinlockDB, OS_APPL_CONST, OS_CODE)
 LOCAL_INLINE FUNC_P2VAR(OsEE_SpinlockDB, OS_APPL_CONST, OS_CODE)
   osEE_task_get_last_spinlock_db
 (
-  CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_CONST) p_tcb
+  CONSTP2CONST(OsEE_TCB, AUTOMATIC, OS_APPL_CONST) p_tcb
 )
 {
   return p_tcb->p_last_m;

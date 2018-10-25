@@ -67,7 +67,8 @@ void osEE_hal_sync_barrier(OsEE_barrier * p_bar,
     }
 
     /* Set current CPU as entered */
-    osEE_tc_imask_ldmst(&p_bar->value, 0x1U, osEE_get_curr_core_id(), 1U);
+    osEE_tc_imask_ldmst(&p_bar->value, 0x1U,
+      (OsEE_reg)osEE_get_curr_core_id(), 1U);
 
     /* Snapshot of the wait mask */
     wait_mask = (*p_wait_mask);
@@ -84,7 +85,7 @@ void osEE_hal_sync_barrier(OsEE_barrier * p_bar,
 
     /* Set current CPU as exited */
     osEE_tc_imask_ldmst(&p_bar->value, 0x1U,
-      (osEE_get_curr_core_id() + OS_CORE_ID_ARR_SIZE), 1U);
+      ((OsEE_reg)osEE_get_curr_core_id() + (OsEE_reg)OS_CORE_ID_ARR_SIZE), 1U);
 
     /* Try to reset the barrier */
     (void)osEE_tc_cmpswapw(&p_bar->value, 0U, all_exited);

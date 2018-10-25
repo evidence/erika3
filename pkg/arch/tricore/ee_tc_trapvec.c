@@ -113,7 +113,7 @@ __TRAPTAB:                                  \n\
 OSEE_TC_TRAP_DEFINITION(osEE_tc_trap_mmu, osEE_tc_mmu_handler)
 #elif (defined(OSEE_TC_TRAP_MMU_TRAP))
 OSEE_TC_TRAP_DEFINITION(osEE_tc_trap_mmu, OSEE_TC_TRAP_MMU_TRAP)
-#elif (defined(OSEE_MEMORY_PROTECTION)) || (defined(EE_TIMING_PROTECTION))
+#elif (defined(OSEE_MEMORY_PROTECTION)) || (defined(OSEE_TIMING_PROTECTION))
 OSEE_TC_TRAP_DEFINITION_WITH_CALL(osEE_tc_trap_mmu,
   osEE_tc_default_trap_handler)
 #else

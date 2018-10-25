@@ -49,7 +49,7 @@
  *  \date   2017
  */
 
-#if (!defined(OSEE_HAL_H))
+#ifndef OSEE_HAL_H
 #define OSEE_HAL_H
 
 /*=============================================================================
@@ -137,26 +137,32 @@ extern "C" {
 #define osEE_tc_getareg(areg, ptr) osEE_tc_getareg2(areg, ptr)
 
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_tc_debug(void) {
+  /* The debug assembler instruction */
   __asm__ volatile ("debug" : : : "memory");
 }
 
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_tc_dsync(void) {
+  /* The dsync assembler instruction */
   __asm__ volatile ("dsync" : : : "memory");
 }
 
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_tc_isync(void) {
+  /* The isync assembler instruction */
   __asm__ volatile ("isync" : : : "memory");
 }
 
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_tc_svlcx(void) {
+  /* The svlcx assembler instruction */
   __asm__ volatile ("svlcx" : : : "memory");
 }
 
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_tc_rslcx(void) {
+  /* The rslcx assembler instruction */
   __asm__ volatile ("rslcx" : : : "memory");
 }
 
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_tc_rfe(void) {
+  /* The rfe assembler instruction */
   __asm__ volatile ("rfe" : : : "memory");
 }
 
@@ -168,6 +174,7 @@ OSEE_STATIC_INLINE OsEE_reg OSEE_ALWAYS_INLINE
   osEE_tc_extru(OsEE_reg reg, OsEE_reg start, uint8_t size)
 {
   OsEE_reg res;
+  /* The extr.u assembler instruction */
   __asm__ volatile (
     "extr.u %0,%1,%2,%3":
       "=d" (res): "d" (reg), "i" (start), "i" (size): "memory"
@@ -244,6 +251,7 @@ OSEE_STATIC_INLINE OsEE_core_id OSEE_ALWAYS_INLINE osEE_get_curr_core_id(void)
 OSEE_STATIC_INLINE OsEE_stack * OSEE_ALWAYS_INLINE osEE_get_SP(void)
 {
   OsEE_stack * sp = NULL;
+  /* put the stack pointer in a register in order to return it */
   __asm__ volatile ("mov.aa %0, %%SP" : "=a"(sp));
   return sp;
 }

@@ -178,7 +178,7 @@ extern OSEE_TYPEASSERTVALUE osEE_assertions[];
  * The return value is either YES or NO depending on the result.
  */
 OSEE_TYPEASSERTVALUE osEE_assert(OSEE_TYPEASSERT id,
-           int test,
+           OsEE_bool test,
            OSEE_TYPEASSERT prev);
 
 /* These are a simple or/and assertion:

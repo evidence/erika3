@@ -58,7 +58,9 @@
 
 #if (defined(__GNUC__))
 #include "ee_compiler_gcc.h"
-#endif /* __GNUC__ */
+#elif (defined(__DCC__))
+#include "ee_compiler_wr_diab.h"
+#endif /* __GNUC__ || __DCC__*/
 
 #if (defined(__cplusplus))
 extern "C" {

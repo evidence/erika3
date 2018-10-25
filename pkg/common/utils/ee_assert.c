@@ -52,96 +52,109 @@
 #include "ee_assert.h"
 
 OSEE_TYPEASSERTVALUE osEE_assert(OSEE_TYPEASSERT id,
-           int test,
+           OsEE_bool test,
            OSEE_TYPEASSERT prev)
 {
+  OSEE_TYPEASSERTVALUE returnvalue;
+  
   /* I can use id into an assertion only once */
   if (osEE_assertions[id] != OSEE_ASSERT_INITVALUE) {
     osEE_assertions[id] = OSEE_ASSERT_ALREADYUSED;
-    return OSEE_ASSERT_ALREADYUSED;
-  }
+    returnvalue = OSEE_ASSERT_ALREADYUSED;
 
-  if (test) {
+  } else if (test != 0U) {
     if (prev != OSEE_ASSERT_NIL) {
       if (osEE_assertions[prev] == OSEE_ASSERT_YES) {
-  /* test is true and the prev assertion is YES */
-  osEE_assertions[id] = OSEE_ASSERT_YES;
-  return OSEE_ASSERT_YES;
+        /* test is true and the prev assertion is YES */
+        osEE_assertions[id] = OSEE_ASSERT_YES;
+        returnvalue = OSEE_ASSERT_YES;
       }
       else {
-  /* test is true but the prev assertion is != YES */
-  osEE_assertions[id] = OSEE_ASSERT_NO;
-  return OSEE_ASSERT_NO;
+        /* test is true but the prev assertion is != YES */
+        osEE_assertions[id] = OSEE_ASSERT_NO;
+        returnvalue = OSEE_ASSERT_NO;
       }
     } else {
       /* test is true and prev is OSEE_ASSERT_NIL */
       osEE_assertions[id] = OSEE_ASSERT_YES;
-      return OSEE_ASSERT_YES;
+      returnvalue = OSEE_ASSERT_YES;
     }
   } else {
     /* test is false */
     osEE_assertions[id] = OSEE_ASSERT_NO;
-    return OSEE_ASSERT_NO;
+    returnvalue = OSEE_ASSERT_NO;
   }
+  return returnvalue;
 }
 
 OSEE_TYPEASSERTVALUE osEE_assert_or(OSEE_TYPEASSERT id,
         OSEE_TYPEASSERT prev1,
         OSEE_TYPEASSERT prev2)
 {
+  OSEE_TYPEASSERTVALUE returnvalue;
+
   /* I can use id into an assertion only once */
   if (osEE_assertions[id] != OSEE_ASSERT_INITVALUE) {
     osEE_assertions[id] = OSEE_ASSERT_ALREADYUSED;
-    return OSEE_ASSERT_ALREADYUSED;
-  }
+    returnvalue = OSEE_ASSERT_ALREADYUSED;
 
-  if ((osEE_assertions[prev1] == OSEE_ASSERT_YES) ||
+  } else if ((osEE_assertions[prev1] == OSEE_ASSERT_YES) ||
       (osEE_assertions[prev2] == OSEE_ASSERT_YES)) {
     osEE_assertions[id] = OSEE_ASSERT_YES;
-    return OSEE_ASSERT_YES;
-  }
-  else {
+    returnvalue = OSEE_ASSERT_YES;
+
+  } else {
     osEE_assertions[id] = OSEE_ASSERT_NO;
-    return OSEE_ASSERT_NO;
+    returnvalue = OSEE_ASSERT_NO;
   }
+
+  return returnvalue;
 }
 
 OSEE_TYPEASSERTVALUE osEE_assert_and(OSEE_TYPEASSERT id,
          OSEE_TYPEASSERT prev1,
          OSEE_TYPEASSERT prev2)
 {
+  OSEE_TYPEASSERTVALUE returnvalue;
+
   /* I can use id into an assertion only once */
   if (osEE_assertions[id] != OSEE_ASSERT_INITVALUE) {
     osEE_assertions[id] = OSEE_ASSERT_ALREADYUSED;
-    return OSEE_ASSERT_ALREADYUSED;
-  }
+    returnvalue = OSEE_ASSERT_ALREADYUSED;
 
-  if ((osEE_assertions[prev1] == OSEE_ASSERT_YES) &&
+  } else if ((osEE_assertions[prev1] == OSEE_ASSERT_YES) &&
       (osEE_assertions[prev2] == OSEE_ASSERT_YES)) {
     osEE_assertions[id] = OSEE_ASSERT_YES;
-    return OSEE_ASSERT_YES;
-  }
-  else {
+    returnvalue = OSEE_ASSERT_YES;
+
+  } else {
     osEE_assertions[id] = OSEE_ASSERT_NO;
-    return OSEE_ASSERT_NO;
+    returnvalue = OSEE_ASSERT_NO;
   }
+
+  return returnvalue;
 }
 
 OSEE_TYPEASSERTVALUE osEE_assert_range(OSEE_TYPEASSERT id,
            OSEE_TYPEASSERT begin,
            OSEE_TYPEASSERT end)
 {
+  OSEE_TYPEASSERTVALUE returnvalue = OSEE_ASSERT_YES;
   OSEE_TYPEASSERT i;
 
   for (i=begin; i<=end; i++) {
     if (osEE_assertions[i] != OSEE_ASSERT_YES) {
       osEE_assertions[id] = OSEE_ASSERT_NO;
-      return OSEE_ASSERT_NO;
+      returnvalue = OSEE_ASSERT_NO;
+      break;
     }
   }
 
-  osEE_assertions[id] = OSEE_ASSERT_YES;
-  return OSEE_ASSERT_YES;
+  if (returnvalue != OSEE_ASSERT_NO) {
+    osEE_assertions[id] = OSEE_ASSERT_YES;
+  }
+
+  return returnvalue;
 }
 
 OSEE_TYPEASSERTVALUE osEE_assert_last(void)

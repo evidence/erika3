@@ -51,23 +51,14 @@
 
 #if (defined(OSEE_TC_HAS_ISR1_TO_CONF))
 #if (defined(OSEE_SINGLECORE))
-extern OsEE_isr1_db osEE_isr1_db;
-
 OSEE_STATIC_INLINE OsEE_isr1_db * OSEE_ALWAYS_INLINE
   osEE_get_isr1_db(CoreIdType core_id)
 {
 /* Touch unused parameter */
   (void)core_id;
-  return &osEE_isr1_db;
+  return &osEE_isr1_db_instance;
 }
 #else
-extern OsEE_isr1_db osEE_isr1_db_core0;
-#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x2U)
-extern OsEE_isr1_db osEE_isr1_db_core1;
-#endif /* OSEE_CORE_ID_VALID_MASK & 0x2U */
-#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x4U)
-extern OsEE_isr1_db osEE_isr1_db_core2;
-#endif /* OSEE_CORE_ID_VALID_MASK & 0x4U */
 
 OSEE_STATIC_INLINE OsEE_isr1_db * OSEE_ALWAYS_INLINE
   osEE_get_isr1_db(CoreIdType core_id)
@@ -76,16 +67,16 @@ OSEE_STATIC_INLINE OsEE_isr1_db * OSEE_ALWAYS_INLINE
 
   switch (core_id) {
     case OS_CORE_ID_0:
-      p_tbr = &osEE_isr1_db_core0;
+      p_tbr = &osEE_isr1_db_instance_core0;
     break;
 #if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x2U)
     case OS_CORE_ID_1:
-      p_tbr = &osEE_isr1_db_core1;
+      p_tbr = &osEE_isr1_db_instance_core1;
     break;
 #endif /* OSEE_CORE_ID_VALID_MASK & 0x2U */
 #if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x4U)
     case OS_CORE_ID_2:
-      p_tbr = &osEE_isr1_db_core2;
+      p_tbr = &osEE_isr1_db_instance_core2;
     break;
 #endif /* OSEE_CORE_ID_VALID_MASK & 0x4U */
     default:
@@ -124,24 +115,20 @@ OsEE_bool osEE_cpu_startos(void)
     if (p_tdb->orig_core_id == curr_core_id) {
 #endif /* !OSEE_SINGLECORE */
       if (p_tdb->task_type == OSEE_TASK_TYPE_ISR2) {
-        /* TODO: Add SRNs configurations? */
-	#if 0
-        OsEE_isr_src_id const source_id = p_tdb->hdb.isr_src;
-	#endif
-        /* TaskPrio  const isr2_prio =
-            OSEE_ISR2_VIRT_TO_HW_PRIO(p_tdb->ready_prio); */
 #if (defined(OSEE_HAS_SYSTEM_TIMER))
         if (p_tdb->task_func == &osEE_tricore_system_timer_handler) {
           osEE_tc_initialize_system_timer(p_tdb);
         } else
 #endif /* OSEE_HAS_SYSTEM_TIMER */
         if (p_tdb->hdb.isr2_src != OSEE_TC_SRC_INVALID) {
+          OsEE_reg const srn_priority_tmp =
+            OSEE_TC_SRN_PRIORITY(OSEE_ISR2_VIRT_TO_HW_PRIO(p_tdb->ready_prio));
           OSEE_TC_SRC_REG(p_tdb->hdb.isr2_src) = OSEE_TC_SRN_ENABLE |
             OSEE_TC_SRN_TYPE_OF_SERVICE(curr_core_id) |
-            OSEE_TC_SRN_PRIORITY(OSEE_ISR2_VIRT_TO_HW_PRIO(p_tdb->ready_prio));
+            srn_priority_tmp;
         } else {
-	  /* nothing to do, entry invalid */
-	}
+          /* nothing to do, entry invalid */
+        }
       }
 #if (!defined(OSEE_SINGLECORE))
     }
@@ -150,8 +137,9 @@ OsEE_bool osEE_cpu_startos(void)
 #if (defined(OSEE_TC_HAS_ISR1_TO_CONF))
   {
     OsEE_isr1_db * const p_isr1_db = osEE_get_isr1_db(curr_core_id);
-
-    for (i = 0U; i  < p_isr1_db->isr1_num; ++i) {
+    MemSize isr1_max = p_isr1_db->isr1_num;
+ 
+    for (i = 0U; i  < isr1_max; ++i) {
       if ((*p_isr1_db->p_isr1_src_array)[i].isr1_src != OSEE_TC_SRC_INVALID) {
         OSEE_TC_SRC_REG((*p_isr1_db->p_isr1_src_array)[i].isr1_src) =
           OSEE_TC_SRN_ENABLE |
@@ -166,21 +154,25 @@ OsEE_bool osEE_cpu_startos(void)
     OsEE_stack * p_stack;
     OsEE_CDB   * const p_cdb = osEE_get_curr_core();
 
-/* Initialize all TASK stacks */
-    for (i = 0U; i  < (p_cdb->chdb.stack_num - 1U); ++i) {
+    /* number of stacks excluded the system stack which is the last one */
+    MemSize const stack_number = p_cdb->chdb.stack_num - 1U;
+    /* Initialize all TASK stacks */
+    for (i = 0U; i < stack_number; ++i) {
       MemSize j;
+      /* number of words to write with the fillpattern */
+      MemSize const stack_words =
+        (*p_cdb->chdb.p_sdb_array)[i].stack_size / sizeof(OsEE_stack);
+
       p_stack = (OsEE_stack *)(*p_cdb->chdb.p_sdb_array)[i].p_bos;
-      for (j = 0U;
-           j <= (*p_cdb->chdb.p_sdb_array)[i].stack_size / sizeof(OsEE_stack);
-           ++j)
+      for (j = 0U; j <= stack_words; ++j)
       {
         (*p_stack) = OSEE_FILL_PATTERN;
         ++p_stack;
       }
     }
-/* Initialize System Stack */
+    /* Initialize System Stack */
     {
-      OsEE_stack * const p_curr_sp = osEE_get_SP();
+      OsEE_stack const * const p_curr_sp = osEE_get_SP();
       p_stack = (OsEE_stack *)
         (*p_cdb->chdb.p_sdb_array)[(p_cdb->chdb.stack_num - 1U)].p_bos;
 

@@ -234,14 +234,15 @@ osEE_hal_terminate_ctx:
 
 /*
 FUNC(void, OS_CODE)
-  osEE_avr7r_change_context_from_isr2_end
+  osEE_change_context_from_isr2_end
 (
   P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_to,
   P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_from
 )
 {
   CoreIdType core_id = EE_get_core(core_id);
-  _scoreboard_start.SCB_VCORE.PER_CPU[core_id].SFR_SPC = &EE_hal_change_context;
+  _scoreboard_start.SCB_VCORE.PER_CPU[core_id].SFR_SPC =
+    &osEE_change_context_from_task_end;
   mOS_RFE();
 }
 */

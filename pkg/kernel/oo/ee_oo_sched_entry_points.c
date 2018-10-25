@@ -92,7 +92,9 @@ static FUNC_P2VAR(OsEE_MDB, OS_APPL_CONST, OS_CODE)
 #if (defined(OSEE_HAS_SPINLOCKS))
   /* Restore last spinlock on CCB */
   if (p_tcb->p_last_m != NULL) {
-    osEE_get_curr_core()->p_ccb->p_last_spinlock = p_tcb->p_last_m;
+    CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)  p_cdb = osEE_get_curr_core();
+
+    p_cdb->p_ccb->p_last_spinlock = p_tcb->p_last_m;
     p_tcb->p_last_m = NULL;
   }
 #endif /* OSEE_HAS_SPINLOCKS */
@@ -209,6 +211,10 @@ FUNC(void, OS_CODE)
   }
 
 #endif /* OSEE_HAS_ORTI */
+
+  /* Set the TASK status to RUNNING. Before calling PreTaskHook */
+  p_tdb_to->p_tcb->status = OSEE_TASK_RUNNING;
+
   /* Call PreTaskHook only if I'm scheduling a real TASK not an ISR2 or the
    * Idle TASK */
 #if (defined(OSEE_HAS_PRETASKHOOK)) || (defined(OSEE_HAS_CONTEXT))
@@ -231,9 +237,6 @@ FUNC(void, OS_CODE)
   }
 #endif /* OSEE_HAS_CONTEXT */
 #endif /* OSEE_HAS_PRETASKHOOK || OSEE_HAS_CONTEXT */
-
-  /* Set the TASK status to RUNNING */
-  p_tdb_to->p_tcb->status = OSEE_TASK_RUNNING;
 
 #if (defined(OSEE_SCHEDULER_GLOBAL))
   CONSTP2VAR(OsEE_spin_lock, AUTOMATIC, OS_APPL_DATA)

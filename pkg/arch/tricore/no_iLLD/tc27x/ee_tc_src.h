@@ -75,7 +75,7 @@
  *  \author Errico Guidieri
  *  \date   2017
  */
-#if (!defined(OSEE_TC_SRC_H))
+#ifndef OSEE_TC_SRC_H
 #define OSEE_TC_SRC_H
 
 /** \\brief  24, AGBT Service Request */

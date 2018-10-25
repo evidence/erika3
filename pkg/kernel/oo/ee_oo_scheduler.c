@@ -200,8 +200,11 @@ FUNC_P2VAR(OsEE_preempt, OS_APPL_DATA, OS_CODE)
     /* Set as current on top of STK */
     osEE_scheduler_stk_next(p_ccb, p_rq_sn);
   } else {
-    p_ret_tdb = NULL;
+#if (defined(OSEE_ALLOW_TASK_MIGRATION))
     p_ret_sn  = NULL;
+#else
+    p_ret_tdb = NULL;
+#endif /* OSEE_ALLOW_TASK_MIGRATION */
   }
 
 #if (defined(OSEE_ALLOW_TASK_MIGRATION))
@@ -278,8 +281,11 @@ FUNC_P2VAR(OsEE_preempt, OS_APPL_DATA, OS_CODE)
     /* Set as current on top of STK */
     osEE_scheduler_stk_next(p_ccb, p_rq_sn);
   } else {
-    p_ret_tdb = NULL;
+#if (defined(OSEE_ALLOW_TASK_MIGRATION))
     p_ret_sn  = NULL;
+#else
+    p_ret_tdb = NULL;
+#endif /* OSEE_ALLOW_TASK_MIGRATION */
   }
 #if (defined(OSEE_ALLOW_TASK_MIGRATION))
   return p_ret_sn;

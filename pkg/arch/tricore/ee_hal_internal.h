@@ -51,7 +51,7 @@
  *  \date   2017
  */
 
-#if (!defined(OSEE_HAL_INTERNAL_H))
+#ifndef OSEE_HAL_INTERNAL_H
 #define OSEE_HAL_INTERNAL_H
 
 /*==============================================================================
@@ -94,12 +94,26 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_set_SP(OsEE_stack * sp)
 OSEE_STATIC_INLINE OsEE_addr OSEE_ALWAYS_INLINE osEE_tc_get_RA(void)
 {
   OsEE_addr ra;
+  /* gets the current return address */
   __asm__ volatile ("mov.aa %0, %%a11" : "=a"(ra) : : "memory");
   return ra;
 }
 
+
+/* The type of the parameter ra generates an explicit MISRA violation.
+   - Changing ra to a pointer to a void (*)(void) function generates 
+     another MISRA violation, because the return function programmed 
+     in the context has type void(*)(const struct OsEE_TDB_tag*).
+   - Changing ra to type void(*)(const struct OsEE_TDB_tag*) is not 
+     the best option, because we would need to change the OsEE_CTX ra 
+     member to something which is in general not of that type (the return
+     address is a pointer to a code location.
+   Therefore, we chose to use OsEE_addr, which is not the best option,
+   but it minimizes the MISRA violation to a single documented point.
+*/
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_tc_set_RA(OsEE_addr ra)
 {
+  /* sets the return address */
   __asm__ volatile ("mov.aa %%a11, %0" : : "a"(ra) : "memory");
 }
 
@@ -195,12 +209,13 @@ OSEE_STATIC_INLINE OsEE_bool OSEE_ALWAYS_INLINE osEE_hal_is_enabledIRQ(void)
   return (osEE_tc_get_icr().bits.ie != 0U)? OSEE_TRUE: OSEE_FALSE;
 }
 
-/* Disable/Enable Interrupts */
+/* Disable Interrupts */
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_hal_disableIRQ(void)
 {
     __asm__ volatile ("disable" : : : "memory");
 }
 
+/* Enable Interrupts */
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_hal_enableIRQ(void)
 {
   __asm__ volatile ("enable" : : : "memory");

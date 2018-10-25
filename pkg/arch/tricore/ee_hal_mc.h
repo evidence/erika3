@@ -47,7 +47,7 @@
  *  \date   2018
  */
 
-#if (!defined(OSEE_HAL_MC_H))
+#ifndef OSEE_HAL_MC_H
 #define OSEE_HAL_MC_H
 
 #include "ee_cfg.h"
@@ -182,7 +182,7 @@ OSEE_STATIC_INLINE OsEE_reg OSEE_ALWAYS_INLINE osEE_tc_cmpswapw(
   OsEE_reg volatile * const p_var, OsEE_reg new_val, OsEE_reg expected_val
 )
 {
-  return __builtin_tricore_cmpswapw(p_var, new_val, expected_val);
+  return __builtin_tricore_cmpswapw((void *)p_var, new_val, expected_val);
 }
 
 /** Insert LDMST instruction. Note that all operands must be word-aligned. */
@@ -190,7 +190,7 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
   osEE_tc_imask_ldmst(OsEE_reg volatile * const p_var, OsEE_reg value,
     OsEE_reg offset, OsEE_reg width)
 {
-  __builtin_tricore_ldmst(p_var, value, offset, width);
+  __builtin_tricore_ldmst((void *)p_var, value, offset, width);
 }
 #endif
 #else
@@ -204,7 +204,7 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
   osEE_hal_spin_lock(OsEE_spin_lock * p_lock)
 {
-  while (osEE_tc_cmpswapw(p_lock, 1U, 0U)) {
+  while (osEE_tc_cmpswapw(p_lock, 1U, 0U) != 0U) {
     ; /* Wait until you get the spinlock (i.e. write 1 on it)*/
   }
 }
@@ -222,7 +222,7 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
 OSEE_STATIC_INLINE OsEE_bool OSEE_ALWAYS_INLINE
   osEE_hal_try_spin_lock(OsEE_spin_lock * p_lock)
 {
-  OsEE_reg result = (osEE_tc_cmpswapw(p_lock, 1U, 0U) == 0U);
+  OsEE_bool result = (osEE_tc_cmpswapw(p_lock, 1U, 0U) == 0U);
   return (result)? OSEE_TRUE: OSEE_FALSE;
 }
 

@@ -225,8 +225,8 @@ FUNC(StatusType, OS_CODE)
   VAR(AppModeType, AUTOMATIC) Mode
 )
 {
-  VAR(StatusType, AUTOMATIC)                       ev;
-  VAR(AppModeType, AUTOMATIC)               real_mode = Mode;
+  VAR(StatusType, AUTOMATIC)                      ev = E_OK;
+  VAR(AppModeType, AUTOMATIC)                     real_mode = Mode;
 #if (!defined(OSEE_SINGLECORE))
   CONST(CoreIdType, AUTOMATIC)           curr_core_id = osEE_get_curr_core_id();
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)  p_kdb = osEE_get_kernel();
@@ -247,23 +247,28 @@ FUNC(StatusType, OS_CODE)
 #endif /* OSEE_ALLOW_TASK_MIGRATION */
     ev = E_OS_ACCESS;
   } else
-  if (
 #if (!defined(OSEE_SINGLECORE))
-    (curr_core_id == OS_CORE_ID_MASTER) &&
+  if (curr_core_id == OS_CORE_ID_MASTER) {
     /* I rely in C shortcut for boolean expression */
 #endif /* !OSEE_SINGLECORE */
-    !osEE_cpu_startos()
-  )
-  {
+    if (osEE_cpu_startos() == OSEE_FALSE) {
 #if (defined(OSEE_ALLOW_TASK_MIGRATION))
-    osEE_unlock_kernel();
+      osEE_unlock_kernel();
 #endif /* OSEE_ALLOW_TASK_MIGRATION */
-    ev = E_OS_SYS_INIT;
+      ev = E_OS_SYS_INIT;
+    } else {
+      /* nothing to do if the core started correctly */
+    }
+#if (!defined(OSEE_SINGLECORE))
   } else {
-#if (!defined(OSEE_STARTOS_RETURN))
+    /* nothing to do if the core is not the master */
+  }
+#endif /* !OSEE_SINGLECORE */
+  if (ev == E_OK) {
+#if (!defined(OSEE_STARTOS_RETURN)) || (defined(OSEE_API_DYNAMIC))
     CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
       p_idle_tdb = p_cdb->p_idle_task;
-#endif /* !OSEE_STARTOS_RETURN */
+#endif /* !OSEE_STARTOS_RETURN || OSEE_API_DYNAMIC */
 
 #if (defined(OSEE_API_DYNAMIC))
     CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
@@ -294,7 +299,11 @@ FUNC(StatusType, OS_CODE)
      "DONOTCARE". (SRS_Os_80006) */
 /* [SWS_Os_00611] If the IOC is configured, StartOS shall initialize the data
      structures of the IOC. (SRS_Os_80020) */
-    if (!(p_kcb->ar_core_mask & ((CoreMaskType)1U << curr_core_id))) {
+    if (
+      (p_kcb->ar_core_mask & ((CoreMaskType)1U << (OsEE_reg)curr_core_id)) ==
+        0U
+    )
+    {
       for(;;) {}  /* Endless Loop */
     }
 /* [SWS_Os_00580] All cores that belong to the AUTOSAR system shall be
@@ -313,11 +322,12 @@ FUNC(StatusType, OS_CODE)
       OSEE_STARTOS_1ST_SYNC_BARRIER_CB);
 
     /* Initialize Slaves Hardware after First synchronization point:
-       This assure that all the Master Initializations have been done. */
-    /* I rely in C shortcut for boolean expression */
-    if ((curr_core_id != OS_CORE_ID_MASTER) && !osEE_cpu_startos()) {
-      /* Enter in an endless loop if it happened */
-      for(;;) {}
+       This ensures that all the Master Initializations have been done. */
+    if (curr_core_id != OS_CORE_ID_MASTER) {
+      if (!osEE_cpu_startos()) {
+        /* Enter in an endless loop if it happens */
+        for(;;) {}
+      }
     }
 /* [SWS_Os_00608] If more than one core calls StartOS with an AppMode other
     than "DONOTCARE", the AppModes shall be the same. StartOS shall check this
@@ -325,18 +335,22 @@ FUNC(StatusType, OS_CODE)
     StartOS shall not start the scheduling, shall not call any StartupHooks,
     and shall enter an endless loop on every core. (SRS_Os_80006) */
     {
-      VAR(CoreIdType, AUTOMATIC)  i;
+      VAR(CoreNumType, AUTOMATIC)  i;
 
       for (i = 0U; i <= OSEE_CORE_ID_MAX; ++i) {
         if ((p_kcb->ar_core_mask & ((CoreMaskType)1U << i)) != 0U) {
-          AppModeType current_mode = osEE_get_core(i)->p_ccb->app_mode;
+          CONST(AppModeType, AUTOMATIC)
+            /* MISRA-C 2012: Rule 10.5 deviation. Cast back from
+               unsigned to enum is safe here, since we are in a loop
+               with the right limits. */
+            current_mode = osEE_get_core((CoreIdType)i)->p_ccb->app_mode;
 
           if (current_mode != DONOTCARE) {
             if (real_mode == DONOTCARE) {
               real_mode = current_mode;
             } else if (real_mode != current_mode) {
-            /* Error condition specified by SWS_Os_00608 requirement: enter
-                in an endless loop */
+            /* Error condition specified by SWS_Os_00608 requirement:
+               enter in an endless loop */
               for(;;) {}
             } else {
               /* Empty else statement to comply with MISRA 14.10 */
@@ -398,17 +412,17 @@ FUNC(StatusType, OS_CODE)
         switch (p_trigger_to_act_info->autostart_type) {
 #if (defined(OSEE_HAS_ALARMS))
           case OSEE_AUTOSTART_ALARM:
-	    p_alarm_db_tmp = osEE_trigger_get_alarm_db(p_trigger_to_act_db);
+            p_alarm_db_tmp = osEE_trigger_get_alarm_db(p_trigger_to_act_db);
             (void)osEE_alarm_set_rel(
               p_trigger_to_act_db->p_counter_db,
-	      p_alarm_db_tmp,                               /* MISRA R13.2 */
+              p_alarm_db_tmp,                               /* MISRA R13.2 */
               p_trigger_to_act_info->first_tick_parameter,
               p_trigger_to_act_info->second_tick_parameter
             );
           break;
 #endif /* OSEE_HAS_ALARMS */
           case OSEE_AUTOSTART_SCHEDULE_TABLE_ABS:
-	    p_st_db_tmp = osEE_trigger_get_st_db(p_trigger_to_act_db);
+            p_st_db_tmp = osEE_trigger_get_st_db(p_trigger_to_act_db);
             (void)osEE_st_start_abs(
               p_trigger_to_act_db->p_counter_db,
               p_st_db_tmp,                                  /* MISRA R13.2 */
@@ -416,7 +430,7 @@ FUNC(StatusType, OS_CODE)
             );
           break;
           case OSEE_AUTOSTART_SCHEDULE_TABLE_REL:
-	    p_st_db_tmp = osEE_trigger_get_st_db(p_trigger_to_act_db);
+            p_st_db_tmp = osEE_trigger_get_st_db(p_trigger_to_act_db);
             (void)osEE_st_start_rel(
               p_trigger_to_act_db->p_counter_db,
               p_st_db_tmp,                                  /* MISRA R13.2 */
@@ -529,7 +543,7 @@ FUNC(StatusType, OS_CODE)
       (void)osEE_scheduler_task_preemption_point(osEE_get_kernel(), p_cdb);
     }
 #endif /* !OSEE_STARTOS_RETURN && !OSEE_API_DYNAMIC && !OSEE_HAS_AUTOSTART_TASK */
-#if (defined(OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN))
+#if (defined(OSEE_STARTOS_RETURN)) || (defined(OSEE_API_DYNAMIC))
     ev = E_OK;
 
     if (p_ccb->os_status == OSEE_KERNEL_STARTED) {
@@ -540,7 +554,7 @@ FUNC(StatusType, OS_CODE)
       /* OS started correctly: Enable IRQ */
       osEE_hal_enableIRQ();
     }
-#endif /* OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN */
+#endif /* OSEE_STARTOS_RETURN || OSEE_API_DYNAMIC */
   }
 
   if (ev != E_OK) {
@@ -2340,7 +2354,8 @@ FUNC(StatusType, OS_CODE)
     shall return E_OS_CORE in extended status if called with parameters that
     require a cross core operation. (SRS_Os_80013) */
 #if (!defined(OSEE_SINGLECORE))
-    if (p_counter_db->core_id != osEE_get_curr_core_id()) {
+    CONST(CoreIdType, AUTOMATIC) curr_core_id = osEE_get_curr_core_id();
+    if (p_counter_db->core_id != curr_core_id) {
       ev = E_OS_CORE;
     } else
 #endif /* !OSEE_SINGLECORE */
@@ -2442,7 +2457,8 @@ FUNC(StatusType, OS_CODE)
     shall return E_OS_CORE in extended status if called with parameters that
     require a cross core operation. (SRS_Os_80013) */
 #if (!defined(OSEE_SINGLECORE))
-    if (p_counter_db->core_id != osEE_get_curr_core_id()) {
+    CONST(CoreIdType, AUTOMATIC) curr_core_id = osEE_get_curr_core_id();
+    if (p_counter_db->core_id != curr_core_id) {
       ev = E_OS_CORE;
     } else
 #endif /* !OSEE_SINGLECORE */
@@ -2553,7 +2569,8 @@ FUNC(StatusType, OS_CODE)
     shall return E_OS_CORE in extended status if called with parameters that
     require a cross core operation. (SRS_Os_80013) */
 #if (!defined(OSEE_SINGLECORE))
-    if (p_counter_db->core_id != osEE_get_curr_core_id()) {
+    CONST(CoreIdType, AUTOMATIC) current_cpu_id = osEE_get_curr_core_id();
+    if (p_counter_db->core_id != current_cpu_id) {
       ev = E_OS_CORE;
     } else
 #endif /* !OSEE_SINGLECORE */
@@ -2909,11 +2926,11 @@ FUNC(StatusType, OS_CODE)
     p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
-#if (!defined(OSEE_HAS_ERRORHOOK))
+#if (!defined(OSEE_HAS_ERRORHOOK)) && (!defined(OSEE_HAS_ORTI))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #else
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-#endif /* !OSEE_HAS_ERRORHOOK */
+#endif /* !OSEE_HAS_ERRORHOOK && !OSEE_HAS_ORTI */
     p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetScheduleTableStatus);
@@ -3283,7 +3300,7 @@ FUNC(ISRType, OS_CODE)
 #if (!defined(OSEE_SINGLECORE))
 
 /* FIXME: from specification return value should be uint32 */
-FUNC(CoreIdType, OS_CODE)
+FUNC(CoreNumType, OS_CODE)
   GetNumberOfActivatedCores
 (
   void
@@ -3302,67 +3319,70 @@ FUNC(void, OS_CODE)
 )
 {
   /* Error Value */
-  VAR(StatusType, AUTOMATIC) ev;
+  VAR(StatusType, AUTOMATIC) ev = E_OK;
+  if (CoreID < OS_CORE_ID_ARR_SIZE) {
+    CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
+      p_cdb       = osEE_get_curr_core();
+    CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+      p_ccb       = p_cdb->p_ccb;
+    CONST(OsEE_reg, AUTOMATIC)
+      flags = osEE_begin_primitive();
+    CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
+      p_kdb = osEE_lock_and_get_kernel();
+    CONSTP2VAR(OsEE_KCB, AUTOMATIC, OS_APPL_DATA)
+      p_kcb = p_kdb->p_kcb;
+    /* Variable introduced to meet MISRA 12.1 in the next else if statement */
+    CONST(OSEE_CORE_MASK_TYPE, AUTOMATIC)
+      ar_core_mask = p_kcb->ar_core_mask;
+    CONST(OSEE_CORE_MASK_TYPE, AUTOMATIC)
+      core_id_mask =  ((CoreMaskType)1U << (OsEE_reg)CoreID);
 
-  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
-    p_cdb       = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-    p_ccb       = p_cdb->p_ccb;
-  CONST(OsEE_reg, AUTOMATIC)
-    flags = osEE_begin_primitive();
-  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
-    p_kdb = osEE_lock_and_get_kernel();
-  CONSTP2VAR(OsEE_KCB, AUTOMATIC, OS_APPL_DATA)
-    p_kcb = p_kdb->p_kcb;
-  /* Variable introduced to meet MISRA 12.1 in the next else if statement */
-  CONST(OSEE_CORE_MASK_TYPE, AUTOMATIC)
-    ar_core_mask = p_kcb->ar_core_mask;
-  CONST(OSEE_CORE_MASK_TYPE, AUTOMATIC)
-    core_id_mask =  (1U << CoreID);
-
-  if ((core_id_mask & OSEE_CORE_ID_VALID_MASK) == 0U) {
+    if ((core_id_mask & OSEE_CORE_ID_VALID_MASK) == 0U) {
       ev = E_OS_ID;
-  } else if (p_ccb->os_status != OSEE_KERNEL_INITIALIZED) {
-    /* [SWS_Os_00606] The AUTOSAR specification does not support the activation
-        of AUTOSAR cores after calling StartOS on that core.
-        If StartCore is called after StartOS it shall return with E_OS_ACCESS
-        in extended status. (SRS_Os_80001) */
-    /* [SWS_Os_00678] Calls to the StartCore function after StartOS()
-        shall return with E_OS_ACCESS and the core shall not be started.
-        (SRS_Os_80006, SRS_Os_80026, SRS_Os_80027) */
+    } else if (p_ccb->os_status != OSEE_KERNEL_INITIALIZED) {
+      /* [SWS_Os_00606] The AUTOSAR specification does not support the
+         activation of AUTOSAR cores after calling StartOS on that core.
+         If StartCore is called after StartOS it shall return with E_OS_ACCESS
+         in extended status. (SRS_Os_80001) */
+      /* [SWS_Os_00678] Calls to the StartCore function after StartOS()
+         shall return with E_OS_ACCESS and the core shall not be started.
+         (SRS_Os_80006, SRS_Os_80026, SRS_Os_80027) */
       ev = E_OS_ACCESS;
-  } else if (((ar_core_mask | p_kcb->not_ar_core_mask) & core_id_mask) != 0U) {
-    /* [SWS_Os_00679] If the parameter CoreIDs refers to a core that was
-        already started by the function StartCore the related core is ignored
-        and E_OS_STATE shall be returned.
-        (SRS_Os_80006, SRS_Os_80026, SRS_Os_80027) */
-    /* [SWS_Os_00680] If the parameter CoreID refers to a core that was already
-        started by the function StartNonAutosarCore the related core is ignored
-        and E_OS_STATE shall be returned.
-        (SRS_Os_80006, SRS_Os_80026, SRS_Os_80027) */
-    ev = E_OS_STATE;
-  } else {
-    /* Really start the core if we are not in MASTER core */
-    if (CoreID != OS_CORE_ID_MASTER) {
-      /* [SWS_Os_00677] The function StartCore shall start one core that shall
-          run under the control of the AUTOSAR OS.
+    } else if (((ar_core_mask | p_kcb->not_ar_core_mask) & core_id_mask) != 0U)
+    {
+      /* [SWS_Os_00679] If the parameter CoreIDs refers to a core that was
+          already started by the function StartCore the related core is ignored
+          and E_OS_STATE shall be returned.
           (SRS_Os_80006, SRS_Os_80026, SRS_Os_80027) */
-      /* Flag that core is started as Autosar core */
-      p_kcb->ar_core_mask |= core_id_mask;
-      /* Increment the Autosar Cores counter */
-      ++p_kcb->ar_num_core_started;
+      /* [SWS_Os_00680] If the parameter CoreID refers to a core that was
+         already started by the function StartNonAutosarCore the related core
+         is ignored and E_OS_STATE shall be returned.
+         (SRS_Os_80006, SRS_Os_80026, SRS_Os_80027) */
+      ev = E_OS_STATE;
+    } else {
+      /* Really start the core if we are not in MASTER core */
+      if (CoreID != OS_CORE_ID_MASTER) {
+        /* [SWS_Os_00677] The function StartCore shall start one core that
+           shall run under the control of the AUTOSAR OS.
+           (SRS_Os_80006, SRS_Os_80026, SRS_Os_80027) */
+        /* Flag that core is started as Autosar core */
+        p_kcb->ar_core_mask |= core_id_mask;
+        /* Increment the Autosar Cores counter */
+        ++p_kcb->ar_num_core_started;
 
-      osEE_hal_start_core(CoreID);
+        osEE_hal_start_core(CoreID);
+      }
+
+      ev = E_OK;
     }
+    /* Restore the initial conditions */
+    osEE_unlock_kernel();
 
-    ev = E_OK;
+    osEE_end_primitive(flags);
+  } else {
+    /* CoreID >= OS_CORE_ID_ARR_SIZE */
+    ev = E_OS_ID;
   }
-
-  /* Restore the initial conditions */
-  osEE_unlock_kernel();
-
-  osEE_end_primitive(flags);
-
   /* [SWS_Os_00681] There is no call to the ErrorHook() if an error occurs
        during StartCore(); (SRS_Os_80006, SRS_Os_80026, SRS_Os_80027) */
   if (Status != NULL) {
@@ -3382,47 +3402,54 @@ FUNC(void, OS_CODE)
   /* Error Value */
   VAR(StatusType, AUTOMATIC) ev;
 
-  CONST(OsEE_reg, AUTOMATIC)
-    flags = osEE_begin_primitive();
-  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
-    p_kdb = osEE_lock_and_get_kernel();
-  CONSTP2VAR(OsEE_KCB, AUTOMATIC, OS_APPL_DATA)
-    p_kcb = p_kdb->p_kcb;
-  /* Variable introduced to meet MISRA 12.1 in the next else if statement */
-  CONST(OSEE_CORE_MASK_TYPE, AUTOMATIC)
-    ar_core_mask = p_kcb->ar_core_mask;
-  CONST(OSEE_CORE_MASK_TYPE, AUTOMATIC)
-    core_id_mask =  (1U << CoreID);
+  if (CoreID < OS_CORE_ID_ARR_SIZE) {
+    CONST(OsEE_reg, AUTOMATIC)
+      flags = osEE_begin_primitive();
+    CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
+      p_kdb = osEE_lock_and_get_kernel();
+    CONSTP2VAR(OsEE_KCB, AUTOMATIC, OS_APPL_DATA)
+      p_kcb = p_kdb->p_kcb;
+    /* Variable introduced to meet MISRA 12.1 in the next else if statement */
+    CONST(OSEE_CORE_MASK_TYPE, AUTOMATIC)
+      ar_core_mask = p_kcb->ar_core_mask;
+    CONST(OSEE_CORE_MASK_TYPE, AUTOMATIC)
+      core_id_mask =  ((CoreMaskType)1U << (OsEE_reg)CoreID);
 
-  if ((core_id_mask & OSEE_CORE_ID_VALID_MASK) == 0U) {
-    /* [SWS_Os_00685] If the parameter CoreID refers to an unknown core the
-        function StartNonAutosarCore has no effect and sets "Status" to E_OS_ID.
-        (SRS_Os_80006, SRS_Os_80026, SRS_Os_80027) */
-    ev = E_OS_ID;
-  } else if (((ar_core_mask | p_kcb->not_ar_core_mask) & core_id_mask) != 0U) {
-    /* [SWS_Os_00680] If the parameter CoreID refers to a core that was already
-        started by the function StartNonAutosarCore the related core is ignored
-        and E_OS_STATE shall be returned.
-        (SRS_Os_80006, SRS_Os_80026, SRS_Os_80027) */
-    ev = E_OS_STATE;
-  } else {
-    /* Really start the core if we are not in MASTER core */
-    if (CoreID != OS_CORE_ID_MASTER) {
-    /* [SWS_Os_00683] The function StartNonAutosarCore shall start a core that
-        is not controlled by the AUTOSAR OS.
-        (SRS_Os_80006, SRS_Os_80026, SRS_Os_80027) */
-      /* Flag that core is started as non Autosar core */
-      p_kcb->not_ar_core_mask |= core_id_mask;
-      osEE_hal_start_core(CoreID);
+    if ((core_id_mask & OSEE_CORE_ID_VALID_MASK) == 0U) {
+      /* [SWS_Os_00685] If the parameter CoreID refers to an unknown core the
+          function StartNonAutosarCore has no effect and sets "Status" to
+          E_OS_ID. (SRS_Os_80006, SRS_Os_80026, SRS_Os_80027) */
+      ev = E_OS_ID;
+    } else if (((ar_core_mask | p_kcb->not_ar_core_mask) & core_id_mask) != 0U)
+    {
+      /* [SWS_Os_00680] If the parameter CoreID refers to a core that was
+          already started by the function StartNonAutosarCore the related core
+          is ignored and E_OS_STATE shall be returned.
+          (SRS_Os_80006, SRS_Os_80026, SRS_Os_80027) */
+      ev = E_OS_STATE;
+    } else {
+      /* Really start the core if we are not in MASTER core */
+      if (CoreID != OS_CORE_ID_MASTER) {
+        /* [SWS_Os_00683] The function StartNonAutosarCore shall start a core
+            that is not controlled by the AUTOSAR OS.
+            (SRS_Os_80006, SRS_Os_80026, SRS_Os_80027) */
+        /* Flag that core is started as non Autosar core */
+        p_kcb->not_ar_core_mask |= core_id_mask;
+        osEE_hal_start_core(CoreID);
+      }
+
+      ev = E_OK;
     }
+    /* Restore the initial conditions */
+    osEE_unlock_kernel();
 
-    ev = E_OK;
+    osEE_end_primitive(flags);
+  } else {
+    /* [SWS_Os_00685] If the parameter CoreID refers to an unknown core the
+        function StartNonAutosarCore has no effect and sets "Status" to
+        E_OS_ID. (SRS_Os_80006, SRS_Os_80026, SRS_Os_80027) */
+    ev = E_OS_ID;
   }
-
-  /* Restore the initial conditions */
-  osEE_unlock_kernel();
-
-  osEE_end_primitive(flags);
 
   if (Status != NULL) {
     *Status = ev;
@@ -3479,7 +3506,7 @@ FUNC(void, OS_CODE)
 #endif /* EE_HAS_OSAPPLICATIONS__ */
   if ((os_status == OSEE_KERNEL_STARTED) || (os_status == OSEE_KERNEL_STARTING))
   {
-    VAR(CoreMaskType, AUTOMATIC) i;
+    VAR(CoreNumType, AUTOMATIC) i;
     CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)
       p_kdb = osEE_lock_and_get_kernel();
     CONSTP2VAR(OsEE_KCB, AUTOMATIC, OS_APPL_DATA)
@@ -3490,7 +3517,7 @@ FUNC(void, OS_CODE)
       /* Release the kernel spinlock */
       osEE_unlock_kernel();
       /* This won't never return */
-      osEE_shutdown_os(osEE_get_curr_core(), p_kcb->ar_shutdown_all_cores_error);
+      osEE_shutdown_os(p_cdb, p_kcb->ar_shutdown_all_cores_error);
     } else {
       /* Save the Error parameter to be used in all other cores */
       p_kcb->ar_shutdown_all_cores_error = Error;
@@ -3498,9 +3525,12 @@ FUNC(void, OS_CODE)
       p_kcb->ar_shutdown_all_cores_flag = OSEE_TRUE;
 
       for (i = 0U; i <= OSEE_CORE_ID_MAX; ++i) {
-        if (i != osEE_get_curr_core_id()) {
+        if (i != (CoreNumType)osEE_get_curr_core_id()) {
           if ((p_kcb->ar_core_mask & ((CoreMaskType)1U << i)) != 0U) {
-            osEE_hal_signal_core(i);
+            /* MISRA-C 2012: Rule 10.5 deviation. Cast back from
+               unsigned to enum is safe here, since we are in a loop
+               with the right limits. */
+            osEE_hal_signal_core((CoreIdType)i);
           }
         }
       }

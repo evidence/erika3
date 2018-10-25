@@ -45,7 +45,7 @@
     \author Errico Guidieri
     \date   2017
   */
-#if (!defined(OSEE_TC_TRAPVEC_H))
+#ifndef OSEE_TC_TRAPVEC_H
 #define OSEE_TC_TRAPVEC_H
 
 #include "ee_cfg.h"
@@ -183,11 +183,11 @@ typedef uint8_t OsEE_tc_tin;
 /* Type pointing to an Trap Handler */
 typedef void (* OsEE_tc_trap_handler)(OsEE_tc_tin par);
 
-/* Register d15 holds the Trap Id Nr inside a Trap handler */
 #if (defined(__GNUC__))
 OSEE_STATIC_INLINE OsEE_tc_tin osEE_tc_get_tin(void)
 {
   OsEE_tc_tin tin;
+  /* Register d15 holds the Trap Id Nr inside a Trap handler */
   __asm__ volatile("mov  %0,%%d15": "=d"(tin) : : "memory");
   return tin;
 }

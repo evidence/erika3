@@ -45,7 +45,7 @@
  *  \author Errico Guidieri
  *  \date   2017
  */
-#if (!defined(OSEE_TC_SYSTEM_H))
+#ifndef OSEE_TC_SYSTEM_H
 #define OSEE_TC_SYSTEM_H
 
 #include "ee_cfg.h"

@@ -8570,10 +8570,12 @@ static void OSEE_COMPILER_KEEP osEE_tc_isr2_wrapper(TaskType isr2_tid) {
 
       /* Check for ShutdownAllCores */
       if (p_kcb->ar_shutdown_all_cores_flag) {
-        osEE_shutdown_os(osEE_get_curr_core(),
+        CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
+          p_curr_cdb = osEE_get_curr_core();
+        osEE_shutdown_os(p_curr_cdb,
           p_kcb->ar_shutdown_all_cores_error);
       } else {
-        osEE_scheduler_task_preemption_point(osEE_get_kernel());
+        (void)osEE_scheduler_task_preemption_point(osEE_get_kernel());
         /* I close OS critical section to handle TP (Timing Protection),
            for IPL (ICR.CCPN) it would have been enough CSA restoring from RFE. */
         osEE_end_primitive(flags);

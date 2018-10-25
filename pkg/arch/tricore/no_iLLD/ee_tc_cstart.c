@@ -346,6 +346,7 @@ __asm__ (
 
 void _start(void)
 {
+  /* asm instruction to jump to the core startup */
   osEE_tc_jump_abs(osEE_tc_core0_start);
 }
 

@@ -142,7 +142,14 @@ typedef OSEE_TASK_ACTIVATION_TYPE               TaskActivation;
 #endif /* !OSEE_CORE_ID_TYPE */
 typedef OSEE_CORE_ID_TYPE                       CoreIdType;
 
+#if (!defined(INVALID_CORE_ID))
 #define INVALID_CORE_ID                         ((CoreIdType)-1)
+#endif /* !INVALID_CORE_ID */
+
+#if (!defined(OSEE_CORE_NUM_TYPE))
+#define OSEE_CORE_NUM_TYPE                      VAR(uint8_t, TYPEDEF)
+#endif /* !OSEE_CORE_NUM_TYPE */
+typedef OSEE_CORE_NUM_TYPE                      CoreNumType;
 
 #if (!defined(OSEE_CORE_MASK_TYPE))
 #define OSEE_CORE_MASK_TYPE                     VAR(OsEE_reg, TYPEDEF)

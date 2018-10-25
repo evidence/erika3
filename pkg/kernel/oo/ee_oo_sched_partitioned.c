@@ -105,6 +105,9 @@ FUNC(OsEE_bool, OS_CODE)
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb       = p_cdb->p_ccb;
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA) p_curr      = p_ccb->p_curr;
   CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA) p_curr_tcb  = p_curr->p_tcb;
+#if (!defined(OSEE_SINGLECORE))
+  VAR(CoreIdType, AUTOMATIC) curr_core_id;
+#endif
 
   /* Touch unused parameters */
   (void)p_kdb;
@@ -112,7 +115,8 @@ FUNC(OsEE_bool, OS_CODE)
 
 #if (!defined(OSEE_SINGLECORE))
   /* Check if this is a remote activation */
-  if (p_tdb_act->orig_core_id != osEE_get_curr_core_id()) {
+  curr_core_id = osEE_get_curr_core_id();
+  if (p_tdb_act->orig_core_id != curr_core_id) {
     CONST(OsEE_bool, AUTOMATIC) rq_head_changed =
       osEE_scheduler_task_insert_rq(p_ccb, p_tdb_act, p_tcb_act);
 
@@ -132,6 +136,9 @@ FUNC(OsEE_bool, OS_CODE)
       p_new_stk = osEE_sn_alloc(&p_ccb->p_free_sn);
 
 #if (defined(OSEE_HAS_POSTTASKHOOK))
+      /* If PostTaskHook is configured the passage to status ready has to be
+         visible */
+      p_tdb_act->p_tcb->status = OSEE_TASK_READY;
       /* Call PostTaskHook before switching active TASK, if the preempted TASK
          is a real TASK and not the idle task */
       if (p_curr->task_type <= OSEE_TASK_TYPE_EXTENDED) {
@@ -177,6 +184,9 @@ FUNC(OsEE_bool, OS_CODE)
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb = osEE_task_get_curr_core(p_tdb_act);
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb       = p_cdb->p_ccb;
+#if (!defined(OSEE_SINGLECORE))
+  VAR(CoreIdType, AUTOMATIC) curr_core_id;
+#endif
 
   /* Touch unused parameters */
   (void)p_kdb;
@@ -184,7 +194,8 @@ FUNC(OsEE_bool, OS_CODE)
 
 #if (!defined(OSEE_SINGLECORE))
   /* Check if this is a remote activation */
-  if (p_tdb_act->orig_core_id != osEE_get_curr_core_id()) {
+  curr_core_id = osEE_get_curr_core_id();
+  if (p_tdb_act->orig_core_id != curr_core_id) {
     head_changed = osEE_scheduler_task_insert_rq(p_ccb, p_tdb_act, p_tcb_act);
     if (head_changed) {
       /* if RQ Head is changed, signal the remote core, it needs to

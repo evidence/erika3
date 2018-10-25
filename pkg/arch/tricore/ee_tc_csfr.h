@@ -46,7 +46,7 @@
  *  \date   2017
  */
 
-#if (!defined(OSEE_TC_CSFR_H))
+#ifndef OSEE_TC_CSFR_H
 #define OSEE_TC_CSFR_H
 
 /* Program Control 0 */
@@ -70,8 +70,10 @@
 #define OSEE_CSFR_PC         (0xFE08U)
 /* System Configuration Register */
 #define OSEE_CSFR_SYSCON     (0xFE14U)
-#if 0 /* Moved in ee_hal.h since these registers are accessible
-         from user space, so they belong to the public API */
+
+/* Moved in ee_hal.h since these registers are accessible
+   from user space, so they belong to the public API */
+#if 0
 /* CPUn Identification Register TC1.6P */
 #define OSEE_CSFR_CPU_ID     (0xFE18U)
 /* CPUn Core Identification Register */

@@ -79,7 +79,8 @@
 
 /* STM_SR Function Static storage declaration (if needed) */
 #if (defined(OSEE_SINGLECORE))
-#if (OSEE_SYSTEM_TIMER_DEVICE == OSEE_TC_STM_SR0)
+#if (defined(OSEE_SYSTEM_TIMER_DEVICE)) &&\
+    (OSEE_SYSTEM_TIMER_DEVICE == OSEE_TC_STM_SR0)
 #define OSEE_TC_STM_SR0_STORAGE static
 static void osEE_tc_stm_set_sr0(OsEE_reg usec, OsEE_tc_isr_hw_prio intvec);
 static void osEE_tc_stm_set_sr0_next_match(OsEE_reg usec);
@@ -87,7 +88,8 @@ static void osEE_tc_stm_set_sr0_next_match(OsEE_reg usec);
 #define OSEE_TC_STM_SR0_STORAGE
 #endif /* OSEE_SYSTEM_TIMER_DEVICE == OSEE_TC_STM_SR0 */
 
-#if (OSEE_SYSTEM_TIMER_DEVICE == OSEE_TC_STM_SR1)
+#if (defined(OSEE_SYSTEM_TIMER_DEVICE)) &&\
+    (OSEE_SYSTEM_TIMER_DEVICE == OSEE_TC_STM_SR1)
 #define OSEE_TC_STM_SR1_STORAGE static
 static void osEE_tc_stm_set_sr1(OsEE_reg usec, OsEE_tc_isr_hw_prio intvec);
 static void osEE_tc_stm_set_sr1_next_match(OsEE_reg usec);
@@ -210,8 +212,10 @@ void osEE_tricore_system_timer_handler(void) {
 #endif
     break;
 #endif /* OSEE_SYSTEM_TIMER_CORE2_DEVICE */
+    /* The system may handle only up to three CPUs */
     case OS_CORE_ID_ARR_SIZE:
     default:
+      /* The system may handle only up to three CPUs */
       break;
   }
 #endif /* OSEE_SINGLECORE */
@@ -267,8 +271,10 @@ void osEE_tc_initialize_system_timer(OsEE_TDB * p_tdb) {
 #endif
     break;
 #endif /* OSEE_SYSTEM_TIMER_CORE2_DEVICE */
+    /* The system may handle only up to three CPUs */
     case OS_CORE_ID_ARR_SIZE:
     default:
+      /* The system may handle only up to three CPUs */
       break;
 
   }

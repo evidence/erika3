@@ -52,7 +52,7 @@
  *  \date   2017
  */
 
-#if (!defined(OSEE_HAL_INTERNAL_TYPES_H))
+#ifndef OSEE_HAL_INTERNAL_TYPES_H
 #define OSEE_HAL_INTERNAL_TYPES_H
 
 #include "ee_platform_types.h"
@@ -70,25 +70,22 @@ extern "C" {
  *  why-you-shouldnt-use-__attribute__packed
  ******************************************************************************/
 
-/* needed since the Hightec compiler accepts only standard types as types for bitfields */
-typedef unsigned int OsEE_reg_bitfield;
-  
 /* Previous Context Information Register */
 typedef union OsEE_pcxi_tag {
   OsEE_reg reg;
   struct {
-    OsEE_reg_bitfield pcxo  :16; /* Previous Context Pointer Offset Address  */
-    OsEE_reg_bitfield pcxs  :4;  /* Previous Context Pointer Segment Address */
+    unsigned int pcxo  :16; /* Previous Context Pointer Offset Address  */
+    unsigned int pcxs  :4;  /* Previous Context Pointer Segment Address */
 #if (defined(__TC13__)) || (defined(__TC131__))
-    OsEE_reg_bitfield       :1;  /* In TC 1.3 bit20 is Reserved */
-    OsEE_reg_bitfield       :1;  /* In TC 1.3 bit21 is Reserved */
+    unsigned int       :1;  /* In TC 1.3 bit20 is Reserved */
+    unsigned int       :1;  /* In TC 1.3 bit21 is Reserved */
 #endif /* __TC13__ || __TC131__ */
-    OsEE_reg_bitfield ul    :1;  /* Upper or Lower Context Tag */
-    OsEE_reg_bitfield pie   :1;  /* Previous Interrupt Enable */
-    OsEE_reg_bitfield pcpn  :8;  /* Previous CPU Priority Number */
+    unsigned int ul    :1;  /* Upper or Lower Context Tag */
+    unsigned int pie   :1;  /* Previous Interrupt Enable */
+    unsigned int pcpn  :8;  /* Previous CPU Priority Number */
 #if (!defined(__TC13__)) && (!defined(__TC131__))
-    OsEE_reg_bitfield       :1;  /* In TC 1.6 bit30 is Reserved */
-    OsEE_reg_bitfield       :1;  /* In TC 1.6 bit31 is Reserved */
+    unsigned int       :1;  /* In TC 1.6 bit30 is Reserved */
+    unsigned int       :1;  /* In TC 1.6 bit31 is Reserved */
 #endif /* !__TC13__ && !__TC131__ */
   } bits;
 } OsEE_pcxi;
@@ -148,24 +145,24 @@ typedef struct OsEE_csa_tag {
 typedef union OsEE_icr_tag {
   OsEE_reg reg;
   struct {
-    OsEE_reg_bitfield ccpn :8; /* Current CPU Priority Number */
-    OsEE_reg_bitfield      :7;
-    OsEE_reg_bitfield ie   :1; /* Interrupt Enable */
-    OsEE_reg_bitfield pipn :8; /* Pending Interrupt Priority Number */
-    OsEE_reg_bitfield      :8;
+    unsigned int ccpn :8; /* Current CPU Priority Number */
+    unsigned int      :7;
+    unsigned int ie   :1; /* Interrupt Enable */
+    unsigned int pipn :8; /* Pending Interrupt Priority Number */
+    unsigned int      :8;
   } bits;
 } OsEE_icr;
 #else
 typedef union OsEE_icr_tag {
   OsEE_reg reg;
   struct {
-    OsEE_reg_bitfield ccpn     :8; /* Current CPU Priority Number */
-    OsEE_reg_bitfield ie       :1; /* Interrupt Enable */
-    OsEE_reg_bitfield          :7;
-    OsEE_reg_bitfield pipn     :8; /* Pending Interrupt Priority Number */
-    OsEE_reg_bitfield carbcyc  :2; /* Number of Arbitration Cycles */
-    OsEE_reg_bitfield conecyc  :1; /* No. of Clks per Arb. Cycle Control */
-    OsEE_reg_bitfield          :5;
+    unsigned int ccpn     :8; /* Current CPU Priority Number */
+    unsigned int ie       :1; /* Interrupt Enable */
+    unsigned int          :7;
+    unsigned int pipn     :8; /* Pending Interrupt Priority Number */
+    unsigned int carbcyc  :2; /* Number of Arbitration Cycles */
+    unsigned int conecyc  :1; /* No. of Clks per Arb. Cycle Control */
+    unsigned int          :5;
   } bits;
 } OsEE_icr;
 #endif /* !__TC13__ && !__TC131__ */

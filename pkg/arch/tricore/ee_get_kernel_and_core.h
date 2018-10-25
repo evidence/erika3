@@ -49,7 +49,7 @@
  *  \date   2017
  */
 
-#if (!defined(OSEE_GET_CURRENT_CORE_H))
+#ifndef OSEE_GET_CURRENT_CORE_H
 #define OSEE_GET_CURRENT_CORE_H
 
 #include "ee_platform_types.h"
@@ -80,6 +80,10 @@ OSEE_STATIC_INLINE OsEE_KDB * OSEE_ALWAYS_INLINE osEE_get_kernel(void) {
 
 extern OsEE_CDB osEE_cdb_var;
 extern OsEE_CCB osEE_ccb_var;
+
+#if (defined(OSEE_TC_HAS_ISR1_TO_CONF))
+extern OsEE_isr1_db osEE_isr1_db_instance;
+#endif /* OSEE_TC_HAS_ISR1_TO_CONF */
 
 #if (defined(OSEE_API_DYNAMIC))
 extern OsEE_TCB   osEE_tcb_array[OSEE_TASK_ARRAY_SIZE + OsNumberOfCores];
@@ -158,6 +162,9 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_unlock_curr_core (void) {}
 #define OS_CORE0_START_SEC_CONST
 #include "Os_MemMap.h"
 extern OsEE_CDB osEE_cdb_var_core0;
+#if (defined(OSEE_TC_HAS_ISR1_TO_CONF))
+extern OsEE_isr1_db osEE_isr1_db_instance_core0;
+#endif /* OSEE_TC_HAS_ISR1_TO_CONF */
 #define OS_CORE0_STOP_SEC_CONST
 #include "Os_MemMap.h"
 
@@ -171,6 +178,9 @@ extern OsEE_CCB osEE_ccb_var_core0;
 #define OS_CORE1_START_SEC_CONST
 #include "Os_MemMap.h"
 extern OsEE_CDB osEE_cdb_var_core1;
+#if (defined(OSEE_TC_HAS_ISR1_TO_CONF))
+extern OsEE_isr1_db osEE_isr1_db_instance_core1;
+#endif /* OSEE_TC_HAS_ISR1_TO_CONF */
 #define OS_CORE1_STOP_SEC_CONST
 #include "Os_MemMap.h"
 
@@ -185,6 +195,9 @@ extern OsEE_CCB osEE_ccb_var_core1;
 #define OS_CORE2_START_SEC_CONST
 #include "Os_MemMap.h"
 extern OsEE_CDB osEE_cdb_var_core2;
+#if (defined(OSEE_TC_HAS_ISR1_TO_CONF))
+extern OsEE_isr1_db osEE_isr1_db_instance_core2;
+#endif /* OSEE_TC_HAS_ISR1_TO_CONF */
 #define OS_CORE2_STOP_SEC_CONST
 #include "Os_MemMap.h"
 
@@ -223,6 +236,7 @@ OSEE_STATIC_INLINE OsEE_CDB * OSEE_ALWAYS_INLINE
     default:
       /* This can happen when we cycle on cores */
       p_cdb = NULL;
+    break;
   }
 
   return p_cdb;
