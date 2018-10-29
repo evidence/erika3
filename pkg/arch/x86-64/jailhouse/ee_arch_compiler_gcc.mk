@@ -68,7 +68,6 @@ BINDIR :=
 #ALLINCPATH += \
 #$(foreach d,$(INCLUDE_PATH),$(addprefix -I,$(call native_path,$d)))
 
-INCLUDE_PATH += $(JAILHOUSE_DIR)/inmates/lib/x86
 
 ifeq ($(JAILHOUSE_VERSION),0.7)
 INCLUDE_PATH += $(JAILHOUSE_DIR)/hypervisor/arch/x86/include
@@ -78,9 +77,10 @@ INCLUDE_PATH += $(JAILHOUSE_DIR)/include/arch/x86
 INCLUDE_PATH += $(JAILHOUSE_DIR)/include
 endif
 
-INCLUDE_PATH += $(JAILHOUSE_DIR)/hypervisor/arch/arm-common/include
+INCLUDE_PATH += $(JAILHOUSE_DIR)/inmates/lib/x86
 INCLUDE_PATH += $(JAILHOUSE_DIR)/inmates/lib/x86/include
-INCLUDE_PATH += $(JAILHOUSE_DIR)/inmates/lib/arm-common/include
+INCLUDE_PATH += $(JAILHOUSE_DIR)/inmates/lib
+INCLUDE_PATH += $(JAILHOUSE_DIR)/inmates/lib/include
 
 JAILHOUSE_X86_64_GCCPREFIX ?=
 
