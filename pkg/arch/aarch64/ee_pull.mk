@@ -75,6 +75,8 @@ OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/aarch64/ee_platform_types.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/aarch64/ee_get_kernel_and_core.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/aarch64/ee_hal.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/aarch64/ee_hal_internal_types.h
+OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/aarch64/$(OSEE_PLATFORM)/ee_print.h
+
 
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/aarch64/ee_aarch64_boot.c
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/aarch64/ee_aarch64_header.S
