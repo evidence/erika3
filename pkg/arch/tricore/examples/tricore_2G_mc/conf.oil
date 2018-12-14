@@ -1,0 +1,163 @@
+/* ###*B*###
+ * Erika Enterprise, version 3
+ * 
+ * Copyright (C) 2017 - 2018 Evidence s.r.l.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or (at
+ * your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License, version 2, for more details.
+ * 
+ * You should have received a copy of the GNU General Public License,
+ * version 2, along with this program; if not, see
+ * < www.gnu.org/licenses/old-licenses/gpl-2.0.html >.
+ * 
+ * This program is distributed to you subject to the following
+ * clarifications and special exceptions to the GNU General Public
+ * License, version 2.
+ * 
+ * THIRD PARTIES' MATERIALS
+ * 
+ * Certain materials included in this library are provided by third
+ * parties under licenses other than the GNU General Public License. You
+ * may only use, copy, link to, modify and redistribute this library
+ * following the terms of license indicated below for third parties'
+ * materials.
+ * 
+ * In case you make modified versions of this library which still include
+ * said third parties' materials, you are obligated to grant this special
+ * exception.
+ * 
+ * The complete list of Third party materials allowed with ERIKA
+ * Enterprise version 3, together with the terms and conditions of each
+ * license, is present in the file THIRDPARTY.TXT in the root of the
+ * project.
+ * ###*E*### */
+
+CPU test_application {
+
+  OS EE {
+    /* EE_OPT = "OS_EE_VERBOSE"; */
+    EE_OPT = "OSEE_DEBUG";
+    EE_OPT = "OSEE_ASSERT";
+    EE_OPT = "OS_EE_APPL_BUILD_DEBUG";
+    EE_OPT = "OS_EE_BUILD_DEBUG";
+    EE_OPT = "OSEE_TC_LINK_BMHD";
+
+    CPU_DATA = TRICORE {
+      ID = 0x0;
+      CPU_CLOCK = 200.0;
+      IDLEHOOK = TRUE {
+        HOOKNAME = "idle_hook_core0";
+      };
+    };
+
+    CPU_DATA = TRICORE {
+      ID = 0x1;
+      MULTI_STACK = TRUE;
+      IDLEHOOK = TRUE {
+        HOOKNAME = "idle_hook_core1";
+      };
+    };
+
+    CPU_DATA = TRICORE {
+      ID = 0x2;
+      IDLEHOOK = TRUE {
+        HOOKNAME = "idle_hook_core2";
+      };
+    };
+
+    MCU_DATA = TC39X {
+      DERIVATIVE = "tc399xe-Astep";
+      REVISION = "AA";
+    };
+
+    STATUS = EXTENDED;
+    ERRORHOOK = TRUE;
+    USERESSCHEDULER = FALSE;
+
+    USEORTI = TRUE;
+
+    KERNEL_TYPE = OSEK {
+      CLASS = ECC1;
+//      RQ    = MQ;
+    };
+  };
+
+  APPDATA tricore_2G_mc {
+    APP_SRC="master.c";
+    APP_SRC="slave1.c";
+    APP_SRC="slave2.c";
+  };
+
+  TASK TaskMaster {
+    CPU_ID = 0x0;
+    PRIORITY = 1;
+  };
+
+  TASK TaskCpu0Remote {
+    CPU_ID = 0x0;
+    PRIORITY = 2;
+  };
+
+  TASK TaskSlave1 {
+    CPU_ID = 0x1;
+    PRIORITY = 1;
+    AUTOSTART = TRUE;
+    STACK = PRIVATE {
+      SIZE = 256;
+    };
+    ACTIVATION = 1;
+    SCHEDULE = FULL;
+    EVENT = RemoteEvent;
+  };
+
+  TASK TaskSlave2 {
+    CPU_ID = 0x2;
+    PRIORITY = 1;
+  };
+
+  EVENT RemoteEvent  { MASK = AUTO; };
+
+  COUNTER system_timer_master {
+    CPU_ID = 0x0;
+    MINCYCLE = 1;
+    MAXALLOWEDVALUE = 2147483647;
+    TICKSPERBASE = 1;
+    TYPE = HARDWARE {
+        DEVICE = "STM_SR0";
+        SYSTEM_TIMER = TRUE;
+        PRIORITY = 2;
+    };
+    SECONDSPERTICK = 0.01;
+  };
+
+  COUNTER system_timer_slave2 {
+    CPU_ID = 0x2;
+    MINCYCLE = 1;
+    MAXALLOWEDVALUE = 2147483647;
+    TICKSPERBASE = 1;
+    TYPE = HARDWARE {
+      DEVICE = "STM_SR0";
+      SYSTEM_TIMER = TRUE;
+      PRIORITY = 2;
+    };
+    SECONDSPERTICK = 0.01;
+  };
+
+  ALARM AlarmMaster_1s {
+    COUNTER = system_timer_master;
+    ACTION = ACTIVATETASK { TASK = TaskMaster; };
+    AUTOSTART = TRUE { ALARMTIME = 100; CYCLETIME = 100; };
+  };
+
+  ALARM AlarmSlave2RemoteCPU0 {
+    COUNTER = system_timer_slave2;
+    ACTION = ACTIVATETASK { TASK = TaskCpu0Remote; };
+  };
+};

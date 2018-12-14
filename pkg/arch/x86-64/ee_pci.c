@@ -49,9 +49,14 @@
  *  \date    2018
  */
 
-#include "ee_platform_types.h"
+#include "ee_hal.h"
 #include "ee_ioport.h"
 #include "ee_pci.h"
+#include "ee_platform_types.h"
+#include "ee_print.h"
+
+#include "ee_x86_64_memory_mgmt.h"
+#include "ee_x86_64_apic_internal.h"
 
 #define OSEE_PCI_REG_ADDR_PORT	0xcf8
 #define OSEE_PCI_REG_DATA_PORT	0xcfc
@@ -112,4 +117,83 @@ void osEE_pci_write_config(uint16_t bdf, unsigned int addr, uint32_t value,
 		outl(OSEE_PCI_REG_DATA_PORT, value);
 		break;
 	}
+}
+
+int osEE_pci_find_cap(uint16_t bdf, uint16_t cap)
+{
+	uint8_t pos = OSEE_PCI_CFG_CAP_PTR - 1;
+
+	if (!(osEE_pci_read_config(bdf, OSEE_PCI_CFG_STATUS, 2)
+				& OSEE_PCI_STS_CAPS))
+		return -1;
+
+	while (1) {
+		pos = osEE_pci_read_config(bdf, pos + 1, 1);
+
+		if (pos == 0)
+			return -1;
+
+		if (osEE_pci_read_config(bdf, pos, 1) == cap)
+			return pos;
+	}
+}
+
+void osEE_pci_msix_set_vector(uint16_t bdf, unsigned int vector,
+		uint32_t index)
+{
+	int cap = 0;
+	unsigned int bar;
+	uint64_t msix_table = 0;
+	uint32_t addr;
+	uint16_t ctrl;
+	uint32_t table;
+	OsEE_core_id cpu_id = 0, cpu_id_msr = 0;
+	OsEE_paddr apic_paddr;
+
+	cap = osEE_pci_find_cap(bdf, OSEE_PCI_CAP_MSIX);
+
+	if (cap < 0)
+		return;
+
+	ctrl = osEE_pci_read_config(bdf, cap + 2, 2);
+
+	/* bounds check */
+	if (index > (ctrl & 0x3ff))
+		return;
+
+	table = osEE_pci_read_config(bdf, cap + 4, 4);
+	bar = (table & 7) * 4 + OSEE_PCI_BAR0_32;
+	addr = osEE_pci_read_config(bdf, bar, 4);
+
+
+	if ((addr & 6) == OSEE_PCI_BAR_64BIT) {
+		msix_table = osEE_pci_read_config(bdf, bar + 4, 4);
+		msix_table <<= 32;
+	}
+
+	msix_table |= addr & ~0xf;
+	msix_table += table & ~7;
+
+	/* enable and mask */
+	ctrl |= (OSEE_PCI_MSIX_CTRL_ENABLE | OSEE_PCI_MSIX_CTRL_FMASK);
+	osEE_pci_write_config(bdf, cap + 2, ctrl, 2);
+
+	/* VA mapping of the APIC */
+	apic_paddr = (OsEE_paddr) osEE_x86_64_read_msr(MSR_IA32_APIC_BASE);
+	apic_paddr &= 0xFFFFF000;
+	if (osEE_x86_64_map_range(apic_paddr, PAGE_SIZE, MAP_UNCACHED))
+		return;
+	
+	/* Getting cpu id */
+	cpu_id = osEE_x86_64_get_local_apic_id();
+
+	msix_table += 16 * index;
+	osEE_mmio_write32((OsEE_reg)msix_table, apic_paddr | cpu_id << 12);
+	osEE_mmio_write32((OsEE_reg)(msix_table + 4), 0);
+	osEE_mmio_write32((OsEE_reg)(msix_table + 8), vector);
+	osEE_mmio_write32((OsEE_reg)(msix_table + 12), 0);
+
+	/* enable and unmask */
+	ctrl &= ~OSEE_PCI_MSIX_CTRL_FMASK;
+	osEE_pci_write_config(bdf, cap + 2, ctrl, 2);
 }

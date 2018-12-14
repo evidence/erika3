@@ -54,9 +54,9 @@
 #ifndef OSEE_HAL_INTERNAL_H
 #define OSEE_HAL_INTERNAL_H
 
-/*==============================================================================
+/*=============================================================================
                                   Inclusions
- =============================================================================*/
+ ============================================================================*/
 #include "ee_cfg.h"
 #include "ee_platform_types.h"
 #include "ee_utils.h"
@@ -76,17 +76,17 @@
 extern "C" {
 #endif
 
-/*==============================================================================
+/*=============================================================================
                           Stack utilities
- =============================================================================*/
+ ============================================================================*/
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_set_SP(OsEE_stack * sp)
 {
   __asm__ volatile ("mov.aa %%SP, %0" : : "a"(sp) : "memory");
 }
 
-/*==============================================================================
+/*=============================================================================
                           ERIKA's Context utilities
- =============================================================================*/
+ ============================================================================*/
 
 /* Used to clean bits [6:0] corresponding to PSW.CDC (call depth counter) */
 #define OSEE_TC_PSW_CDC_CLEAN_MASK     (0xFFFFFF80U)
@@ -117,9 +117,9 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_tc_set_RA(OsEE_addr ra)
   __asm__ volatile ("mov.aa %%a11, %0" : : "a"(ra) : "memory");
 }
 
-/*==============================================================================
+/*=============================================================================
                         CSA handling utilities
- =============================================================================*/
+ ============================================================================*/
 
 /** Convert context link to context pointer
  * \param[in] l_csa link to context save area
@@ -188,9 +188,9 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
   }
 }
 
-/*==============================================================================
+/*=============================================================================
                         Interrupt handling utilities
- =============================================================================*/
+ ============================================================================*/
 /* Functions to Access ICR register */
 OSEE_STATIC_INLINE OsEE_icr OSEE_ALWAYS_INLINE osEE_tc_get_icr(void)
 {
@@ -263,7 +263,8 @@ OSEE_STATIC_INLINE OsEE_reg OSEE_ALWAYS_INLINE
   if (virt_prio < OSEE_ISR2_PRIO_BIT) {
     ret_flags = OSEE_B_SET(flags, 8U, 0U, OSEE_ISR_UNMASKED);
   } else {
-    ret_flags = OSEE_B_SET(flags, 8U, 0U, OSEE_ISR2_VIRT_TO_HW_PRIO(virt_prio));
+    ret_flags =
+      OSEE_B_SET(flags, 8U, 0U, OSEE_ISR2_VIRT_TO_HW_PRIO(virt_prio));
   }
   return ret_flags;
 }
@@ -284,9 +285,9 @@ OSEE_STATIC_INLINE MemSize OSEE_ALWAYS_INLINE
 }
 #endif /* OSEE_RQ_MULTIQUEUE */
 
-/*==============================================================================
+/*=============================================================================
                     HAL For Primitives Atomicity
- =============================================================================*/
+ ============================================================================*/
 
 /* Called as _first_ function of a primitive that can be called from within
  * an IRQ and from within a task. */
@@ -317,9 +318,91 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
   }
 }
 
-/*==============================================================================
+/*=============================================================================
+                Services Requests Node (SRN) Utility Macros
+ ============================================================================*/
+#define OSEE_TC_SRC_BASE                  (0xF0038000U)
+
+#define OSEE_TC_SRC_REG(off)\
+  (*(OsEE_reg volatile *)(OSEE_TC_SRC_BASE + (off)))
+
+#if (!defined(OSEE_TC_2G))
+#define OSEE_TC_SRN_TOS_MASK              ((OsEE_reg)(0x3U))
+#else
+#define OSEE_TC_SRN_TOS_MASK              ((OsEE_reg)(0x7U))
+#endif /* !OSEE_TC_2G */
+
+#define OSEE_TC_SRN_PRIORITY(intvec)      (((OsEE_reg)(intvec)) & \
+  (OsEE_reg)0x7FU)
+#define OSEE_TC_SRN_ENABLE                ((OsEE_reg)1U << 10U)
+#define OSEE_TC_SRN_TYPE_OF_SERVICE(tos)  (((OsEE_reg)(tos) & \
+  OSEE_TC_SRN_TOS_MASK) << 11U)
+#define OSEE_TC_SRN_CLEAR_REQUEST         ((OsEE_reg)1U << 25U)
+#define OSEE_TC_SRN_SET_REQUEST           ((OsEE_reg)1U << 26U)
+#define OSEE_TC_SRN_STICKY_CLEAR          ((OsEE_reg)1U << 30U)
+
+#if (!defined(OSEE_TC_2G))
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
+  osEE_tc_conf_src(CoreIdType tos, OsEE_reg src_offset, OsEE_prio prio) {
+/*
+ *  Service Request Configuration
+ *  [0..7] SRPN = Priority
+ *  [10] Service Request enable
+ *  [11..12] Type Of Service (means which CPU or DMA will handle it)
+ */
+  OSEE_TC_SRC_REG(src_offset) = OSEE_TC_SRN_TYPE_OF_SERVICE(tos) |
+      OSEE_TC_SRN_ENABLE | OSEE_TC_SRN_PRIORITY(prio);
+}
+#else
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
+  osEE_tc_conf_src(CoreIdType tos, OsEE_reg src_offset, OsEE_prio prio) {
+/*
+ *  Service Request Configuration
+ *  [0..7] SRPN = Priority
+ *  [10] Service Request enable
+ *  [11..13] Type Of Service (means which CPU or DMA will handle it)
+ */
+ /* TOS Rule for TC3nX */
+ /* Type of Service Control
+    The TOS bit field configuration maps a Service Request to an Interrupt
+    Service Provider:
+    0H CPU0 service is initiated
+    1H DMA service is initiated
+    2H CPU1 service is initiated
+    3H CPU2 service is initiated
+    4H CPU3 service is initiated
+    5H CPU4 service is initiated
+    6H CPU5 service is initiated
+    7H PDMA service is initiated
+
+    Note: In products where PDMA or CPUx is not implemented, the related TOS
+      encoding will not be used and treated as RESERVED.
+ */
+#if (!defined(OSEE_SINGLECORE))
+  OsEE_reg tos_num;
+  if ((tos == OS_CORE_ID_0)
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x40U)
+    || (tos == OS_CORE_ID_6)
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x40U */
+  ) {
+    tos_num = (OsEE_reg)tos;
+  } else {
+    tos_num = (OsEE_reg)tos + 1U;
+  }
+#else
+  OsEE_reg const tos_num = (OsEE_reg)OS_CORE_ID_0;
+  /* Touch unused parameter */
+  (void)tos;
+#endif /* !OSEE_SINGLECORE */
+
+  OSEE_TC_SRC_REG(src_offset) = OSEE_TC_SRN_TYPE_OF_SERVICE(tos_num) |
+    OSEE_TC_SRN_ENABLE | OSEE_TC_SRN_PRIORITY(prio);
+}
+#endif /* !OSEE_TC_2G */
+
+/*=============================================================================
                               Start-up and ISR2
- =============================================================================*/
+ ============================================================================*/
 #if (defined(OSEE_HAS_SYSTEM_TIMER))
 extern void osEE_tc_initialize_system_timer(OsEE_TDB * p_tdb);
 #endif /* OSEE_HAS_SYSTEM_TIMER */

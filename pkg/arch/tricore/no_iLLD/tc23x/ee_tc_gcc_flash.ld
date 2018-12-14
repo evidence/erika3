@@ -74,6 +74,8 @@ OUTPUT_FORMAT("elf32-tricore")
 OUTPUT_ARCH(tricore)
 ENTRY(_start)
 
+/* Force to link the variable that contains the "TriCore ID" used to compile */
+EXTERN(__TRICORE_DERIVATE_NAME__)
 __TRICORE_DERIVATE_MEMORY_MAP__ = 0x2300;
 
 /* CSA list size */
@@ -102,7 +104,7 @@ MEMORY
   PMU_PFLASH0   (rx!p): org = 0x80000000, len = 2M
   PMU_PFLASH_nc (rx!p): org = 0xA0000000, len = 2M
 /* Data Flash Memory (DFLASH0) */ 
-  PMU_DFLASH0   (r!xp): org = 0xAF000000, len = 128K
+  PMU_DFLASH0   (r!xp): org = 0xAF000000, len = 1M+16K
 /* Boot ROM (BROM) */ 
   BROM          (rx!p): org = 0x8FFF8000, len = 32K
 
@@ -119,8 +121,8 @@ MEMORY
   LMU_SRAM_nc   (w!xp): org = 0xB0000000, len = 32K
 
   /* Extended Memory */
-  EDMEM           (w!xp): org = 0x9f000000, len = 512K
-  EDMEM_nc        (w!xp): org = 0xBf000000, len = 1M
+  EDMEM           (w!xp): org = 0x9f000000, len = 512K+16K
+  EDMEM_nc        (w!xp): org = 0xBf000000, len = 512K+16K
 }
 
 /* Map local memory address to a global address */ 
@@ -414,6 +416,8 @@ SECTIONS
 
   .lmu_data : ALIGN(4) FLAGS(awl)
   {
+    *(.lmu_data)
+    *(.lmu_data.*)
     *(.data_lmu)
     *(.data_lmu.*)
     *(.lmudata)
@@ -422,6 +426,8 @@ SECTIONS
 
   .lmu_bss (NOLOAD) : ALIGN(4) FLAGS(aw)
   {
+    *(.lmu_bss)
+    *(.lmu_bss.*)
     *(.bss_lmu)
     *(.bss_lmu.*)
     *(.lmubss)

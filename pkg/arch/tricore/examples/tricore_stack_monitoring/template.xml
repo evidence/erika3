@@ -45,7 +45,7 @@
 
 <evidence_example version="1" ID="tricore_stack_monitoring">
 
-  <category>TriCore</category>
+  <category>TriCore/AURIX 1G</category>
   <title>Stack Monitoring</title>
 
   <small_descr>

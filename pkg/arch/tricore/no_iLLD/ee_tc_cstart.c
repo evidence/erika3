@@ -230,6 +230,7 @@ static void osEE_tc_C_init(void) {
 /******************************************************************************
                              Boot Mode Headers
  *****************************************************************************/
+#if (!defined(OSEE_TC_2G)) && (defined(OSEE_TC_LINK_BMHD))
 /* Boot Mode Header 0 sections to inform linker to locate them at 0x80000000 */
 #if defined(__GNUC__)
 #pragma section
@@ -245,7 +246,7 @@ static void osEE_tc_C_init(void) {
 /** \brief Boot Mode Header 0
  * Boot mode header at memory location 0c8000 0000.
  */
-static const uint32_t osEE_bootmode_header_0[] = {
+const uint32_t osEE_tc_bmhd_0[] = {
     0x00000000u,                 /* STADBM first user code at 0x8000 0020h */
     0xb3590070u,                 /* BMI = 0070h BMHDID = B359h */
     0x00000000u,                 /* ChkStart */
@@ -284,7 +285,7 @@ static const uint32_t osEE_bootmode_header_0[] = {
 /** \brief Boot Mode Header 1
  * Boot mode header at memory location 0c8002 0000.
  */
-static const uint32_t osEE_bootmode_header_1[] = {
+const uint32_t osEE_tc_bmhd_1[] = {
     0x00000000U,                 /* STADBM first user code at 0x8000 0020h */
     0xB3590070U,                 /* BMI = 0070h BMHDID = B359h */
     0x00000000U,                 /* ChkStart */
@@ -306,6 +307,7 @@ static const uint32_t osEE_bootmode_header_1[] = {
 #if defined(__DCC__)
 #pragma section CONST
 #endif
+#endif /* !OSEE_TC_2G  && OSEE_TC_LINK_BMHD */
 
 /******************************************************************************
                   Derivative Check + Turn-Off Frame pointer
@@ -388,9 +390,8 @@ extern OsEE_csa __CSA0_END[];
 
 void osEE_tc_core0_start(void)
 {
-  OsEE_reg            pcxi;
-  OsEE_core_id  const core_id   = osEE_get_curr_core_id();
-  uint16_t const cpu_wdt_pw     = osEE_tc_get_cpu_wdt_pw(core_id);
+  OsEE_reg       pcxi;
+  uint16_t const cpu_wdt_pw     = osEE_tc_get_cpu_wdt_pw(0U);
   uint16_t const safety_wdt_pw  = osEE_tc_get_safety_wdt_pw();
 
 /* Load User stack pointer */
@@ -413,44 +414,44 @@ void osEE_tc_core0_start(void)
   osEE_tc_set_csfr(OSEE_CSFR_PCXI, pcxi);
 
 /* TODO: Enable/Disable program cache depending on the configuration */
-  osEE_tc_set_pcache(OSEE_FALSE);
+  osEE_tc_set_pcache(OSEE_TRUE);
 
 /* TODO: Enable/Disable data cache depending on the configuration */
-  osEE_tc_set_dcache(OSEE_FALSE);
+  osEE_tc_set_dcache(OSEE_TRUE);
 
 /* Clear the ENDINIT bit in the WDT_CON0 register */
-  osEE_tc_clear_cpu_endinit(core_id, cpu_wdt_pw);
+  osEE_tc_clear_cpu_endinit(0U, cpu_wdt_pw);
 
 /* Load Base Address of Trap Vector Table. */
   osEE_tc_set_csfr(OSEE_CSFR_BTV, (OsEE_reg)__TRAPTAB);
 
-/* Load Base Address of Interrupt Vector Table. we will do this later in the program */
+/* Load Base Address of Interrupt Vector Table. */
   osEE_tc_set_csfr(OSEE_CSFR_BIV, (OsEE_reg)__INTTAB0);
 
-/* Load interupt stack pointer. */
+/* Load Interrupt Stack Pointer. (Not Used) */
   osEE_tc_set_csfr(OSEE_CSFR_ISP, (OsEE_reg)__ISTACK0);
 
 /* Set the ENDINIT bit in the WDT_CON0 register back */
-  osEE_tc_set_cpu_endinit(core_id, cpu_wdt_pw);
+  osEE_tc_set_cpu_endinit(0U, cpu_wdt_pw);
 
 /* Initialize SDA base pointers */
   osEE_tc_setareg(a0, _SMALL_DATA_);
   osEE_tc_setareg(a1, _SMALL_DATA2_);
 
-/* These to be un commented if A8 and A9 are required to be initialized */
+/* Initialization of A8 and A9 */
   osEE_tc_setareg(a8, _SMALL_DATA3_);
-#if (defined(OSEE_SINGLECORE))
+#if (defined(OSEE_SINGLECORE)) || (defined(OSEE_TC_DISABLE_A9_OPTIMIZATION))
   osEE_tc_setareg(a9, _SMALL_DATA4_);
 #else
   osEE_tc_setareg(a9, &osEE_cdb_var_core0);
-#endif /* OSEE_SINGLECORE */
+#endif /* OSEE_SINGLECORE || OSEE_TC_DISABLE_A9_OPTIMIZATION */
 
 /* Setup the context save area linked list for CPU0 */
   osEE_tc_csa_init_inline(__CSA0, __CSA0_END);
 
 /* CPU and safety watchdogs are enabled by default. Disable them here to be
    re-enabled by ERIKA or by the Application */
-  osEE_tc_disable_cpu_wdt(core_id, cpu_wdt_pw);
+  osEE_tc_disable_cpu_wdt(0U, cpu_wdt_pw);
   osEE_tc_disable_safety_wdt(safety_wdt_pw);
 
 /* C initialization routine */
@@ -460,7 +461,7 @@ void osEE_tc_core0_start(void)
    environment trying to access to SCU_PLL registers, at the same time that
    another core try to set ENDINIT password on it's own SCU_CPU_WDT
    is a TRAP BUS peripheral fault. */
-#if (!defined(OSEE_TRICORE_ILLD))
+#if (!defined(OSEE_TRICORE_ILLD)) && (!defined(OSEE_TC_2G))
 #if (!defined(OSEE_BYPASS_CLOCK_CONFIGURATION))
 /* If a CPU CLOCK frequency is defined configure the SCU registers */
 #if (defined(OSEE_CPU_CLOCK))
@@ -471,12 +472,12 @@ void osEE_tc_core0_start(void)
 /*===================== Configure Oscillator Control ========================*/
   osEE_tc_conf_osc_ctrl();
 /*============================ Configure PLL ================================*/
-  osEE_tc_conf_clock(OSEE_CPU_CLOCK);
+  osEE_tc_set_pll_fsource(OSEE_CPU_CLOCK);
 /* Re-enable SAFETY ENDINIT Protection */
   osEE_tc_set_safety_endinit(safety_wdt_pw);
 #endif /* OSEE_CPU_CLOCK */
 #endif /* !OSEE_BYPASS_CLOCK_CONFIGURATION */
-#endif /* !OSEE_TRICORE_ILLD */
+#endif /* !OSEE_TRICORE_ILLD && !OSEE_TC_2G */
 
 /* Call main function */
   (void)main();
@@ -488,7 +489,7 @@ void osEE_tc_core0_start(void)
 }
 
 #if (!defined(OSEE_SINGLECORE))
-#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x2U)
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x02U)
 /* Linker script defined symbols */
 extern OsEE_stack __USTACK1[];
 extern OsEE_stack __ISTACK1[];
@@ -500,9 +501,8 @@ extern OsEE_csa __CSA1_END[];
 
 void osEE_tc_core1_start(void)
 {
-  OsEE_reg            pcxi;
-  OsEE_core_id  const core_id   = osEE_get_curr_core_id();
-  uint16_t const cpu_wdt_pw     = osEE_tc_get_cpu_wdt_pw(core_id);
+  OsEE_reg       pcxi;
+  uint16_t const cpu_wdt_pw     = osEE_tc_get_cpu_wdt_pw(1U);
   uint16_t const safety_wdt_pw  = osEE_tc_get_safety_wdt_pw();
 
 /* Load User stack pointer */
@@ -525,40 +525,44 @@ void osEE_tc_core1_start(void)
   osEE_tc_set_csfr(OSEE_CSFR_PCXI, pcxi);
 
 /* TODO: Enable/Disable program cache depending on the configuration */
-  osEE_tc_set_pcache(OSEE_FALSE);
+  osEE_tc_set_pcache(OSEE_TRUE);
 
 /* TODO: Enable/Disable data cache depending on the configuration */
-  osEE_tc_set_dcache(OSEE_FALSE);
+  osEE_tc_set_dcache(OSEE_TRUE);
 
 /* Clear the ENDINIT bit in the WDT_CON0 register */
-  osEE_tc_clear_cpu_endinit(core_id, cpu_wdt_pw);
+  osEE_tc_clear_cpu_endinit(1U, cpu_wdt_pw);
 
 /* Load Base Address of Trap Vector Table. */
   osEE_tc_set_csfr(OSEE_CSFR_BTV, (OsEE_reg)__TRAPTAB);
 
-/* Load Base Address of Interrupt Vector Table. we will do this later in the program */
+/* Load Base Address of Interrupt Vector Table. */
   osEE_tc_set_csfr(OSEE_CSFR_BIV, (OsEE_reg)__INTTAB1);
 
-/* Load interupt stack pointer. */
+/* Load Interrupt Stack Pointer. (Not Used) */
   osEE_tc_set_csfr(OSEE_CSFR_ISP, (OsEE_reg)__ISTACK1);
 
 /* Set the ENDINIT bit in the WDT_CON0 register back */
-  osEE_tc_set_cpu_endinit(core_id, cpu_wdt_pw);
+  osEE_tc_set_cpu_endinit(1U, cpu_wdt_pw);
 
 /* Initialize SDA base pointers */
   osEE_tc_setareg(a0, _SMALL_DATA_);
   osEE_tc_setareg(a1, _SMALL_DATA2_);
 
-/* These to be un commented if A8 and A9 are required to be initialized */
+/* Initialization of A8 and A9 */
   osEE_tc_setareg(a8, _SMALL_DATA3_);
+#if (defined(OSEE_TC_DISABLE_A9_OPTIMIZATION))
+  osEE_tc_setareg(a9, _SMALL_DATA4_);
+#else
   osEE_tc_setareg(a9, &osEE_cdb_var_core1);
+#endif /* OSEE_TC_DISABLE_A9_OPTIMIZATION */
 
 /* Setup the context save area linked list for CPU0 */
   osEE_tc_csa_init_inline(__CSA1, __CSA1_END);
 
 /* CPU and safety watchdogs are enabled by default. Disable them here to be
    re-enabled by ERIKA or by the Application */
-  osEE_tc_disable_cpu_wdt(core_id, cpu_wdt_pw);
+  osEE_tc_disable_cpu_wdt(1U, cpu_wdt_pw);
   osEE_tc_disable_safety_wdt(safety_wdt_pw);
 
 /* Call main function */
@@ -569,9 +573,9 @@ void osEE_tc_core1_start(void)
     ;
   }
 }
-#endif /* OSEE_CORE_ID_VALID_MASK & 0x2U */
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x02U */
 
-#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x4U)
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x04U)
 /* Linker script defined symbols */
 extern OsEE_stack __USTACK2[];
 extern OsEE_stack __ISTACK2[];
@@ -583,9 +587,8 @@ extern OsEE_csa __CSA2_END[];
 
 void osEE_tc_core2_start(void)
 {
-  OsEE_reg            pcxi;
-  OsEE_core_id  const core_id   = osEE_get_curr_core_id();
-  uint16_t const cpu_wdt_pw     = osEE_tc_get_cpu_wdt_pw(core_id);
+  OsEE_reg       pcxi;
+  uint16_t const cpu_wdt_pw     = osEE_tc_get_cpu_wdt_pw(2U);
   uint16_t const safety_wdt_pw  = osEE_tc_get_safety_wdt_pw();
 
 /* Load User stack pointer */
@@ -608,40 +611,44 @@ void osEE_tc_core2_start(void)
   osEE_tc_set_csfr(OSEE_CSFR_PCXI, pcxi);
 
 /* TODO: Enable/Disable program cache depending on the configuration */
-  osEE_tc_set_pcache(OSEE_FALSE);
+  osEE_tc_set_pcache(OSEE_TRUE);
 
 /* TODO: Enable/Disable data cache depending on the configuration */
-  osEE_tc_set_dcache(OSEE_FALSE);
+  osEE_tc_set_dcache(OSEE_TRUE);
 
 /* Clear the ENDINIT bit in the WDT_CON0 register */
-  osEE_tc_clear_cpu_endinit(core_id, cpu_wdt_pw);
+  osEE_tc_clear_cpu_endinit(2U, cpu_wdt_pw);
 
 /* Load Base Address of Trap Vector Table. */
   osEE_tc_set_csfr(OSEE_CSFR_BTV, (OsEE_reg)__TRAPTAB);
 
-/* Load Base Address of Interrupt Vector Table. we will do this later in the program */
+/* Load Base Address of Interrupt Vector Table. */
   osEE_tc_set_csfr(OSEE_CSFR_BIV, (OsEE_reg)__INTTAB2);
 
-/* Load interupt stack pointer. */
+/* Load Interrupt Stack Pointer. (Not Used) */
   osEE_tc_set_csfr(OSEE_CSFR_ISP, (OsEE_reg)__ISTACK2);
 
 /* Set the ENDINIT bit in the WDT_CON0 register back */
-  osEE_tc_set_cpu_endinit(core_id, cpu_wdt_pw);
+  osEE_tc_set_cpu_endinit(2U, cpu_wdt_pw);
 
 /* Initialize SDA base pointers */
   osEE_tc_setareg(a0, _SMALL_DATA_);
   osEE_tc_setareg(a1, _SMALL_DATA2_);
 
-/* These to be un commented if A8 and A9 are required to be initialized */
+/* Initialization of A8 and A9 */
   osEE_tc_setareg(a8, _SMALL_DATA3_);
+#if (defined(OSEE_TC_DISABLE_A9_OPTIMIZATION))
+  osEE_tc_setareg(a9, _SMALL_DATA4_);
+#else
   osEE_tc_setareg(a9, &osEE_cdb_var_core2);
+#endif /* OSEE_TC_DISABLE_A9_OPTIMIZATION */
 
 /* Setup the context save area linked list for CPU0 */
   osEE_tc_csa_init_inline(__CSA2, __CSA2_END);
 
 /* CPU and safety watchdogs are enabled by default. Disable them here to be
    re-enabled by ERIKA or by the Application */
-  osEE_tc_disable_cpu_wdt(core_id, cpu_wdt_pw);
+  osEE_tc_disable_cpu_wdt(2U, cpu_wdt_pw);
   osEE_tc_disable_safety_wdt(safety_wdt_pw);
 
 /* Call main function */
@@ -653,7 +660,265 @@ void osEE_tc_core2_start(void)
   }
 }
 
-#endif /* OSEE_CORE_ID_VALID_MASK & 0x4U */
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x04U */
+
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x08U)
+/* Linker script defined symbols */
+extern OsEE_stack __USTACK3[];
+extern OsEE_stack __ISTACK3[];
+
+extern void __INTTAB3(void);
+
+extern OsEE_csa __CSA3[];
+extern OsEE_csa __CSA3_END[];
+
+void osEE_tc_core3_start(void)
+{
+  OsEE_reg       pcxi;
+  uint16_t const cpu_wdt_pw     = osEE_tc_get_cpu_wdt_pw(3U);
+  uint16_t const safety_wdt_pw  = osEE_tc_get_safety_wdt_pw();
+
+/* Load User stack pointer */
+  osEE_set_SP(__USTACK3);
+
+/* Do a dsync before changing any of the CSFR values, thus any previous
+ * background state gets flushed first.
+ * Required for applications that jump to the reset address.
+ */
+  osEE_tc_dsync();
+
+/* Set the PSW to its reset value in case of a warm start, set PSW.IS.
+   Global Stack is needed since ERIKA's use the stack to save context for the
+   current TASK */
+  osEE_tc_set_csfr(OSEE_CSFR_PSW, OSEE_TC_START_PSW);
+
+/* Set the PCXS and PCXO to its reset value in case of a warm start */
+  pcxi  = osEE_tc_get_csfr(OSEE_CSFR_PCXI);
+  pcxi &= 0xFFF00000U;
+  osEE_tc_set_csfr(OSEE_CSFR_PCXI, pcxi);
+
+/* TODO: Enable/Disable program cache depending on the configuration */
+  osEE_tc_set_pcache(OSEE_TRUE);
+
+/* TODO: Enable/Disable data cache depending on the configuration */
+  osEE_tc_set_dcache(OSEE_TRUE);
+
+/* Clear the ENDINIT bit in the WDT_CON0 register */
+  osEE_tc_clear_cpu_endinit(3U, cpu_wdt_pw);
+
+/* Load Base Address of Trap Vector Table. */
+  osEE_tc_set_csfr(OSEE_CSFR_BTV, (OsEE_reg)__TRAPTAB);
+
+/* Load Base Address of Interrupt Vector Table. */
+  osEE_tc_set_csfr(OSEE_CSFR_BIV, (OsEE_reg)__INTTAB3);
+
+/* Load Interrupt Stack Pointer. (Not Used) */
+  osEE_tc_set_csfr(OSEE_CSFR_ISP, (OsEE_reg)__ISTACK3);
+
+/* Set the ENDINIT bit in the WDT_CON0 register back */
+  osEE_tc_set_cpu_endinit(3U, cpu_wdt_pw);
+
+/* Initialize SDA base pointers */
+  osEE_tc_setareg(a0, _SMALL_DATA_);
+  osEE_tc_setareg(a1, _SMALL_DATA2_);
+
+/* Initialization of A8 and A9 */
+  osEE_tc_setareg(a8, _SMALL_DATA3_);
+#if (defined(OSEE_TC_DISABLE_A9_OPTIMIZATION))
+  osEE_tc_setareg(a9, _SMALL_DATA4_);
+#else
+  osEE_tc_setareg(a9, &osEE_cdb_var_core3);
+#endif /* OSEE_TC_DISABLE_A9_OPTIMIZATION */
+
+/* Setup the context save area linked list for CPU0 */
+  osEE_tc_csa_init_inline(__CSA3, __CSA3_END);
+
+/* CPU and safety watchdogs are enabled by default. Disable them here to be
+   re-enabled by ERIKA or by the Application */
+  osEE_tc_disable_cpu_wdt(3U, cpu_wdt_pw);
+  osEE_tc_disable_safety_wdt(safety_wdt_pw);
+
+/* Call main function */
+  (void)main();
+  
+/* TODO: handle main return */
+  for (;;) {
+    ;
+  }
+}
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x08U */
+
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x10U)
+/* Linker script defined symbols */
+extern OsEE_stack __USTACK4[];
+extern OsEE_stack __ISTACK4[];
+
+extern void __INTTAB4(void);
+
+extern OsEE_csa __CSA4[];
+extern OsEE_csa __CSA4_END[];
+
+void osEE_tc_core4_start(void)
+{
+  OsEE_reg       pcxi;
+  uint16_t const cpu_wdt_pw     = osEE_tc_get_cpu_wdt_pw(4U);
+  uint16_t const safety_wdt_pw  = osEE_tc_get_safety_wdt_pw();
+
+/* Load User stack pointer */
+  osEE_set_SP(__USTACK4);
+
+/* Do a dsync before changing any of the CSFR values, thus any previous
+ * background state gets flushed first.
+ * Required for applications that jump to the reset address.
+ */
+  osEE_tc_dsync();
+
+/* Set the PSW to its reset value in case of a warm start, set PSW.IS.
+   Global Stack is needed since ERIKA's use the stack to save context for the
+   current TASK */
+  osEE_tc_set_csfr(OSEE_CSFR_PSW, OSEE_TC_START_PSW);
+
+/* Set the PCXS and PCXO to its reset value in case of a warm start */
+  pcxi  = osEE_tc_get_csfr(OSEE_CSFR_PCXI);
+  pcxi &= 0xFFF00000U;
+  osEE_tc_set_csfr(OSEE_CSFR_PCXI, pcxi);
+
+/* TODO: Enable/Disable program cache depending on the configuration */
+  osEE_tc_set_pcache(OSEE_TRUE);
+
+/* TODO: Enable/Disable data cache depending on the configuration */
+  osEE_tc_set_dcache(OSEE_TRUE);
+
+/* Clear the ENDINIT bit in the WDT_CON0 register */
+  osEE_tc_clear_cpu_endinit(4U, cpu_wdt_pw);
+
+/* Load Base Address of Trap Vector Table. */
+  osEE_tc_set_csfr(OSEE_CSFR_BTV, (OsEE_reg)__TRAPTAB);
+
+/* Load Base Address of Interrupt Vector Table. */
+  osEE_tc_set_csfr(OSEE_CSFR_BIV, (OsEE_reg)__INTTAB4);
+
+/* Load Interrupt Stack Pointer. (Not Used) */
+  osEE_tc_set_csfr(OSEE_CSFR_ISP, (OsEE_reg)__ISTACK4);
+
+/* Set the ENDINIT bit in the WDT_CON0 register back */
+  osEE_tc_set_cpu_endinit(4U, cpu_wdt_pw);
+
+/* Initialize SDA base pointers */
+  osEE_tc_setareg(a0, _SMALL_DATA_);
+  osEE_tc_setareg(a1, _SMALL_DATA2_);
+
+/* Initialization of A8 and A9 */
+  osEE_tc_setareg(a8, _SMALL_DATA3_);
+#if (defined(OSEE_TC_DISABLE_A9_OPTIMIZATION))
+  osEE_tc_setareg(a9, _SMALL_DATA4_);
+#else
+  osEE_tc_setareg(a9, &osEE_cdb_var_core4);
+#endif /* OSEE_TC_DISABLE_A9_OPTIMIZATION */
+
+/* Setup the context save area linked list for CPU0 */
+  osEE_tc_csa_init_inline(__CSA4, __CSA4_END);
+
+/* CPU and safety watchdogs are enabled by default. Disable them here to be
+   re-enabled by ERIKA or by the Application */
+  osEE_tc_disable_cpu_wdt(4U, cpu_wdt_pw);
+  osEE_tc_disable_safety_wdt(safety_wdt_pw);
+
+/* Call main function */
+  (void)main();
+  
+/* TODO: handle main return */
+  for (;;) {
+    ;
+  }
+}
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x10U */
+
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x40U)
+/* Linker script defined symbols */
+extern OsEE_stack __USTACK6[];
+extern OsEE_stack __ISTACK6[];
+
+extern void __INTTAB6(void);
+
+extern OsEE_csa __CSA6[];
+extern OsEE_csa __CSA6_END[];
+
+void osEE_tc_core6_start(void)
+{
+  OsEE_reg       pcxi;
+  uint16_t const cpu_wdt_pw     = osEE_tc_get_cpu_wdt_pw(5U);
+  uint16_t const safety_wdt_pw  = osEE_tc_get_safety_wdt_pw();
+
+/* Load User stack pointer */
+  osEE_set_SP(__USTACK6);
+
+/* Do a dsync before changing any of the CSFR values, thus any previous
+ * background state gets flushed first.
+ * Required for applications that jump to the reset address.
+ */
+  osEE_tc_dsync();
+
+/* Set the PSW to its reset value in case of a warm start, set PSW.IS.
+   Global Stack is needed since ERIKA's use the stack to save context for the
+   current TASK */
+  osEE_tc_set_csfr(OSEE_CSFR_PSW, OSEE_TC_START_PSW);
+
+/* Set the PCXS and PCXO to its reset value in case of a warm start */
+  pcxi  = osEE_tc_get_csfr(OSEE_CSFR_PCXI);
+  pcxi &= 0xFFF00000U;
+  osEE_tc_set_csfr(OSEE_CSFR_PCXI, pcxi);
+
+/* TODO: Enable/Disable program cache depending on the configuration */
+  osEE_tc_set_pcache(OSEE_TRUE);
+
+/* TODO: Enable/Disable data cache depending on the configuration */
+  osEE_tc_set_dcache(OSEE_TRUE);
+
+/* Clear the ENDINIT bit in the WDT_CON0 register */
+  osEE_tc_clear_cpu_endinit(5U, cpu_wdt_pw);
+
+/* Load Base Address of Trap Vector Table. */
+  osEE_tc_set_csfr(OSEE_CSFR_BTV, (OsEE_reg)__TRAPTAB);
+
+/* Load Base Address of Interrupt Vector Table. */
+  osEE_tc_set_csfr(OSEE_CSFR_BIV, (OsEE_reg)__INTTAB6);
+
+/* Load Interrupt Stack Pointer. (Not Used) */
+  osEE_tc_set_csfr(OSEE_CSFR_ISP, (OsEE_reg)__ISTACK6);
+
+/* Set the ENDINIT bit in the WDT_CON0 register back */
+  osEE_tc_set_cpu_endinit(5U, cpu_wdt_pw);
+
+/* Initialize SDA base pointers */
+  osEE_tc_setareg(a0, _SMALL_DATA_);
+  osEE_tc_setareg(a1, _SMALL_DATA2_);
+
+/* Initialization of A8 and A9 */
+  osEE_tc_setareg(a8, _SMALL_DATA3_);
+#if (defined(OSEE_TC_DISABLE_A9_OPTIMIZATION))
+  osEE_tc_setareg(a9, _SMALL_DATA4_);
+#else
+  osEE_tc_setareg(a9, &osEE_cdb_var_core6);
+#endif /* OSEE_TC_DISABLE_A9_OPTIMIZATION */
+
+/* Setup the context save area linked list for CPU0 */
+  osEE_tc_csa_init_inline(__CSA6, __CSA6_END);
+
+/* CPU and safety watchdogs are enabled by default. Disable them here to be
+   re-enabled by ERIKA or by the Application */
+  osEE_tc_disable_cpu_wdt(5U, cpu_wdt_pw);
+  osEE_tc_disable_safety_wdt(safety_wdt_pw);
+
+/* Call main function */
+  (void)main();
+  
+/* TODO: handle main return */
+  for (;;) {
+    ;
+  }
+}
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x40U */
 #endif /* !OSEE_SINGLECORE */
 
 #if defined(__GNUC__)

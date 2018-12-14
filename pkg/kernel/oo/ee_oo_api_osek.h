@@ -546,13 +546,17 @@ FUNC(StatusType, OS_CODE)
 #endif /* OSEE_HAS_SPINLOCKS */
 #endif /* !OSEE_SINGLECORE */
 
-#if (defined(OSEE_USEPARAMETERACCESS))
+#if (defined(OSEE_USEGETSERVICEID)) || (defined(OSEE_USEPARAMETERACCESS))
 FUNC(OSServiceIdType, OS_CODE)
   osEE_get_service_id
 (
   void
 );
 
+#define OSErrorGetServiceId() osEE_get_service_id()
+
+#endif /* OSEE_USEGETSERVICEID || OSEE_USEPARAMETERACCESS */
+#if (defined(OSEE_USEPARAMETERACCESS))
 FUNC(OsEE_api_param, OS_CODE)
   osEE_get_api_param1
 (
@@ -570,8 +574,6 @@ FUNC(OsEE_api_param, OS_CODE)
 (
   void
 );
-
-#define OSErrorGetServiceId() osEE_get_service_id()
 
 #define OSError_ActivateTask_TaskID()\
   ((TaskType)osEE_get_api_param1().num_param)

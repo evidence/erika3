@@ -87,9 +87,9 @@ EE_SIZE ?= $(BINDIR)$(TRICORE_GCCPREFIX)size
 #-ffunction-sections -fdata-sections
 # -fno-strict-aliasing
 ifeq	($(call iseeopt, OS_EE_GCC_MINIMAL_OPTS), yes)
-OPT_CC += -c -mtc161 -Wall -Wextra $(OPT_CPU)
+OPT_CC += -c -Wall -Wextra $(OPT_CPU)
 else	# OS_EE_GCC_MINIMAL_OPTS
-OPT_CC += -c -mtc161 -Wall -Wextra $(OPT_CPU) -Wstrict-prototypes\
+OPT_CC += -c -Wall -Wextra $(OPT_CPU) -Wstrict-prototypes\
  -Wtype-limits -Wmissing-declarations -Wmissing-prototypes\
  -Wdiv-by-zero -Wdouble-promotion -Wcast-align -Wformat-security\
  -Wignored-qualifiers\
@@ -112,9 +112,9 @@ OPT_CC += $(CFLAGS)
 
 ## OPT_CXX are the options for TriCore C++ compiler invocation
 ifeq	($(call iseeopt, OS_EE_GCC_MINIMAL_OPTS), yes)
-OPT_CXX += -c -mtc161 -Wall -Wextra $(OPT_CPU)
+OPT_CXX += -c -Wall -Wextra $(OPT_CPU)
 else	# OS_EE_GCC_MINIMAL_OPTS
-OPT_CXX += -c -mtc161 -Wall -Wextra $(OPT_CPU) -Wstrict-prototypes\
+OPT_CXX += -c -Wall -Wextra $(OPT_CPU) -Wstrict-prototypes\
  -Wtype-limits -Wmissing-declarations -Wmissing-prototypes\
  -Wdiv-by-zero -Wdouble-promotion -Wcast-align -Wformat-security\
  -Wignored-qualifiers\
@@ -136,7 +136,7 @@ endif
 OPT_CXX += $(CFLAGS) $(CXXFLAGS)
 
 ## OS_EE_AS_OPT are the options for TriCore assembler invocation
-OS_EE_AS_OPT = -mtc161 -Wall -Wextra $(OPT_CPU)
+OS_EE_AS_OPT = -Wall -Wextra $(OPT_CPU)
 
 ifeq ($(or\
   $(and $(call iseeopt, OS_EE_BUILD), $(call iseeopt, OS_EE_BUILD_DEBUG)), \
@@ -156,12 +156,38 @@ else	# OS_EE_VERBOSE
 OS_EE_AR_OPT = $(subst v,,$(subst $(OS_EE_SPACE),,cs $(ARFLAGS)))
 endif	# OS_EE_VERBOSE
 
-# OPT_LINK represents the options for avr linker invocation
+# Handle special case of TC39X family A-Step revision
+ifeq ($(OSEE_TRICORE_MCU), tc39x)
+ifeq (${OSEE_TRICORE_STEP}, AA)
+OPT_LINK_EXTRA=-Wl,--defsym=__DSPR0_SIZE=96k -Wl,--defsym=__DSPR1_SIZE=96k
+endif #OSEE_TRICORE_STEP AA
+endif #OSEE_TRICORE_MCU tc39x
+
+ifeq ($(call iseeopt, OSEE_TC_LINK_BMHD), yes)
+ifneq ($(call iseeopt, OSEE_TC_2G), yes)
+SYMBOLS_FORCED_TO_BE_LINK += osEE_tc_bmhd_0 osEE_tc_bmhd_1
+else
+SYMBOLS_FORCED_TO_BE_LINK += osEE_tc_bmhd_0_orig osEE_tc_bmhd_1_orig\
+ osEE_tc_bmhd_2_orig osEE_tc_bmhd_3_orig osEE_tc_bmhd_4_orig
+SYMBOLS_FORCED_TO_BE_LINK += osEE_tc_bmhd_0_copy osEE_tc_bmhd_1_copy\
+ osEE_tc_bmhd_2_copy osEE_tc_bmhd_3_copy osEE_tc_bmhd_4_copy
+endif #!OSEE_TC_2G
+endif #OSEE_TC_LINK_BMHD
+# Added EXTERN directive to all linker scripts for this
+#SYMBOLS_FORCED_TO_BE_LINK += __TRICORE_DERIVATE_NAME__
+ifneq ($(SYMBOLS_FORCED_TO_BE_LINK),)
+# Used in the following addprefix, without this variable the prefix will be
+# split because the comma
+COMMA=,
+OPT_UNDEFINED := $(addprefix -Wl$(COMMA)--undefined=, $(SYMBOLS_FORCED_TO_BE_LINK))
+endif
+
+# OPT_LINK represents the options for HighTec GCC linker invocation
 OSEE_LINKER_SCRIPT ?= $(call short_native_path,$(abspath $(OS_EE_MK_BASE_DIR)/ee_tc_gcc_flash.ld))
 ifeq	($(call iseeopt, OS_EE_GCC_MINIMAL_OPTS), yes)
-OPT_LINK += -mtc161 $(OPT_CPU) -T $(OSEE_LINKER_SCRIPT) -nostartfiles -Wl,-Map=$(TARGET_NAME).map -Wl,--undefined=__TRICORE_DERIVATE_NAME__
+OPT_LINK += $(OPT_CPU) -T $(OSEE_LINKER_SCRIPT) -nostartfiles -Wl,-Map=$(TARGET_NAME).map $(OPT_UNDEFINED) $(OPT_LINK_EXTRA)
 else	# OS_EE_GCC_MINIMAL_OPTS
-OPT_LINK += -mtc161 $(OPT_CPU) -T $(OSEE_LINKER_SCRIPT) -nostartfiles -Wl,--gc-sections -Wl,-Map=$(TARGET_NAME).map -Wl,--undefined=__TRICORE_DERIVATE_NAME__
+OPT_LINK += $(OPT_CPU) -T $(OSEE_LINKER_SCRIPT) -nostartfiles -Wl,--gc-sections -Wl,-Map=$(TARGET_NAME).map $(OPT_UNDEFINED) $(OPT_LINK_EXTRA)
 endif	# OS_EE_GCC_MINIMAL_OPTS
 
 OPT_LINK += $(LDFLAGS)
@@ -208,6 +234,7 @@ TARGET_NAME ?= erika3app
 
 # Add application file to dependencies
 ifneq ($(call iseeopt, OS_EE_BUILD), yes)
-export APP_TARGETS := $(TARGET_NAME).bin $(TARGET_NAME).dump
+#export APP_TARGETS := $(TARGET_NAME).bin $(TARGET_NAME).dump
+export APP_TARGETS := $(TARGET_NAME).dump
 $(info APP_TARGETS=$(APP_TARGETS))
 endif	# !OS_EE_BUILD

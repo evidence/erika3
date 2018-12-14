@@ -56,8 +56,6 @@ CPU test_application {
     EE_OPT = "OS_EE_APPL_BUILD_DEBUG";
     EE_OPT = "OS_EE_BUILD_DEBUG";
 
-    CFLAGS="-I../erika/src";
-
     //MEMORY_PROTECTION   = TRUE;
     //STACKMONITORING     = TRUE;
     //SERVICE_PROTECTION  = TRUE;
@@ -73,7 +71,6 @@ CPU test_application {
       ID=2;
     };
 
-    
     MCU_DATA = TC27X {
       DERIVATIVE = "tc275tf";
       REVISION = "D";

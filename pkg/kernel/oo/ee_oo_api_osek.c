@@ -524,6 +524,7 @@ FUNC(StatusType, OS_CODE)
 #if (!defined(OSEE_STARTOS_RETURN)) && (!defined(OSEE_API_DYNAMIC))
     if (p_ccb->os_status == OSEE_KERNEL_STARTED) {
       osEE_idle_task_start(p_idle_tdb);
+      osEE_task_end(p_idle_tdb);
     }
 #if (!defined(OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN))
     osEE_hal_disableIRQ();
@@ -535,6 +536,7 @@ FUNC(StatusType, OS_CODE)
     if (p_ccb->os_status == OSEE_KERNEL_STARTED) {
       if (p_cdb->p_idle_hook != NULL) {
         osEE_idle_task_start(p_idle_tdb);
+        osEE_task_end(p_idle_tdb);
       } /* No Autostart TASKs with dynamic API */
     }
 #elif (defined(OSEE_HAS_AUTOSTART_TASK))
@@ -3999,7 +4001,7 @@ FUNC(StatusType, OS_CODE)
 #endif /* OSEE_HAS_SPINLOCKS */
 #endif /* !OSEE_SINGLECORE */
 
-#if (defined(OSEE_USEPARAMETERACCESS))
+#if (defined(OSEE_USEGETSERVICEID)) || (defined(OSEE_USEPARAMETERACCESS))
 FUNC(OSServiceIdType, OS_CODE)
   osEE_get_service_id
 (
@@ -4014,7 +4016,8 @@ FUNC(OSServiceIdType, OS_CODE)
   return osEE_get_curr_core()->p_ccb->service_id;
 #endif /* OSEE_HAS_ORTI */
 }
-
+#endif /* OSEE_USEGETSERVICEID || OSEE_USEPARAMETERACCESS */
+#if (defined(OSEE_USEPARAMETERACCESS))
 FUNC(OsEE_api_param, OS_CODE)
   osEE_get_api_param1
 (

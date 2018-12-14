@@ -74,7 +74,7 @@ extern "C" {
 #endif /* !OSEE_TC_CORE0_ISR_MAX_PRIO */
 #endif /* OSEE_TC_CORE0_1_ISR_CAT || OSEE_TC_CORE0_1_ISR_TID */
 
-#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x2U)
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x02U)
 #if (defined(OSEE_TC_CORE1_1_ISR_CAT)) || (defined(OSEE_TC_CORE1_1_ISR_TID))
 #error In multicore environment IRQ priority 1 is already used by ERIKA\
  for Inter Cores Communication.
@@ -86,9 +86,9 @@ extern "C" {
 #endif /* !OSEE_TC_CORE1_ISR_MAX_PRIO */
 
 #endif /* OSEE_TC_CORE1_1_ISR_CAT || OSEE_TC_CORE1_1_ISR_TID */
-#endif /* OSEE_CORE_ID_VALID_MASK & 0x2U */
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x02U */
 
-#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x4U)
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x04U)
 #if (defined(OSEE_TC_CORE2_1_ISR_CAT)) || (defined(OSEE_TC_CORE2_1_ISR_TID))
 #error In multicore environment IRQ priority 1 is already used by ERIKA\
  for Inter Cores Communication.
@@ -100,20 +100,80 @@ extern "C" {
 #endif /* !OSEE_TC_CORE2_ISR_MAX_PRIO */
 
 #endif /* OSEE_TC_CORE2_1_ISR_CAT || OSEE_TC_CORE2_1_ISR_TID */
-#endif /* OSEE_CORE_ID_VALID_MASK & 0x4U */
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x04U */
 
-#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x2U)
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x08U)
+#if (defined(OSEE_TC_CORE3_1_ISR_CAT)) || (defined(OSEE_TC_CORE3_1_ISR_TID))
+#error In multicore environment IRQ priority 1 is already used by ERIKA\
+ for Inter Cores Communication.
+#else
+#define OSEE_TC_CORE3_1_ISR_CAT     2
+#define OSEE_TC_CORE3_1_ISR_TID     -1
+#if (!OSEE_TC_CORE3_ISR_MAX_PRIO)
+#define OSEE_TC_CORE3_ISR_MAX_PRIO  1
+#endif /* !OSEE_TC_CORE3_ISR_MAX_PRIO */
+
+#endif /* OSEE_TC_CORE3_1_ISR_CAT || OSEE_TC_CORE3_1_ISR_TID */
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x08U */
+
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x10U)
+#if (defined(OSEE_TC_CORE4_1_ISR_CAT)) || (defined(OSEE_TC_CORE4_1_ISR_TID))
+#error In multicore environment IRQ priority 1 is already used by ERIKA\
+ for Inter Cores Communication.
+#else
+#define OSEE_TC_CORE4_1_ISR_CAT     2
+#define OSEE_TC_CORE4_1_ISR_TID     -1
+#if (!OSEE_TC_CORE4_ISR_MAX_PRIO)
+#define OSEE_TC_CORE4_ISR_MAX_PRIO  1
+#endif /* !OSEE_TC_CORE4_ISR_MAX_PRIO */
+
+#endif /* OSEE_TC_CORE4_1_ISR_CAT || OSEE_TC_CORE4_1_ISR_TID */
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x10U */
+
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x40U)
+#if (defined(OSEE_TC_CORE6_1_ISR_CAT)) || (defined(OSEE_TC_CORE6_1_ISR_TID))
+#error In multicore environment IRQ priority 1 is already used by ERIKA\
+ for Inter Cores Communication.
+#else
+#define OSEE_TC_CORE6_1_ISR_CAT     2
+#define OSEE_TC_CORE6_1_ISR_TID     -1
+#if (!OSEE_TC_CORE6_ISR_MAX_PRIO)
+#define OSEE_TC_CORE6_ISR_MAX_PRIO  1
+#endif /* !OSEE_TC_CORE6_ISR_MAX_PRIO */
+
+#endif /* OSEE_TC_CORE6_1_ISR_CAT || OSEE_TC_CORE6_1_ISR_TID */
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x40U */
+
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x02U)
 #if (!defined(OSEE_CORE1_START_ADDR))
 void osEE_tc_core1_start(void);
 #define OSEE_CORE1_START_ADDR osEE_tc_core1_start
 #endif /* !OSEE_CORE1_START_ADDR */
-#endif /* OSEE_CORE_ID_VALID_MASK & 0x2U */
-#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x4U)
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x02U */
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x04U)
 #if (!defined(OSEE_CORE2_START_ADDR))
 void osEE_tc_core2_start(void);
 #define OSEE_CORE2_START_ADDR osEE_tc_core2_start
 #endif /* !OSEE_CORE2_START_ADDR */
 #endif /* OSEE_CORE_ID_VALID_MASK & 0x4U */
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x08U)
+#if (!defined(OSEE_CORE3_START_ADDR))
+void osEE_tc_core3_start(void);
+#define OSEE_CORE3_START_ADDR osEE_tc_core3_start
+#endif /* !OSEE_CORE3_START_ADDR */
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x08U */
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x10U)
+#if (!defined(OSEE_CORE4_START_ADDR))
+void osEE_tc_core4_start(void);
+#define OSEE_CORE4_START_ADDR osEE_tc_core4_start
+#endif /* !OSEE_CORE4_START_ADDR */
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x10U */
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x40U)
+#if (!defined(OSEE_CORE6_START_ADDR))
+void osEE_tc_core6_start(void);
+#define OSEE_CORE6_START_ADDR osEE_tc_core6_start
+#endif /* !OSEE_CORE4_START_ADDR */
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x40U */
 #else
 #if (defined(__cplusplus))
 extern "C" {
@@ -182,7 +242,7 @@ OSEE_STATIC_INLINE OsEE_reg OSEE_ALWAYS_INLINE osEE_tc_cmpswapw(
   OsEE_reg volatile * const p_var, OsEE_reg new_val, OsEE_reg expected_val
 )
 {
-  return __builtin_tricore_cmpswapw((void *)p_var, new_val, expected_val);
+  return __builtin_tricore_cmpswapw((volatile void *)p_var, new_val, expected_val);
 }
 
 /** Insert LDMST instruction. Note that all operands must be word-aligned. */
@@ -190,7 +250,7 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
   osEE_tc_imask_ldmst(OsEE_reg volatile * const p_var, OsEE_reg value,
     OsEE_reg offset, OsEE_reg width)
 {
-  __builtin_tricore_ldmst((void *)p_var, value, offset, width);
+  __builtin_tricore_ldmst((volatile void *)p_var, value, offset, width);
 }
 #endif
 #else
@@ -214,6 +274,8 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
   osEE_hal_spin_unlock(OsEE_spin_lock * p_lock)
 {
+  /* Commit all the changes in memory */
+  osEE_tc_dsync();
   (*p_lock) = 0U;
 }
 

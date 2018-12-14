@@ -419,7 +419,7 @@ int osEE_os_scall(int r0, int r1, int r2, int r3 __attribute__((unused)),
 
 #if (!defined(OSEE_SINGLECORE))
 void osEE_hal_sync_barrier(
-  OsEE_barrier * p_barrier, OsEE_reg volatile * p_wait_mask,
+  OsEE_barrier * p_barrier, OsEE_reg const volatile * p_wait_mask,
     OsEE_kernel_cb p_synch_cb)
 {
   /* To Be done */

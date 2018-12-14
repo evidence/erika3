@@ -49,26 +49,26 @@
 #if (!defined(OSEE_IOPORT_H))
 #define OSEE_IOPORT_H
 
-static inline
-void outb(unsigned short port, uint8_t val)
+OSEE_STATIC_INLINE
+void OSEE_ALWAYS_INLINE outb(unsigned short port, uint8_t val)
 {
 	__asm__ volatile("outb %0, %1" :: "a"(val), "Nd"(port));
 }
 
-static inline
-void outw(unsigned short port, uint16_t val)
+OSEE_STATIC_INLINE
+void OSEE_ALWAYS_INLINE outw(unsigned short port, uint16_t val)
 {
 	__asm__ volatile("outw %0, %1" :: "a"(val), "Nd"(port));
 }
 
-static inline
-void outl(unsigned short port, uint32_t val)
+OSEE_STATIC_INLINE
+void OSEE_ALWAYS_INLINE outl(unsigned short port, uint32_t val)
 {
 	__asm__ volatile("outl %0, %1" :: "a"(val), "Nd"(port));
 }
 
-static inline
-uint8_t inb(unsigned short port)
+OSEE_STATIC_INLINE
+uint8_t OSEE_ALWAYS_INLINE inb(unsigned short port)
 {
 	uint8_t ret;
 
@@ -77,8 +77,8 @@ uint8_t inb(unsigned short port)
 	return ret;
 }
 
-static inline
-uint16_t inw(unsigned short port)
+OSEE_STATIC_INLINE
+uint16_t OSEE_ALWAYS_INLINE inw(unsigned short port)
 {
 	uint16_t ret;
 
@@ -87,8 +87,8 @@ uint16_t inw(unsigned short port)
 	return ret;
 }
 
-static inline
-uint32_t inl(unsigned short port)
+OSEE_STATIC_INLINE
+uint32_t OSEE_ALWAYS_INLINE inl(unsigned short port)
 {
 	uint32_t ret;
 
@@ -97,8 +97,8 @@ uint32_t inl(unsigned short port)
 	return ret;
 }
 
-static inline
-void io_wait(void)
+OSEE_STATIC_INLINE
+void OSEE_ALWAYS_INLINE io_wait(void)
 {
 #if 0
 	/* port 0x80 is used for 'checkpoints' during POST.

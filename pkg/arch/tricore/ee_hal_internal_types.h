@@ -61,6 +61,10 @@
 extern "C" {
 #endif
 
+/*=============================================================================
+              Core Special Function Registers Data Structures
+ ============================================================================*/
+
 /*******************************************************************************
  *  IMPORTANT:
  *  These struct layouts are packet by construction so I don't add 
@@ -69,9 +73,37 @@ extern "C" {
  *  digitalvampire.org/blog/index.php/2006/07/31/\
  *  why-you-shouldnt-use-__attribute__packed
  ******************************************************************************/
+/* Program Status Word */
+typedef union {
+  OsEE_reg reg;
+  struct {
+/* Consists of two variable width subfields.
+    The first subfield consists of a string of zero or more initial 1 bits,
+    terminated by the first 0 bit.
+    The remaining bits form the second subfield(CDC.COUNT) which constitutes
+    the call depth count value. The count value is incremented on each Call
+    and is decremented on a Return. */
+    unsigned int cdc    :7; /* Call Depth Counter */
+    unsigned int cde    :1; /* Call Depth Count Enabled */
+    unsigned int gw     :1; /* Global Address Register Write Permission */
+    unsigned int is     :1; /* Interrupt Stack Control */
+    unsigned int io     :2; /* Access Privilege Level Ctrl (I/O Privilege) */
+    unsigned int prs    :2; /* Protection Register Set bits[0:1] */
+    unsigned int s      :1; /* Safety Task Identifier */
+    unsigned int prs2   :1; /* Protection Register Set bit[2] (AURIX Gen2) */
+    unsigned int        :8;
+/* User Status Bits */
+    unsigned int        :3;
+    unsigned int sav    :1; /* Sticky Advance Overflow */
+    unsigned int av     :1; /* Advance Overflow */
+    unsigned int sv     :1; /* Sticky Overflow */
+    unsigned int v      :1; /* Overflow */
+    unsigned int c      :1; /* Carry */
+  } bits;
+} OsEE_psw;
 
 /* Previous Context Information Register */
-typedef union OsEE_pcxi_tag {
+typedef union {
   OsEE_reg reg;
   struct {
     unsigned int pcxo  :16; /* Previous Context Pointer Offset Address  */
@@ -94,7 +126,7 @@ typedef union OsEE_pcxi_tag {
 typedef OsEE_pcxi OsEE_csa_link;
 
 /* Context Save Area (16 words, upper or lower context). */
-typedef struct OsEE_uctx_tag {
+typedef struct {
   OsEE_reg  psw;
   OsEE_addr a10; /* sp */
   OsEE_addr a11; /* ra */
@@ -112,7 +144,7 @@ typedef struct OsEE_uctx_tag {
   OsEE_reg  d15;
 } OsEE_uctx;
 
-typedef struct OsEE_lctx_tag {
+typedef struct {
   OsEE_addr a11; /* ra */
   OsEE_addr a2;
   OsEE_addr a3;
@@ -130,19 +162,19 @@ typedef struct OsEE_lctx_tag {
   OsEE_reg  d7;
 } OsEE_lctx;
 
-typedef union OsEE_csa_ctx_tag {
+typedef union {
   OsEE_uctx uctx;
   OsEE_lctx lctx;
 } OsEE_csa_ctx;
 
-typedef struct OsEE_csa_tag {
+typedef struct {
   OsEE_csa_link l_next;
   OsEE_csa_ctx  ctx;
 } OsEE_csa;
 
 /* Interrupt control register */
 #if (!defined(__TC13__)) && (!defined(__TC131__))
-typedef union OsEE_icr_tag {
+typedef union {
   OsEE_reg reg;
   struct {
     unsigned int ccpn :8; /* Current CPU Priority Number */
@@ -153,7 +185,7 @@ typedef union OsEE_icr_tag {
   } bits;
 } OsEE_icr;
 #else
-typedef union OsEE_icr_tag {
+typedef union {
   OsEE_reg reg;
   struct {
     unsigned int ccpn     :8; /* Current CPU Priority Number */
@@ -167,6 +199,28 @@ typedef union OsEE_icr_tag {
 } OsEE_icr;
 #endif /* !__TC13__ && !__TC131__ */
 
+typedef union {
+  OsEE_reg reg;
+  struct {
+    unsigned int fcdsf    :1; /* rwh Free Context List Depleted Sticky Flag */
+    unsigned int proten   :1; /* rw  Memory Protection Enable */
+    unsigned int tpreten  :1; /* rw  Temporal Protection Enable */
+    unsigned int is       :1; /* State of PSW.S bit in interrupt handler */
+    unsigned int ts       :1; /* State of PSW.S bit in trap handler */
+    unsigned int          :3;
+    unsigned int esdis    :1; /* Emulator Space Disable (AURIX Gen2) */
+    unsigned int          :7;
+    unsigned int u1_ied   :1; /* User-1 Instruction execution disable. (G2) */
+    unsigned int u1_ios   :1; /* User-1 Peripheral access as super. (G2) */
+    unsigned int          :6;
+    unsigned int bhalt    :1; /* Boot halt status and release (AURIX Gen2) */
+    unsigned int          :7;
+  } bits;
+} OsEE_syscon;
+
+/*=============================================================================
+                          Context Data Structures
+ ============================================================================*/
 typedef struct OsEE_CTX_tag {
   struct OsEE_CTX_tag * p_ctx;  /* Previous ERIKA's Context Pointer */
   OsEE_reg              dummy;  /* Padding Word */
@@ -174,12 +228,12 @@ typedef struct OsEE_CTX_tag {
   OsEE_addr             ra;     /* Return Address (a11) */
 } OsEE_CTX;
 
-/* Stack Control Block: contine le informazioni dinamiche relative allo stack */
-typedef struct OsEE_SCB_tag {
+/* Stack Control Block: contains dynamic stack status */
+typedef struct {
   OsEE_CTX      * p_tos; /* Saved Context */
 } OsEE_SCB;
 
-typedef struct OsEE_SDB_tag {
+typedef struct {
   OsEE_CTX   * p_bos; /* Bottom Of Stack */
 #if (defined(OSEE_HAS_STACK_MONITORING))
   OsEE_CTX   * p_sos; /* Start Of Stack */
@@ -187,14 +241,14 @@ typedef struct OsEE_SDB_tag {
   size_t       stack_size;
 } OSEE_CONST   OsEE_SDB;
 
-typedef struct OsEE_HDB_tag {
+typedef struct {
   OsEE_SDB          * p_sdb;
   OsEE_SCB          * p_scb;
   OsEE_isr_src_id     isr2_src;
 } OSEE_CONST OsEE_HDB;
 
 #if (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
-typedef struct OsEE_CHDB_tag {
+typedef struct {
   OsEE_SDB (* p_sdb_array)[];
   OsEE_SCB (* p_scb_array)[];
   size_t   stack_num;
@@ -202,15 +256,15 @@ typedef struct OsEE_CHDB_tag {
 #endif /* OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
 
 #if (defined(OSEE_TC_HAS_ISR1_TO_CONF))
-  typedef struct OsEE_isr1_src_tag {
-    OsEE_isr_src_id     isr1_src;
-    OsEE_prio           isr_prio;
-  } OSEE_CONST OsEE_isr1_src;
+typedef struct {
+  OsEE_isr_src_id     isr1_src;
+  OsEE_prio           isr_prio;
+} OSEE_CONST OsEE_isr1_src;
 
-  typedef struct OsEE_isr1_db_tag {
-    OsEE_isr1_src (* p_isr1_src_array)[];
-    size_t        isr1_num;
-  } OSEE_CONST OsEE_isr1_db;
+typedef struct OsEE_isr1_db_tag {
+  OsEE_isr1_src (* p_isr1_src_array)[];
+  size_t        isr1_num;
+} OSEE_CONST OsEE_isr1_db;
 #endif /* OSEE_TC_HAS_ISR1_TO_CONF */
 
 #if (defined(__cplusplus))

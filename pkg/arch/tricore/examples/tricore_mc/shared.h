@@ -45,13 +45,6 @@
 #include "ee.h"
 #include "ee_tc2x5_board.h"
 
-DeclareTask(TaskMaster);
-DeclareTask(TaskCpu0Remote);
-DeclareTask(TaskSlave1);
-DeclareTask(TaskSlave2);
-
-ISR2(button_handler);
-
 /* sets and resets a led configuration passed as parameter, leaving the other
  * bits unchanged
  * 

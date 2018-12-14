@@ -56,13 +56,31 @@
 
 #include "ee_hal_mc.h"
 #include "ee_kernel_types.h"
+#include "ee_hal_internal.h"
 
 #if (defined(__cplusplus))
 extern "C" {
 #endif
 
+#define OSEE_TC_SFR_BASE              ((OsEE_reg)0xF8800000U)
+#define OSEE_TC_CFSR_BASE             ((OsEE_reg)0xF8810000U)
+#define OSEE_TC_XFSR_CORE_OFFSET(c)   ((OsEE_reg)(c) * 0x20000U)
+#define OSEE_TC_CFSR_ADDR(c,offset)\
+  (OSEE_TC_CFSR_BASE + OSEE_TC_XFSR_CORE_OFFSET(c) +\
+    (((OsEE_reg)(offset)) & 0xFFFFU))
+
+#define OSEE_TC_CFSR_TASK_ASI   (0x8004U)
+#define OSEE_TC_CFSR_PCXI       (0xFE00U)
+#define OSEE_TC_CFSR_PSW        (0xFE04U)
+#define OSEE_TC_CFSR_PC         (0xFE08U)
+#define OSEE_TC_CFSR_SYSCON     (0xFE14U)
+#define OSEE_TC_CFSR_DBGSR      (0xFD00U)
+
+#define OSEE_TC_CORE_SYSCON(c)\
+  (*(OsEE_syscon volatile *)OSEE_TC_CFSR_ADDR((c),OSEE_TC_CFSR_SYSCON))
+
 void osEE_hal_sync_barrier(OsEE_barrier * p_bar,
-  OsEE_reg volatile * p_wait_mask, OsEE_kernel_cb p_synch_cb);
+  OsEE_reg const volatile * p_wait_mask, OsEE_kernel_cb p_synch_cb);
 
 /** \brief  Program Counter */
 typedef struct OsEE_tc_CPU_PC_bits_tag
@@ -82,10 +100,11 @@ typedef union
   OsEE_tc_CPU_PC_bits bits;
 } OsEE_tc_CPU_PC;
 
-#define OSEE_TC_CPU1_PC   (*(OsEE_tc_CPU_PC volatile *)0xF883FE08U)
-#define OSEE_TC_CPU2_PC   (*(OsEE_tc_CPU_PC volatile *)0xF885FE08U)
+#define OSEE_TC_CORE_PC(c)\
+  (*(OsEE_tc_CPU_PC volatile *)OSEE_TC_CFSR_ADDR((c),OSEE_TC_CFSR_PC))
 
-/** \\brief  Debug Status Register */
+#if (!defined(OSEE_TC_2G))
+/** \brief  Debug Status Register */
 typedef struct OsEE_tc_CPU_DBGSR_bits_tag
 {
 /**< \brief [0:0] Debug Enable (rh) */
@@ -117,56 +136,39 @@ typedef union
   OsEE_tc_CPU_DBGSR_bits bits;
 } OsEE_tc_CPU_DBGSR;
 
-#define OSEE_TC_CPU1_DBGSR (*(OsEE_tc_CPU_DBGSR volatile *)0xF883FD00U)
-#define OSEE_TC_CPU2_DBGSR (*(OsEE_tc_CPU_DBGSR volatile *)0xF885FD00U)
+#define OSEE_TC_CORE_DBGSR(c)\
+  (*(OsEE_tc_CPU_DBGSR volatile *)OSEE_TC_CFSR_ADDR((c),OSEE_TC_CFSR_DBGSR))
+/* Value that have to be written to DBGSR to put the Core on RUN */
+#define OSEE_TC_DBGSR_RESET_HALT (2U)
+#endif /* !OSEE_TC_2G */
 
-/* Value that have to be written to DBGSR to put the Core on RUN at reset time */
-#define OSEE_RESET_DBGSR_HALT (2U)
-/** @brief start the core represented by id parameter from the statically
+/** \brief start the core represented by id parameter from the statically
            configured start-up address */
-OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_hal_start_core(
-  CoreIdType core_id)
-{
-  switch (core_id) {
-    case OS_CORE_ID_0:
-    /* Nothing to do in this case */
-    break;
-#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x2U)
-    case OS_CORE_ID_1:
-      OSEE_TC_CPU1_PC.reg           = (uint32_t)OSEE_CORE1_START_ADDR;
-      OSEE_TC_CPU1_DBGSR.bits.halt  = OSEE_RESET_DBGSR_HALT;
-    break;
-#endif /* OSEE_CORE_ID_VALID_MASK & 0x2U */
-#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x4U)
-    case OS_CORE_ID_2:
-      OSEE_TC_CPU2_PC.reg           = (uint32_t)OSEE_CORE2_START_ADDR;
-      OSEE_TC_CPU2_DBGSR.bits.halt  = OSEE_RESET_DBGSR_HALT;
-    break;
-#endif /* OSEE_CORE_ID_VALID_MASK & 0x4U */
-    default:
-      /* there are only three registers in the CPU */
-    break;
-  }
-}
+extern void osEE_hal_start_core(CoreIdType core_id);
 
-/*******************************************************************************
+/******************************************************************************
                             Multicore CPU Signal
- ******************************************************************************/
+ *****************************************************************************/
 
 /******************************************************************************
           General Purpose Software Request (GPSR) [Software Interrupts]
  *****************************************************************************/
 
-#define OSEE_TC_GPSR_BASE             (0xF0039000u)
+#if (!defined(OSEE_TC_2G))
+#define OSEE_TC_GPSR_OFFSET     (0x1000U)
+#define OSEE_TC_GPSR_MAX_CH     (2U)
+#else
+#define OSEE_TC_GPSR_OFFSET     (0x0990U)
+#define OSEE_TC_GPSR_MAX_CH     (7U)
+#endif /* !OSEE_TC_2G */
 
 #define OSEE_TC_GPSR_GROUP_OFFSET(g)  (((g) & 0x3U) * 0x20U)
 
-#define OSEE_TC_GPSR_ADDR_SR(g, n)\
-  (OSEE_TC_GPSR_BASE + OSEE_TC_GPSR_GROUP_OFFSET(g) + \
-   ((((OsEE_reg)(n) <= 2U)? (OsEE_reg)(n): (OsEE_reg)0U) * 0x4U))
-
-#define OSEE_TC_GPSR_SRC(c, n)\
-  (*(OsEE_reg volatile *)OSEE_TC_GPSR_ADDR_SR(c, n))
+#define OSEE_TC_GPSR_SRC_OFFSET(g, n)\
+  (OSEE_TC_GPSR_OFFSET + OSEE_TC_GPSR_GROUP_OFFSET(g) + \
+    ((((OsEE_reg)(n) <= OSEE_TC_GPSR_MAX_CH)?\
+        (OsEE_reg)(n):\
+        (OsEE_reg)0U) * 0x4U))
 
 /* Software Interrupts Broadcast (Only the bits[0:3] can be set. It makes sense
    using these registers with 0x7U or 0xFU as mask to broadcast a request to
@@ -186,61 +188,47 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
       entry(priority) in INTTAB. (Priority is statically chosen as the smallest
       possible. RT-Druid MUST ensure that no other ISR will be generated with
       this priority) */
-  OSEE_TC_GPSR_SRC(OSEE_TC_GPSR_G, 0U) =  OSEE_TC_SRN_ENABLE |
-    OSEE_TC_SRN_TYPE_OF_SERVICE(OS_CORE_ID_0) | OSEE_TC_SRN_PRIORITY(1U);
-#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x2U)
-  OSEE_TC_GPSR_SRC(OSEE_TC_GPSR_G, 1U) =  OSEE_TC_SRN_ENABLE |
-    OSEE_TC_SRN_TYPE_OF_SERVICE(OS_CORE_ID_1) | OSEE_TC_SRN_PRIORITY(1U);
-#endif /* OSEE_CORE_ID_VALID_MASK & 0x2U */
-#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x4U)
-  OSEE_TC_GPSR_SRC(OSEE_TC_GPSR_G, 2U) =  OSEE_TC_SRN_ENABLE |
-    OSEE_TC_SRN_TYPE_OF_SERVICE(OS_CORE_ID_2) | OSEE_TC_SRN_PRIORITY(1U);
-#endif /* OSEE_CORE_ID_VALID_MASK & 0x4U */
+  osEE_tc_conf_src(OS_CORE_ID_0,
+    OSEE_TC_GPSR_SRC_OFFSET(OSEE_TC_GPSR_G, 0U), 1U);
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x02U)
+  osEE_tc_conf_src(OS_CORE_ID_1,
+    OSEE_TC_GPSR_SRC_OFFSET(OSEE_TC_GPSR_G, 1U), 1U);
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x02U */
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x04U)
+  osEE_tc_conf_src(OS_CORE_ID_2,
+    OSEE_TC_GPSR_SRC_OFFSET(OSEE_TC_GPSR_G, 2U), 1U);
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x04U */
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x08U)
+  osEE_tc_conf_src(OS_CORE_ID_3,
+    OSEE_TC_GPSR_SRC_OFFSET(OSEE_TC_GPSR_G, 3U), 1U);
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x08U */
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x10U)
+  osEE_tc_conf_src(OS_CORE_ID_4,
+    OSEE_TC_GPSR_SRC_OFFSET(OSEE_TC_GPSR_G, 4U), 1U);
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x08U */
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x40U)
+  osEE_tc_conf_src(OS_CORE_ID_6,
+    OSEE_TC_GPSR_SRC_OFFSET(OSEE_TC_GPSR_G, 6U), 1U);
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x40U */
 }
 
-/* Signal the core "cpu" (0/1/2) by sending an IIRQ. */
+/* Signal the core "cpu" (0/1/2/3/4/6) by sending an IIRQ. */
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
   osEE_hal_signal_core(CoreIdType core_id)
 {
-  if (core_id == OS_CORE_ID_0) {
-    OSEE_TC_GPSR_SRC(OSEE_TC_GPSR_G, 0U) |= OSEE_TC_SRN_SET_REQUEST;
-  } else
-#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x2U)
-  if (core_id == OS_CORE_ID_1) {
-    OSEE_TC_GPSR_SRC(OSEE_TC_GPSR_G, 1U) |= OSEE_TC_SRN_SET_REQUEST;
-  } else
-#endif /* OSEE_CORE_ID_VALID_MASK & 0x2U */
-#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x4U)
-  if (core_id == OS_CORE_ID_2) {
-    OSEE_TC_GPSR_SRC(OSEE_TC_GPSR_G, 2U) |= OSEE_TC_SRN_SET_REQUEST;
-  } else
-#endif /* OSEE_CORE_ID_VALID_MASK & 0x4U */
-  {
-    /* Empty else statement to comply with MISRA 14.10 */
-  }
+
+  OSEE_TC_SRC_REG(OSEE_TC_GPSR_SRC_OFFSET(OSEE_TC_GPSR_G, core_id)) |=
+    OSEE_TC_SRN_SET_REQUEST;
 }
 
-/* Acknowledge the signal received by the core "cpu" (0/1/2) */
+/* Acknowledge the signal received by the core "cpu" (0/1/2/3/4/6) */
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
   osEE_tc_ack_signal(void)
 {
   CoreIdType core_id = osEE_get_curr_core_id();
-  if (core_id == OS_CORE_ID_0) {
-    OSEE_TC_GPSR_SRC(OSEE_TC_GPSR_G, 0U) |= OSEE_TC_SRN_CLEAR_REQUEST;
-  } else
-#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x2U)
-  if (core_id == OS_CORE_ID_1) {
-    OSEE_TC_GPSR_SRC(OSEE_TC_GPSR_G, 1U) |= OSEE_TC_SRN_CLEAR_REQUEST;
-  } else
-#endif /* OSEE_CORE_ID_VALID_MASK & 0x2U */
-#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x4U)
-  if (core_id == OS_CORE_ID_2) {
-    OSEE_TC_GPSR_SRC(OSEE_TC_GPSR_G, 2U) |= OSEE_TC_SRN_CLEAR_REQUEST;
-  } else
-#endif /* OSEE_CORE_ID_VALID_MASK & 0x4U */
-  {
-    /* Empty else statement to comply with MISRA 14.10 */
-  }
+
+  OSEE_TC_SRC_REG(OSEE_TC_GPSR_SRC_OFFSET(OSEE_TC_GPSR_G, core_id)) |=
+    (OSEE_TC_SRN_CLEAR_REQUEST | OSEE_TC_SRN_STICKY_CLEAR);
 }
 
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE

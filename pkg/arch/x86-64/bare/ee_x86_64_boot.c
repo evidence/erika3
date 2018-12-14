@@ -48,12 +48,9 @@
 
 #include "ee_internal.h"
 #include "ee_x86_64_memory_mgmt.h"
-#ifdef DEBUG
 #include "ee_print.h"
-#endif
 
 OsEE_core_id osEE_x86_64_core_id_offset;
-uint64_t timer_tick_freq_hz;
 
 /* Address of the first global constructor (Defined by the linker script) */
 extern void (*__CTORS_START)(void);
@@ -70,34 +67,29 @@ static void run_constructors(void)
 }
 
 extern int main(void);
-/* Prototype must be equal to the one defined in ee_x86_64_apic.c */
-uint64_t osEE_x86_64_calculate_timer_tick_freq_with_pit(void);
 void arch_startup(void);
 
 void arch_startup(void)
 {
-    /* Initialize the virtual memory (page-table heap) */
+    /* Initialize the virtual memory (page-table heap, libc) */
+    /* Note the HAS TO BE THE FIRST INSTRUCTION!!!! */
     osEE_x86_64_memory_init();
-
-    /* Handle Virtual Core IDs */
-    osEE_x86_64_core_id_offset = osEE_x86_64_get_core_id_raw();
 
     /* Initialize  Interrupt Descriptor Table */
     osEE_x86_64_int_init();
 
     /* Initialize Interrupt Controller */
-    osEE_x86_64_int_controller_init();
-    /* Then, calculate timer frequency */
-    timer_tick_freq_hz = osEE_x86_64_calculate_timer_tick_freq_with_pit();
+    if(osEE_x86_64_int_controller_init()) {
+        /* Error in interrupt controller initialization (e.g., no CPU support) */
+        OSEE_PRINT("Error in interrupt controller initialization.\n");
+        for(;;);
+    }
 
-    /* Calibrate timer frequency */
-    osEE_x86_64_set_timer_tick_freq(timer_tick_freq_hz);
-#ifdef DEBUG
-    printk("Calibrated Timer frequency: %lu.%03u kHz (%x)\n",
-            timer_tick_freq_hz / OSEE_KILO,
-            timer_tick_freq_hz % OSEE_KILO,
-	    timer_tick_freq_hz);
-#endif
+    /* Handle Virtual Core IDs */
+    osEE_x86_64_core_id_offset = osEE_x86_64_get_core_id_raw();
+
+    /* Then, calibrate the platform tick frequency (APIC, TSC) */
+    osEE_x86_64_calibrate_platform_tick_freq();
 
     /* ERIKA's Dynamic data structures initialization */
 #if (defined(OSEE_API_DYNAMIC))

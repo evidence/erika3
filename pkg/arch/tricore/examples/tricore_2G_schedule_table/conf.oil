@@ -1,0 +1,211 @@
+/* ###*B*###
+ * Erika Enterprise, version 3
+ * 
+ * Copyright (C) 2017 - 2018 Evidence s.r.l.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or (at
+ * your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License, version 2, for more details.
+ * 
+ * You should have received a copy of the GNU General Public License,
+ * version 2, along with this program; if not, see
+ * < www.gnu.org/licenses/old-licenses/gpl-2.0.html >.
+ * 
+ * This program is distributed to you subject to the following
+ * clarifications and special exceptions to the GNU General Public
+ * License, version 2.
+ * 
+ * THIRD PARTIES' MATERIALS
+ * 
+ * Certain materials included in this library are provided by third
+ * parties under licenses other than the GNU General Public License. You
+ * may only use, copy, link to, modify and redistribute this library
+ * following the terms of license indicated below for third parties'
+ * materials.
+ * 
+ * In case you make modified versions of this library which still include
+ * said third parties' materials, you are obligated to grant this special
+ * exception.
+ * 
+ * The complete list of Third party materials allowed with ERIKA
+ * Enterprise version 3, together with the terms and conditions of each
+ * license, is present in the file THIRDPARTY.TXT in the root of the
+ * project.
+ * ###*E*### */
+/** \file  conf.oil
+ *  \brief  System Configuration.
+ *
+ *  This file contains the System Configuration for Erika Enterprise.
+ *
+ *  \author  Errico Guidieri
+ *  \date  2018
+ */
+
+CPU test_application {
+
+  OS myOs {
+    /* EE_OPT = "OS_EE_VERBOSE"; */
+    EE_OPT = "OSEE_DEBUG";
+    EE_OPT = "OSEE_ASSERT";
+    EE_OPT = "OS_EE_APPL_BUILD_DEBUG";
+    EE_OPT = "OS_EE_BUILD_DEBUG";
+    EE_OPT = "OSEE_TC_LINK_BMHD";
+
+    //MEMORY_PROTECTION   = TRUE;
+    //STACKMONITORING     = TRUE;
+    //SERVICE_PROTECTION  = TRUE;
+    //TIMING_PROTECTION   = TRUE;
+
+    CPU_DATA = TRICORE {
+      MULTI_STACK = TRUE;
+      //SYS_STACK_SIZE = 4096;
+      COMPILER = GCC;
+    };
+
+    CPU_DATA = TRICORE {
+      ID=6;
+    };
+
+    MCU_DATA = TC39X {
+      DERIVATIVE = "tc399xe-Astep";
+      REVISION = "AA";
+    };
+
+    STATUS             = EXTENDED;
+    ERRORHOOK          = TRUE;
+    USERESSCHEDULER    = FALSE;
+    USEPARAMETERACCESS = TRUE;
+    //USEORTI            = TRUE;
+
+    KERNEL_TYPE = OSEK {
+      CLASS = ECC2;
+      RQ = MQ;
+    };
+  };
+
+  APPDATA tricore_schedule_table {
+    APP_SRC = "code.c";
+  };
+
+  TASK Task1 {
+    PRIORITY = 1;
+    AUTOSTART = TRUE;
+    STACK = PRIVATE {
+      SIZE = 512;
+    };
+    ACTIVATION = 1;
+    SCHEDULE = FULL;
+    EVENT = Event1;
+    EVENT = Event2;
+  };
+
+  TASK Task2 {
+    PRIORITY = 2;
+    AUTOSTART = FALSE;
+    STACK = SHARED;
+    ACTIVATION = 3;
+    SCHEDULE = FULL;
+  };
+
+  EVENT Event1  { MASK = AUTO; };
+  EVENT Event2  { MASK = AUTO; };
+
+  COUNTER system_timer {
+    CPU_ID = 0;
+    MINCYCLE = 1;
+    MAXALLOWEDVALUE = 2147483647;
+    TICKSPERBASE = 1;
+    TYPE = HARDWARE {
+      DEVICE = "STM_SR0";
+      SYSTEM_TIMER = TRUE;
+      PRIORITY = 2;
+    };
+    SECONDSPERTICK = 0.001;
+  };
+
+  COUNTER system_timer_core2 {
+    CPU_ID = 6;
+    MINCYCLE = 1;
+    MAXALLOWEDVALUE = 2147483647;
+    TICKSPERBASE = 1;
+    TYPE = HARDWARE {
+      DEVICE = "STM_SR0";
+      SYSTEM_TIMER = TRUE;
+      PRIORITY = 2;
+    };
+    SECONDSPERTICK = 0.001;
+  };
+
+  SCHEDULETABLE SchedTab1 {
+    COUNTER = system_timer;
+    DURATION = 400;
+    REPEATING = FALSE;
+    AUTOSTART = TRUE {
+      TYPE = ABSOLUTE;
+      START_VALUE = 0;
+    };
+    EXPIRE_POINT = ACTION {
+      EXPIRE_VALUE = 25;
+      ACTION = ACTIVATETASK { TASK = Task2; };
+      ACTION = SETEVENT { TASK = Task1; EVENT = Event2; };
+      SYNC_ADJUSTMENT = FALSE;
+    };
+    EXPIRE_POINT = ACTION {
+      EXPIRE_VALUE = 300;
+      ACTION = SETEVENT { TASK = Task1; EVENT = Event1; };
+      SYNC_ADJUSTMENT = FALSE;
+    };
+    LOCAL_TO_GLOBAL_TIME_SYNCHRONIZATION = FALSE;
+  };
+
+  SCHEDULETABLE SchedTab2 {
+    COUNTER = system_timer;
+    DURATION = 500;
+    AUTOSTART = FALSE;
+    EXPIRE_POINT = ACTION {
+      EXPIRE_VALUE = 100;
+      ACTION = ACTIVATETASK { TASK = Task2; };
+      SYNC_ADJUSTMENT = FALSE;
+    };
+    EXPIRE_POINT = ACTION {
+      EXPIRE_VALUE = 400;
+      ACTION = ACTIVATETASK { TASK = Task2; };
+      SYNC_ADJUSTMENT = FALSE;
+    };
+    LOCAL_TO_GLOBAL_TIME_SYNCHRONIZATION = FALSE;
+  };
+
+  SCHEDULETABLE SchedTab3 {
+    COUNTER = system_timer_core2;
+    DURATION = 900;
+    REPEATING = FALSE;
+    AUTOSTART = TRUE;
+    EXPIRE_POINT = ACTION {
+      EXPIRE_VALUE = 25;
+      ACTION = ACTIVATETASK { TASK = Task2; };
+    };
+    EXPIRE_POINT = ACTION {
+      EXPIRE_VALUE = 250;
+      ACTION = ACTIVATETASK { TASK = Task2; };
+    };
+    EXPIRE_POINT = ACTION {
+      EXPIRE_VALUE = 300;
+      ACTION = ACTIVATETASK { TASK = Task2; };
+    };
+    EXPIRE_POINT = ACTION {
+      EXPIRE_VALUE = 500;
+      ACTION = ACTIVATETASK { TASK = Task2; };
+    };
+    EXPIRE_POINT = ACTION {
+      EXPIRE_VALUE = 800;
+      ACTION = ACTIVATETASK { TASK = Task2; };
+      ACTION = SETEVENT     { TASK = Task1; EVENT = Event1; };
+    };
+  };
+};

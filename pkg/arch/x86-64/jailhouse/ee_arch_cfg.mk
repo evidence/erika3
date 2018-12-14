@@ -55,6 +55,7 @@ EE_SRCS += ee_x86_64_ctx.S
 
 EE_SRCS += ee_x86_64_int.c
 EE_SRCS += ee_x86_64_tsc.c
+EE_SRCS += ee_x86_64_time_setup.c
 EE_SRCS += ee_x86_64_x2apic.c
 
 ifeq ($(call iseeopt, OSEE_API_DYNAMIC), yes)

@@ -40,9 +40,8 @@
  * ###*E*### */
 
 #include "ee_internal.h"
-#include "ee_x86_64_tsc.h"
 #include <inmate.h>
-
+#include "ee_print.h"
 #if 0
 #ifdef CONFIG_UART_OXPCIE952
 #define UART_BASE       0xe010
@@ -58,21 +57,9 @@ OsEE_core_id osEE_x86_64_core_id_offset;
 
 extern int main(void);
 
-uint64_t get_inmate_timer_tick_freq_hz(void);
-uint64_t get_inmate_timer_tick_freq_hz(void)
-{
-    if(osEE_x86_64_tsc() && osEE_x86_64_apic_tsc_deadline()) {
-        return comm_region->tsc_khz * 1000L;
-    }
-
-    return comm_region->apic_khz * 1000L / 16;
-}
-
-
 void inmate_main(void)
 {
     bool loop = true;
-    uint64_t inmate_timer_tick_freq_hz;
 /*
     int n;
     printk_uart_base = UART_BASE;
@@ -82,32 +69,23 @@ void inmate_main(void)
                 break;
     } while (n < UART_IDLE_LOOPS);
 */
-    /* Handle Virtual Core IDs */
-    osEE_x86_64_core_id_offset = osEE_x86_64_get_core_id_raw();
-
     comm_region->cell_state = JAILHOUSE_CELL_RUNNING_LOCKED;
-
-    /* Set timer tick frequency */
-    inmate_timer_tick_freq_hz = get_inmate_timer_tick_freq_hz();
-    printk("Calibrated inmate timer frequency: %lu.%03u kHz\n",
-           inmate_timer_tick_freq_hz  / OSEE_KILO,
-           inmate_timer_tick_freq_hz % OSEE_KILO);
 
     /* Initialize  Interrupt Descriptor Table */
     osEE_x86_64_int_init();
 
     /* Initialize  Interrupt Controller */
-    osEE_x86_64_int_controller_init();
-
-    /* Calibrate timer frequency */
-    osEE_x86_64_set_timer_tick_freq(inmate_timer_tick_freq_hz);
-
-    /* Initialize the ERIKA tsc */
-    if(osEE_x86_64_tsc()) {
-        osEE_x86_64_tsc_init(comm_region->tsc_khz * 1000L);
-        /* Call Jailhouse tsc_init to allow the use of 'inmate' tsc_read() */
-        tsc_init();
+    if(osEE_x86_64_int_controller_init()) {
+        /* Error in interrupt controller initialization (e.g., no CPU support) */
+        OSEE_PRINT("Error in interrupt controller initialization.\n");
+        for(;;);
     }
+
+    /* Handle Virtual Core IDs */
+    osEE_x86_64_core_id_offset = osEE_x86_64_get_core_id_raw();
+
+    /* Then, calibrate the platform tick frequency (X2APIC, TSC) */
+    osEE_x86_64_calibrate_platform_tick_freq();
 
     /* ERIKA's Dynamic data structures initialization */
 #if (defined(OSEE_API_DYNAMIC))
@@ -118,7 +96,7 @@ void inmate_main(void)
 
     osEE_hal_disableIRQ();
 
-    printk("ERIKA tasks terminated.\n");
+    OSEE_PRINT("ERIKA tasks terminated.\n");
 
     while (loop && (comm_region->cell_state != JAILHOUSE_CELL_SHUT_DOWN)) {
 

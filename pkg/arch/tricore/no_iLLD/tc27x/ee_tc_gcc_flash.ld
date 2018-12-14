@@ -77,6 +77,8 @@ OUTPUT_FORMAT("elf32-tricore")
 OUTPUT_ARCH(tricore)
 ENTRY(_start)
 
+/* Force to link the variable that contains the "TriCore ID" used to compile */
+EXTERN(__TRICORE_DERIVATE_NAME__)
 __TRICORE_DERIVATE_MEMORY_MAP__ = 0x2700;
 
 /* CSA list size */
@@ -105,7 +107,7 @@ __USTACK1_SIZE = DEFINED (__USTACK1_SIZE) ? __USTACK1_SIZE : __USTACK_SIZE;
 
 /* CPU2 CSA list size */
 __CSA2_SIZE = DEFINED (__CSA2_SIZE) ? __CSA2_SIZE : __CSA_SIZE;
-/* CPU0 Interrupt stack cpu0 size */
+/* CPU2 Interrupt stack size */
 __ISTACK2_SIZE = DEFINED (__ISTACK2_SIZE) ? __ISTACK2_SIZE : __ISTACK_SIZE;
 /* CPU2 User stack size */
 __USTACK2_SIZE = DEFINED (__USTACK2_SIZE) ? __USTACK2_SIZE : __USTACK_SIZE;
@@ -119,26 +121,25 @@ __DSPR1_SIZE = 120k;
 __DSPR0_SIZE = 112k;
 
 /* 1k guard area */
-__CSA0_OFFSET    = (__DSPR0_SIZE  - 1k  - __CSA_SIZE);
+__CSA0_OFFSET    = (__DSPR0_SIZE  - 1k  - __CSA0_SIZE);
 /* 256 byte guard area */
-__ISTACK0_OFFSET = (__CSA0_OFFSET - 256 - __ISTACK_SIZE);
+__ISTACK0_OFFSET = (__CSA0_OFFSET - 256 - __ISTACK0_SIZE);
 /* 256 byte guard area */
-__USTACK0_OFFSET = (__ISTACK0_OFFSET - 256 - __USTACK_SIZE);
+__USTACK0_OFFSET = (__ISTACK0_OFFSET - 256 - __USTACK0_SIZE);
 
 /* 1k guard area */
-__CSA1_OFFSET    = (__DSPR1_SIZE  - 1k  - __CSA_SIZE);
+__CSA1_OFFSET    = (__DSPR1_SIZE  - 1k  - __CSA1_SIZE);
 /* 256 byte guard area */
-__ISTACK1_OFFSET = (__CSA1_OFFSET - 256 - __ISTACK_SIZE);
+__ISTACK1_OFFSET = (__CSA1_OFFSET - 256 - __ISTACK1_SIZE);
 /* 256 byte guard area */
-__USTACK1_OFFSET = (__ISTACK1_OFFSET - 256 - __USTACK_SIZE);
-
+__USTACK1_OFFSET = (__ISTACK1_OFFSET - 256 - __USTACK1_SIZE);
 
 /* 1k guard area */
-__CSA2_OFFSET    = (__DSPR2_SIZE  - 1k  - __CSA_SIZE);
+__CSA2_OFFSET    = (__DSPR2_SIZE  - 1k  - __CSA2_SIZE);
 /* 256 byte guard area */
-__ISTACK2_OFFSET = (__CSA2_OFFSET - 256 - __ISTACK_SIZE);
+__ISTACK2_OFFSET = (__CSA2_OFFSET - 256 - __ISTACK2_SIZE);
 /* 256 byte guard area */
-__USTACK2_OFFSET = (__ISTACK2_OFFSET - 256 - __USTACK_SIZE);
+__USTACK2_OFFSET = (__ISTACK2_OFFSET - 256 - __USTACK2_SIZE);
 
 MEMORY
 {
@@ -172,12 +173,11 @@ MEMORY
   PMU_PFLASH      (rx!p): org = 0x80000000, len = 2M+2M
   PMU_PFLASH_nc   (rx!p): org = 0xA0000000, len = 2M+2M
 
-/* Data Flash Memory (DFLASH0) */
-  PMU_DFLASH0     (r!xp): org = 0xAF000000, len = 1M
-/* dfls0 (rx!p): org = 0xaf000000, len = 384K
-   EG: which one is right: 1M or 384K? */
-/* Data Flash Memory (DFLASH0_1) */
-  PMU_DFLASH0_1   (r!xp): org = 0xAF100000, len = 16K
+/* Data Flash Memory (DFLASH0+DFLASH0_1) */
+  PMU_DFLASH0     (r!xp): org = 0xAF000000, len = 1M+16K
+
+/* Data Flash Memory (DFLASH1) */
+  PMU_DFLASH1     (r!xp): org = 0xAF110000, len = 64K
 
 /* Global Data RAM (LMU) */
   LMU_SRAM        (w!xp): org = 0x90000000, len = 32K
@@ -716,6 +716,8 @@ SECTIONS
 
   CORE_SEC(.lmu_data) : ALIGN(4) FLAGS(awl)
   {
+    *(.lmu_data)
+    *(.lmu_data.*)
     *(.data_lmu)
     *(.data_lmu.*)
     *(.lmudata)
@@ -724,6 +726,8 @@ SECTIONS
 
   CORE_SEC(.lmu_bss) (NOLOAD) : ALIGN(4) FLAGS(aw)
   {
+    *(.lmu_bss)
+    *(.lmu_bss.*)
     *(.bss_lmu)
     *(.bss_lmu.*)
     *(.lmubss)

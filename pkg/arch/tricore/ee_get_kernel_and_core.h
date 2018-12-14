@@ -174,7 +174,7 @@ extern OsEE_CCB osEE_ccb_var_core0;
 #define OS_CORE0_STOP_SEC_VAR_INIT
 #include "Os_MemMap.h"
 
-#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x2U)
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x02U)
 #define OS_CORE1_START_SEC_CONST
 #include "Os_MemMap.h"
 extern OsEE_CDB osEE_cdb_var_core1;
@@ -190,8 +190,8 @@ extern OsEE_CCB osEE_ccb_var_core1;
 #define OS_CORE1_STOP_SEC_VAR_INIT
 #include "Os_MemMap.h"
 
-#endif /* OSEE_CORE_ID_VALID_MASK & 0x2U */
-#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x4U)
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x02U */
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x04U)
 #define OS_CORE2_START_SEC_CONST
 #include "Os_MemMap.h"
 extern OsEE_CDB osEE_cdb_var_core2;
@@ -207,40 +207,72 @@ extern OsEE_CCB osEE_ccb_var_core2;
 #define OS_CORE2_STOP_SEC_VAR_INIT
 #include "Os_MemMap.h"
 
-#endif /* OSEE_CORE_ID_VALID_MASK & 0x4U */
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x04U */
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x08U)
+#define OS_CORE3_START_SEC_CONST
+#include "Os_MemMap.h"
+extern OsEE_CDB osEE_cdb_var_core3;
+#if (defined(OSEE_TC_HAS_ISR1_TO_CONF))
+extern OsEE_isr1_db osEE_isr1_db_instance_core3;
+#endif /* OSEE_TC_HAS_ISR1_TO_CONF */
+#define OS_CORE3_STOP_SEC_CONST
+#include "Os_MemMap.h"
 
+#define OS_CORE3_START_SEC_VAR_INIT
+#include "Os_MemMap.h"
+extern OsEE_CCB osEE_ccb_var_core3;
+#define OS_CORE3_STOP_SEC_VAR_INIT
+#include "Os_MemMap.h"
+
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x08U */
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x10U)
+#define OS_CORE4_START_SEC_CONST
+#include "Os_MemMap.h"
+extern OsEE_CDB osEE_cdb_var_core4;
+#if (defined(OSEE_TC_HAS_ISR1_TO_CONF))
+extern OsEE_isr1_db osEE_isr1_db_instance_core4;
+#endif /* OSEE_TC_HAS_ISR1_TO_CONF */
+#define OS_CORE4_STOP_SEC_CONST
+#include "Os_MemMap.h"
+
+#define OS_CORE4_START_SEC_VAR_INIT
+#include "Os_MemMap.h"
+extern OsEE_CCB osEE_ccb_var_core4;
+#define OS_CORE4_STOP_SEC_VAR_INIT
+#include "Os_MemMap.h"
+
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x10U */
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x40U)
+#define OS_CORE6_START_SEC_CONST
+#include "Os_MemMap.h"
+extern OsEE_CDB osEE_cdb_var_core6;
+#if (defined(OSEE_TC_HAS_ISR1_TO_CONF))
+extern OsEE_isr1_db osEE_isr1_db_instance_core6;
+#endif /* OSEE_TC_HAS_ISR1_TO_CONF */
+#define OS_CORE6_STOP_SEC_CONST
+#include "Os_MemMap.h"
+
+#define OS_CORE6_START_SEC_VAR_INIT
+#include "Os_MemMap.h"
+extern OsEE_CCB osEE_ccb_var_core6;
+#define OS_CORE6_STOP_SEC_VAR_INIT
+#include "Os_MemMap.h"
+
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x40U */
+
+extern OsEE_CDB * osEE_get_core(CoreIdType core_id);
+
+#if (defined(OSEE_TC_DISABLE_A9_OPTIMIZATION))
+OSEE_STATIC_INLINE OsEE_CDB * OSEE_ALWAYS_INLINE osEE_get_curr_core(void) {
+  return osEE_get_core(osEE_get_curr_core_id());
+}
+#else
 OSEE_STATIC_INLINE OsEE_CDB * OSEE_ALWAYS_INLINE osEE_get_curr_core(void) {
   OsEE_CDB * p_cdb;
   osEE_tc_getareg(a9, p_cdb);
   return p_cdb;
 }
-
-OSEE_STATIC_INLINE OsEE_CDB * OSEE_ALWAYS_INLINE
-  osEE_get_core(CoreIdType core_id)
-{
-  OsEE_CDB * p_cdb;
-  switch (core_id) {
-    case OS_CORE_ID_0:
-      p_cdb = &osEE_cdb_var_core0;
-    break;
-#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x2U)
-    case OS_CORE_ID_1:
-      p_cdb = &osEE_cdb_var_core1;
-    break;
-#endif /* OSEE_CORE_ID_VALID_MASK & 0x2U */
-#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x4U)
-    case OS_CORE_ID_2:
-      p_cdb = &osEE_cdb_var_core2;
-    break;
-#endif /* OSEE_CORE_ID_VALID_MASK & 0x4U */
-    default:
-      /* This can happen when we cycle on cores */
-      p_cdb = NULL;
-    break;
-  }
-
-  return p_cdb;
-}
+#endif /* OSEE_TC_DISABLE_A9_OPTIMIZATION */
 
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_lock_kernel(void) {
   osEE_hal_spin_lock(osEE_kdb_var.p_lock);

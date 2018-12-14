@@ -90,6 +90,9 @@ OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/tricore/no_iLLD/$(OSEE_TRICORE_M
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/tricore/no_iLLD/ee_tc_system.h
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/tricore/no_iLLD/ee_tc_cstart.c
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/tricore/no_iLLD/ee_tc_system.c
+ifeq ($(call iseeopt, OSEE_TC_2G), yes)
+OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/tricore/no_iLLD/tc3nx/ee_tc_ssw_bmhd.c
+endif # OSEE_TC_2G
 endif # !OSEE_TRICORE_ILLD
 
 endif # OSEE_ARCH_TRICORE

@@ -494,9 +494,10 @@ typedef struct {
   VAR(AppModeType, TYPEDEF)                       app_mode;
   /* Error Handling variables */
   VAR(StatusType, TYPEDEF)                        last_error;
-#if (defined(OSEE_USEPARAMETERACCESS)) || (defined(OSEE_HAS_ORTI))
+#if (defined(OSEE_USEGETSERVICEID)) || (defined(OSEE_USEPARAMETERACCESS)) ||\
+    (defined(OSEE_HAS_ORTI))
   VAR(OSServiceIdType, TYPEDEF)                   service_id;
-#endif /* OSEE_USEPARAMETERACCESS || OSEE_HAS_ORTI */
+#endif /* OSEE_USEGETSERVICEID || OSEE_USEPARAMETERACCESS || OSEE_HAS_ORTI */
 #if (defined(OSEE_USEPARAMETERACCESS))
   VAR(OsEE_api_param, TYPEDEF)                    api_param1;
   VAR(OsEE_api_param, TYPEDEF)                    api_param2;

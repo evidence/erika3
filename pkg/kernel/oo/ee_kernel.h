@@ -481,7 +481,7 @@ LOCAL_INLINE FUNC(void, OS_CODE)
 }
 #endif /* OSEE_HAS_ERRORHOOK */
 
-#if (defined(OSEE_USEPARAMETERACCESS))
+#if (defined(OSEE_USEGETSERVICEID)) || (defined(OSEE_USEPARAMETERACCESS))
 LOCAL_INLINE FUNC(void, OS_CODE)
   osEE_set_service_id
 (
@@ -491,7 +491,19 @@ LOCAL_INLINE FUNC(void, OS_CODE)
 {
   p_ccb->service_id = service_id;
 }
-
+#else
+LOCAL_INLINE FUNC(void, OS_CODE)
+  osEE_set_service_id
+(
+  P2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb,
+  VAR(OSServiceIdType, AUTOMATIC)             service_id
+)
+{
+  ((void)p_ccb);
+  ((void)service_id);
+}
+#endif /* OSEE_USEGETSERVICEID || OSEE_USEPARAMETERACCESS */
+#if (defined(OSEE_USEPARAMETERACCESS))
 LOCAL_INLINE FUNC(void, OS_CODE)
   osEE_set_api_param1_num_param
 (
@@ -552,17 +564,6 @@ LOCAL_INLINE FUNC(void, OS_CODE)
   p_ccb->api_param3.p_param = p_param;
 }
 #else /* OSEE_USEPARAMETERACCESS */
-LOCAL_INLINE FUNC(void, OS_CODE)
-  osEE_set_service_id
-(
-  P2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb,
-  VAR(OSServiceIdType, AUTOMATIC)             service_id
-)
-{
-  ((void)p_ccb);
-  ((void)service_id);
-}
-
 LOCAL_INLINE FUNC(void, OS_CODE)
   osEE_set_api_param1_num_param
 (

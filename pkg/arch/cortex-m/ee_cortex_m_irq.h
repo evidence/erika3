@@ -89,19 +89,19 @@ extern "C" {
 #define	DeclareIsr1(f)	FUNC(void, OS_CODE) f ( void )
 
 /* Macro to define ISR1: always valid */
-#define	ISR1(f)		FUNC(void, OS_CODE) OSEE_COMPILER_KEEP f ( void )
+#define	ISR1(f)		FUNC(void, OS_CODE) f ( void )
 
 /* Macro to declare ISR2: always valid */
 #define	DeclareIsr2(f)	FUNC(void, OS_CODE) f ( void )
 
 /* Macro to define ISR2: always valid */
-#define	ISR2(f)		FUNC(void, OS_CODE) OSEE_COMPILER_KEEP f ( void )
+#define	ISR2(f)		FUNC(void, OS_CODE) f ( void )
 
 /* Macro to declare ISR: always valid */
 #define	DeclareIsr(f)	FUNC(void, OS_CODE) f ( void )
 
 /* Macro to define ISR: always valid */
-#define	ISR(f)		FUNC(void, OS_CODE) OSEE_COMPILER_KEEP f ( void )
+#define	ISR(f)		FUNC(void, OS_CODE) f ( void )
 
 /*
  * Exceptions

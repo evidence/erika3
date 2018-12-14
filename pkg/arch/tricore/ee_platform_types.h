@@ -57,6 +57,7 @@
 #define OSEE_PLATFORM_TYPES_H
 
 #include "ee_cfg.h"
+#include "ee_arch_override.h"
 #include "ee_compiler.h"
 #include "ee_utils.h"
 #include <limits.h>
@@ -106,12 +107,22 @@ typedef uint32_t              OsEE_stack;
 typedef enum {
   OS_CORE_ID_0 = 0,
   OS_CORE_ID_MASTER = OS_CORE_ID_0,
-#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x2U)
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x02U)
   OS_CORE_ID_1 = 1,
-#endif /* OSEE_CORE_ID_VALID_MASK & 0x2U */
-#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x4U)
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x02U */
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x04U)
   OS_CORE_ID_2 = 2,
-#endif /* OSEE_CORE_ID_VALID_MASK & 0x4U */
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x04U */
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x08U)
+  OS_CORE_ID_3 = 3,
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x08U */
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x10U)
+  OS_CORE_ID_4 = 4,
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x10U */
+/* Numeric ID 5 is took by HSM core, how lame :(. */
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x40U)
+  OS_CORE_ID_6 = 6,
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x40U */
   OS_CORE_ID_ARR_SIZE
 } OsEE_core_id;
 

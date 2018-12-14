@@ -75,8 +75,6 @@ OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/ee_get_kernel_and_core.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/ee_hal.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/ee_hal_internal_types.h
 
-OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/$(OSEE_PLATFORM)/ee_platform_config.h
-OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/$(OSEE_PLATFORM)/ee_x86_64_boot.c
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/std/arch/ee_std_hal_init.c
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/ee_x86_64_int.c
 
@@ -86,6 +84,13 @@ OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/ee_hal_internal.h
 
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/ee_internal.h
 
+# Cross-Platform files
+OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/$(OSEE_PLATFORM)/ee_print.h
+OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/$(OSEE_PLATFORM)/ee_platform_config.h
+OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/$(OSEE_PLATFORM)/ee_x86_64_boot.c
+OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/$(OSEE_PLATFORM)/ee_x86_64_time_setup.c
+
+# Bare platform files
 ifeq    ($(call iseeopt, OSEE_PLATFORM_X86_64_BARE), yes)
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/$(OSEE_PLATFORM)/ee_x86_64_startup.S
 OS_EE_PULL_MK_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/$(OSEE_PLATFORM)/ee_x86_64_linker.lds
@@ -105,7 +110,6 @@ endif
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/ee_pci.h
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/ee_pci.c
 
-OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/$(OSEE_PLATFORM)/ee_print.h
 
 ifneq ($(OSEE_X86_64_BOARD),)
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/$(OSEE_X86_64_BOARD)/ee_board.h
@@ -119,11 +123,18 @@ OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/ee_x86_64_system_timer.c
 endif # OSEE_HAS_SYSTEM_TIMER
 
 #INTERRUPT CONTROLLER
-ifeq ($(call iseeopt, OSEE_PLATFORM_X86_64_BARE), yes)
+ifeq ($(call iseeopt, OSEE_PLATFORM_X86_64_INT_CONTROLLER_APIC), yes)
+OSEE_PLATFORM_X86_64_INT_CONTROLLER := apic
+OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/ee_x86_64_apic_internal.h
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/ee_x86_64_apic.c
 endif
-ifeq ($(call iseeopt, OSEE_PLATFORM_JAILHOUSE), yes)
+ifeq ($(call iseeopt, OSEE_PLATFORM_X86_64_INT_CONTROLLER_X2APIC), yes)
+OSEE_PLATFORM_X86_64_INT_CONTROLLER := x2apic
+OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/ee_x86_64_apic_internal.h
+OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/ee_x86_64_x2apic_internal.h
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/ee_x86_64_x2apic.c
 endif
-
+ifndef OSEE_PLATFORM_X86_64_INT_CONTROLLER
+$(error "Not valid interrupt controller provided for the chosen platform!")
+endif
 endif # OSEE_ARCH_X86_64

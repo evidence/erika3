@@ -53,7 +53,12 @@ ifeq ($(call iseeopt, OSEE_ARCH_TRICORE), yes)
 ifneq	($(call iseeopt, OSEE_TRICORE_ILLD), yes)
 EE_SRCS += ee_tc_cstart.c
 EE_SRCS += ee_tc_system.c
-endif	# !OSEE_TRICORE_ILLD
+ifeq ($(call iseeopt, OSEE_TC_2G), yes)
+ifeq ($(call iseeopt, OSEE_TC_LINK_BMHD), yes)
+EE_SRCS += ee_tc_ssw_bmhd.c
+endif # OSEE_TC_LINK_BMHD
+endif # OSEE_TC_2G
+endif # !OSEE_TRICORE_ILLD
 
 EE_SRCS += ee_tc_trapvec.c
 EE_SRCS += ee_tc_intvec.c

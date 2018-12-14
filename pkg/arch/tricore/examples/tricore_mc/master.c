@@ -51,8 +51,6 @@
 /* ERIKA Enterprise. */
 #include "shared.h"
 
-#include "shared.h"
-
 TASK(TaskMaster)
 
 {

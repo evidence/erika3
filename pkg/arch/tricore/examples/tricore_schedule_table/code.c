@@ -89,6 +89,14 @@ TASK(Task2)
   TerminateTask();
 }
 
+#if (defined(OSEE_CORE_ID_VALID_MASK))
+#if   (OSEE_CORE_ID_VALID_MASK & 0x2U)
+#define SLAVE_CORE  OS_CORE_ID_1
+#elif (OSEE_CORE_ID_VALID_MASK & 0x4U)
+#define SLAVE_CORE  OS_CORE_ID_2
+#endif
+#endif /* OSEE_CORE_ID_VALID_MASK */
+
 /* MAIN */
 int main( void )
 {
@@ -96,8 +104,7 @@ int main( void )
     StatusType ev;
     /* Init leds */
     osEE_tc2x5_leds_init();
-    StartCore(1U, &ev);
-    StartCore(OS_CORE_ID_2, &ev);
+    StartCore(SLAVE_CORE, &ev);
     if (ev != E_OK) {
       for(;;);
     }

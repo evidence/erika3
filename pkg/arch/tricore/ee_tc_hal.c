@@ -69,16 +69,31 @@ OSEE_STATIC_INLINE OsEE_isr1_db * OSEE_ALWAYS_INLINE
     case OS_CORE_ID_0:
       p_tbr = &osEE_isr1_db_instance_core0;
     break;
-#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x2U)
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x02U)
     case OS_CORE_ID_1:
       p_tbr = &osEE_isr1_db_instance_core1;
     break;
-#endif /* OSEE_CORE_ID_VALID_MASK & 0x2U */
-#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x4U)
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x02U */
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x04U)
     case OS_CORE_ID_2:
       p_tbr = &osEE_isr1_db_instance_core2;
     break;
-#endif /* OSEE_CORE_ID_VALID_MASK & 0x4U */
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x04U */
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x08U)
+    case OS_CORE_ID_3:
+      p_tbr = &osEE_isr1_db_instance_core3;
+    break;
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x08U */
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x10U)
+    case OS_CORE_ID_4:
+      p_tbr = &osEE_isr1_db_instance_core4;
+    break;
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x10U */
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x40U)
+    case OS_CORE_ID_6:
+      p_tbr = &osEE_isr1_db_instance_core6;
+    break;
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x40U */
     default:
       p_tbr = NULL; /* This should never happens!!! */
     break;
@@ -121,11 +136,12 @@ OsEE_bool osEE_cpu_startos(void)
         } else
 #endif /* OSEE_HAS_SYSTEM_TIMER */
         if (p_tdb->hdb.isr2_src != OSEE_TC_SRC_INVALID) {
-          OsEE_reg const srn_priority_tmp =
-            OSEE_TC_SRN_PRIORITY(OSEE_ISR2_VIRT_TO_HW_PRIO(p_tdb->ready_prio));
-          OSEE_TC_SRC_REG(p_tdb->hdb.isr2_src) = OSEE_TC_SRN_ENABLE |
-            OSEE_TC_SRN_TYPE_OF_SERVICE(curr_core_id) |
-            srn_priority_tmp;
+          OsEE_prio const srn_priority_tmp =
+            (OsEE_prio)OSEE_TC_SRN_PRIORITY(
+              OSEE_ISR2_VIRT_TO_HW_PRIO(p_tdb->ready_prio)
+            );
+          osEE_tc_conf_src(curr_core_id, p_tdb->hdb.isr2_src,
+            srn_priority_tmp);
         } else {
           /* nothing to do, entry invalid */
         }
@@ -141,10 +157,11 @@ OsEE_bool osEE_cpu_startos(void)
  
     for (i = 0U; i  < isr1_max; ++i) {
       if ((*p_isr1_db->p_isr1_src_array)[i].isr1_src != OSEE_TC_SRC_INVALID) {
-        OSEE_TC_SRC_REG((*p_isr1_db->p_isr1_src_array)[i].isr1_src) =
-          OSEE_TC_SRN_ENABLE |
-          OSEE_TC_SRN_TYPE_OF_SERVICE(curr_core_id) |
+        OsEE_reg const srn_priority_tmp =
           OSEE_TC_SRN_PRIORITY((*p_isr1_db->p_isr1_src_array)[i].isr_prio);
+        osEE_tc_conf_src(curr_core_id,
+          (*p_isr1_db->p_isr1_src_array)[i].isr1_src, srn_priority_tmp);
+          
       }
     }
   }

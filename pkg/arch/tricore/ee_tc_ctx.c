@@ -57,9 +57,10 @@
  ******************************************************************************/
 
 #if (defined(__GNUC__))
-/* The following guarantee that the -fomit-frame-pointer switch is enabled,
-   preventing thet the compiler to mess up with the stack */
-#pragma GCC optimize ("-O3")
+/* The following prevent that the compiler mess up with the stack */
+#pragma GCC optimize ("-fomit-frame-pointer")
+/* The following prevent unwanted inline */
+#pragma GCC optimize ("-fno-inline-small-functions")
 #endif /* __GNUC__ */
 
 /* This function allocate a ERIKA's context on the stack. It's a real ALLOCA
@@ -184,7 +185,7 @@ FUNC(void, OS_CODE)
 
 /* WARNING: Because of the TriCore Context nature I cannot call the
             kernel_cb as I would have done in any other porting, but I have to
-            reimplement "osEE_scheduler_task_end" behaviour and
+            re-implement "osEE_scheduler_task_end" behavior and
             "osEE_change_context_from_task_end" */
 static FUNC(void, OS_CODE) OSEE_NEVER_INLINE
   osEE_tc_change_context_from_task_end
@@ -192,7 +193,7 @@ static FUNC(void, OS_CODE) OSEE_NEVER_INLINE
   P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST) p_to
 );
 
-FUNC(void, OS_CODE) OSEE_NEVER_INLINE
+static FUNC(void, OS_CODE) OSEE_NEVER_INLINE
   osEE_tc_change_context_from_isr2_end
 (
   P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST) p_to
@@ -265,7 +266,7 @@ FUNC(void, OS_CODE_NO_RETURN)
   }
 }
 
-FUNC(void, OS_CODE) OSEE_NEVER_INLINE
+static FUNC(void, OS_CODE) OSEE_NEVER_INLINE
   osEE_tc_change_context_from_isr2_end
 (
   P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST) p_to

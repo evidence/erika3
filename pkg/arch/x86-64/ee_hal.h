@@ -136,13 +136,18 @@ OSEE_STATIC_INLINE OsEE_core_id osEE_get_curr_core_id(void) {
 }
 
 /*==============================================================================
+                            Platform setup
+ =============================================================================*/
+void osEE_x86_64_calibrate_platform_tick_freq(void);
+
+/*==============================================================================
                             Interrupt management
  =============================================================================*/
 void osEE_x86_64_int_init(void); /*Initialize idt */
 void set_interrupt_handler(uint32_t source_id, OsEE_void_cb callback);
 
-/* Initialize the local apic*/
-void osEE_x86_64_int_controller_init(void);
+/* Initialize the interrupt controller (APIC, X2APIC, ...)*/
+int osEE_x86_64_int_controller_init(void);
 
 void call_int(unsigned int source_id);
 /**
@@ -183,17 +188,6 @@ void osEE_x86_64_ioapic_setup_irq_extended(OsEE_core_id core_id,
 /*==============================================================================
                                  Timer Support
  =============================================================================*/
-/* Check whether APIC supports one-shot operation using a TSC deadline value */
-OSEE_STATIC_INLINE OsEE_reg osEE_x86_64_apic_tsc_deadline(void)
-{
-    uint32_t ecx;
-
-    /* CPUID with EAX=1: 24th bit of ECX */
-    __asm__ volatile("cpuid" : "=c" (ecx) : "a" (1) : "rbx", "rdx", "memory");
-
-    return  (OsEE_reg)(!!(ecx & (1 << 24)));
-}
-
 /* Calibrate the timer tick frequency */
 extern void osEE_x86_64_set_timer_tick_freq(uint64_t tick_freq_hz);
 /* Initialize the one-shot timer with the interrupt source */
@@ -220,6 +214,46 @@ extern void osEE_x86_64_system_timer_handler(void);
 
 /* Define an ISR (category 2). Used only for client code. */
 #define ISR2(f) ISR1(f)
+
+/*==============================================================================
+ *                               MMIO R/W functions
+ =============================================================================*/
+
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
+  osEE_mmio_write8(OsEE_reg addr, uint8_t value)
+{
+  (*(uint8_t volatile *)addr) = value;
+}
+
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
+  osEE_mmio_write16(OsEE_reg addr, uint16_t value)
+{
+  (*(uint16_t volatile *)addr) = value;
+}
+
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
+  osEE_mmio_write32(OsEE_reg addr, uint32_t value)
+{
+  (*(uint32_t volatile *)addr) = value;
+}
+
+OSEE_STATIC_INLINE uint8_t OSEE_ALWAYS_INLINE
+  osEE_mmio_read8(OsEE_reg addr)
+{
+  return (*(uint8_t volatile *)addr);
+}
+
+OSEE_STATIC_INLINE uint16_t OSEE_ALWAYS_INLINE
+  osEE_mmio_read16(OsEE_reg addr)
+{
+  return (*(uint16_t volatile *)addr);
+}
+
+OSEE_STATIC_INLINE uint32_t OSEE_ALWAYS_INLINE
+  osEE_mmio_read32(OsEE_reg addr)
+{
+  return (*(uint32_t volatile *)addr);
+}
 
 #if (defined(__cplusplus))
 }

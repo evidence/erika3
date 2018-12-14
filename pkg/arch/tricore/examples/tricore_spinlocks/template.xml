@@ -43,9 +43,9 @@
   ###*E*###
   -->
 
-<evidence_example version="1" ID="tricore_stack_spinlocks">
+<evidence_example version="1" ID="tricore_spinlocks">
 
-  <category>TriCore</category>
+  <category>TriCore/AURIX 1G</category>
   <title>Spinlocks</title>
 
   <small_descr>

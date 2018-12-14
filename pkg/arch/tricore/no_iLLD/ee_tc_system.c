@@ -103,7 +103,13 @@ static void osEE_tc_stm_set_sr1_next_match(OsEE_reg usec);
     ((defined(OSEE_SYSTEM_TIMER_CORE1_DEVICE)) &&             \
       (OSEE_SYSTEM_TIMER_CORE1_DEVICE == OSEE_TC_STM_SR0)) || \
     ((defined(OSEE_SYSTEM_TIMER_CORE2_DEVICE)) &&             \
-      (OSEE_SYSTEM_TIMER_CORE2_DEVICE == OSEE_TC_STM_SR0))
+      (OSEE_SYSTEM_TIMER_CORE2_DEVICE == OSEE_TC_STM_SR0)) || \
+    ((defined(OSEE_SYSTEM_TIMER_CORE3_DEVICE)) &&             \
+      (OSEE_SYSTEM_TIMER_CORE3_DEVICE == OSEE_TC_STM_SR0)) || \
+    ((defined(OSEE_SYSTEM_TIMER_CORE4_DEVICE)) &&             \
+      (OSEE_SYSTEM_TIMER_CORE4_DEVICE == OSEE_TC_STM_SR0)) || \
+    ((defined(OSEE_SYSTEM_TIMER_CORE6_DEVICE)) &&             \
+      (OSEE_SYSTEM_TIMER_CORE6_DEVICE == OSEE_TC_STM_SR0))
 
 #define OSEE_TC_STM_SR0_STORAGE static
 static void osEE_tc_stm_set_sr0(OsEE_reg usec, OsEE_tc_isr_hw_prio intvec);
@@ -117,7 +123,13 @@ static void osEE_tc_stm_set_sr0_next_match(OsEE_reg usec);
     ((defined(OSEE_SYSTEM_TIMER_CORE1_DEVICE)) &&             \
       (OSEE_SYSTEM_TIMER_CORE1_DEVICE == OSEE_TC_STM_SR1)) || \
     ((defined(OSEE_SYSTEM_TIMER_CORE2_DEVICE)) &&             \
-      (OSEE_SYSTEM_TIMER_CORE2_DEVICE == OSEE_TC_STM_SR1))
+      (OSEE_SYSTEM_TIMER_CORE2_DEVICE == OSEE_TC_STM_SR1)) || \
+    ((defined(OSEE_SYSTEM_TIMER_CORE3_DEVICE)) &&             \
+      (OSEE_SYSTEM_TIMER_CORE3_DEVICE == OSEE_TC_STM_SR1)) || \
+    ((defined(OSEE_SYSTEM_TIMER_CORE4_DEVICE)) &&             \
+      (OSEE_SYSTEM_TIMER_CORE4_DEVICE == OSEE_TC_STM_SR1)) || \
+    ((defined(OSEE_SYSTEM_TIMER_CORE6_DEVICE)) &&             \
+      (OSEE_SYSTEM_TIMER_CORE6_DEVICE == OSEE_TC_STM_SR1))
 
 #define OSEE_TC_STM_SR1_STORAGE static
 static void osEE_tc_stm_set_sr1(OsEE_reg usec, OsEE_tc_isr_hw_prio intvec);
@@ -174,6 +186,24 @@ static void osEE_tc_stm_set_sr1_next_match(OsEE_reg usec);
 #error Unsupported Device for CORE2 as System Timer!
 #endif
 #endif /* OSEE_SYSTEM_TIMER_CORE2_DEVICE */
+#if (defined(OSEE_SYSTEM_TIMER_CORE3_DEVICE))
+#if (OSEE_SYSTEM_TIMER_CORE3_DEVICE != OSEE_TC_STM_SR0)  && \
+  (OSEE_SYSTEM_TIMER_CORE3_DEVICE != OSEE_TC_STM_SR1)
+#error Unsupported Device for CORE3 as System Timer!
+#endif
+#endif /* OSEE_SYSTEM_TIMER_CORE3_DEVICE */
+#if (defined(OSEE_SYSTEM_TIMER_CORE4_DEVICE))
+#if (OSEE_SYSTEM_TIMER_CORE4_DEVICE != OSEE_TC_STM_SR0)  && \
+  (OSEE_SYSTEM_TIMER_CORE4_DEVICE != OSEE_TC_STM_SR1)
+#error Unsupported Device for CORE4 as System Timer!
+#endif
+#endif /* OSEE_SYSTEM_TIMER_CORE4_DEVICE */
+#if (defined(OSEE_SYSTEM_TIMER_CORE6_DEVICE))
+#if (OSEE_SYSTEM_TIMER_CORE6_DEVICE != OSEE_TC_STM_SR0)  && \
+  (OSEE_SYSTEM_TIMER_CORE6_DEVICE != OSEE_TC_STM_SR1)
+#error Unsupported Device for CORE6 as System Timer!
+#endif
+#endif /* OSEE_SYSTEM_TIMER_CORE6_DEVICE */
 
 void osEE_tricore_system_timer_handler(void) {
   OsEE_CDB * p_cdb;
@@ -183,7 +213,7 @@ void osEE_tricore_system_timer_handler(void) {
 #elif (OSEE_SYSTEM_TIMER_DEVICE == OSEE_TC_STM_SR1)
   osEE_tc_stm_set_sr1_next_match(OSTICKDURATION / 1000U);
 #endif /* OSEE_SYSTEM_TIMER_DEVICE */
-#else
+#else /* OSEE_SINGLECORE */
   switch (osEE_get_curr_core_id()) {
 #if (defined(OSEE_SYSTEM_TIMER_CORE0_DEVICE))
     case OS_CORE_ID_MASTER:
@@ -212,10 +242,36 @@ void osEE_tricore_system_timer_handler(void) {
 #endif
     break;
 #endif /* OSEE_SYSTEM_TIMER_CORE2_DEVICE */
-    /* The system may handle only up to three CPUs */
+#if (defined(OSEE_SYSTEM_TIMER_CORE3_DEVICE))
+    case OS_CORE_ID_3:
+#if (OSEE_SYSTEM_TIMER_CORE3_DEVICE == OSEE_TC_STM_SR0)
+      osEE_tc_stm_set_sr0_next_match(OSTICKDURATION_CORE3 / 1000U);
+#elif (OSEE_SYSTEM_TIMER_CORE3_DEVICE == OSEE_TC_STM_SR1)
+      osEE_tc_stm_set_sr1_next_match(OSTICKDURATION_CORE3 / 1000U);
+#endif
+    break;
+#endif /* OSEE_SYSTEM_TIMER_CORE3_DEVICE */
+#if (defined(OSEE_SYSTEM_TIMER_CORE4_DEVICE))
+    case OS_CORE_ID_4:
+#if (OSEE_SYSTEM_TIMER_CORE4_DEVICE == OSEE_TC_STM_SR0)
+      osEE_tc_stm_set_sr0_next_match(OSTICKDURATION_CORE4 / 1000U);
+#elif (OSEE_SYSTEM_TIMER_CORE4_DEVICE == OSEE_TC_STM_SR1)
+      osEE_tc_stm_set_sr1_next_match(OSTICKDURATION_CORE4 / 1000U);
+#endif
+    break;
+#endif /* OSEE_SYSTEM_TIMER_CORE4_DEVICE */
+#if (defined(OSEE_SYSTEM_TIMER_CORE_DEVICE))
+    case OS_CORE_ID_6:
+#if (OSEE_SYSTEM_TIMER_CORE6_DEVICE == OSEE_TC_STM_SR0)
+      osEE_tc_stm_set_sr0_next_match(OSTICKDURATION_CORE6 / 1000U);
+#elif (OSEE_SYSTEM_TIMER_CORE6_DEVICE == OSEE_TC_STM_SR1)
+      osEE_tc_stm_set_sr1_next_match(OSTICKDURATION_CORE6 / 1000U);
+#endif
+    break;
+#endif /* OSEE_SYSTEM_TIMER_CORE6_DEVICE */
     case OS_CORE_ID_ARR_SIZE:
     default:
-      /* The system may handle only up to three CPUs */
+      /* All possible timer masks have been handled above */
       break;
   }
 #endif /* OSEE_SINGLECORE */
@@ -228,17 +284,20 @@ void osEE_tricore_system_timer_handler(void) {
 void osEE_tc_initialize_system_timer(OsEE_TDB * p_tdb) {
   TaskPrio const isr2_prio = OSEE_ISR2_VIRT_TO_HW_PRIO(p_tdb->ready_prio);
 #if (defined(OSEE_SINGLECORE))
+#if (defined(OSEE_DEBUG))
+  osEE_tc_stm_ocds_suspend_control(0U);
+#endif  /* OSEE_DEBUG */
 #if (OSEE_SYSTEM_TIMER_DEVICE == OSEE_TC_STM_SR0)
   osEE_tc_stm_set_sr0(OSTICKDURATION / 1000U, isr2_prio);
 #elif (OSEE_SYSTEM_TIMER_DEVICE == OSEE_TC_STM_SR1)
   osEE_tc_stm_set_sr1(OSTICKDURATION / 1000U, isr2_prio);
 #endif
-#else
+#else /* OSEE_SINGLECORE */
   switch (osEE_get_curr_core_id()) {
 #if (defined(OSEE_SYSTEM_TIMER_CORE0_DEVICE))
     case OS_CORE_ID_MASTER:
 #if (defined(OSEE_DEBUG))
-      osEE_tc_stm_ocds_suspend_control(OS_CORE_ID_MASTER);
+      osEE_tc_stm_ocds_suspend_control(0U);
 #endif /* OSEE_DEBUG */
 #if (OSEE_SYSTEM_TIMER_CORE0_DEVICE == OSEE_TC_STM_SR0)
       osEE_tc_stm_set_sr0(OSTICKDURATION_CORE0 / 1000U, isr2_prio);
@@ -250,7 +309,7 @@ void osEE_tc_initialize_system_timer(OsEE_TDB * p_tdb) {
 #if (defined(OSEE_SYSTEM_TIMER_CORE1_DEVICE))
     case OS_CORE_ID_1:
 #if (defined(OSEE_DEBUG))
-      osEE_tc_stm_ocds_suspend_control(OS_CORE_ID_1);
+      osEE_tc_stm_ocds_suspend_control(1U);
 #endif /* OSEE_DEBUG */
 #if (OSEE_SYSTEM_TIMER_CORE1_DEVICE == OSEE_TC_STM_SR0)
       osEE_tc_stm_set_sr0(OSTICKDURATION_CORE1 / 1000U, isr2_prio);
@@ -262,7 +321,7 @@ void osEE_tc_initialize_system_timer(OsEE_TDB * p_tdb) {
 #if (defined(OSEE_SYSTEM_TIMER_CORE2_DEVICE))
     case OS_CORE_ID_2:
 #if (defined(OSEE_DEBUG))
-      osEE_tc_stm_ocds_suspend_control(OS_CORE_ID_2);
+      osEE_tc_stm_ocds_suspend_control(2U);
 #endif /* OSEE_DEBUG */
 #if (OSEE_SYSTEM_TIMER_CORE2_DEVICE == OSEE_TC_STM_SR0)
       osEE_tc_stm_set_sr0(OSTICKDURATION_CORE2 / 1000U, isr2_prio);
@@ -271,10 +330,45 @@ void osEE_tc_initialize_system_timer(OsEE_TDB * p_tdb) {
 #endif
     break;
 #endif /* OSEE_SYSTEM_TIMER_CORE2_DEVICE */
-    /* The system may handle only up to three CPUs */
+#if (defined(OSEE_SYSTEM_TIMER_CORE3_DEVICE))
+    case OS_CORE_ID_3:
+#if (defined(OSEE_DEBUG))
+      osEE_tc_stm_ocds_suspend_control(3U);
+#endif /* OSEE_DEBUG */
+#if (OSEE_SYSTEM_TIMER_CORE3_DEVICE == OSEE_TC_STM_SR0)
+      osEE_tc_stm_set_sr0(OSTICKDURATION_CORE3 / 1000U, isr2_prio);
+#elif (OSEE_SYSTEM_TIMER_CORE3_DEVICE == OSEE_TC_STM_SR1)
+      osEE_tc_stm_set_sr1(OSTICKDURATION_CORE3 / 1000U, isr2_prio);
+#endif
+    break;
+#endif /* OSEE_SYSTEM_TIMER_CORE3_DEVICE */
+#if (defined(OSEE_SYSTEM_TIMER_CORE4_DEVICE))
+    case OS_CORE_ID_4:
+#if (defined(OSEE_DEBUG))
+      osEE_tc_stm_ocds_suspend_control(4U);
+#endif /* OSEE_DEBUG */
+#if (OSEE_SYSTEM_TIMER_CORE4_DEVICE == OSEE_TC_STM_SR0)
+      osEE_tc_stm_set_sr0(OSTICKDURATION_CORE4 / 1000U, isr2_prio);
+#elif (OSEE_SYSTEM_TIMER_CORE4_DEVICE == OSEE_TC_STM_SR1)
+      osEE_tc_stm_set_sr1(OSTICKDURATION_CORE4 / 1000U, isr2_prio);
+#endif
+    break;
+#endif /* OSEE_SYSTEM_TIMER_CORE4_DEVICE */
+#if (defined(OSEE_SYSTEM_TIMER_CORE6_DEVICE))
+    case OS_CORE_ID_6:
+#if (defined(OSEE_DEBUG))
+      osEE_tc_stm_ocds_suspend_control(5U);
+#endif /* OSEE_DEBUG */
+#if (OSEE_SYSTEM_TIMER_CORE6_DEVICE == OSEE_TC_STM_SR0)
+      osEE_tc_stm_set_sr0(OSTICKDURATION_CORE6 / 1000U, isr2_prio);
+#elif (OSEE_SYSTEM_TIMER_CORE6_DEVICE == OSEE_TC_STM_SR1)
+      osEE_tc_stm_set_sr1(OSTICKDURATION_CORE6 / 1000U, isr2_prio);
+#endif
+    break;
+#endif /* OSEE_SYSTEM_TIMER_CORE6_DEVICE */
     case OS_CORE_ID_ARR_SIZE:
     default:
-      /* The system may handle only up to three CPUs */
+      /* All possible SRC masks have been handled above */
       break;
 
   }
@@ -283,6 +377,7 @@ void osEE_tc_initialize_system_timer(OsEE_TDB * p_tdb) {
 
 #endif /* OSEE_HAS_SYSTEM_TIMER */
 
+#if (!defined(OSEE_TC_2G))
 /******************************************************************************
                           SCU Clock Support
  *****************************************************************************/
@@ -299,8 +394,7 @@ void osEE_tc_initialize_system_timer(OsEE_TDB * p_tdb) {
 #define OSEE_TC_N_MIN       (1U)
 #define OSEE_TC_DEV_ALLOWED (2U)
 
-#if	(!defined(OSEE_BYPASS_CLOCK_CONFIGURATION))
-void osEE_tc_conf_clock(OsEE_reg fpll) {
+void osEE_tc_set_pll_fsource(OsEE_reg fpll) {
   /*
    * Dynamic PLL calculation Alg:
    *
@@ -327,11 +421,11 @@ void osEE_tc_conf_clock(OsEE_reg fpll) {
 
   for (
     p = OSEE_TC_P_MAX;
-    ((p >= OSEE_TC_P_MIN ) && (fPllError != 0U));
+    ((p >= OSEE_TC_P_MIN ) && (fPllError != 0ULL));
     --p
   )
   {
-    fRef = (OSEE_TC_BOARD_FOSC / p);
+    fRef = ((uint64_t)OSEE_TC_BOARD_FOSC / p);
 
     if ((fRef >= OSEE_TC_FREF_MIN) && (fRef <= OSEE_TC_FREF_MAX))
     {
@@ -401,7 +495,7 @@ void osEE_tc_conf_clock(OsEE_reg fpll) {
     OSEE_TC_SCU_PLLCON0.bits.pdiv = (uint8_t)(bestP - 1U);
     OSEE_TC_SCU_PLLCON0.bits.ndiv = (uint8_t)(bestN - 1U);
 
-    /* Power down VCO Normal Behaviour */
+    /* Power down VCO Normal Behavior */
     OSEE_TC_SCU_PLLCON0.bits.vcopwd = 0U;
 
     /***** Configure PLL normal mode. *****/
@@ -434,11 +528,10 @@ void osEE_tc_conf_clock(OsEE_reg fpll) {
   }
 
 }
-#endif	/* !OSEE_BYPASS_CLOCK_CONFIGURATION */
 
-OsEE_reg osEE_tc_get_clock(void) {
-  /*  Clock Frequency */
-  OsEE_reg fclock;
+OsEE_reg osEE_tc_get_fsource(void) {
+  /*  fSOURCE Frequency */
+  OsEE_reg fsource;
 
   if (OSEE_TC_SCU_CCUCON0.bits.clksel != 0U) {
     /* PLL */
@@ -448,13 +541,13 @@ OsEE_reg osEE_tc_get_clock(void) {
     if (OSEE_TC_SCU_PLLSTAT.bits.vcobyst != 0U)
     {
       k1 = (OsEE_reg)OSEE_TC_SCU_PLLCON1.bits.k1div + 1U;
-      fclock = OSEE_TC_BOARD_FOSC / k1;
+      fsource = OSEE_TC_BOARD_FOSC / k1;
     } else {
       /* Free running mode */
       if (OSEE_TC_SCU_PLLSTAT.bits.findis != 0U)
       {
         k2 = (OsEE_reg)OSEE_TC_SCU_PLLCON1.bits.k2div + 1U;
-        fclock = OSEE_TC_BOARD_FOSC / k2;
+        fsource = OSEE_TC_BOARD_FOSC / k2;
       } else {
         /* PLL Normal mode */
         k2 = (OsEE_reg)OSEE_TC_SCU_PLLCON1.bits.k2div + 1U;
@@ -462,15 +555,66 @@ OsEE_reg osEE_tc_get_clock(void) {
         n = (OsEE_reg)OSEE_TC_SCU_PLLCON0.bits.ndiv + 1U;
 
         /* cpu clock value fclk = (fosc * n)/(P * k2) */
-        fclock = n * (OSEE_TC_BOARD_FOSC / (p * k2));
+        fsource = n * (OSEE_TC_BOARD_FOSC / (p * k2));
       }
     }
   } else {
-    /* Backup clock (EVR) */
-    fclock = OSEE_TC_EVR_OSC_FREQUENCY;
+    /* Backup Oscillator (EVR) */
+    fsource = OSEE_TC_EVR_OSC_FREQUENCY;
   }
-  return fclock;
+  return fsource;
 }
+#else
+
+static OsEE_reg osEE_tc_get_osc_freq(void) {
+  OsEE_reg fosc;
+  OsEE_reg syspllcon0_insel = OSEE_TC_SCU_SYSPLLCON0.bits.insel;
+
+  switch (syspllcon0_insel) {
+    case OSEE_TC_SCU_SYSPLLCON_INSEL_BACKUP:
+      fosc = OSEE_TC_EVR_OSC_FREQUENCY;
+    break;
+    case OSEE_TC_SCU_SYSPLLCON_INSEL_FOSC0:
+      fosc = OSEE_TC_BOARD_FOSC;
+    break;
+    case OSEE_TC_SCU_SYSPLLCON_INSEL_SYSCLK:
+      /* TODO: Find real value of SYSCLK pin frequency */
+      fosc = OSEE_TC_BOARD_FOSC;
+    break;
+    default:
+      /* Reserved value, return an invalid value */
+      fosc = 0U;
+    break;
+  }
+  return fosc;
+}
+
+static OsEE_reg osEE_tc_get_pll_freq(void) {
+  OsEE_reg            const fosc          = osEE_tc_get_osc_freq();
+  OsEE_tc_SYSPLLCON0  const sys_pll_con0  = OSEE_TC_SCU_SYSPLLCON0;
+  OsEE_tc_SYSPLLCON1  const sys_pll_con1  = OSEE_TC_SCU_SYSPLLCON1;
+
+  OsEE_reg  const fpll =
+    (fosc * ((OsEE_reg)sys_pll_con0.bits.ndiv + 1U)) /
+      (((OsEE_reg)sys_pll_con1.bits.k2div + 1U) *
+        ((OsEE_reg)sys_pll_con0.bits.pdiv + 1U));
+
+  return fpll;
+}
+
+OsEE_reg osEE_tc_get_fsource(void) {
+  /*  fSOURCE Frequency */
+  OsEE_reg fsource;
+  if (OSEE_TC_SCU_CCUCON0.bits.clksel != 0U) {
+    fsource = osEE_tc_get_pll_freq();
+  } else {
+    /* Backup Oscillator (EVR) */
+    fsource = OSEE_TC_EVR_OSC_FREQUENCY;
+  }
+
+  return fsource;
+}
+#endif /* !OSEE_TC_2G */
 
 /******************************************************************************
                         STM Support
@@ -497,10 +641,10 @@ void osEE_tc_stm_set_clockpersec(void)
   /* I don't know where is declared */
   extern unsigned long long setfoschz ( unsigned long long );
 #endif /* __TASKING__ */
-  /* Clock Frequency */
-  OsEE_reg const fclock = osEE_tc_get_clock();
-  /* Standard Timer Module period */
-  OsEE_reg const fstm   = fclock / OSEE_TC_SCU_CCUCON1.bits.stmdiv;
+  /* fSOURCE Frequency */
+  OsEE_reg const fsource  = osEE_tc_get_fsource();
+  /* Standard Timer Module period rounded */
+  OsEE_reg const fstm     = (fsource + 1U) / OSEE_SCU_HW_FSTM_DIV;
 
   /* Set Global variable with freq in Khz value */
   osEE_tc_stm_freq_khz = fstm / OSEE_KILO;
@@ -522,7 +666,12 @@ OSEE_TC_STM_SR0_STORAGE void osEE_tc_stm_set_sr0(OsEE_reg usec,
   OsEE_reg          us_in_ticks;
   uint8_t           size_of_compare;
   CoreIdType const  core_id = osEE_get_curr_core_id();
-
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x40U)
+  OsEE_reg   const  stm_id  = (core_id != OS_CORE_ID_6)? (OsEE_reg)core_id:
+    5U;
+#else
+  OsEE_reg   const  stm_id  = (OsEE_reg)core_id;
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x40U */
 /* Get Interrupt period in ticks */
   us_in_ticks = osEE_tc_stm_us_ticks(usec);
 /* Adjust the size of the mask */
@@ -530,28 +679,25 @@ OSEE_TC_STM_SR0_STORAGE void osEE_tc_stm_set_sr0(OsEE_reg usec,
 
 /*  Set Compare Value Register (actual value + increment,
     I don't need to handle wrap around) */
-  OSEE_TC_STM_REG(core_id, OSEE_TC_STM_CMP0_OFF) =
-    us_in_ticks + osEE_tc_stm_get_time_lower_word(core_id);
+  OSEE_TC_STM_REG(stm_id, OSEE_TC_STM_CMP0_OFF) =
+    us_in_ticks + osEE_tc_stm_get_time_lower_word(stm_id);
 
   if (intvec != 0U) {
-    OSEE_TC_STM_CMCON(core_id).bits.mstart0 = 0U;
-    OSEE_TC_STM_CMCON(core_id).bits.msize0  = size_of_compare;
+    OSEE_TC_STM_CMCON(stm_id).bits.mstart0  = 0U;
+    OSEE_TC_STM_CMCON(stm_id).bits.msize0   = size_of_compare;
 /* Tie STM Service Request 0 with Compare Register 0 */
-    OSEE_TC_STM_ICR(core_id).bits.cmp0os    = 0U;
+    OSEE_TC_STM_ICR(stm_id).bits.cmp0os     = 0U;
 /* Enable STM Service Request Source */
-    OSEE_TC_STM_ICR(core_id).bits.cmp0en    = 1U;
+    OSEE_TC_STM_ICR(stm_id).bits.cmp0en     = 1U;
+
 /*
  *  STM service Request configuration
- *  [0..7] SRPN = INTERRUPT_NR
- *  [10] Service Request enable
- *  [11..12] Type Of Service (means which CPU will handle it)
  */
-    OSEE_TC_STM_SRC_REG(core_id, 0U) =  OSEE_TC_SRN_TYPE_OF_SERVICE(core_id) |
-      OSEE_TC_SRN_ENABLE | OSEE_TC_SRN_PRIORITY(intvec);
+    osEE_tc_conf_src(core_id, OSEE_TC_STM_SRC_OFFSET(stm_id, 0U), intvec);
   } else {
 /* Disable STM Service Request Source */
-    OSEE_TC_STM_ICR(core_id).bits.cmp0en  = 0U;
-    OSEE_TC_STM_SRC_REG(core_id, 0U)      = 0U;
+    OSEE_TC_STM_ICR(stm_id).bits.cmp0en                 = 0U;
+    OSEE_TC_SRC_REG(OSEE_TC_STM_SRC_OFFSET(stm_id, 0U)) = 0U;
   }
 }
 
@@ -560,11 +706,17 @@ OSEE_TC_STM_SR0_STORAGE void osEE_tc_stm_set_sr0_next_match(OsEE_reg usec)
 /* Evaluate next compare value (previous one + increment,
    I don't need to handle wrap around) */
   CoreIdType const  core_id = osEE_get_curr_core_id();
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x40U)
+  OsEE_reg   const  stm_id  = (core_id != OS_CORE_ID_6)? (OsEE_reg)core_id:
+    5U;
+#else
+  OsEE_reg   const  stm_id  = (OsEE_reg)core_id;
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x40U */
 /* CMP0IRR bit 0 => 0x1 | CMP0IRS bit 1 => 0x2 */
-  #if 0
-  OSEE_TC_STM_REG(core_id, OSEE_TC_STM_ISCR_OFF) = 0x1U;
-  #endif
-  OSEE_TC_STM_REG(core_id, OSEE_TC_STM_CMP0_OFF) += osEE_tc_stm_us_ticks(usec);
+#if 0
+  OSEE_TC_STM_REG(stm_id, OSEE_TC_STM_ISCR_OFF) = 0x1U;
+#endif
+  OSEE_TC_STM_REG(stm_id, OSEE_TC_STM_CMP0_OFF) += osEE_tc_stm_us_ticks(usec);
 }
 
 OSEE_TC_STM_SR1_STORAGE void osEE_tc_stm_set_sr1(OsEE_reg usec,
@@ -573,6 +725,12 @@ OSEE_TC_STM_SR1_STORAGE void osEE_tc_stm_set_sr1(OsEE_reg usec,
   OsEE_reg          us_in_ticks;
   uint8_t           size_of_compare;
   CoreIdType const  core_id = osEE_get_curr_core_id();
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x40U)
+  OsEE_reg   const  stm_id  = (core_id != OS_CORE_ID_6)? (OsEE_reg)core_id:
+    5U;
+#else
+  OsEE_reg   const  stm_id  = (OsEE_reg)core_id;
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x40U */
 
 /* Get Interrupt period in ticks */
   us_in_ticks = osEE_tc_stm_us_ticks(usec);
@@ -581,50 +739,58 @@ OSEE_TC_STM_SR1_STORAGE void osEE_tc_stm_set_sr1(OsEE_reg usec,
 
 /*  Set Compare Value Register (actual value + increment,
     I don't need to handle wrap around) */
-  OSEE_TC_STM_REG(core_id, OSEE_TC_STM_CMP1_OFF) =
-    us_in_ticks + osEE_tc_stm_get_time_lower_word(core_id);
+  OSEE_TC_STM_REG(stm_id, OSEE_TC_STM_CMP1_OFF) =
+    us_in_ticks + osEE_tc_stm_get_time_lower_word(stm_id);
 
   if (intvec != 0U) {
-    OSEE_TC_STM_CMCON(core_id).bits.mstart1 = 0U;
-    OSEE_TC_STM_CMCON(core_id).bits.msize1  = size_of_compare;
+    OSEE_TC_STM_CMCON(stm_id).bits.mstart1  = 0U;
+    OSEE_TC_STM_CMCON(stm_id).bits.msize1   = size_of_compare;
 /* Tie STM Service Request 1 with Compare Register 1 */
-    OSEE_TC_STM_ICR(core_id).bits.cmp1os    = 1U;
+    OSEE_TC_STM_ICR(stm_id).bits.cmp1os     = 1U;
 /* Enable STM Service Request Source */
-    OSEE_TC_STM_ICR(core_id).bits.cmp1en    = 1U;
+    OSEE_TC_STM_ICR(stm_id).bits.cmp1en     = 1U;
 /*
  *  STM service Request configuration
- *  [0..7] SRPN = INTERRUPT_NR
- *  [10] Service Request enable
- *  [11..12] Type Of Service (means which CPU will handle it)
  */
-    OSEE_TC_STM_SRC_REG(core_id, 1U) =  OSEE_TC_SRN_TYPE_OF_SERVICE(core_id) |
-      OSEE_TC_SRN_ENABLE | OSEE_TC_SRN_PRIORITY(intvec);
+    osEE_tc_conf_src(core_id, OSEE_TC_STM_SRC_OFFSET(stm_id, 1U), intvec);
   } else {
 /* Disable STM Service Request Source */
-    OSEE_TC_STM_ICR(core_id).bits.cmp1en  = 0U;
-    OSEE_TC_STM_SRC_REG(core_id, 1U)      = 0U;
+    OSEE_TC_STM_ICR(stm_id).bits.cmp1en                 = 0U;
+    OSEE_TC_SRC_REG(OSEE_TC_STM_SRC_OFFSET(stm_id, 1U)) = 0U;
   }
 }
 
 OSEE_TC_STM_SR1_STORAGE void osEE_tc_stm_set_sr1_next_match(OsEE_reg usec)
 {
   CoreIdType const  core_id = osEE_get_curr_core_id();
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x40U)
+  OsEE_reg   const  stm_id  = (core_id != OS_CORE_ID_6)? (OsEE_reg)core_id:
+    5U;
+#else
+  OsEE_reg   const  stm_id  = (OsEE_reg)core_id;
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x40U */
 /* CMP1IRR bit 2 => 0x4 | CMP1IRS bit 3 => 0x8 */
-  #if 0
-  OSEE_TC_STM_REG(core_id, OSEE_TC_STM_ISCR_OFF) = 0x4U;
-  #endif
-  OSEE_TC_STM_REG(core_id, OSEE_TC_STM_CMP1_OFF) += osEE_tc_stm_us_ticks(usec);
+#if 0
+  OSEE_TC_STM_REG(stm_id, OSEE_TC_STM_ISCR_OFF) = 0x4U;
+#endif
+  OSEE_TC_STM_REG(stm_id, OSEE_TC_STM_CMP1_OFF) += osEE_tc_stm_us_ticks(usec);
 }
 
 void osEE_tc_delay(OsEE_reg usec)
 {
   CoreIdType  const core_id = osEE_get_curr_core_id();
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x40U)
+  OsEE_reg   const  stm_id  = (core_id != OS_CORE_ID_6)? (OsEE_reg)core_id:
+    5U;
+#else
+  OsEE_reg   const  stm_id  = (OsEE_reg)core_id;
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x40U */
   /* Read Start Point */
-  OsEE_reg    const start = osEE_tc_stm_get_time_lower_word(core_id);
+  OsEE_reg    const start = osEE_tc_stm_get_time_lower_word(stm_id);
   /* Evaluate End Point */
   OsEE_reg    const ticks = osEE_tc_stm_us_ticks(usec);
 
-  while (ticks > (osEE_tc_stm_get_time_lower_word(core_id) - start)) {
+  while (ticks > (osEE_tc_stm_get_time_lower_word(stm_id) - start)) {
     ; /* Wait */
   }
 }

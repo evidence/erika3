@@ -56,6 +56,7 @@
 #define OSEE_PCI_BAR3_32             0x1C
 #define OSEE_PCI_BAR4_32             0x20
 #define OSEE_PCI_BAR5_32             0x24
+#define OSEE_PCI_BAR_64BIT	     0x4
 
 #define OSEE_PCI_COMMAND             0x04
 #define OSEE_PCI_COMMAND_MASTER      0x04
@@ -65,6 +66,19 @@
 #define OSEE_PCI_CFG_VENDOR          0x00
 #define OSEE_PCI_CFG_DEVICE          0x02
 
+/* Capability and interrupt setting */
+#define OSEE_PCI_CFG_CAP_PTR         0x034
+#define OSEE_PCI_CFG_STATUS          0x06
+#define OSEE_PCI_STS_CAPS           (1 << 4)
+
+#define OSEE_PCI_CAP_MSI             0x05
+#define OSEE_PCI_CAP_MSIX            0x11
+
+#define OSEE_PCI_MSIX_CTRL_ENABLE    0x8000
+#define OSEE_PCI_MSIX_CTRL_FMASK     0x4000
+
+
+
 int osEE_pci_find_device(uint16_t vendor, uint16_t device,
 			 uint16_t start_bdf, uint16_t *rbdf);
 
@@ -73,5 +87,10 @@ uint32_t osEE_pci_read_config(uint16_t bdf, unsigned int addr,
 
 void osEE_pci_write_config(uint16_t bdf, unsigned int addr,
 			   uint32_t value, unsigned int size);
+
+int osEE_pci_find_cap(uint16_t bdf, uint16_t capability);
+
+void osEE_pci_msix_set_vector(uint16_t bdf, unsigned int vector,
+		uint32_t index);
 
 #endif /* EE_PCI_H */

@@ -42,12 +42,6 @@
 /** \file   ee_x86_64_tsc.c
  *  \brief  Timestamp Counter
  *
- *  The Timestamp Counter is a 64-bit internal register which is present in
- *  all Intel processors after the Pentium.
- *  It stores the number of cycles executed by the CPU after the latest reset.
- *  The time-stamp counter can be read by software using the RDTSC instruction.
- *  Note that The APIC timer can be set to the TSC-deadline mode.
- *
  *  \author  Ida Savino
  *  \date    2018
  */
@@ -62,33 +56,12 @@ static uint64_t tsc_freq;
 static uint64_t tsc_overflow;
 static uint64_t tsc_overflows, tsc_last;
 
-OsEE_reg osEE_x86_64_rdtsc(void)
-{
-#if (defined(__x86_64__))
-	uint32_t lo, hi;
-
-	__asm__ volatile("rdtsc" : "=a" (lo), "=d" (hi));
-	__asm__ volatile("mfence" : : : "memory");
-
-	return (uint64_t)lo | (((uint64_t)hi) << 32U);
-#else
-	uint64_t v;
-
-	__asm__ volatile("rdtsc" : "=A" (v));
-	__asm__ volatile("mfence" : : : "memory");
-
-	return v;
-#endif
-}
 void osEE_x86_64_tsc_init(uint64_t tsc_freq_hz)
 {
-	if (tsc_freq_hz) {
-		tsc_supported  = osEE_x86_64_tsc();
+	tsc_supported = (tsc_freq_hz ? osEE_x86_64_tsc() : 0);
+	if (tsc_supported) {
 		tsc_freq = tsc_freq_hz;
 		tsc_overflow = (0x100000000L * OSEE_GIGA) / tsc_freq;
-	} else {
-		/* tsc_freq_hz = 0 */
-		tsc_supported  = 0;
 	}
 }
 
@@ -97,7 +70,8 @@ uint64_t osEE_x86_64_tsc_read(void)
 	uint64_t tmr = 0;
 
 	if (tsc_supported) {
-		tmr = ((osEE_x86_64_rdtsc() & 0xffffffffLL) * OSEE_GIGA) / tsc_freq;
+		tmr = ((osEE_x86_64_rdtsc() & 0xffffffffLL) * OSEE_GIGA)
+		      / tsc_freq;
 		if (tmr < tsc_last)
 			tsc_overflows += tsc_overflow;
 		tsc_last = tmr;
@@ -106,8 +80,3 @@ uint64_t osEE_x86_64_tsc_read(void)
 
 	return tmr;
 }
-
-
-
-
-

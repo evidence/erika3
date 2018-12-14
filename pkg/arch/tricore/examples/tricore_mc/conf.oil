@@ -42,12 +42,11 @@
 CPU test_application {
 
   OS EE {
+    /* EE_OPT = "OS_EE_VERBOSE"; */
     EE_OPT = "OSEE_DEBUG";
     EE_OPT = "OSEE_ASSERT";
     EE_OPT = "OS_EE_APPL_BUILD_DEBUG";
     EE_OPT = "OS_EE_BUILD_DEBUG";
-
-    //SPINLOCKS = QUEUED;
 
     CPU_DATA = TRICORE {
       ID = 0x0;
@@ -73,8 +72,8 @@ CPU test_application {
     };
 
     MCU_DATA = TC27X {
-      DERIVATIVE = "tc275tf";
-      REVISION = "D";
+      DERIVATIVE = "tc277tf";
+      REVISION = "DC";
     };
 
     STATUS = EXTENDED;

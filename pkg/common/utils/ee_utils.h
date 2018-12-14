@@ -289,7 +289,7 @@ extern "C" {
 /** \brief Utility macro that convert an amount of ticks in equivalent ns
            given a frequency */
 #define OSEE_TICKS_TO_NANO(TICKS, REF_FREQ_HZ)  \
-  (OSEE_TICKS_TO_MICRO((TICKS), (REF_FREQ_HZ)) * OSEE_KILO)
+  (OSEE_TICKS_TO_MICRO((TICKS), ((REF_FREQ_HZ) / OSEE_KILO)))
 #endif /* !OSEE_TICKS_TO_NANO */
 
 #if (defined(__cplusplus))

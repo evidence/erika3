@@ -50,7 +50,7 @@
 
 #if (!defined(OSEE_SINGLECORE))
 void osEE_hal_sync_barrier(OsEE_barrier * p_bar,
-  OsEE_reg volatile * p_wait_mask, OsEE_kernel_cb p_synch_cb)
+  OsEE_reg const volatile * p_wait_mask, OsEE_kernel_cb p_synch_cb)
 {
   CoreMaskType const exit_mask  = (0xFFFFFFFFU ^
     (((CoreMaskType)0x1U << OS_CORE_ID_ARR_SIZE) - 1U));
@@ -89,6 +89,93 @@ void osEE_hal_sync_barrier(OsEE_barrier * p_bar,
 
     /* Try to reset the barrier */
     (void)osEE_tc_cmpswapw(&p_bar->value, 0U, all_exited);
+  }
+}
+
+OsEE_CDB * osEE_get_core(CoreIdType core_id) {
+  OsEE_CDB * p_cdb;
+  switch (core_id) {
+    case OS_CORE_ID_0:
+      p_cdb = &osEE_cdb_var_core0;
+    break;
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x02U)
+    case OS_CORE_ID_1:
+      p_cdb = &osEE_cdb_var_core1;
+    break;
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x02U */
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x04U)
+    case OS_CORE_ID_2:
+      p_cdb = &osEE_cdb_var_core2;
+    break;
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x04U */
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x08U)
+    case OS_CORE_ID_3:
+      p_cdb = &osEE_cdb_var_core3;
+    break;
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x08U */
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x10U)
+    case OS_CORE_ID_4:
+      p_cdb = &osEE_cdb_var_core4;
+    break;
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x10U */
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x40U)
+    case OS_CORE_ID_6:
+      p_cdb = &osEE_cdb_var_core6;
+    break;
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x40U */
+    default:
+      /* This can happen when we cycle on cores */
+      p_cdb = NULL;
+    break;
+  }
+
+  return p_cdb;
+}
+
+void osEE_hal_start_core(CoreIdType core_id) {
+  switch (core_id) {
+    case OS_CORE_ID_0:
+    /* Nothing to do in this case */
+    break;
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x02U)
+    case OS_CORE_ID_1:
+      OSEE_TC_CORE_PC(OS_CORE_ID_1).reg = (uint32_t)OSEE_CORE1_START_ADDR;
+    break;
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x02U */
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x04U)
+    case OS_CORE_ID_2:
+      OSEE_TC_CORE_PC(OS_CORE_ID_2).reg = (uint32_t)OSEE_CORE2_START_ADDR;
+    break;
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x04U */
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x08U)
+    case OS_CORE_ID_3:
+      OSEE_TC_CORE_PC(OS_CORE_ID_3).reg = (uint32_t)OSEE_CORE3_START_ADDR;
+    break;
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x08U */
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x10U)
+    case OS_CORE_ID_4:
+      OSEE_TC_CORE_PC(OS_CORE_ID_4).reg = (uint32_t)OSEE_CORE4_START_ADDR;
+    break;
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x10U */
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x40U)
+    case OS_CORE_ID_6:
+      OSEE_TC_CORE_PC(OS_CORE_ID_6).reg = (uint32_t)OSEE_CORE6_START_ADDR;
+    break;
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x40U */
+    default:
+      /* All possible masks have been handled above */
+    break;
+  }
+  if (core_id != OS_CORE_ID_0) {
+#if (!defined(OSEE_TC_2G))
+    OSEE_TC_CORE_DBGSR(core_id).bits.halt = OSEE_TC_DBGSR_RESET_HALT;
+#else
+    OsEE_syscon syscon = OSEE_TC_CORE_SYSCON(core_id);
+    if (syscon.bits.bhalt != 0U) {
+      syscon.bits.bhalt = 0U;
+      OSEE_TC_CORE_SYSCON(core_id) = syscon;
+    }
+#endif /* !OSEE_TC_2G */
   }
 }
 

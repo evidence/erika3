@@ -46,7 +46,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
 <evidence_example version="1" ID="tricore_schedule_tables">
-  <category>TriCore</category>
+  <category>TriCore/AURIX 1G</category>
   <title>Schedule Table</title>
 
   <small_descr>
