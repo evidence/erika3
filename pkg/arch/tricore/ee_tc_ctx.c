@@ -193,7 +193,7 @@ static FUNC(void, OS_CODE) OSEE_NEVER_INLINE
   P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST) p_to
 );
 
-static FUNC(void, OS_CODE) OSEE_NEVER_INLINE
+FUNC(void, OS_CODE) OSEE_NEVER_INLINE
   osEE_tc_change_context_from_isr2_end
 (
   P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST) p_to
@@ -266,7 +266,7 @@ FUNC(void, OS_CODE_NO_RETURN)
   }
 }
 
-static FUNC(void, OS_CODE) OSEE_NEVER_INLINE
+FUNC(void, OS_CODE) OSEE_NEVER_INLINE
   osEE_tc_change_context_from_isr2_end
 (
   P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST) p_to
