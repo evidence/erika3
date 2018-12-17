@@ -57,8 +57,9 @@
  ******************************************************************************/
 
 #if (defined(__GNUC__))
-/* The following prevent that the compiler mess up with the stack */
-#pragma GCC optimize ("-fomit-frame-pointer")
+/* The following prevent that the compiler mess up with the stack.
+   This imply -fomit-frame-pointer too. */
+#pragma GCC optimize ("-O3")
 /* The following prevent unwanted inline */
 #pragma GCC optimize ("-fno-inline-small-functions")
 #endif /* __GNUC__ */
@@ -193,7 +194,7 @@ static FUNC(void, OS_CODE) OSEE_NEVER_INLINE
   P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST) p_to
 );
 
-FUNC(void, OS_CODE) OSEE_NEVER_INLINE
+extern FUNC(void, OS_CODE) OSEE_NEVER_INLINE
   osEE_tc_change_context_from_isr2_end
 (
   P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST) p_to
