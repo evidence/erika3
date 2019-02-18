@@ -73,8 +73,22 @@ Platform: Cortex-M, NXP S32K1XX
     License: Contact NXP.
     Website: https://www.nxp.com/support/developer-resources/run-time-software/s32-design-studio-ide/s32-design-studio-ide-for-arm-based-mcus:S32DS-ARM
 
+Platform: Renesas RH850, E2X-FCC2
+(*) Embark E2x Software
+    License: Contact Renesas.
+    Website: https://www.renesas.com/us/en/products/microcontrollers-microprocessors/rh850/softtools.html
+
 Platform: All
 For all the members of the COMASSO Association (http://www.comasso.org),
 Evidence provides the possibility to statically link ERIKA3 to any version of 
 the "COMASSO Basic Software Modules", as defined at point 1.6 of the 
 COMASSO License and Contribution Agreement, Version 3.
+
+Platform: Infineon Tricore AURIX
+(*) Infineon iLLD Drivers (any version)
+    Infineon MC-ISAR MCAL Drivers for Tricore AURIX (any version)
+	Infineon SafeTlib and SHE+ Libraries (any version)
+    License: Closed source. Contact Infineon directly.
+    Website:
+https://www.infineon.com/cms/en/product/microcontroller/32-bit-tricore
+-microcontroller/

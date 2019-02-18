@@ -1,0 +1,880 @@
+/**
+\mainpage ERIKA3 user guide
+
+ERIKA3 is an open-source AUTOSAR OS implementation, [available for
+download](http://www.erika-enterprise.com) under [various licensing terms, including a GPLv2
+license](http://www.erika-enterprise.com/index.php/erika3/licensing.html).
+
+This document contains the reference manual for ERIKA3, which is divided in the following Chapters:
+
+The document is divided in the following Chapters:
+
+
+Chapter                        | Description
+------------------------------ | ----------------------------------------------
+\subpage intro                 | A first introduction to ERIKA3.
+\subpage implemented-standards | The OS API standards implemented in ERIKA3.
+\subpage scheduler             | The scheduling algorithms implemented in ERIKA3.
+\subpage system-init           | System initialization details.
+\subpage task-types            | The task types in ERIKA3.
+\subpage stack-sharing         | Stack Sharing in ERIKA3.
+\subpage irq                   | IRQ handling in ERIKA3.
+\subpage resources             | Shared resource handling in ERIKA3 
+\subpage multicore             | Multicore support in ERIKA3
+\subpage apireference          | ERIKA3 API reference.
+\subpage orti                  | ORTI support in ERIKA3.
+  
+
+Additional information is finally available as well in the
+[ERIKA3 wiki][wiki], and in the
+[ERIKA3 Forum][forum].
+
+
+[erika3]: http://www.erika-enterprise.com
+[wiki]: http://www.erika-enterprise.com/wiki
+[wiki-architectures]: http://www.erika-enterprise.com/wiki/index.php?title=Category:Architectures
+[forum]: http://www.erika-enterprise.com/forum
+[licensing]: http://www.erika-enterprise.com/index.php/erika3/licensing.html
+*/
+
+/*********************************************************/
+
+/**
+\page intro Introduction to ERIKA3 and RT-Druid
+
+ERIKA3 is an open-source RTOS implementation of the OSEK/VDX API,
+available for various microcontrollers on the [ERIKA3 web page](http://www.erika-enterprise.com).
+
+ERKA3 offers the availability of a real-time scheduler and resource 
+managers allowing the full exploitation of the power of new generation 
+micro-controllers and multicore platforms while guaranteeing predictable 
+real-time performance.
+
+The advanced features provided by ERIKA3 are:
+
+- Support for the OSEK/VDX and AUTOSAR conformance classes to match different
+  application requirements;
+- Support for preemptive and non-preemptive multitasking;
+- Support for fixed priority scheduling;
+- Support for stack sharing techniques, and one-shot task
+  model to reduce the overall stack usage;
+- Support for shared resources;
+- Support for periodic activations using Alarms and Schedule Tables;
+- Support for centralized Error Handling;
+- Support for hook functions;
+- Support for execution on automotive multicore platforms.
+
+The ERIKA3 kernel is a complete OSEK/VDX environment, with the
+additional extensions required by the AUTOSAR OS specifictaion, which
+can be used to implement multithreading applications on single and
+multicores.
+
+ERIKA3 can be configured using the OIL language (through the RT-Druid3 plugins publicly available on the [ERIKA3 website][erika3]) or using AUTOSAR XML (using the Evidence's RTE generator).
+
+The OIL language has been standardized by the OSEK/VDX Consortium as a
+standard configuration language used for the static definition of the
+RTOS objects which are instantiated and used by the
+application. ERIKA3 fully supports the OIL language for the
+configuration of real-time applications, adding specific extensions to
+support complete application building, and to support the AUTOSAR OS
+feature configuration.
+
+The purpose of this document is to describe in detail the ERIKA3
+API. Details about specific architecture can be found in dedicated
+[architecture wiki pages][wiki-architectures].
+
+
+[erika3]: http://www.erika-enterprise.com
+[wiki-architectures]: http://www.erika-enterprise.com/wiki/index.ph
+*/
+
+
+/*********************************************************/
+
+
+/**
+\page implemented-standards Implemented Standards
+
+The ERIKA3 Operating System provides an operating system interface which implements the following standards:
+
+- OSEK/VDX specification, version 2.2.3
+- which has been later on standardized as ISO 17356-3
+- with the extensions of AUTOSAR OS 4.3
+
+Currently (version GH55), ERIKA3 implements all features specified by the
+AUTOSAR OS Scalability Class 1.
+*/
+  
+
+/**
+\page scheduler ERIKA3 and real-time scheduling
+
+The interface proposed is suited for small 8 to 32 bit
+architectures, and proposes an environment where tasks can execute
+concurrently exchanging data with a shared memory paradigm. Support
+for synchronization primitives is also provided. 
+
+Tasks in ERIKA3 are scheduled according to fixed priorities, and share
+resources using the Immediate Priority Ceiling protocol.
+
+On top of task execution there are interrupts, that always preempt the
+running task to execute urgent operations required by peripherals, or,
+in case of a multicore system, by other CPUs.
+
+The scheduling policy of ERIKA3 is a Fixed Priority Scheduling with
+Immediate Priority Ceiling. As a result, the following case of tasks
+may be implemented:
+
+- _Full Preemptive Task_: A Full Preemptive task is a task that can
+  be preempted in each instant by higher priority tasks.
+- _Non Preemptive Task_: A Non Preemptive task is like a Full
+  Preemptive task that executes all the time locking a resource with
+  its ceiling equal to the maximum priority in the system. As a
+  result, a non preemptive task cannot be preempted by other tasks:
+  only interrupts can preempt it.
+- _Mixed Preemptive Task_: A Mixed Preemptive task is like a task
+  that executes all the time locking a pseudo-resource (also called
+  _Internal Resource_. As a result, only
+  tasks with higher priority than the ceiling of the Internal
+  Resource, and interrupts, can preempt it.
+
+*/
+
+  
+/**
+\page system-init System and application initialization
+
+The typical initialization workflow of an ERIKA3 application works as follows:
+
+- At the microcontroller reset, typically a routine (traditionally named on 
+  most microcontrollers _crt0_) is executed which is responsible for the
+  initialization of the microcontroller memory. That initialization is
+  typically divided in three parts:
+  - a memory copy of the initialized data memory;
+  - a cleanup (set to 0) of the BSS area;
+  - an initialization of the stack to a given fillpattern (typically for
+    ERIKA3 the fillpattern is 0xA5A5A5A5, and is used by debuggers using
+	the ORTI specification to later on determine the stack usage in the
+	system).
+- After the initialization routine, the code jumps to the main()
+  function;
+- The main() function executes some implementation dependent code, and finally 
+  calls StartOS(), which is the last function call of the main().
+- The call to StartOS() calls the StartupHook(), handles the task and 
+  alarms autostart, and finally starts the first ready task.
+- StartOS() is also responsible for the background task. By default, the 
+  background task is implemented as a forever loop that continuously calls  the _idle hook_ specified in the OIL File. StartOS() never returns.
+
+As for the application initialization, in general, there are various 
+places where the application designer may put the application startup code:
+
+- in the main() function, before the call to StartOS(). This case is
+  typically used for non-OS related initializations, because calling
+  ERIKA3 primitives before StartOS() may have in general unpredictable
+  results. It is noit safe to activate peripheral raising ISR Type 2 
+  in this part of the code, unless you can guarantee that any ISR Type 2 
+  will be raised after the StartOS() call.
+- inside StartupHook(). This case is used for the
+  initializations that require a call to a limited number of ERIKA3
+  primitives. Please note that StartupHook() is called before the
+  rescheduling in StartOS() takes place, with _interrupt disabled_.
+- inside a task automatically activated with AUTOSTART. In this case 
+  you need to create a _startup_ task which is responsible for the initial application initialization and peripheral setting.
+
+*/
+
+/**
+\page task-types Basic and Extended tasks
+
+ERIKA3 supports two flavors of tasks:
+- _Basic Tasks_. A basic task is the simplest task in ERIKA3,
+  providing concurrency together with a one-shot task model. Basic
+  Tasks can share their stack to reduce the overall RAM usage.
+- _Extended Tasks_. An extended task is a task that can block on
+  the synchronization primitive WaitEvent().
+
+Basic Tasks are typically implemented as normal C functions, that
+executes their code and then ends. One of these executions is called
+also _Task Instance_. After the end of a
+basic task, its stack is freed. Basic Tasks never block, and they are
+the ideal kind of tasks for implementing stack sharing techniques.
+
+Extended Tasks, on the converse, are typically implemented as a never
+ending task in which each instance ends with a synchronization
+implemented with a call to the WaitEvent() primitive. Extended
+tasks always have a private stack.
+
+RT-Druid identifies a task as Extended when its OIL definition contains
+the specification of _Events_. A task without any _Event_ assigned is a Basic Task.
+
+About (periodic) execution of tasks in OSEK/VDX and AUTOSAR OS, we can say that:
+- Basic tasks can execute when they are activated using ActivateTask() or
+  ChainTask(). A basic task, in some configuration, can remember pending
+  activations.
+- Extended tasks are activated once (typically at system startup using the
+  AUTOSTART feature), and typically wait for the arrival of one or more
+  events (typically inside a forever loop).
+- _Periodic execution_ of a task can be obtained in various ways:
+  - using a periodic interrupt (which in turns either activates a basic task
+    or sets an event on an extended task);
+  - using a periodic Alarm, whose notification is either the activation of a
+    basic task or the setting of an event on an extended task;
+  - using a Schedule Table, to implement a similar pattern of an Alarm
+    notification.
+  - Note that it is not forbidden to Activate a basic task or to set an event
+    on an Extended task in addition to a periodic alarm / schedule table. To
+	that respect, activation and periodicity are two orthogonal concepts in
+	OSEK/VDX and AUTOSAR OS.
+*/
+
+/**
+\page stack-sharing Stack sharing in ERIKA3
+
+ERIKA3 supports stack sharing among tasks and interrupt handlers.
+
+The basic rules of stack sharing in single core ERIKA3 configurations 
+are the following:
+- ERIKA3 always support the configuration of one or more stacks;
+- Each stack can host one or more tasks;
+- Each task in ERIKA3 is statically assigned to a stack;
+- There is always a _main_ stack. The _main_ stack is used to run the main()
+  function, and it is initialized by the crt0 boot routine;
+- The RT-Druid configurator provides the possibility, for each stack, to
+  configure a _shared_ or a _private_ stack.
+  - When the _shared_ stack is selected for a task, RT-Druid assigns the
+    _main_ stack to the task.
+  - When a _private_ stack is selected, RT-Druid assigns a separate stack
+    where only that task will be allocated.
+- Interrupts Type 1 handlers are executed on the stack which is active at
+  the interrupt arrival.
+- Interrupts Type 2 handlers are executed on the _main_ stack.
+
+When running on a multicore system, the stack layout is similar to the single
+core case, with the following additional rules:
+- Each core has a separate _main_ stack;
+- Interrupts Type 2 execute on the _main_ stack of the CPU where they are
+  raised.
+- Private stacks of tasks are allocated to the core where the stack is
+  statically partitioned.
+*/
+
+/**
+\page irq Interruput handlers
+
+OSEK/VDX and AUTOSAR OS identify two kind of interrupt sources:
+
+- ISR Type 1: they are interrupt handlers specified in a way independent from
+  the OS. Most of the primitives of the OS cannot be called inside an ISR
+  Type 1 handler. These interrupt handlers are typically specified using
+  compiler dependent keywords. Section 7.7 of AUTOSAR OS gives restrictions
+  on the usage of ISR Type 1 in case of Memory/Timing protection
+
+- ISR Type 2: they are interrupt handlers handled by the OS. These handlers
+  execute the OS scheduler at their end; it is possible to call various OS primitives inside a ISR Type 2.
+
+In ERIKA3, ISR Type 2 are implemented in a way similar to tasks, and as well they appear inside the ORTI specification of the Running Task.
+
+ISR Type 2 needs to be declared in the ERIKA3 OIL File (in particular, the
+RT-Druid code generator needs the ISR Priority in order to resolve priority
+allocation and resource usage at interrupt level). ERIKA3 is in general
+responsible for the generation of the microcontroller Interrupt Vector.
+
+ISR Type 1 needs to have a priority greater than all the ISR Type 2 in the
+system.
+
+*/
+
+/**
+\page resources Mutual Exclusion and Shared resources
+
+Mutual Exclusion in ERIKA3 can be obtained in various ways.
+
+- by Interrupt Disabling. This can be obtained by using the six primitives DisableAllInterrupts(), EnableAllInterrupts(), SuspendAllInterrupts(), ResumeAllInterrupts(), SuspendOSInterrupts(), ResumeOSInterrupts().
+
+- by non-preemptive execution. This can be obtained in the following ways:
+  - by declaring all tasks needing the access to the shared resource as
+    non-preemptive. 
+  - by using non-preemptive critical sections. This can be obtained by
+    locking the special resource named RES_SCHEDULER, which implicitly is
+	used by all tasks (locking it raises the caller task priority to the
+	highest priority of the tasks in the system). Please note that the
+	usage of RES_SCHEDULER has been deprecated by AUTOSAR.
+
+- by using Resources. Resources in OSEK/VDX are handled using the Immediate
+  Priority Ceiling scheduling algorithm. Basically each time a resource is
+  locked, the priority of the locking task is raised to the maximum
+  priority of all tasks using the resource. This guarantees bounded
+  blocking times, absence of deadlock, absence of chained blocking, and
+  ultimately allows stack sharing among tasks.
+	
+ERIKA3 supports the OSEK/VDX optional feature related to the usage of
+Resources at Interrupt level (ISO17356-3 Section 8.7).
+
+All the techniques above work on single core applications. For multi-core applications, the application developer will need to use Spin Locks.
+*/
+
+/**
+\page multicore Multicore support
+
+ERIKA3 supports multicore execution following the AUTOSAR OS specification.
+
+In particular:
+- Scheduling is partitioned on each core.
+- Each application task is statically partitioned on a given core.
+- Each counter is statically partitioned on a given core; Alarms and Schedule
+  Table are handled on the same core of the counter they are assigned to.
+- Startup and Shutdown are done in a coordinated way using barriers, as 
+  specified by the AUTOSAR OS standard.
+- Spin Locks are available for implementing mutual exclusion.
+
+*/
+
+
+/*********************************************************/
+
+
+/**
+\page apireference ERIKA3 API reference
+
+\section api-intro Introduction
+
+This section contains a description of the various APIs provided by 
+ERIKA3. In the description of those APIs, please note that ERIKA3 
+can be configured to allow a normal (named Standard Status) or 
+extended (named Extended Status) error recognition.
+
+Extended status is mainly used to check as many errors as possible
+during the Debug phase. Once the application has been debugged, some
+error checking can be disabled, saving execution time and code
+footprint. Standard and Extended status are enabled in the OIL
+configuration file. When describing ERIKA3 primitive return values, an
+_(Extended)_ token near the error description means that the error
+is raised only when the system runs with extended status.
+
+
+
+\section api-cc Conformance and Scalability Classes
+
+The OSEK/VDX standard traditionally provided a set of configurations, named _Conformance Classes_ aimed to identify subsets of the OS API. The main idea behind these subsets is to reduce the OS footprint by removing functionalities not needed in a specific application configuration. The idea of Conformance Classes has been later on expanded by the AUTOSAR OS, which provided four _Scalability Classes_ meant to selectively expand the OSEK/VDX API with functionality such as Memory and timing protection.
+
+In order to support this kind of configurability, the ERIKA3 Kernel provides the following features:
+- The OSEK/VDX Conformance Classes can be directly specified using the _KERNEL_ attribute in the _OS_ part of the OIL File.
+- The AUTOSAR OS Scalability Classes are not directly specifiable as a configuration option because the various AUTOSAR OS Extensions to OSEK/VDX can be selected one by one directly in the OIL file (or in the AUTOSAR XML File).
+
+About the Conformance Classes, there are four Conformance Classes, named BCC1, BCC2, ECC1, ECC2.
+
+Conformance classes starting with the letter _B_ (that is, BCC1
+and BCC2) only support Basic Tasks. Conformance classes starting with
+the letter _E_ (that is, ECC1 and ECC2) support both Basic Tasks
+and Extended Tasks. 
+
+BCC1 and BCC2 conformance classes are designed to be as small as
+possible, and in particular these conformance classes are the most
+suited to implement small concurrent systems with little RAM
+footprint, thanks to the stack sharing that can be obtained between
+basic tasks.
+
+ECC1 and ECC2 conformance classes are designed to support synchronization primitives that implies
+the usage of separate stacks.
+
+Conformance classes ending with the number 1 (that is, BCC1 and ECC1)
+does not store pending activations. Conformance classes ending with the number 2 (that is, BCC2 and ECC2) allow Basic Tasks to have one or more pending activations (the exact number is specified in the _ACTIVACTION_ parameter of the _TASK_ object in the OIL file.
+
+More than one task with the same priority can coexist at the same time
+for all the four conformance classes.
+
+The ready queue implementation used in the actual configuration can be specified with the _RQ_ attribute. Possible values are:
+
+- _LL_, which stands for _Linked List_, which is a linear queue with _O(n)_ access time where n is the
+number of tasks in the ready queue (using a linear queue allow the
+minimization of the overall OS RAM footprint).
+
+- _MQ_, which stands for _Multiple Queues_, which is a bitfield implementation that exposes an _O(1)_
+complexity that is independent on the number of tasks in the
+system. The system maps each separate priority in a bitfield, and the data type storing the task priority is statically defined to be the smallest type (8, 16, 31, or 64 bit) able to store all the system priorities.
+
+The following is an example of configuration of the conformance class inside the OIL file:
+
+    KERNEL_TYPE = OSEK {
+      CLASS = ECC1;
+      RQ = MQ;
+    };
+
+
+Tasks, Resources, Alarms, and Application modes are codified as integers, so
+there can be up to _2^n-1_ different entities, where _n_ is the number
+of bits of the CPU register width (e.g., 32 for a 32 bit CPU). Please note that for multicores these IDs are assigned incrementally across the system (and not locally to each core as it happened with ERIKA2).
+
+The following Table shows the current limits with
+respect to the number of OS objects allowed in the system.
+_nbits_ means the number of bits stored in a microcontroller register (16
+on a 16 bit machine, 32 on a 32 bit machine, with a minimum value
+of 16).
+
+Feature                                                |  BCC1 |  BCC2 | ECC1 | ECC2 |
+------------------------------------------------------ | ----- | ----- | ---- | ---- |
+Multiple requesting of task activation                 |    no |   yes |   no | BT: yes; ET: no |
+Number of tasks which are not in the _suspended_ state | memory only limit  | memory only limit | memory only limit (any combination of BT/ET) | memory only limit (any combination of BT/ET) |
+More than one task per priority                        | yes   |   yes |  yes |  yes |
+Number of events per task                              | -     |     - | nbits | nbits |
+Number of task priorities                              | max 127 | max 127 | max 127 | max 127 |
+Resources                                              | _2^nbits-1_ (including RES_SCHEDULER) | _2^nbits-1_ (including RES_SCHEDULER) | _2^nbits-1_ (including RES_SCHEDULER) | _2^nbits-1_ (including RES_SCHEDULER) |
+Internal Resources                                     | no limit | no limit | no limit | no limit |
+Alarms                                                 | _2^{nbits}-1_ | _2^{nbits}-1_ | _2^{nbits}-1_ | _2^{nbits}-1_ |
+Application modes                                      | _2^{nbits}-1_ | _2^{nbits}-1_ | _2^{nbits}-1_ | _2^{nbits}-1_ |
+
+
+
+
+\section api-primitives Available primitives
+
+ERIKA3 provides a set of primitives that can be called in different
+situations. The complete list of primitives is listed in the Table
+below, together with the locations where it is
+legal to call these functions. _X(*)_ means that the feature is an
+additional feature of ERIKA3 that is not part of the OSEK Standard. _X(^)_ means that the function cannot be called
+with "himself" as parameter. _C_ indicates that validity is only Checked in Extended status by E_OS_CALLEVEL
+
+
+The first table is related to the usage in Tasks, ISR, Alarm Callback
+
+Service                    | Idle Hook | Task | ISR1 | ISR2 | Error Hook | PreTask Hook | PostTask Hook | Startup Hook | Shutdown Hook | Alarm Callback | Protection Hook |
+-------------------------- | --------  | ---- | ---- | ---- | ---------- | ------------ | ------------- | ------------ | ------------- | -------------- | --------------- |
+ActivateTask()             |     X(*)  |    X |      |    X |            |              |               |              |               |                |                 |
+TerminateTask()            |           |    X |      |    C |            |              |               |              |               |                |                 |
+ChainTask()                |           |    X |      |    C |            |              |               |              |               |                |                 |
+Schedule()                 |           |    X |      |    C |            |              |               |              |               |                |                 |
+GetTaskID()                |           |    X |      |    X |          X |            X |             X |              |               |                |                X|
+GetTaskState()             |     X(*^) |    X |      | X(^) |          X |            X |             X |              |               |                |                 |
+DisableAllInterrupts()     |     X(*)  |    X |    X |    X |            |              |               |              |               |                |                 |
+EnableAllInterrupts()      |     X(*)  |    X |    X |    X |            |              |               |              |               |                |                 |
+SuspendAllInterrupts()     |     X(*)  |    X |    X |    X |          X |            X |             X |              |               |              X |                 |
+ResumeAllInterrupts()      |     X(*)  |    X |    X |    X |          X |            X |             X |              |               |              X |                 |
+SuspendOSInterrupts()      |     X(*)  |    X |    X |    X |            |              |               |              |               |                |                 |
+ResumeOSInterrupts()       |     X(*)  |    X |    X |    X |            |              |               |              |               |                |                 |
+GetResource()              |     X(*)  |    X |      |    X |            |              |               |              |               |                |                 |
+ReleaseResource()          |     X(*)  |    X |      |    X |            |              |               |              |               |                |                 |
+SetEvent()                 |     X(*)  |    X |      |    X |            |              |               |              |               |                |                 |
+ClearEvent()               |           |    X |      |    C |            |              |               |              |               |                |                 |
+GetEvent()                 |     X(*^) |    X |      | X(^) |          X |            X |             X |              |               |                |                 |
+WaitEvent()                |           |    X |      |    C |            |              |               |              |               |                |                 |
+GetAlarmBase()             |     X(*)  |    X |      |    X |          X |            X |             X |              |               |                |                 |
+GetAlarm()                 |     X(*)  |    X |      |    X |          X |            X |             X |              |               |                |                 |
+SetRelAlarm()              |     X(*)  |    X |      |    X |            |              |               |              |               |                |                 |
+SetAbsAlarm()              |     X(*)  |    X |      |    X |            |              |               |              |               |                |                 |
+CancelAlarm()              |     X(*)  |    X |      |    X |            |              |               |              |               |                |                 |
+GetActiveApplicationMode() |     X(*)  |    X |      |    X |          X |            X |             X |            X |             X |                |                 |
+StartOS()                  |           |      |      |      |            |              |               |              |               |                |                 |
+ShutdownOS()               |           |    X |      |    X |          X |              |               |            X |               |                |                 |
+GetApplicationID()         |           |    X |      |    X |          X |            X |             X |            X |             X |                |               X |
+GetISRID()                 |           |    X |      |    X |          X |              |               |              |               |                |               X |
+CallTrustedFunction()      |     X(*)  |    X |      |    X |            |              |               |              |               |                |                 |
+CheckISRMemoryAccess()     |    X(*^)  |    X |      |    X |          X |              |               |              |               |                |               X |
+CheckTaskMemoryAccess()    |    X(*^)  |    X |      |    X |          X |              |               |              |               |                |               X |
+CheckObjectAccess()        |     X(*)  |    X |      |    X |          X |              |               |              |               |                |               X |
+CheckObjectOwnership()     |    X(*^)  |    X |      |    X |          X |              |               |              |               |                |               X |
+StartScheduleTableRel()    |     X(*)  |    X |      |    X |            |              |               |              |               |                |                 |
+StartScheduleTableAbs()    |     X(*)  |    X |      |    X |            |              |               |              |               |                |                 |
+StopScheduleTable()        |     X(*)  |    X |      |    X |            |              |               |              |               |                |                 |
+NextScheduleTable()        |     X(*)  |    X |      |    X |            |              |               |              |               |                |                 |
+StartScheduleTableSynchron()|    X(*)  |    X |      |    X |            |              |               |              |               |                |                 |
+SyncScheduleTable()        |     X(*)  |    X |      |    X |            |              |               |              |               |                |                 |
+GetScheduleTableStatus()   |     X(*)  |    X |      |    X |            |              |               |              |               |                |                 |
+SetScheduleTableAsync()    |     X(*)  |    X |      |    X |            |              |               |              |               |                |                 |
+IncrementCounter()         |     X(*)  |    X |      |    X |            |              |               |              |               |                |                 |
+GetCounterValue()          |     X(*)  |    X |      |    X |            |              |               |              |               |                |                 |
+GetElapsedValue()          |     X(*)  |    X |      |    X |            |              |               |              |               |                |                 |
+TerminateApplication()     |     X(*^) |    X |      |    X |          X |              |               |              |               |                |                 |
+AllowAccess()              |           |    X |      |    X |            |              |               |              |               |                |                 |
+GetApplicationState()      |     X(*)  |    X |      |    X |          X |           X  |             X |            X |             X |                |               X |
+ControlIdle()              |     X(*)  |    X |      |    X |            |              |               |              |               |                |                 |
+GetCurrentApplicationID()  |           |    X |      |    X |          X |           X  |             X |            X |             X |                |               X |
+ReadPeripheral8()          |     X(*)  |    X |      |    X |            |              |               |              |               |                |                 |
+ReadPeripheral16()         |     X(*)  |    X |      |    X |            |              |               |              |               |                |                 |
+ReadPeripheral32()         |     X(*)  |    X |      |    X |            |              |               |              |               |                |                 |
+WritePeripheral8()         |     X(*)  |    X |      |    X |            |              |               |              |               |                |                 |
+WritePeripheral32()        |     X(*)  |    X |      |    X |            |              |               |              |               |                |                 |
+ModifyPeripheral8()        |     X(*)  |    X |      |    X |            |              |               |              |               |                |                 |
+ModifyPeripheral16()       |     X(*)  |    X |      |    X |            |              |               |              |               |                |                 |
+ModifyPeripheral32()       |     X(*)  |    X |      |    X |            |              |               |              |               |                |                 |
+DisableInterruptSource()   |     X(*)  |    X |      |    X |            |              |               |              |               |                |                 |
+EnableInterruptSource()    |     X(*)  |    X |      |    X |            |              |               |              |               |                |                 |
+ClearPendingInterrupt()    |     X(*)  |    X |      |    X |            |              |               |              |               |                |                 |
+
+
+
+*/
+
+
+/**
+\page orti ORTI support in ERIKA3
+
+When configuring the sytstem, RT-Druid generates an ORTI file. The ORTI file
+is a text file containing information for debuggers related to the OS objects
+that are statically configured in the system.
+
+The presence of an ORTI file simplifies kernel-aware debugging in advanced
+debugging systems such as Lauterbach TRACE32 and iSystem WinIdea.
+
+The generated ORTI follows the original OSEK/VDX ORTI specification for
+single core configurations, and follows the ORTI SMP extensions defined by
+Lauterbach and iSystem for multi core configurations.
+*/
+
+
+/**
+ * \defgroup primitives-task Task Primitives
+ *
+ * The Task Primitives are related to the start and stop of Tasks.
+ *
+ * \details
+ * Independently of the task type all kernel primitives that may cause
+ * rescheduling may be called in any Tasks' sub-functions.
+ *
+ * Tasks are activated using the primitives ActivateTask() or
+ * ChainTask(). Activating a task means that the activated task,
+ * may be selected for scheduling, and may execute one Task Instance. A
+ * task activation while a task is already waiting its execution or while
+ * being the running task has an effect that depends on how many pending
+ * activations the particular Conformance
+ * Class can store. BCC1 and ECC1 does not store pending activations,
+ * whereas BCC2 and ECC2 can store pending activations if the task has
+ * been properly configured in the OIL Configuration file.
+ *
+ * Tasks _must end_ with a call either to TerminateTask() or
+ * ChainTask(). Terminating a task without one of these two
+ * primitives leads to indefinite results.
+ */
+
+/**
+ * \defgroup primitives-event Event Primitives
+ *
+ * The Event Primitives are related to event handling in Extended Tasks.
+ *
+ * \details
+ * Events represents a technique used by ERIKA3 to implement synchronization
+ * primitives. Events are assigned to tasks. Tasks with events assigned
+ * to are called _Extended tasks_. Tasks without events assigned to
+ * are called _Basic Tasks_.
+ *
+ * Extended tasks are supported only in the ECC1 and ECC2 conformance
+ * classes. To assign an event to a task, the event have to be listed
+ * inside the task declaration in the OIL configuration file.
+ *
+ * Events are implemented as bits in a bit mask. Each task in the system is
+ * associated to a bit mask, which is typically as large as a CPU data
+ * register. The bit mask is initialized to 0 at system startup.
+ *
+ * The status of an extended task event mask can be read by tasks and
+ * ISRs using the GetEvent() primitive. Events can also be set
+ * from tasks or ISRs using the SetEvent() primitive (more than
+ * one event can be set with a single call to SetEvent() ).
+ *
+ * An extended task can wait for one ore more events from an event mask
+ * to be set using the WaitEvent() primitive. An extended task
+ * needs then to explicitly clear an event calling the
+ * ClearEvent() primitive.
+ *
+ * Calls to WaitEvent() may provoke the task to block. For that reason,
+ * extended tasks must have a private stack assigned to them.
+ */
+
+/**
+ * \defgroup primitives-resource Resource Primitives
+ *
+ * The Resource Primitives are related to shared resource handling in single cores.
+ *
+ * \details
+ * Resources are the term used by ERIKA3 to refer to binary semaphores used
+ * to implement shared critical sections.
+ *
+ * Resources are implemented using the Immediate Priority Ceiling
+ * protocol. 
+ *
+ * A resource is locked using the primitive GetResource(), and
+ * unlocked using ReleaseResource().
+ *
+ * A special resource named RES_SCHEDULER is also
+ * supported. The RES_SCHEDULER resource has a ceiling equal
+ * to the highest priority in the system. As a result, a task locking
+ * RES_SCHEDULER becomes non-preemptive. If needed, the
+ * RES_SCHEDULER resource have to be configured in the OIL
+ * configuration file.
+ *
+ * On multiprocessor systems, Resources are divided in:
+ * - _Local resources_ A Resource is local when all the tasks that
+ *   uses it are assigned to the same processor. In this case you should use
+ *   a Resource to implement the mutual exclusion.
+ * - _Global resources_ A Resource is global when the tasks that uses
+ *   it are assigned to different processors. In this case you should use a
+ *   Spin Lock to implement the mutual exclusion.
+ *
+ * A special kind of resources, called _Internal Resources_, are also
+ * supported by ERIKA3. Internal Resources are locked when the tasks enter
+ * the RUNNING state, and it is released when the task
+ * ends. Internal resources are used by optimization algorithms to limit
+ * the maximum stack space used by application tasks. Please note that
+ * Schedule() explicitly release any Internal Resource locked by
+ * the running task, thus limiting the possibility to reduce the overall
+ * stack in the system. Also WaitEvent() always release the
+ * internal resource of the task; however, this fact does not impact on
+ * stack usage because tasks using WaitEvent() must run on a
+ * private stack since WaitEvent() is a blocking primitive. Please
+ * also note that on Multicore systems, Internal Resources can only
+ * be _local_. Global Internal Resources are not supported.
+ *
+ * ERIKA3 supports resource management at ISR level for a selected number of
+ * architectures. Please check on the ERIKA3 wiki whether the architecture
+ * you are currently using supports this feature. The implementation of
+ * this feature is implemented extending the OIL configuration to accept
+ * ISR priority as extra field in ISR Object definition. The ISR Priority
+ * field contains architecture independent values which are then mapped
+ * by RT-Druid to Task and Interrupt Controller priority values.
+ *
+ */
+
+/**
+ * \defgroup primitives-interrupt Interrupt Primitives
+ *
+ * The Interrupt primitives are related to disabling/enabling interrupts.
+ *
+ * \details
+ * ERIKA3 provides support for interrupts. Interrupts are modeled considering
+ * typical microcontroller designs featuring interrupt controllers with a
+ * prioritized view of the interrupt sources.
+ *
+ * To map the requirements of fast OS-independent requests, ERIKA3 supports
+ * the definition of fast interrupts handlers, called _ISR Type 1_,
+ * that on one side can handle interrupts in the fastest way possible,
+ * but on the other side lack the possibility to call OS services. 
+ *
+ * On the other end, lower priority interrupts, called _ISR Type 2_ and
+ * used (for example) for hardware timers, can call selected OS primitives
+ * but are slower than ISR Type 1 due to the OS bookkeeping needed to
+ * implement preemption.
+ *
+ * Please also note that ISR Type 2 are implemented in ERIKA3 in a way similar 
+ * to Tasks, to allow a simpler handling of the Memory protection specification
+ * of the AUTOSAR OS.
+ *
+ * The following restriction applies: all interrupts of Category 1 must
+ * have a higher or equal hardware priority compared with interrupts of
+ * Category 2. This limitation has been introduced to avoid various
+ * rescheduling problems appearing when a ISR2 interrupts a lower
+ * priority ISR1.
+ *
+ * ERIKA3 also offers a set of primitives to directly control interrupt
+ * disabling and enabling, with also a nested version of these
+ * primitives.
+ */
+
+ 
+/**
+ * \defgroup primitives-alarm Alarm and Counter Primitives
+ *
+ * The Alarm Primitives are related to periodic or one-shot notification 
+ * useful to implement timeouts or periodic activities
+ *
+ * \details
+ * ERIKA3 supports a notification mechanism based on _Counters_ and _Alarms_.
+ * 
+ * A Counter is basically an integer value that can be incremented by 1
+ * _Tick using the primitive IncrementCounter(). 
+ *
+ * An Alarm is a notification that is attached to a specific Counter (the
+ * link between a Counter and an Alarm is specified at compile time in
+ * the OIL Configuration file).
+ *
+ * An Alarm can be set to fire at a specified tick value using the
+ * primitives SetRelAlarm() and SetAbsAlarm(). Alarms can
+ * be set to be cyclically reactivated. Alarms can be canceled using the
+ * primitive CancelAlarm().
+ *
+ * When an Alarm fires, a notification takes place. A notification is set
+ * to be one of the following actions:
+ *
+ * - Task activation. In this case, a task is activated when the
+ *   Alarm fires.
+ * - Event set. In this case, an event mask is set on a task when
+ *   the Alarm fires.
+ * - Alarm callback. In this case, an alarm callback (defined using
+ *   ALARMCALLBACK()) is called. Alarm callbacks are _DEPRECATED_ by AUTOSAR.
+ *
+ * The notifications are executed inside the IncrementCounter()
+ * function. It is up to the developer placing the counter in meaningful
+ * places (e.g., a timer interrupt).
+ *
+ * Counters, Alarms, and their notifications are specified inside the OIL
+ * configuration file. 
+ * 
+ * On multicore systems, Counters are statically assigned to CPUs at
+ * compile time. Counters are local to (and only visible in) a
+ * CPU. Alarms are local to the CPU that hosts the counter they are
+ * linked to.
+ *
+ * The OSEK/VDX standard provides support for _System Counters_
+ * (e.g., counters that are automatically linked to hardware
+ * timers). Please check on the ERIKA3 wiki whether the architecture you
+ * are using supports this feature (especially for the configuration 
+ * of the hardware interrupt source). If the architecture does not support
+ * the feature, then all the counters have to be defined inside the OIL
+ * Configuration file, and the user have to call
+ * IncrementCounter() to increment them.
+ */
+
+/**
+ * \defgroup primitives-startup Application modes, Startup and Shutdown primitives
+ *
+ * ERIKA3 supports the specification of a set of _Application
+ * Modes_. Application modes are startup configurations that are used to
+ * configure the running application for a certain mode of
+ * operation. Examples of Application Modes are for example _Normal
+ * execution_, _Flash Programming_, _Debug Mode_, and so on.
+ *
+ * The main idea is that the CPU startup code somehow discovers the
+ * current Application mode (Typical ways to discover Application
+ * Modes are for example the usage of dip switches on the device
+ * board). Once done that, the application mode is passed to
+ * StartOS(), that sets the application mode for this run. Once
+ * the system is started, the application mode value can be read using a
+ * call to GetActiveApplicationMode().
+ *
+ * Application modes are listed inside the OIL configuration file. There
+ * always exist at least one application mode called
+ * OSDEFAULTAPPMODE. Once set at startup into
+ * StartOS(), the Application mode cannot be changed.
+ *
+ * Application modes are also useful to autostart tasks and alarms
+ * following a call to StartOS(). Tasks and alarms autostart
+ * features must be specified inside the OIL configuration file.
+ *
+ * Application modes should not be used to map application states that
+ * may vary during the application execution.
+ *
+ * The primitive ShutdownOS() is used to prepare the system for
+ * system shutdown. The function simply calls
+ * ShutdownHook() and then it starts a forever loop waiting for an
+ * hardware reset.
+ *
+ * On multicore systems, the StartOS() and ShutdownOS() are implemented
+ * respecting the AUTOSAR specifications, in particular related to 
+ * the usage of barriers to synchronize the cores startup/shutdown.
+ */
+ 
+/**
+ * \defgroup primitives-schtable Schedule Tables
+ *
+ * Schedule Tables are an extension of the Alarm concept, allowing the 
+ * definition of periodic tables with multiple expiry points.
+ *
+ * \details
+ * ERIKA3 supports Schedule Tables as specified by the AUTOSAR OS Specification.
+ *
+ * Schedule Tables provide an operating system object that encapsulates a set
+ * of "expiry points" organized in the form of a table. The table can be set 
+ * to be repeated periodically.
+ *
+ * The Schedule Tables can be seen as an extension of the alarm concept, in the
+ * sense that a Schedule Table includes inside its configuration multiple
+ * notifications that otherwise needed a separate alarm each.
+ *
+ * The Schedule Table also solves the need of atomically changing the set of
+ * expiry points, by providing the possibility to change, with a single
+ * primitive, the current running Schedule Table.
+ *
+ * The Schedule Table provides the possibility of synchronization with an
+ * external time source. This feature has not been implemented yet in ERIKA3.
+ */
+ 
+/**
+ * \defgroup primitives-hook Hooks and Error handling primitives
+ *
+ * ERIKA3 supports five application callbacks that are called when specific
+ * situations happens during application execution.
+ *
+ * On multicore systems, hooks are local callbacks to each core.
+ *
+ * The ErrorHook() callback is called every time an error is
+ * detected inside an ERIKA3 primitive. The callback can be used to
+ * implement centralized error handling. A set of macros are also
+ * available to better understand the source of the error. In particular, 
+ * ErrorHook() receives as parameter the error that is raised by the primitive.
+ * Then, a call to OSErrorGetServiceId() returns informations about which
+ * primitive caused the error. Finally, calls to the macros
+ * OSError_XXX_YYY() returns the values of the _YYY_ parameter
+ * of the primitive _XXX_.
+ *
+ * The StartupHook() callback is called inside the
+ * StartOS() primitive to implement the application startup
+ * procedure.
+ *
+ * The ShutdownHook() callback is called inside the
+ * ShutdownOS() primitive to implement the Application specific
+ * shutdown procedures.
+ * 
+ * The PreTaskHook() and PostTaskHook() callbacks are
+ * called respectively every time a task becomes the RUNNING
+ * Task, and every time a task stops to be the RUNNING Task.
+ *
+ * The application can only call a limited set of primitives inside Hook
+ * functions.
+ */
+ 
+/**
+ * \defgroup primitives-sem Counting Semaphores
+ *
+ * This section describes in detail the primitives provided by ERIKA3 to
+ * support counting semaphores as a way to implement mutual exclusion and
+ * synchronization between tasks.
+ *
+ * Counting semaphores are an RTOS abstractions of an integer counter
+ * coupled with a blocking queue. Basically two main operations are
+ * possible on a semaphore, which are _waiting_ on a semaphore, which
+ * results in decrementing the counter if the counter has a value greater
+ * than 0, or blocking the running task if the counter is 0, and 
+ * _posting_ on a semaphore, which results in a counter increment if there
+ * are no task blocked, or in the unblock of a blocked task otherwise.
+ *
+ * ERIKA3 counting semaphores exports a simple interface which covers the
+ * basic functionalities of a semaphore, like:
+ * - Initializing a semaphore ( InitSem() );
+ * - Waiting on a semaphore in a blocking
+ *   ( WaitSem() ) or non-blocking way ( TryWaitSem() );
+ * - Posting on a semaphore ( PostSem() );
+ * - Getting the value of a semaphore ( GetValueSem() ).
+ *
+ * Since waiting on a semaphore may result in blocking the running task,
+ * the WaitSem() primitive should be called only if the calling
+ * task has a separate stack allocated to it. For this reason, the
+ * WaitSem() primitive can only be called by extended tasks in
+ * conformance classes ECC1 and ECC2. Semaphores are available as non
+ * blocking in conformance classes BCC1 and BCC2.
+ *
+ * Semaphores can be allocated statically as a global variable, which
+ * allow to bypass the call to InitSem() .
+ *
+ * Semaphores definition are not listed in the OIL file; semaphore
+ * primitives receive as a parameter a pointer to the semaphore
+ * descriptor.
+ *
+ * The current semaphore implementation does _not_ support
+ * multicore systems. That is, semaphores must be defined and used
+ * locally to the same CPU.
+ *
+ * Counting semaphores _do not_ avoid Priority Inversion
+ * problems. Please use Resources instead.
+ *
+ * Counting semaphores are not part of the OSEK/VDX / AUTOSAR standards.
+ */
+ 
+ 
+/**
+ * \defgroup primitives-multicore Multicore support
+ *
+ * ERIKA3 has been designed with native multicore support. These functions are
+ * the set of functions which are available to control the execution on multiple
+ * cores.
+ *
+ * These functions follow closely the AUTOSAR OS Multicore specification.
+ */
+ 

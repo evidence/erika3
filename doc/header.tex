@@ -46,8 +46,18 @@
 %
 %\documentclass[twoside]{book}
 %PJ
-\documentclass[12pt,a4paper,american,normalheadings,titlepage]{scrreprt}
-
+\documentclass[12pt,a4paper,english,american,normalheadings,titlepage,twoside]{scrreprt}
+\usepackage[latin9]{inputenc}
+%\usepackage[utf8]{inputenc}
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{3}
+\usepackage{color}
+\usepackage{array}
+\usepackage{float}
+\usepackage{calc}
+\usepackage{url}
+\usepackage{multirow}
+\usepackage{graphicx}
 
 % Packages required by doxygen
 \usepackage{fixltx2e}
@@ -56,9 +66,6 @@
 \usepackage[export]{adjustbox} % also loads graphicx
 \usepackage{graphicx}
 
-%PJ
-\usepackage[latin9]{inputenc}
-%\usepackage[utf8]{inputenc}
 
 \usepackage{makeidx}
 \usepackage{multicol}
@@ -125,19 +132,39 @@
 \fancyhead[LO]{\fancyplain{}{\includegraphics[width=3cm]{../html/erika3}}}
 \fancyhead[CO]{\fancyplain{}{}}
 \fancyhead[RO]{\fancyplain{}{\includegraphics[width=3cm]{../html/LogoEvidence-new-2}}}
+
 \fancyfoot[LE]{\fancyplain{}{\bfseries\scriptsize Pag. \bfseries\thepage}}
 \fancyfoot[CE]{\fancyplain{}{}}
 \fancyfoot[RE]{\fancyplain{}{\bfseries\leftmark}}
 \fancyfoot[LO]{\fancyplain{}{\bfseries\rightmark}}
 \fancyfoot[CO]{\fancyplain{}{}}
 \fancyfoot[RO]{\fancyplain{}{\bfseries\scriptsize Pag. \bfseries\thepage}}
+
+% Redefine the plain page style
+\fancypagestyle{plain}{%
+  \fancyhf{}%
+  \fancyfoot[LE]{\fancyplain{}{\bfseries\scriptsize Pag. \bfseries\thepage}}
+  \fancyfoot[CE]{\fancyplain{}{}}
+  \fancyfoot[RE]{\fancyplain{}{\bfseries\leftmark}}
+  \fancyfoot[LO]{\fancyplain{}{\bfseries\rightmark}}
+  \fancyfoot[CO]{\fancyplain{}{}}
+  \fancyfoot[RO]{\fancyplain{}{\bfseries\scriptsize Pag. \bfseries\thepage}}
+  \renewcommand{\headrulewidth}{0pt}% Line at the header invisible
+  \renewcommand{\footrulewidth}{0.4pt}% Line at the footer visible
+}
+
+
 \renewcommand{\footrulewidth}{0.4pt}
+
 \renewcommand{\chaptermark}[1]{%
   \markboth{#1}{}%
 }
+
 \renewcommand{\sectionmark}[1]{%
   \markright{\thesection\ #1}%
 }
+
+\renewcommand*{\chapterformat}{\thechapter\hspace{0.5cm}}
 
 % Indices & bibliography
 \usepackage{natbib}

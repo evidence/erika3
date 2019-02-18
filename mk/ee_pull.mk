@@ -121,6 +121,9 @@ OS_EE_PULL_DOC_FILES += $(ERIKA_FILES)/$(OS_EE_DOC_DIR)/erika3.png
 OS_EE_PULL_DOC_FILES += $(ERIKA_FILES)/$(OS_EE_DOC_DIR)/LogoEvidence-new-1.jpg
 OS_EE_PULL_DOC_FILES += $(ERIKA_FILES)/$(OS_EE_DOC_DIR)/LogoEvidence-new-2.jpg
 
+# all the reference manual
+OS_EE_PULL_MAN_FILES += $(ERIKA_FILES)/$(OS_EE_DOC_DIR)/manual/*
+
 ##
 ## Directories
 ##########################################################################
@@ -155,11 +158,18 @@ else
 OS_EE_PULL_DOC_DEST_DIR = $(OS_EE_DOC_DIR)
 endif
 
+ifndef	OS_EE_MAN_DIR
+OS_EE_PULL_MAN_DEST_DIR := doc/manual
+else
+OS_EE_PULL_MAN_DEST_DIR = $(OS_EE_MAN_DIR)
+endif
+
 OS_EE_PULL_DEST_DIRS :=	$(OS_EE_PULL_INC_DEST_DIR)	\
 			$(OS_EE_PULL_SRC_DEST_DIR)	\
 			$(OS_EE_PULL_MK_DEST_DIR)	\
 			$(OS_EE_PULL_DBG_DEST_DIR)	\
-			$(OS_EE_PULL_DOC_DEST_DIR)
+			$(OS_EE_PULL_DOC_DEST_DIR)	\
+			$(OS_EE_PULL_MAN_DEST_DIR)
 
 ##
 ## Main rules: all clean
@@ -208,3 +218,7 @@ endif
 $(OS_EE_PULL_DOC_DEST_DIR):
 	$(QUIET)mkdir -p  $(OS_EE_PULL_DOC_DEST_DIR)
 	$(QUIET)cp	$(OS_EE_PULL_DOC_FILES) $(OS_EE_PULL_DOC_DEST_DIR)
+
+$(OS_EE_PULL_MAN_DEST_DIR):
+	$(QUIET)mkdir -p  $(OS_EE_PULL_MAN_DEST_DIR)
+	$(QUIET)cp -a	$(OS_EE_PULL_MAN_FILES) $(OS_EE_PULL_MAN_DEST_DIR)
