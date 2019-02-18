@@ -43,27 +43,28 @@
   ###*E*###
   -->
 
-<evidence_example version="1" ID="tricore_2G_spinlocks">
+<evidence_example version="1" ID="tricore_2G_full_2">
 
-  <category>TriCore/AURIX 2G/HIGHTEC</category>
-  <title>Spinlocks</title>
+  <category>TriCore/AURIX 2G/TASKING</category>
+  <title>Full Demo 2</title>
 
   <small_descr>
-    Spinlocks examples
+    Many Tasks, Alarms and a Semaphore.
   </small_descr>
 
   <long_descr>
-    Example of mutual exclusion in multicore enviroment with spinlocks
+    In this demo there are many Tasks, Alarms and a Semaphore.
 
-    This demo is pre-configured to use HIGHTEC compiler
-    (CPU_DATA.COMPILER=GCC; with ID = 0x0)
+    This demo is pre-configured to use TASKING compiler
+    (CPU_DATA.COMPILER=TASKING;)
   </long_descr>
 
   <file_section>
     <file     name="code.c"/>
-    <file     name="conf.oil"/>
     <!-- <file     name="appl.oil"/> -->
+    <file     name="conf.oil"/>
     <!-- <file     name="os.oil"/> -->
     <!-- <file     name="makefile"/> -->
+    <!-- <file     name="rtd.properties"/> -->
  </file_section>
 </evidence_example>

@@ -39,21 +39,18 @@
  * project.
  * ###*E*### */
 
-/** \file  conf.oil
+/** \file   conf.oil
  *  \brief  System Configuration.
  *
  *  This file contains the System Configuration for Erika Enterprise.
  *
  *  \author  Errico Guidieri
- *  \date  2018
+ *  \date    2017
  */
 
 CPU mySystem {
 
   OS myOs {
-
-    /* EE_OPT = "OS_EE_VERBOSE"; */
-    EE_OPT = "OSEE_DEBUG";
     EE_OPT = "OS_EE_APPL_BUILD_DEBUG";
     EE_OPT = "OS_EE_BUILD_DEBUG";
     //EE_OPT = "OSEE_TC_LINK_BMHD";
@@ -61,49 +58,96 @@ CPU mySystem {
     USERESSCHEDULER = FALSE;
 
     CPU_DATA = TRICORE {
-      COMPILER = GCC;
-    };
-
-    CPU_DATA = TRICORE {
-      ID = 3;
-    };
-
-    CPU_DATA = TRICORE {
-      ID = 4;
+      MULTI_STACK = TRUE;
+      COMPILER = TASKING;
+      IDLEHOOK = TRUE {
+        HOOKNAME = "idle_hook";
+      };
     };
 
     MCU_DATA = TC39X {
       DERIVATIVE = "tc397xe";
       //DERIVATIVE = "tc399xe-Astep";
-      //REVISION = "AA";
+      //asREVISION = "AA";
+    };
+
+    USEEXTENSIONAPI = TRUE {
+      SEMAPHORE = DEFAULT { NAME = "V"; COUNT=0; };
     };
 
     KERNEL_TYPE = OSEK {
-      CLASS = BCC1;
+      CLASS = ECC1;
+      RQ = MQ;
     };
   };
 
-  APPDATA tricore_stack_monitoring {
+  APPDATA tricore_2G_full_2 {
     APP_SRC = "code.c";
   };
 
-  TASK TaskMaster {
-    PRIORITY = 1;
-    AUTOSTART = TRUE;
+  COUNTER SystemTimer {
+    MINCYCLE = 1;
+    MAXALLOWEDVALUE = 65535;
+    TICKSPERBASE = 1;
+    TYPE = HARDWARE {
+      SYSTEM_TIMER = TRUE;
+      PRIORITY     = 1;
+      DEVICE       = "STM_SR0";
+    };
+    SECONDSPERTICK = 0.001;
   };
 
-  TASK TaskSlave1 {
-    CPU_ID = 3;
-    PRIORITY = 1;
+  ALARM AlarmTask1 {
+    COUNTER = SystemTimer;
+    ACTION = ACTIVATETASK {
+      TASK = Task1;
+    };
+    AUTOSTART = TRUE {
+      ALARMTIME = 500;
+      CYCLETIME = 100;
+    };
   };
 
-  TASK TaskSlave2 {
-    CPU_ID = 4;
-    PRIORITY = 1;
-    AUTOSTART = TRUE;
+  ALARM AlarmFreeTask1 {
+    COUNTER = SystemTimer;
+    ACTION = ALARMCALLBACK {
+      ALARMCALLBACKNAME = "free_task1";
+    };
+    AUTOSTART = TRUE {
+      ALARMTIME = 1000;
+      CYCLETIME = 1000;
+    };
   };
 
-  SPINLOCK spinlock_1 { NEXT_SPINLOCK=spinlock_2; };
-  SPINLOCK spinlock_2 {};
+  TASK Task1 {
+    PRIORITY = 1;
+    STACK = PRIVATE {
+      SIZE = 128;
+    };
+    SCHEDULE = FULL;
+  };
+
+  TASK Task2 {
+    PRIORITY = 2;
+    STACK = PRIVATE {
+      SIZE = 128;
+      EXTENDED = TRUE;
+    };
+    SCHEDULE = FULL;
+  };
+
+  TASK Task3 {
+    PRIORITY = 1;
+    SCHEDULE = FULL;
+  };
+
+  TASK Task4 {
+    PRIORITY = 1;
+    SCHEDULE = FULL;
+  };
+
+  TASK Task5 {
+    PRIORITY = 1;
+    SCHEDULE = FULL;
+  };
 };
-

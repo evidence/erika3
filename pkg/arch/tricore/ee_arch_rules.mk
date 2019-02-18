@@ -109,12 +109,11 @@ $(TARGET_NAME).elf: $(OBJS) $(LIBDEP)
 ##
 ## BIN file creation
 ##
-
-$(TARGET_NAME).bin: $(TARGET_NAME).elf
-	$(EE_OBJCOPY) -O binary $< $@
+#$(TARGET_NAME).bin: $(TARGET_NAME).elf
+#	$(EE_OBJCOPY) -O binary $< $@
 
 $(TARGET_NAME).dump: $(TARGET_NAME).elf
-	$(EE_OBJDUMP) -C -t -x -S $< > $@
+	$(EE_OBJDUMP) $(OSEE_DUMP_OPT) $< > $@
 
 ##
 ## OBJ files creation
@@ -127,12 +126,12 @@ $(OS_EE_OBJ_DIR)/%.S.o: %.S
 
 $(OS_EE_OBJ_DIR)/%.c.o: %.c
 	$(VERBOSE_PRINTCC) $(EE_CC) $(OS_EE_DEFS_CC) $(COMPUTED_ALLINCPATH) \
-	$(COMPUTED_OPT_CC) $(OS_EE_DEP_OPT) -o $(TARGETFILE) $(SOURCEFILE)
+	$(COMPUTED_OPT_CC) $(OS_EE_DEP_OPT) -o $(TARGETFILE) $(SOURCEFILE) $(CCEXTRASTUFF)
 	$(QUIET)$(call OS_EE_MK_DEPS, $(subst .o,.d,$(@)))
 
 $(OS_EE_OBJ_DIR)/%.cpp.o: %.cpp
 	$(VERBOSE_PRINTCXX) $(EE_CXX) $(OS_EE_DEFS_CXX) $(COMPUTED_ALLINCPATH) \
-	$(COMPUTED_OPT_CXX) $(OS_EE_DEP_OPT) -o $(TARGETFILE) $(SOURCEFILE)
+	$(COMPUTED_OPT_CXX) $(OS_EE_DEP_OPT) -o $(TARGETFILE) $(SOURCEFILE) $(CXXEXTRASTUFF)
 	$(QUIET)$(call OS_EE_MK_DEPS, $(subst .o,.d,$(@)))
 
 ##

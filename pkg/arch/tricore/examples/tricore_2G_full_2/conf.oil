@@ -59,15 +59,16 @@ CPU mySystem {
 
     CPU_DATA = TRICORE {
       MULTI_STACK = TRUE;
-      COMPILER = GCC;
+      COMPILER = TASKING;
       IDLEHOOK = TRUE {
         HOOKNAME = "idle_hook";
       };
     };
 
     MCU_DATA = TC39X {
-      DERIVATIVE = "tc399xe-Astep";
-      REVISION = "AA";
+      DERIVATIVE = "tc397xe";
+      //DERIVATIVE = "tc399xe-Astep";
+      //REVISION = "AA";
     };
 
     USEEXTENSIONAPI = TRUE {

@@ -76,6 +76,142 @@
  */
 
 #include "ee_internal.h"
+#include <stdlib.h>
+
+/******************************************************************************
+                          Default Caches policies
+ *****************************************************************************/
+#if (!defined(OSEE_TC_DCACHE_ENABLED))
+#define OSEE_TC_DCACHE_ENABLED OSEE_TRUE
+#endif /* OSEE_TC_DCACHE_ENABLED */
+
+#if (!defined(OSEE_TC_PCACHE_ENABLED))
+#define OSEE_TC_PCACHE_ENABLED OSEE_TRUE
+#endif /* OSEE_TC_PCACHE_ENABLED */
+
+/******************************************************************************
+                           Compilers support 
+ *****************************************************************************/
+
+#if (defined(__TASKING__))
+#pragma weak   exit
+#pragma extern _Exit
+/* prevent profiling information on cstart */
+#pragma profiling off
+/* preset tradeoff level (for size) */
+#pragma tradeoff 4
+/* disable runtime error checking for cstart */
+#pragma runtime BCM
+/* disable MISRA-C checking */
+#pragma nomisrac
+/* bss clearing not before cinit */
+#pragma noclear
+/* no external ROM access before bus configuration */
+#pragma immediate_in_code
+
+#if (defined(OSEE_TC_CLONE_OS))
+/* Disable code cloning for startup code */
+#pragma code_core_association default
+#endif /* OSEE_TC_CLONE_OS */
+
+/* linker definitions */
+/* user stack end */
+#define __USTACK0       _lc_ue_ustack_tc0
+#define __USTACK1       _lc_ue_ustack_tc1
+#define __USTACK2       _lc_ue_ustack_tc2
+#define __USTACK3       _lc_ue_ustack_tc3
+#define __USTACK4       _lc_ue_ustack_tc4
+#define __USTACK6       _lc_ue_ustack_tc5
+/* user stack end */
+#define __ISTACK0       _lc_ue_istack_tc0
+#define __ISTACK1       _lc_ue_istack_tc1
+#define __ISTACK2       _lc_ue_istack_tc2
+#define __ISTACK3       _lc_ue_istack_tc3
+#define __ISTACK4       _lc_ue_istack_tc4
+#define __ISTACK6       _lc_ue_istack_tc5
+/* trap table */
+#define __TRAPTAB0      _lc_u_trap_tab_tc0
+#define __TRAPTAB1      _lc_u_trap_tab_tc1
+#define __TRAPTAB2      _lc_u_trap_tab_tc2
+#define __TRAPTAB3      _lc_u_trap_tab_tc3
+#define __TRAPTAB4      _lc_u_trap_tab_tc4
+#define __TRAPTAB6      _lc_u_trap_tab_tc5
+/* interrupt table */
+#define __INTTAB0       _lc_u_int_tab_tc0
+#define __INTTAB1       _lc_u_int_tab_tc1
+#define __INTTAB2       _lc_u_int_tab_tc2
+#define __INTTAB3       _lc_u_int_tab_tc3
+#define __INTTAB4       _lc_u_int_tab_tc4
+#define __INTTAB6       _lc_u_int_tab_tc5
+
+/* _SMALL_DATA_ centre of A0 addressable area is equal to Hightec GCC */
+/* centre of A1 addressable area */
+#define _SMALL_DATA2_   _LITERAL_DATA_
+/* centre of A8 addressable area */
+#define _SMALL_DATA3_   _A8_DATA_
+/* centre of A9 addressable area */
+#define _SMALL_DATA4_   _A9_DATA_
+
+/* context save areas begin */
+#define __CSA0          _lc_ub_csa_tc0
+#define __CSA1          _lc_ub_csa_tc1
+#define __CSA2          _lc_ub_csa_tc2
+#define __CSA3          _lc_ub_csa_tc3
+#define __CSA4          _lc_ub_csa_tc4
+#define __CSA6          _lc_ub_csa_tc5
+
+/* context save areas end */
+#define __CSA0_END      _lc_ue_csa_tc0
+#define __CSA1_END      _lc_ue_csa_tc1
+#define __CSA2_END      _lc_ue_csa_tc2
+#define __CSA3_END      _lc_ue_csa_tc3
+#define __CSA4_END      _lc_ue_csa_tc4
+#define __CSA6_END      _lc_ue_csa_tc5
+
+/* Start symbol for TASKING linker scripts */
+#define _start    _START
+
+/* libc exit function remapping  */
+#define OSEE_EXIT exit
+#define OSEE_FAR  __far
+
+/* C initialization function for TASKING is inside libc */
+#define osEE_tc_C_init _c_init
+/* C initialization function declaration */
+extern void _c_init(void);
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x02U)
+extern void _c_init_tc1(void);
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x02U */
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x04U)
+extern void _c_init_tc2(void);
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x04U */
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x08U)
+extern void _c_init_tc3(void);
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x08U */
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x10U)
+extern void _c_init_tc4(void);
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x10U */
+/* Numeric ID 5 is took by HSM core, how lame :(. */
+#if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x40U)
+extern void _c_init_tc5(void);
+#endif /* OSEE_CORE_ID_VALID_MASK & 0x40U */
+
+
+#elif defined (__GNUC__)
+extern void _exit (int status);
+/* libc exit function remapping  */
+#define OSEE_EXIT _exit
+/* GNUC meaningless function or data keyword */
+#define OSEE_FAR
+
+/* Actually we use only one interrupt vector with GCC */
+#define __TRAPTAB0 __TRAPTAB
+#define __TRAPTAB1 __TRAPTAB
+#define __TRAPTAB2 __TRAPTAB
+#define __TRAPTAB3 __TRAPTAB
+#define __TRAPTAB4 __TRAPTAB
+#define __TRAPTAB6 __TRAPTAB
+#endif
 
 /******************************************************************************
                           main function declaration
@@ -92,8 +228,9 @@ extern int main(int argc, char *argv[]);
 void _start(void);
 void osEE_tc_core0_start(void);
 
+#if (defined(__GNUC__))
 /******************************************************************************
-                        C initialization Functions Declarations
+                      C initialization Functions Declarations
  *****************************************************************************/
 typedef union
 {
@@ -116,7 +253,11 @@ typedef struct
   uint32_t                      table_entry_length;
 } OsEE_tc_copy_table;
 
-static void osEE_tc_apply_clear_table(const OsEE_tc_clear_table * p_clear_table_param) {
+static void osEE_tc_apply_clear_table
+(
+    const OsEE_tc_clear_table * p_clear_table_param
+)
+{
   const OsEE_tc_clear_table * p_clear_table = p_clear_table_param;
   while (p_clear_table != NULL) {
     OsEE_tc_init_table_entry_ptr  block_to_clear;
@@ -163,7 +304,11 @@ static void osEE_tc_apply_clear_table(const OsEE_tc_clear_table * p_clear_table_
   }
 }
 
-static void osEE_tc_apply_copy_table(const OsEE_tc_copy_table * p_copy_table_param) {
+static void osEE_tc_apply_copy_table
+(
+  const OsEE_tc_copy_table * p_copy_table_param
+)
+{
   const OsEE_tc_copy_table * p_copy_table = p_copy_table_param;
   while (p_copy_table != NULL) {
     OsEE_tc_init_table_entry_ptr  block_src;
@@ -227,6 +372,7 @@ static void osEE_tc_C_init(void) {
   osEE_tc_apply_copy_table(__copy_table);
 }
 
+#endif /* __GNUC__ */
 /******************************************************************************
                              Boot Mode Headers
  *****************************************************************************/
@@ -309,10 +455,10 @@ const uint32_t osEE_tc_bmhd_1[] = {
 #endif
 #endif /* !OSEE_TC_2G  && OSEE_TC_LINK_BMHD */
 
+#if (defined(__GNUC__))
 /******************************************************************************
                   Derivative Check + Turn-Off Frame pointer
  *****************************************************************************/
-#if (defined(__GNUC__))
 /* Define the Derivate Name as a hexvalue. This value
  * is an Hightec GCC built-in (e.g. TC27x => 0x2700)
  * This name will be used in the Memory description of linker script to
@@ -374,19 +520,19 @@ void _start(void)
 #endif
 
 /* Linker script defined symbols */
-extern OsEE_stack __USTACK0[];
-extern OsEE_stack __ISTACK0[];
+extern OSEE_FAR OsEE_stack __USTACK0[];
+extern OSEE_FAR OsEE_stack __ISTACK0[];
 
-extern void __TRAPTAB(void);
+extern void __TRAPTAB0(void);
 extern void __INTTAB0(void);
 
-extern uint8_t _SMALL_DATA_[];
-extern uint8_t _SMALL_DATA2_[];
-extern uint8_t _SMALL_DATA3_[];
-extern uint8_t _SMALL_DATA4_[];
+extern OSEE_FAR uint8_t _SMALL_DATA_[];
+extern OSEE_FAR uint8_t _SMALL_DATA2_[];
+extern OSEE_FAR uint8_t _SMALL_DATA3_[];
+extern OSEE_FAR uint8_t _SMALL_DATA4_[];
 
-extern OsEE_csa __CSA0[];
-extern OsEE_csa __CSA0_END[];
+extern OSEE_FAR OsEE_csa __CSA0[];
+extern OSEE_FAR OsEE_csa __CSA0_END[];
 
 void osEE_tc_core0_start(void)
 {
@@ -414,16 +560,16 @@ void osEE_tc_core0_start(void)
   osEE_tc_set_csfr(OSEE_CSFR_PCXI, pcxi);
 
 /* TODO: Enable/Disable program cache depending on the configuration */
-  osEE_tc_set_pcache(OSEE_TRUE);
+  osEE_tc_set_pcache(OSEE_TC_PCACHE_ENABLED);
 
 /* TODO: Enable/Disable data cache depending on the configuration */
-  osEE_tc_set_dcache(OSEE_TRUE);
+  osEE_tc_set_dcache(OSEE_TC_DCACHE_ENABLED);
 
 /* Clear the ENDINIT bit in the WDT_CON0 register */
   osEE_tc_clear_cpu_endinit(0U, cpu_wdt_pw);
 
 /* Load Base Address of Trap Vector Table. */
-  osEE_tc_set_csfr(OSEE_CSFR_BTV, (OsEE_reg)__TRAPTAB);
+  osEE_tc_set_csfr(OSEE_CSFR_BTV, (OsEE_reg)__TRAPTAB0);
 
 /* Load Base Address of Interrupt Vector Table. */
   osEE_tc_set_csfr(OSEE_CSFR_BIV, (OsEE_reg)__INTTAB0);
@@ -479,25 +625,20 @@ void osEE_tc_core0_start(void)
 #endif /* !OSEE_BYPASS_CLOCK_CONFIGURATION */
 #endif /* !OSEE_TRICORE_ILLD && !OSEE_TC_2G */
 
-/* Call main function */
-  (void)main();
-
-/* TODO: handle main return */
-  for (;;) {
-    ;
-  }
+  OSEE_EXIT(main());
 }
 
 #if (!defined(OSEE_SINGLECORE))
 #if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x02U)
 /* Linker script defined symbols */
-extern OsEE_stack __USTACK1[];
-extern OsEE_stack __ISTACK1[];
+extern OSEE_FAR OsEE_stack __USTACK1[];
+extern OSEE_FAR OsEE_stack __ISTACK1[];
 
+extern void __TRAPTAB1(void);
 extern void __INTTAB1(void);
 
-extern OsEE_csa __CSA1[];
-extern OsEE_csa __CSA1_END[];
+extern OSEE_FAR OsEE_csa __CSA1[];
+extern OSEE_FAR OsEE_csa __CSA1_END[];
 
 void osEE_tc_core1_start(void)
 {
@@ -525,16 +666,16 @@ void osEE_tc_core1_start(void)
   osEE_tc_set_csfr(OSEE_CSFR_PCXI, pcxi);
 
 /* TODO: Enable/Disable program cache depending on the configuration */
-  osEE_tc_set_pcache(OSEE_TRUE);
+  osEE_tc_set_pcache(OSEE_TC_PCACHE_ENABLED);
 
 /* TODO: Enable/Disable data cache depending on the configuration */
-  osEE_tc_set_dcache(OSEE_TRUE);
+  osEE_tc_set_dcache(OSEE_TC_DCACHE_ENABLED);
 
 /* Clear the ENDINIT bit in the WDT_CON0 register */
   osEE_tc_clear_cpu_endinit(1U, cpu_wdt_pw);
 
 /* Load Base Address of Trap Vector Table. */
-  osEE_tc_set_csfr(OSEE_CSFR_BTV, (OsEE_reg)__TRAPTAB);
+  osEE_tc_set_csfr(OSEE_CSFR_BTV, (OsEE_reg)__TRAPTAB1);
 
 /* Load Base Address of Interrupt Vector Table. */
   osEE_tc_set_csfr(OSEE_CSFR_BIV, (OsEE_reg)__INTTAB1);
@@ -565,6 +706,11 @@ void osEE_tc_core1_start(void)
   osEE_tc_disable_cpu_wdt(1U, cpu_wdt_pw);
   osEE_tc_disable_safety_wdt(safety_wdt_pw);
 
+#if (defined(__TASKING__))
+/* C core 1 private initialization */
+  _c_init_tc1();
+#endif /* __TASKING__ */
+
 /* Call main function */
   (void)main();
 
@@ -577,13 +723,14 @@ void osEE_tc_core1_start(void)
 
 #if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x04U)
 /* Linker script defined symbols */
-extern OsEE_stack __USTACK2[];
-extern OsEE_stack __ISTACK2[];
+extern OSEE_FAR OsEE_stack __USTACK2[];
+extern OSEE_FAR OsEE_stack __ISTACK2[];
 
+extern void __TRAPTAB2(void);
 extern void __INTTAB2(void);
 
-extern OsEE_csa __CSA2[];
-extern OsEE_csa __CSA2_END[];
+extern OSEE_FAR OsEE_csa __CSA2[];
+extern OSEE_FAR OsEE_csa __CSA2_END[];
 
 void osEE_tc_core2_start(void)
 {
@@ -611,16 +758,16 @@ void osEE_tc_core2_start(void)
   osEE_tc_set_csfr(OSEE_CSFR_PCXI, pcxi);
 
 /* TODO: Enable/Disable program cache depending on the configuration */
-  osEE_tc_set_pcache(OSEE_TRUE);
+  osEE_tc_set_pcache(OSEE_TC_PCACHE_ENABLED);
 
 /* TODO: Enable/Disable data cache depending on the configuration */
-  osEE_tc_set_dcache(OSEE_TRUE);
+  osEE_tc_set_dcache(OSEE_TC_DCACHE_ENABLED);
 
 /* Clear the ENDINIT bit in the WDT_CON0 register */
   osEE_tc_clear_cpu_endinit(2U, cpu_wdt_pw);
 
 /* Load Base Address of Trap Vector Table. */
-  osEE_tc_set_csfr(OSEE_CSFR_BTV, (OsEE_reg)__TRAPTAB);
+  osEE_tc_set_csfr(OSEE_CSFR_BTV, (OsEE_reg)__TRAPTAB2);
 
 /* Load Base Address of Interrupt Vector Table. */
   osEE_tc_set_csfr(OSEE_CSFR_BIV, (OsEE_reg)__INTTAB2);
@@ -651,6 +798,11 @@ void osEE_tc_core2_start(void)
   osEE_tc_disable_cpu_wdt(2U, cpu_wdt_pw);
   osEE_tc_disable_safety_wdt(safety_wdt_pw);
 
+#if (defined(__TASKING__))
+/* C core 2 private initialization */
+  _c_init_tc2();
+#endif /* __TASKING__ */
+
 /* Call main function */
   (void)main();
   
@@ -664,13 +816,14 @@ void osEE_tc_core2_start(void)
 
 #if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x08U)
 /* Linker script defined symbols */
-extern OsEE_stack __USTACK3[];
-extern OsEE_stack __ISTACK3[];
+extern OSEE_FAR OsEE_stack __USTACK3[];
+extern OSEE_FAR OsEE_stack __ISTACK3[];
 
+extern void __TRAPTAB3(void);
 extern void __INTTAB3(void);
 
-extern OsEE_csa __CSA3[];
-extern OsEE_csa __CSA3_END[];
+extern OSEE_FAR OsEE_csa __CSA3[];
+extern OSEE_FAR OsEE_csa __CSA3_END[];
 
 void osEE_tc_core3_start(void)
 {
@@ -698,16 +851,16 @@ void osEE_tc_core3_start(void)
   osEE_tc_set_csfr(OSEE_CSFR_PCXI, pcxi);
 
 /* TODO: Enable/Disable program cache depending on the configuration */
-  osEE_tc_set_pcache(OSEE_TRUE);
+  osEE_tc_set_pcache(OSEE_TC_PCACHE_ENABLED);
 
 /* TODO: Enable/Disable data cache depending on the configuration */
-  osEE_tc_set_dcache(OSEE_TRUE);
+  osEE_tc_set_dcache(OSEE_TC_DCACHE_ENABLED);
 
 /* Clear the ENDINIT bit in the WDT_CON0 register */
   osEE_tc_clear_cpu_endinit(3U, cpu_wdt_pw);
 
 /* Load Base Address of Trap Vector Table. */
-  osEE_tc_set_csfr(OSEE_CSFR_BTV, (OsEE_reg)__TRAPTAB);
+  osEE_tc_set_csfr(OSEE_CSFR_BTV, (OsEE_reg)__TRAPTAB3);
 
 /* Load Base Address of Interrupt Vector Table. */
   osEE_tc_set_csfr(OSEE_CSFR_BIV, (OsEE_reg)__INTTAB3);
@@ -738,6 +891,11 @@ void osEE_tc_core3_start(void)
   osEE_tc_disable_cpu_wdt(3U, cpu_wdt_pw);
   osEE_tc_disable_safety_wdt(safety_wdt_pw);
 
+#if (defined(__TASKING__))
+/* C core 3 private initialization */
+  _c_init_tc3();
+#endif /* __TASKING__ */
+
 /* Call main function */
   (void)main();
   
@@ -750,13 +908,14 @@ void osEE_tc_core3_start(void)
 
 #if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x10U)
 /* Linker script defined symbols */
-extern OsEE_stack __USTACK4[];
-extern OsEE_stack __ISTACK4[];
+extern OSEE_FAR OsEE_stack __USTACK4[];
+extern OSEE_FAR OsEE_stack __ISTACK4[];
 
+extern void __TRAPTAB4(void);
 extern void __INTTAB4(void);
 
-extern OsEE_csa __CSA4[];
-extern OsEE_csa __CSA4_END[];
+extern OSEE_FAR OsEE_csa __CSA4[];
+extern OSEE_FAR OsEE_csa __CSA4_END[];
 
 void osEE_tc_core4_start(void)
 {
@@ -784,16 +943,16 @@ void osEE_tc_core4_start(void)
   osEE_tc_set_csfr(OSEE_CSFR_PCXI, pcxi);
 
 /* TODO: Enable/Disable program cache depending on the configuration */
-  osEE_tc_set_pcache(OSEE_TRUE);
+  osEE_tc_set_pcache(OSEE_TC_PCACHE_ENABLED);
 
 /* TODO: Enable/Disable data cache depending on the configuration */
-  osEE_tc_set_dcache(OSEE_TRUE);
+  osEE_tc_set_dcache(OSEE_TC_DCACHE_ENABLED);
 
 /* Clear the ENDINIT bit in the WDT_CON0 register */
   osEE_tc_clear_cpu_endinit(4U, cpu_wdt_pw);
 
 /* Load Base Address of Trap Vector Table. */
-  osEE_tc_set_csfr(OSEE_CSFR_BTV, (OsEE_reg)__TRAPTAB);
+  osEE_tc_set_csfr(OSEE_CSFR_BTV, (OsEE_reg)__TRAPTAB4);
 
 /* Load Base Address of Interrupt Vector Table. */
   osEE_tc_set_csfr(OSEE_CSFR_BIV, (OsEE_reg)__INTTAB4);
@@ -824,6 +983,11 @@ void osEE_tc_core4_start(void)
   osEE_tc_disable_cpu_wdt(4U, cpu_wdt_pw);
   osEE_tc_disable_safety_wdt(safety_wdt_pw);
 
+#if (defined(__TASKING__))
+/* C core 4 private initialization */
+  _c_init_tc4();
+#endif /* __TASKING__ */
+
 /* Call main function */
   (void)main();
   
@@ -836,13 +1000,14 @@ void osEE_tc_core4_start(void)
 
 #if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x40U)
 /* Linker script defined symbols */
-extern OsEE_stack __USTACK6[];
-extern OsEE_stack __ISTACK6[];
+extern OSEE_FAR OsEE_stack __USTACK6[];
+extern OSEE_FAR OsEE_stack __ISTACK6[];
 
+extern void __TRAPTAB6(void);
 extern void __INTTAB6(void);
 
-extern OsEE_csa __CSA6[];
-extern OsEE_csa __CSA6_END[];
+extern OSEE_FAR OsEE_csa __CSA6[];
+extern OSEE_FAR OsEE_csa __CSA6_END[];
 
 void osEE_tc_core6_start(void)
 {
@@ -870,16 +1035,16 @@ void osEE_tc_core6_start(void)
   osEE_tc_set_csfr(OSEE_CSFR_PCXI, pcxi);
 
 /* TODO: Enable/Disable program cache depending on the configuration */
-  osEE_tc_set_pcache(OSEE_TRUE);
+  osEE_tc_set_pcache(OSEE_TC_PCACHE_ENABLED);
 
 /* TODO: Enable/Disable data cache depending on the configuration */
-  osEE_tc_set_dcache(OSEE_TRUE);
+  osEE_tc_set_dcache(OSEE_TC_DCACHE_ENABLED);
 
 /* Clear the ENDINIT bit in the WDT_CON0 register */
   osEE_tc_clear_cpu_endinit(5U, cpu_wdt_pw);
 
 /* Load Base Address of Trap Vector Table. */
-  osEE_tc_set_csfr(OSEE_CSFR_BTV, (OsEE_reg)__TRAPTAB);
+  osEE_tc_set_csfr(OSEE_CSFR_BTV, (OsEE_reg)__TRAPTAB6);
 
 /* Load Base Address of Interrupt Vector Table. */
   osEE_tc_set_csfr(OSEE_CSFR_BIV, (OsEE_reg)__INTTAB6);
@@ -909,6 +1074,11 @@ void osEE_tc_core6_start(void)
    re-enabled by ERIKA or by the Application */
   osEE_tc_disable_cpu_wdt(5U, cpu_wdt_pw);
   osEE_tc_disable_safety_wdt(safety_wdt_pw);
+
+#if (defined(__TASKING__))
+/* C core 6 private initialization */
+  _c_init_tc5();
+#endif /* __TASKING__ */
 
 /* Call main function */
   (void)main();

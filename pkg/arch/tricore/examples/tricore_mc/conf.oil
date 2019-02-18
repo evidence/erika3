@@ -47,10 +47,12 @@ CPU test_application {
     EE_OPT = "OSEE_ASSERT";
     EE_OPT = "OS_EE_APPL_BUILD_DEBUG";
     EE_OPT = "OS_EE_BUILD_DEBUG";
+    //EE_OPT = "OSEE_TC_CLONE_OS";
 
     CPU_DATA = TRICORE {
       ID = 0x0;
       CPU_CLOCK = 200.0;
+      COMPILER = TASKING;
       IDLEHOOK = TRUE {
         HOOKNAME = "idle_hook_core0";
       };

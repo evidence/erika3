@@ -39,23 +39,16 @@
  * project.
  * ###*E*### */
 
-/** \file   ee_internal.h
- *  \brief  ERIKA's Internals Collector.
- *
- *  This files is the main collector in Erika Enterprise for internals
- *  files.
- *
- *  \author Errico Guidieri
- *  \date   2017
- */
+#ifndef SHARED_H
+#define SHARED_H
 
-#ifndef OSEE_INTERNAL_H
-#define OSEE_INTERNAL_H
+#include "ee.h"
 
-#include "ee_conf.h"
-#include "ee_tc_trapvec.h"
-#include "ee_hal_internal.h"
-#include "ee_hal_mc_internal.h"
-#include "ee_kernel.h"
+/* Used to enhance tracing */
+static void idle_hook_body(void) {
+  __asm__ volatile(
+    "nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t"
+    "nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t");
+}
 
-#endif /* !OSEE_INTERNAL_H */
+#endif /* SHARED_H */

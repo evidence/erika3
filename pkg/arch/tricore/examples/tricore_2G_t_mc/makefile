@@ -78,14 +78,12 @@ OS_EE_OPT += OS_EE_VERBOSE
 export OS_EE_OPT
 endif
 
-.PHONY:	all config pull os appl \
+.PHONY:	all pull os appl \
 	clean os-clean appl-clean \
 	dist-clean os-dist-clean appl-dist-clean \
 	upload
 
 all: os appl
-
-config: $(ERIKA_DIR)
 
 pull: $(ERIKA_DIR)
 	$(MAKE) -C $< mk
@@ -122,12 +120,8 @@ doc:	pull
 pdfdoc:	pull
 	$(MAKE) -C $(ERIKA_DIR)/doc $@
 
-upload:	all
-	$(MAKE) -C $(OUTPUT_DIR) upload
-
-ifneq (ok,$(shell test -d "$(RTDRUID_ECLIPSE_HOME)" && echo ok ))
-$(error The variable RTDRUID_ECLIPSE_HOME must point to a valid Eclipse RT-Druid installation)
-endif
+upload: appl
+	$(MAKE) -C $(OUTPUT_DIR) $@
 
 ## TO BE Restored
 ## Run RT-Druid
@@ -153,7 +147,7 @@ endif
 #                   configuration files
 $(ERIKA_DIR) $(OUTPUT_DIR): conf.oil
 #	@echo "Generating configuration with RT-Druid"
-#	@java -jar ${RTDRUID_ECLIPSE_HOME}/plugins/org.eclipse.equinox.launcher_1.3.201.v20161025-1711.jar\
+#	@java -jar ${RTDRUID_ECLIPSE_HOME}/plugins/org.eclipse.equinox.launcher_*.jar\
 #			-data $(WS)\
 #			-application com.eu.evidence.rtdruid3.oil.ee.core.generator\
 #				--inputFile conf.oil\

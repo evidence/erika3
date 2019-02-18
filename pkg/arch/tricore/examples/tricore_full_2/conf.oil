@@ -51,12 +51,14 @@
 CPU mySystem {
 
   OS myOs {
+    EE_OPT = "OSEE_DEBUG";
     EE_OPT = "OS_EE_APPL_BUILD_DEBUG";
     EE_OPT = "OS_EE_BUILD_DEBUG";
 
     USERESSCHEDULER = FALSE;
 
     CPU_DATA = TRICORE {
+      CPU_CLOCK = 200.0;
       MULTI_STACK = TRUE;
       COMPILER = GCC;
       IDLEHOOK = TRUE {

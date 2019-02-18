@@ -48,7 +48,13 @@
 #ifndef	INCLUDE_EE_TC2X5_BOARD_H__
 #define	INCLUDE_EE_TC2X5_BOARD_H__
 
+#if (defined(__GNUC__))
 #include <tc27xc/Ifx_reg.h>
+#elif (defined(__TASKING__))
+#ifdef __CPU__
+#include __SFRFILE__(__CPU__)
+#endif
+#endif /* __GNUC__ || __TASKING__ */
 
 /*  Output - Push-pull General-purpose output */
 #define OSEE_TC2YX_OUTPUT_PUSH_PULL_GP	0x10U

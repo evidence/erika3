@@ -156,6 +156,9 @@ else	# OS_EE_VERBOSE
 OS_EE_AR_OPT = $(subst v,,$(subst $(OS_EE_SPACE),,cs $(ARFLAGS)))
 endif	# OS_EE_VERBOSE
 
+# OSEE_DUMP_OPT represents the options for disassembler invocation
+OSEE_DUMP_OPT = -C -t -x -S
+
 # Handle special case of TC39X family A-Step revision
 ifeq ($(OSEE_TRICORE_MCU), tc39x)
 ifeq (${OSEE_TRICORE_STEP}, AA)

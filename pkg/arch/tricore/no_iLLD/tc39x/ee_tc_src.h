@@ -45,7 +45,7 @@
  * This file derives from a modification of the Infineon startup scripts,
  * distributed under the following license:
  *
- * \file ./Src/BaseSw/Infra/Sfr/TC35A/_Reg/IfxSrc_reg.h
+ * file ./Src/BaseSw/Infra/Sfr/TC35A/_Reg/IfxSrc_reg.h
  * \brief
  * \copyright Copyright (c) 2014 Infineon Technologies AG. All rights reserved.
  *
@@ -70,8 +70,8 @@
  */
 
 
-/** \file   ee_tc_srch.h
- *  \brief  Contains the OSEE_TC_SRC registers offset definition for tc29x.
+/** \file   ee_tc_src.h
+ *  \brief  Contains the OSEE_TC_SRC registers offset definition for tc39x.
  *  \author Errico Guidieri
  *  \date   2018
  */

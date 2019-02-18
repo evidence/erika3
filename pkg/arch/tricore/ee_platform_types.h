@@ -42,12 +42,11 @@
 /** \file   ee_platform_types.h
  *  \brief  Platform Types.
  *
- *  This files contains all types and symbols for a ARMv7-R
+ *  This files contains all types and symbols for a specific Architecture in
  *  Erika Enterprise.
  *
- *  \note COULD BE raplaced by AUTOSAR Type definition paradigm or being the
- *        implementation.
- *  \note TO BE DOCUMENTED!!!
+ *  \note	COULD BE raplaced by AUTOSAR Type definition paradigm or being
+ *  		the implementation.
  *
  *  \author Errico Guidieri
  *  \date   2017
@@ -58,8 +57,8 @@
 
 #include "ee_cfg.h"
 #include "ee_arch_override.h"
-#include "ee_compiler.h"
 #include "ee_utils.h"
+#include "ee_compiler.h"
 #include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -69,13 +68,16 @@ extern "C" {
 #endif
 
 #if (!defined(OSEE_BOOL_TYPE))
+/** Boolean Type */
 typedef enum {
   OSEE_FALSE = OSEE_M_FALSE,
   OSEE_TRUE  = OSEE_M_TRUE
 } OsEE_bool;
+/** Boolean type override */
 #define OSEE_BOOL_TYPE OsEE_bool
 #endif /* !OSEE_BOOL_TYPE */
 
+/** The NULL pointer */
 #if (!defined(NULL))
 #if (!defined(__cplusplus))
 #define NULL ((void *)0)
@@ -85,10 +87,10 @@ typedef enum {
 #endif  /* NULL */
 
 /* Define HAL types */
-typedef void *                OsEE_addr;
-typedef uint32_t              OsEE_reg;
-typedef int32_t               OsEE_sreg;
-typedef uint32_t              OsEE_stack;
+typedef void *                OsEE_addr;               /**< Memory address */
+typedef uint32_t              OsEE_reg;                /**< Register size, unsigned */
+typedef int32_t               OsEE_sreg;               /**< Register size, signed */
+typedef uint32_t              OsEE_stack;              /**< Stack word, unsigned */
 
 /* [SWS_Os_00583] The number of cores that can be controlled by the AUTOSAR OS
     shall be configured offline. A new configuration item (OsNumberOfCores)
@@ -126,15 +128,22 @@ typedef enum {
   OS_CORE_ID_ARR_SIZE
 } OsEE_core_id;
 
+/** Maximum core ID on this platform */
 #define OSEE_CORE_ID_MAX      ((CoreNumType)OS_CORE_ID_ARR_SIZE - 1U)
+/** Core ID type override */
 #define OSEE_CORE_ID_TYPE     OsEE_core_id
 
+/** Priority type, 8 bit on this architecture */
 typedef uint8_t               OsEE_prio;
+/** Priority type override */
 #define OSEE_TASK_PRIO_TYPE   OsEE_prio
 
+/** ISR source type, 16 bit on this architecture */
 typedef uint16_t              OsEE_isr_src_id;
+/** ISR source type override */
 #define OSEE_ISR_SOURCE_TYPE  OsEE_isr_src_id
 
+/** ISR invalid source type */
 #define OSEE_TC_SRC_INVALID   ((OsEE_isr_src_id)-1)
 
 #if (!defined(OSEE_SINGLECORE))
@@ -143,7 +152,7 @@ typedef OsEE_reg volatile OsEE_spin_lock;
 
 /** @brief Type for inter cpu barriers */
 typedef struct {
-  OsEE_reg volatile value;
+  OsEE_reg volatile value; /**< barrier internal value */
 } OsEE_barrier;
 #endif /* !OSEE_SINGLECORE */
 

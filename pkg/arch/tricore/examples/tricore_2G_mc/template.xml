@@ -45,7 +45,7 @@
 
 <evidence_example version="1" ID="tricore_2G_mc">
 
-  <category>TriCore/AURIX 2G</category>
+  <category>TriCore/AURIX 2G/HIGHTEC</category>
   <title>MultiCore</title>
 
   <small_descr>
@@ -56,6 +56,9 @@
     MultiCore Demo. Test remote task activation, with ActivateTask primitive
     (from Core1 to Core2) and with alarm (from Core2 to Core0), and remote
     task release with primitive SetEvent (from Core0 to Core1).
+
+    This demo is pre-configured to use HIGHTEC compiler
+    (CPU_DATA.COMPILER=GCC; with ID = 0x0)
   </long_descr>
 
   <file_section>

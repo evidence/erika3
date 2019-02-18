@@ -45,7 +45,7 @@
 
 <evidence_example version="1" ID="tricore_2G_full_1">
 
-  <category>TriCore/AURIX 2G</category>
+  <category>TriCore/AURIX 2G/HIGHTEC</category>
   <title>Full Demo 1</title>
 
   <small_descr>
@@ -54,6 +54,9 @@
 
   <long_descr>
     In this demo there are many Tasks, ISR and a Semaphore.
+
+    This demo is pre-configured to use HIGHTEC compiler
+    (CPU_DATA.COMPILER=GCC;)
   </long_descr>
 
   <file_section>

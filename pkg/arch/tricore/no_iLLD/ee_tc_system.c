@@ -620,7 +620,17 @@ OsEE_reg osEE_tc_get_fsource(void) {
                         STM Support
  *****************************************************************************/
 /* Global variable with freq in Khz value */
+#if (defined(__TASKING__))
+#define OS_START_SEC_GLOBAL_VAR_CLEARED
+#include "Os_MemMap.h"
+#endif /* __TASKING__ */
+
 static OsEE_reg osEE_tc_stm_freq_khz;
+
+#if (defined(__TASKING__))
+#define OS_STOP_SEC_GLOBAL_VAR_CLEARED
+#include "Os_MemMap.h"
+#endif /* __TASKING__ */
 
 static OsEE_reg osEE_tc_stm_us_ticks(OsEE_reg usec) {
   OsEE_reg ticks;
@@ -651,6 +661,7 @@ void osEE_tc_stm_set_clockpersec(void)
 
 #if (defined(__TASKING__))
   setfoschz(fstm);
+  osEE_tc_dsync();
 #endif /* __TASKING__ */
 }
 

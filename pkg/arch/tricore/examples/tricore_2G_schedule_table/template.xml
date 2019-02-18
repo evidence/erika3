@@ -44,7 +44,7 @@
   -->
 
 <evidence_example version="1" ID="tricore_2G_schedule_tables">
-  <category>TriCore/AURIX 2G</category>
+  <category>TriCore/AURIX 2G/HIGHTEC</category>
   <title>Schedule Table</title>
 
   <small_descr>
@@ -54,6 +54,9 @@
   <long_descr>
     This an example that use Schedule Table feature in a multicore
     configuration (to show cross core TASKs activation and EVENTs setting).
+
+    This demo is pre-configured to use HIGHTEC compiler
+    (CPU_DATA.COMPILER=GCC; with ID = 0x0)
   </long_descr>
 
   <file_section>

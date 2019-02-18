@@ -39,23 +39,24 @@
  * project.
  * ###*E*### */
 
-/** \file   ee_internal.h
- *  \brief  ERIKA's Internals Collector.
+/** \file   ee_arch_compiler_tasking_ctc.h
+ *  \brief  Arch dependent TASKING CTC Compilers Definitions.
  *
- *  This files is the main collector in Erika Enterprise for internals
- *  files.
+ *  This file contains all the common compiler-dependent architectural
+ *  definitions for TASKING CTC Compiler.
+ *
+ *  \note This file \b MUST contain only \c defines, because it is also
+ *        included by the \c .S files. \n
  *
  *  \author Errico Guidieri
- *  \date   2017
+ *  \date   2019
  */
 
-#ifndef OSEE_INTERNAL_H
-#define OSEE_INTERNAL_H
+/*
+ * Compiler dependent interface
+ */
+#ifndef OSEE_ARCH_COMPILER_TASKING_CTC_H
+#define OSEE_ARCH_COMPILER_TASKING_CTC_H
 
-#include "ee_conf.h"
-#include "ee_tc_trapvec.h"
-#include "ee_hal_internal.h"
-#include "ee_hal_mc_internal.h"
-#include "ee_kernel.h"
 
-#endif /* !OSEE_INTERNAL_H */
+#endif /* !OSEE_ARCH_COMPILER_TASKING_CTC_H */

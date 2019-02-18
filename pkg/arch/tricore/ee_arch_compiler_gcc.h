@@ -40,15 +40,13 @@
  * ###*E*### */
 
 /** \file   ee_arch_compiler_gcc.h
- *  \brief  Common GCC Compilers Definitions.
+ *  \brief  Arch dependent GCC Compilers Definitions.
  *
  *  This file contains all the common compiler-dependent architectural
  *  definitions for GNU GCC Compiler.
  *
  *  \note This file \b MUST contain only \c defines, because it is also
  *        included by the \c .S files. \n
- *
- *  \note   TO BE DOCUMENTED!!!
  *
  *  \author Errico Guidieri
  *  \date   2017
@@ -60,6 +58,10 @@
 #ifndef OSEE_ARCH_COMPILER_GCC_H
 #define OSEE_ARCH_COMPILER_GCC_H
 
+/** \brief Function to be executed at startup.
+ *
+ *  Function to be executed at startup.
+ */
 #define OSEE_INIT       /* __attribute__((constructor)) */
 
 #endif /* !OSEE_ARCH_COMPILER_GCC_H */

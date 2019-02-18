@@ -69,8 +69,9 @@ CPU mySystem {
     MCU_DATA = TC39X;
 
     MCU_DATA = TC39X {
-      DERIVATIVE = "tc399xe-Astep";
-      REVISION = "AA";
+      DERIVATIVE = "tc397xe";
+      //DERIVATIVE = "tc399xe-Astep";
+      //REVISION = "AA";
     };
 
     USEEXTENSIONAPI = TRUE {

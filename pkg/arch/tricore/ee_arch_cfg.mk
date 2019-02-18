@@ -55,7 +55,9 @@ EE_SRCS += ee_tc_cstart.c
 EE_SRCS += ee_tc_system.c
 ifeq ($(call iseeopt, OSEE_TC_2G), yes)
 ifeq ($(call iseeopt, OSEE_TC_LINK_BMHD), yes)
+ifeq ($(call iseeopt, OS_EE_GCC), yes)
 EE_SRCS += ee_tc_ssw_bmhd.c
+endif # OS_EE_GCC
 endif # OSEE_TC_LINK_BMHD
 endif # OSEE_TC_2G
 endif # !OSEE_TRICORE_ILLD

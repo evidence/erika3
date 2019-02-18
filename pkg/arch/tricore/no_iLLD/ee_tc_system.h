@@ -63,23 +63,27 @@ extern "C" {
 /*******************************************************************************
                             Frequencies References
  ******************************************************************************/
-/* PLL Frequencies Bound Defines */
+/** PLL Frequencies Bound Defines (Min) */
 #define OSEE_TC_CLOCK_MIN           20000000U
 #if (defined(OSEE_TC_TC29X))
+/** PLL Frequencies Bound Defines (Max) */
 #define OSEE_TC_CLOCK_MAX          300000000U /* 300Mhz for TC29x MCU */
 #else
+/** PLL Frequencies Bound Defines (Max) */
 #define OSEE_TC_CLOCK_MAX          200000000U /* 200Mhz for other MCUs */
 #endif
 
 #if (!defined(OSEE_TC_BOARD_FOSC))
+/** Quartz frequency oscillation */
 #define OSEE_TC_BOARD_FOSC 20000000U
 #endif /* !OSEE_TC_BOARD_FOSC */
 
-/* Configure EVR (backup clock) frequency */
+/** Configure EVR (backup clock) frequency */
 #if (!defined(OSEE_TC_EVR_OSC_FREQUENCY))
 #define OSEE_TC_EVR_OSC_FREQUENCY 100000000U
 #endif /* !OSEE_TC_EVR_OSC_FREQUENCY */
 
+/** CPU Clock Frequency */
 #if (defined(OSEE_BYPASS_CLOCK_CONFIGURATION))
 #if (!defined(OSEE_CPU_CLOCK))
 #define OSEE_CPU_CLOCK  OSEE_TC_EVR_OSC_FREQUENCY
@@ -94,52 +98,53 @@ extern "C" {
                          Typedef for system support
  ******************************************************************************/
 
+/** Iinterrupt Hardware priority type (8 bits on Tricore) */
 typedef uint8_t OsEE_tc_isr_hw_prio;
 
 /*******************************************************************************
                               Ports Support
  ******************************************************************************/
 /* Defines to populate Ports registers */
-/*  Input - No input pull device connected, tri-state mode
-    (same as 0x03U) */
+/**  Input - No input pull device connected, tri-state mode
+     (same as 0x03U) */
 #define OSEE_TC_INPUT_TRISTATE         0x00U
-/*  Input - Pull-Down device connected */
+/**  Input - Pull-Down device connected */
 #define OSEE_TC_INPUT_PULL_DOWN        0x01U
-/*  Input - Pull-Up device connected. RESET Default */
+/**  Input - Pull-Up device connected. RESET Default */
 #define OSEE_TC_INPUT_PULL_UP          0x02U
 
-/*  Output - Push-pull General-purpose output */
+/**  Output - Push-pull General-purpose output */
 #define OSEE_TC_OUTPUT_PUSH_PULL_GP    0x10U
-/*  Output - Push-pull Alternate output function 1 */
+/**  Output - Push-pull Alternate output function 1 */
 #define OSEE_TC_OUTPUT_PUSH_PULL_ALT1  0x11U
-/*  Output - Push-pull Alternate output function 2 */
+/**  Output - Push-pull Alternate output function 2 */
 #define OSEE_TC_OUTPUT_PUSH_PULL_ALT2  0x12U
-/*  Output - Push-pull Alternate output function 3 */
+/**  Output - Push-pull Alternate output function 3 */
 #define OSEE_TC_OUTPUT_PUSH_PULL_ALT3  0x13U
-/*  Output - Push-pull Alternate output function 4 */
+/**  Output - Push-pull Alternate output function 4 */
 #define OSEE_TC_OUTPUT_PUSH_PULL_ALT4  0x14U
-/*  Output - Push-pull Alternate output function 5 */
+/**  Output - Push-pull Alternate output function 5 */
 #define OSEE_TC_OUTPUT_PUSH_PULL_ALT5  0x15U
-/*  Output - Push-pull Alternate output function 6 */
+/**  Output - Push-pull Alternate output function 6 */
 #define OSEE_TC_OUTPUT_PUSH_PULL_ALT6  0x16U
-/*  Output - Push-pull Alternate output function 7 */
+/**  Output - Push-pull Alternate output function 7 */
 #define OSEE_TC_OUTPUT_PUSH_PULL_ALT7  0x17U
 
-/*  Output - Open-drain General-purpose output */
+/**  Output - Open-drain General-purpose output */
 #define OSEE_TC_OUTPUT_OPEN_DRAIN_GP   0x24U
-/*  Output - Open-drain Alternate output function 1 */
+/**  Output - Open-drain Alternate output function 1 */
 #define OSEE_TC_OUTPUT_OPEN_DRAIN_ALT1 0x25U
-/*  Output - Open-drain Alternate output function 2 */
+/**  Output - Open-drain Alternate output function 2 */
 #define OSEE_TC_OUTPUT_OPEN_DRAIN_ALT2 0x26U
-/*  Output - Open-drain Alternate output function 3 */
+/**  Output - Open-drain Alternate output function 3 */
 #define OSEE_TC_OUTPUT_OPEN_DRAIN_ALT3 0x27U
-/*  Output - Open-drain Alternate output function 4 */
+/**  Output - Open-drain Alternate output function 4 */
 #define OSEE_TC_OUTPUT_OPEN_DRAIN_ALT4 0x28U
-/*  Output - Open-drain Alternate output function 5 */
+/**  Output - Open-drain Alternate output function 5 */
 #define OSEE_TC_OUTPUT_OPEN_DRAIN_ALT5 0x29U
-/*  Output - Open-drain Alternate output function 6 */
+/**  Output - Open-drain Alternate output function 6 */
 #define OSEE_TC_OUTPUT_OPEN_DRAIN_ALT6 0x30U
-/*  Output - Open-drain Alternate output function 7 */
+/**  Output - Open-drain Alternate output function 7 */
 #define OSEE_TC_OUTPUT_OPEN_DRAIN_ALT7 0x31U
 
 /******************************************************************************
@@ -165,13 +170,13 @@ typedef OsEE_tc_SCU_WDTCPU_CON0_bits OsEE_tc_SCU_WDTS_CON0_bits;
 /** \brief  CPU WDT Control Register 1 */
 typedef struct OsEE_tc_SCU_WDTCPU_CON1_bits_tag
 {
-/** \brief \internal Reserved */
+/** \brief Reserved */
   unsigned int      : 2;
 /** \brief [2:2] Input Frequency Request Control (rw) */
   unsigned int ir0  : 1;
 /** \brief [3:3] Disable Request Control Bit (rw) */
   unsigned int dr   : 1;
-/** \brief \internal Reserved */
+/** \brief Reserved */
   unsigned int      : 1;
 /** \brief [5:5] Input Frequency Request Control (rw) */
   unsigned int ir1  : 1;
@@ -183,7 +188,7 @@ typedef struct OsEE_tc_SCU_WDTCPU_CON1_bits_tag
   unsigned int tcr  : 1;
 /** \brief [15:9] Timer Check Tolerance Request (rw) */
   unsigned int tctr : 7;
-/** \brief \internal Reserved */
+/** \brief Reserved */
   unsigned int      : 16;
 } OsEE_tc_SCU_WDTCPU_CON1_bits;
 
@@ -192,13 +197,13 @@ typedef struct OsEE_tc_SCU_WDTS_CON1_bits_tag
 {
 /** \brief [0:0] Clear Internal Reset Flag (rwh) */
   unsigned int clrif  : 1;
-/** \brief \internal Reserved */
+/** \brief Reserved */
   unsigned int        : 1;
 /** \brief [2:2] Input Frequency Request Control (rw) */
   unsigned int ir0    : 1;
 /** \brief [3:3] Disable Request Control Bit (rw) */
   unsigned int dr     : 1;
-/** \brief \internal Reserved */
+/** \brief Reserved */
   unsigned int        : 1;
 /** \brief [5:5] Input Frequency Request Control (rw) */
   unsigned int ir1    : 1;
@@ -210,7 +215,7 @@ typedef struct OsEE_tc_SCU_WDTS_CON1_bits_tag
   unsigned int tcr    : 1;
 /** \brief [15:9] Timer Check Tolerance Request (rw) */
   unsigned int tctr   : 7;
-/** \brief \internal Reserved */
+/** \brief Reserved */
   unsigned int        : 16;
 } OsEE_tc_SCU_WDTS_CON1_bits;
 
@@ -351,7 +356,7 @@ typedef struct OsEE_tc_SCU_WDTS_tag
     )\
   )
 
-
+/** Reads the whatchdog password from CON0 register */
 OSEE_STATIC_INLINE uint16_t OSEE_ALWAYS_INLINE
   osEE_tc_get_cpu_wdt_pw(OsEE_reg core_index)
 {
@@ -363,6 +368,7 @@ OSEE_STATIC_INLINE uint16_t OSEE_ALWAYS_INLINE
   return (uint16_t)pw_toggled;
 }
 
+/** Reads the safety whatchdog password from CON0 register */
 OSEE_STATIC_INLINE uint16_t OSEE_ALWAYS_INLINE
   osEE_tc_get_safety_wdt_pw(void)
 {
@@ -374,6 +380,12 @@ OSEE_STATIC_INLINE uint16_t OSEE_ALWAYS_INLINE
   return (uint16_t)pw_toggled;
 }
 
+/**
+ *  \brief Clears the watchdog lock to access protected registers
+ *  
+ *  \param [in] core_index The watchdog core id
+ *  \param [in] pw the password to unlock the lock
+ */
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
  osEE_tc_clear_cpu_endinit(OsEE_reg core_index, uint16_t pw)
 {
@@ -407,6 +419,12 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
   }
 }
 
+/**
+ *  \brief Sets back the watchdog lock after the access to protected registers
+ *  
+ *  \param [in] core_index The watchdog core id
+ *  \param [in] pw the password to unlock the lock
+ */
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
   osEE_tc_set_cpu_endinit(OsEE_reg core_index, uint16_t pw)
 {
@@ -440,6 +458,14 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
   }
 }
 
+/**
+ *  \brief Disables the core watchdog.
+ *  
+ *  Disables the core watchdog. It is activated by default after reset.
+ *  
+ *  \param [in] core_index Description for core_index
+ *  \param [in] pw Description for pw
+ */
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
   osEE_tc_disable_cpu_wdt(OsEE_reg core_index, uint16_t pw)
 {
@@ -459,6 +485,12 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
   osEE_tc_set_cpu_endinit(core_index, pw);
 }
 #endif
+
+/**
+ *  \brief Clears the safety watchdog lock to access protected registers
+ *  
+ *  \param [in] pw the password to unlock the lock
+ */
 
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
   osEE_tc_clear_safety_endinit(uint16_t pw)
@@ -489,6 +521,12 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
   }
 }
 
+/**
+ *  \brief Sets back the safety watchdog lock after the access to protected 
+ *  registers.
+ *  
+ *  \param [in] pw the password to unlock the lock
+ */
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
   osEE_tc_set_safety_endinit(uint16_t pw)
 {
@@ -519,6 +557,13 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
   }
 }
 
+/**
+ *  \brief Disables the safety watchdog.
+ *  
+ *  Disables the safety watchdog. It is activated by default after reset.
+ *  
+ *  \param [in] pw Description for pw
+ */
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
   osEE_tc_disable_safety_wdt(uint16_t pw)
 {
@@ -543,6 +588,11 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
           Initialization Utility Functions Declaration and Definition
  *****************************************************************************/
 
+/**
+ *  \brief Enables/disables the program cache
+ *  
+ *  \param [in] enable Flag to enable/disable the program cache
+ */
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_tc_set_pcache(OsEE_bool enable)
 {
   uint16_t cpu_wdt_pw;
@@ -572,6 +622,11 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_tc_set_pcache(OsEE_bool enable)
   osEE_tc_set_cpu_endinit(core_index, cpu_wdt_pw);
 }
 
+/**
+ *  \brief Enables/disables the data cache
+ *  
+ *  \param [in] enable Flag to enable/disable the data cache
+ */
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_tc_set_dcache(OsEE_bool enable)
 {
   uint16_t cpu_wdt_pw;
@@ -675,29 +730,38 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
                           System Timer Support (STM)
  *****************************************************************************/
 
+/** System Timer base address */
 #if (!defined(OSEE_TC_2G))
-#define OSEE_TC_STM_BASE            (0xF0000000U)
+#define OSEE_TC_STM_BASE        (0xF0000000U)
+#define OSEE_TC_STM_ID_MASK     (0x3U)
 #else
-#define OSEE_TC_STM_BASE            (0xF0001000U)
+#define OSEE_TC_STM_BASE        (0xF0001000U)
+#define OSEE_TC_STM_ID_MASK     (0x7U)
 #endif /* !OSEE_TC_2G */
 
-#define OSEE_TC_STM_CORE_OFFSET(c)  (((((OsEE_reg)(c))) & 0x3U) * 0x100U)
+/** per-core offset to reach the STM registers */
+#define OSEE_TC_STM_CORE_OFFSET(c)\
+  (((((OsEE_reg)(c))) & OSEE_TC_STM_ID_MASK) * 0x100U)
 
+/** access to a register on a specific core of the STM- */
 #define OSEE_TC_STM_ADDR(c, regoffset)\
   (OSEE_TC_STM_BASE + OSEE_TC_STM_CORE_OFFSET(c) + ((regoffset) & 0xFFU))
-  
+
+/** a macro to operate on STM registers on a specific core */
 #define OSEE_TC_STM_REG(c, regoffset)\
   (*(OsEE_reg volatile *)OSEE_TC_STM_ADDR(c, regoffset))
 
+/** offset in the interrupt router of the STM */
 #if (!defined(OSEE_TC_2G))
 #define OSEE_TC_SRC_STM_OFF         (0x0490U)
 #else
 #define OSEE_TC_SRC_STM_OFF         (0x0300U)
 #endif /* !OSEE_TC_2G */
 
+/** address to a specific register of the STM in the interrupt router */
 #define OSEE_TC_STM_SRC_OFFSET(c, sr)\
   (OSEE_TC_SRC_STM_OFF +\
-    ((((OsEE_reg)(c)) & 0x3U) * 8U) + (((sr) & 0x1U) * 4U))
+    ((((OsEE_reg)(c)) & OSEE_TC_STM_ID_MASK) * 8U) + (((sr) & 0x1U) * 4U))
 
 /** \brief Clock Control Register */
 #define OSEE_TC_STM_CLC_OFF     (0x00U)
@@ -751,27 +815,34 @@ typedef struct OsEE_tc_STM_CMCON_bits_tag
 {
 /** \brief [4:0] Compare Register Size for CMP0 (rw) */
   unsigned int msize0   : 5;
-/** \brief \internal Reserved */
+/** \brief Reserved */
   unsigned int          : 3;
 /** \brief [12:8] Start Bit Location for CMP0 (rw) */
   unsigned int mstart0  : 5;
-/** \brief \internal Reserved */
+/** \brief Reserved */
   unsigned int          : 3;
 /** \brief [20:16] Compare Register Size for CMP1 (rw) */
   unsigned int msize1   : 5;
-/** \brief \internal Reserved */
+/** \brief Reserved */
   unsigned int          : 3;
 /** \brief [28:24] Start Bit Location for CMP1 (rw) */
   unsigned int mstart1  : 5;
-/** \brief \internal Reserved */
+/** \brief Reserved */
   unsigned int          : 3;
 } OsEE_tc_STM_CMCON_bits;
 
+/** CMCON register of the STM Timer */
 typedef union OsEE_tc_STM_CMCON_tag {
-  OsEE_reg                reg;
-  OsEE_tc_STM_CMCON_bits  bits;
+  OsEE_reg                reg;   /**< the whole register */
+  OsEE_tc_STM_CMCON_bits  bits;  /**< the bits of the CMCON register */
 } OsEE_tc_STM_CMCON;
 
+/** \brief Macro to access the CMCON register of the STM of core c
+ *  
+ *  Macro to access the CMCON register of the STM of core c
+ *  
+ *  \param [in] c the target core where you want to read the CMCON register
+ */
 #define OSEE_TC_STM_CMCON(c)\
   (*(OsEE_tc_STM_CMCON volatile *)\
     OSEE_TC_STM_ADDR(c, OSEE_TC_STM_CMCON_OFF)\
@@ -786,7 +857,7 @@ typedef struct OsEE_tc_STM_ICR_bits_tag
   unsigned int cmp0ir : 1;
 /** \brief [2:2] Compare Register CMP0 Interrupt Output Selection (rw) */
   unsigned int cmp0os : 1;
-/** \brief \internal Reserved */
+/** \brief Reserved */
   unsigned int        : 1;
 /** \brief [4:4] Compare Register CMP1 Interrupt Enable Control (rw) */
   unsigned int cmp1en : 1;
@@ -794,24 +865,34 @@ typedef struct OsEE_tc_STM_ICR_bits_tag
   unsigned int cmp1ir : 1;
 /** \brief [6:6] Compare Register CMP1 Interrupt Output Selection (rw) */
   unsigned int cmp1os : 1;
-/** \brief \internal Reserved */
+/** \brief Reserved */
   unsigned int        : 25;
 } OsEE_tc_STM_ICR_bits;
 
+/** ICR register of the STM timer */
 typedef union OsEE_tc_STM_ICR_tag {
-  OsEE_reg                reg;
-  OsEE_tc_STM_ICR_bits  bits;
+  OsEE_reg                reg;   /**< the whole register */
+  OsEE_tc_STM_ICR_bits  bits;    /**< the bits of the ICR register */
 } OsEE_tc_STM_ICR;
 
+/** \brief Macro to access the ICR register of the STM of core c
+ *  
+ *  Macro to access the ICR register of the STM of core c
+ *  
+ *  \param [in] c the target core where you want to read the ICR register
+ */
 #define OSEE_TC_STM_ICR(c)\
   (*(OsEE_tc_STM_ICR volatile *)\
     OSEE_TC_STM_ADDR(c, OSEE_TC_STM_ICR_OFF)\
   )
 
 /**
-  * @brief  Used to read lower word of STM peripheral 64 bit counter.
-  *         To guarantee coherency lower word must be read before than upper
-  *         word.
+ * \brief  Used to read lower word of STM peripheral 64 bit counter.
+ *         To guarantee coherency lower word must be read before than upper
+ *         word.
+ *  
+ *  \param [in] stm_id The timer ID to read
+ *  \return The timer lower word value read.
  */
 OSEE_STATIC_INLINE OsEE_reg OSEE_ALWAYS_INLINE
   osEE_tc_stm_get_time_lower_word(OsEE_reg stm_id)
@@ -820,10 +901,13 @@ OSEE_STATIC_INLINE OsEE_reg OSEE_ALWAYS_INLINE
 }
 
 /**
-  * @brief  Used to read upper word of STM peripheral 64 bit counter.
-  *         To guarantee coherency lower word must be read before than upper
-  *         word.
-  */
+ * \brief  Used to read upper word of STM peripheral 64 bit counter.
+ *         To guarantee coherency lower word must be read before than upper
+ *         word.
+ *  
+ *  \param [in] stm_id The timer ID to read
+ *  \return The timer upper word value read.
+ */
 OSEE_STATIC_INLINE OsEE_reg OSEE_ALWAYS_INLINE
   osEE_tc_stm_get_time_upper_word(OsEE_reg stm_id)
 {
@@ -835,8 +919,8 @@ OSEE_STATIC_INLINE OsEE_reg OSEE_ALWAYS_INLINE
   ((((OsEE_reg)1U) << 28U) | (((OsEE_reg)2U) << 24U))
 
 /**
-  * @brief  Used to set STM suspension when OCDS take control
-  */
+ * @brief  Used to set STM suspension when OCDS take control
+ */
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
   osEE_tc_stm_ocds_suspend_control(OsEE_reg stm_id)
 {
@@ -845,13 +929,16 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
 }
 
 /**
-  * @brief  Used as bounded busy wait.
-  * @param  usec the number of microseconds you want to wait
-  */
+ * @brief  Used as bounded busy wait.
+ * @param  usec the number of microseconds you want to wait
+ */
 void osEE_tc_delay(OsEE_reg usec);
 
-/* Legit Devices for System Timer Defines. */
-/* N.B:
+/**
+ *  Legit Devices for System Timer Defines.
+ *  
+ * N.B:
+ *
  * For the system timer we will use STM periperal. This periferal
  * is composed by a 64 bit upper cunter in free-run, two compare
  * registers (32 bit with offset and mask-length configurable),
@@ -860,14 +947,16 @@ void osEE_tc_delay(OsEE_reg usec);
  * 4 STM meaningfull configuration, but only two independent.
  * For semplicity i fix a degrees of freedom tying compare register
  * with corrisponding service number. So the configuration will be
- * easyer, still having two independent services source.
+ * easier, still having two independent services source.
  *
  * (Check the documentention for more information)
+ *
+ * Valid system timer devices are:
+ * - OSEE_TC_STM_SR0
+ * - OSEE_TC_STM_SR1
  */
-
-/* Valid system timer devices */
 #define OSEE_TC_STM_SR0 1
-#define OSEE_TC_STM_SR1 2
+#define OSEE_TC_STM_SR1 2  /**< see OSEE_TC_STM_SR0 */
 
 /** @brief Initialize a global variable with STM frequency. */
 extern void osEE_tc_stm_set_clockpersec(void);
@@ -972,7 +1061,7 @@ void osEE_tc_stm_set_sr1_next_match(OsEE_reg usec);
 #endif
 #endif /* OSEE_SINGLECORE */
 
-/* STM fSOURCE PLL divider */
+/** STM fSOURCE PLL divider */
 #if (!defined(OSEE_TC_STMDIV_VALUE))
 /* Write at 300 MHz on STM registers fails, so is a MUST to slow down fSTM. */
 #if (OSEE_CPU_CLOCK >= 300000000U)
@@ -1036,7 +1125,7 @@ void osEE_tc_stm_set_sr1_next_match(OsEE_reg usec);
 /** \brief  OSC Control Register */
 typedef struct
 {
-/** \brief \internal Reserved */
+/** \brief Reserved */
   unsigned int          : 1;
 /** \brief [1:1] Oscillator for PLL Valid Low Status Bit (rh) */
   unsigned int plllv    : 1;
@@ -1050,17 +1139,17 @@ typedef struct
   unsigned int shby     : 1;
 /** \brief [8:8] Oscillator for PLL Valid High Status Bit (rh) */
   unsigned int pllhv    : 1;
-/** \brief \internal Reserved */
+/** \brief Reserved */
   unsigned int          : 1;
 /** \brief [10:10] XTAL1 Data Value (rh) */
   unsigned int x1d      : 1;
 /** \brief [11:11] XTAL1 Data Enable (rw) */
   unsigned int x1den    : 1;
-/** \brief \internal Reserved */
+/** \brief Reserved */
   unsigned int          : 4;
 /** \brief [20:16] OSC Frequency Value (rw) */
   unsigned int oscval   : 5;
-/** \brief \internal Reserved */
+/** \brief Reserved */
   unsigned int          : 2;
 /** \brief [23:23] Amplitude Regulation Enable (rw) */
   unsigned int apren    : 1;
@@ -1072,7 +1161,7 @@ typedef struct
   unsigned int cap2en   : 1;
 /** \brief [27:27] Capacitance 3 Enable (rw) */
   unsigned int cap3en   : 1;
-/**< \brief \internal Reserved */
+/** \brief Reserved */
   unsigned int          : 4;
 } OsEE_tc_SCU_OSCCON_bits;
 
@@ -1081,7 +1170,7 @@ typedef struct
 {
 /** \brief [0:0] VCO Bypass Status (rh) */
   unsigned int vcobyst  : 1;
-/** \brief \internal Reserved */
+/** \brief Reserved */
   unsigned int          : 1;
 /** \brief [2:2] PLL VCO Lock Status (rh) */
   unsigned int vcolock  : 1;
@@ -1091,19 +1180,21 @@ typedef struct
   unsigned int k1rdy    : 1;
 /** \brief [5:5] K2 Divider Ready Status (rh) */
   unsigned int k2rdy    : 1;
-/** \brief \internal Reserved */
+/** \brief Reserved */
   unsigned int          : 1;
 /** \brief [7:7] Modulation Run (rh) */
   unsigned int modrun   : 1;
-/** \brief \internal Reserved */
+/** \brief Reserved */
   unsigned int          : 24;
 } OsEE_tc_SCU_PLLSTAT_bits;
 
+/** PLL Status register */
 typedef union {
-  OsEE_reg                  reg;
-  OsEE_tc_SCU_PLLSTAT_bits  bits;
+  OsEE_reg                  reg;   /**< the register */
+  OsEE_tc_SCU_PLLSTAT_bits  bits;  /**< the bits of the PLL Status register */
 } OsEE_tc_SCU_PLLSTAT;
 
+/** Macro to access the PLLSTAT register */
 #define OSEE_TC_SCU_PLLSTAT\
   (*(OsEE_tc_SCU_PLLSTAT volatile *)\
     OSEE_TC_SCU_REG_ADDR(OSEE_TC_SCU_PLLSTAT_OFF)\
@@ -1118,7 +1209,7 @@ typedef struct
   unsigned int vcopwd     : 1;
 /** \brief [2:2] Modulation Enable (rw) */
   unsigned int moden      : 1;
-/** \brief \internal Reserved */
+/** \brief Reserved */
   unsigned int            : 1;
 /** \brief [4:4] Set Status Bit PLLSTAT.FINDIS (w) */
   unsigned int setfindis  : 1;
@@ -1126,29 +1217,31 @@ typedef struct
   unsigned int clrfindis  : 1;
 /** \brief [6:6] Oscillator Disconnect Disable (rw) */
   unsigned int oscdisdis  : 1;
-/** \brief \internal Reserved */
+/** \brief Reserved */
   unsigned int            : 2;
 /** \brief [15:9] N-Divider Value (rw) */
   unsigned int ndiv       : 7;
 /** \brief [16:16] PLL Power Saving Mode (rw) */
   unsigned int pllpwd     : 1;
-/** \brief \internal Reserved */
+/** \brief Reserved */
   unsigned int            : 1;
 /** \brief [18:18] Restart VCO Lock Detection (w) */
   unsigned int resld      : 1;
-/** \brief \internal Reserved */
+/** \brief Reserved */
   unsigned int            : 5;
-/**< \brief [27:24] P-Divider Value (rw) */
+/** \brief [27:24] P-Divider Value (rw) */
   unsigned int pdiv       : 4;
-/** \brief \internal Reserved */
+/** \brief Reserved */
   unsigned int            : 4;
 } OsEE_tc_SCU_PLLCON0_bits;
 
+/** PLL Configuration 0 register */
 typedef union {
-  OsEE_reg                  reg;
-  OsEE_tc_SCU_PLLCON0_bits  bits;
+  OsEE_reg                  reg;   /**< the register */
+  OsEE_tc_SCU_PLLCON0_bits  bits;  /**< bits of the register */
 } OsEE_tc_SCU_PLLCON0;
 
+/** Macro to access the PLL Configuration 0 register */
 #define OSEE_TC_SCU_PLLCON0\
   (*(OsEE_tc_SCU_PLLCON0 volatile *)\
     OSEE_TC_SCU_REG_ADDR(OSEE_TC_SCU_PLLCON0_OFF)\
@@ -1159,23 +1252,25 @@ typedef struct
 {
 /** \brief [6:0] K2-Divider Value (rw) */
   unsigned int k2div  : 7;
-/** \brief \internal Reserved */
+/** \brief Reserved */
   unsigned int        : 1;
 /** \brief [14:8] K3-Divider Value (rw) */
   unsigned int k3div  : 7;
-/** \brief \internal Reserved */
+/** \brief Reserved */
   unsigned int        : 1;
 /** \brief [22:16] K1-Divider Value (rw) */
   unsigned int k1div  : 7;
-/** \brief \internal Reserved */
+/** \brief Reserved */
   unsigned int        : 9;
 } OsEE_tc_SCU_PLLCON1_bits;
 
+/** PLL Configuration 1 register */
 typedef union {
-  OsEE_reg                  reg;
-  OsEE_tc_SCU_PLLCON1_bits  bits;
+  OsEE_reg                  reg;   /**< the register */
+  OsEE_tc_SCU_PLLCON1_bits  bits;  /**< bits of the register */
 } OsEE_tc_SCU_PLLCON1;
 
+/** Macro to access the PLL Configuration 1 register */
 #define OSEE_TC_SCU_PLLCON1\
   (*(OsEE_tc_SCU_PLLCON1 volatile *)\
     OSEE_TC_SCU_REG_ADDR(OSEE_TC_SCU_PLLCON1_OFF)\
@@ -1196,7 +1291,7 @@ typedef struct
   unsigned int spbdiv     : 4;
 /** \brief [21:20] FSI2 Divider Reload Value (rw) */
   unsigned int fsi2div    : 2;
-/** \brief \internal Reserved */
+/** \brief Reserved */
   unsigned int            : 2;
 /** \brief [25:24] FSI Divider Reload Value (rw) */
   unsigned int fsidiv     : 2;
@@ -1210,38 +1305,38 @@ typedef struct
   unsigned int lck        : 1;
 } OsEE_tc_SCU_CCUCON0_bits;
 
-/*  Baud1 Divider Reload Value. 0001B fBAUD1 = fsource. Bits [0:3] */
+/** Baud1 Divider Reload Value. 0001B fBAUD1 = fsource. Bits [0:3] */
 #define OSEE_TC_SCU_CCUCON0_BAUD1DIV(baud1)\
   (((OsEE_reg)(baud1)) & (OsEE_reg)0xFU)
-/*  Baud2 Divider Reload Value. 0001B fBAUD2 = fsource. Bits[4:7] */
+/** Baud2 Divider Reload Value. 0001B fBAUD2 = fsource. Bits[4:7] */
 #define OSEE_TC_SCU_CCUCON0_BAUD2DIV(baud2)\
   ((((OsEE_reg)(baud2)) & (OsEE_reg)0xF) << 4U)
-/*  SRI Divider Reload Value 0001B fSRI = fsource. Bits [8:11] */
+/** SRI Divider Reload Value 0001B fSRI = fsource. Bits [8:11] */
 #define OSEE_TC_SCU_CCUCON0_SRI(sri)\
   ((((OsEE_reg)(sri)) & (OsEE_reg)0xFU) << 8U)
-/*  Low Power Divider Reload Value 0001B fSRI, fSPB, and fBBB = fsource/30;
+/** Low Power Divider Reload Value 0001B fSRI, fSPB, and fBBB = fsource/30;
     fMAX = fsource/15. Bits [15:12] */
 #define OSEE_TC_SCU_CCUCON0_LPDIV(lpdiv)\
   ((((OsEE_reg)(lpdiv)) & (OsEE_reg)0xFU) << 12U)
-/*  SPB Divider Reload Value 0001B Reserved 0010B fSPB = fsource/2.
+/** SPB Divider Reload Value 0001B Reserved 0010B fSPB = fsource/2.
     Bits [16:19] */
 #define OSEE_TC_SCU_CCUCON0_SPB(spb)\
   (((((OsEE_reg)(spb)) & (OsEE_reg)0xFU) == 1U)?\
     ((OsEE_reg)0x2U << 16U):\
     ((((OsEE_reg)(spb)) & (OsEE_reg)0xFU) << 16U))
-/*  FSI2 Divider Reload Value 10B fFSI2 = fSRI / 2 for SRIDIV = 0001B
+/** FSI2 Divider Reload Value 10B fFSI2 = fSRI / 2 for SRIDIV = 0001B
     or 0010B, else fFSI2 = fSRI. Bits [20:21] */
 #define OSEE_TC_SCU_CCUCON0_FSI2(fsi2)\
   ((((OsEE_reg)(fsi2)) & (OsEE_reg)0x3U) << 20U)
-/*  FSI Divider Reload Value 10B fFSI = fSRI / 2 for SRIDIV = 0001B
+/** FSI Divider Reload Value 10B fFSI = fSRI / 2 for SRIDIV = 0001B
     or 0010B, else fFSI = fSR. Bits [24:25] */
 #define OSEE_TC_SCU_CCUCON0_FSI(fsi)\
   ((((OsEE_reg)(fsi)) & (OsEE_reg)0x3U) << 24U)
-/*  ADC Clock Selection This bit field defines the clock source that is
+/** ADC Clock Selection This bit field defines the clock source that is
     used for the clock fADC of the ADCs. Bits[26:27]*/
 #define OSEE_TC_SCU_CCUCON0_ADC(adc)\
   ((((OsEE_reg)(adc)) & (OsEE_reg)0x3U) << 26U)
-/*  Clock Selection: fERAY and fFSI. 1B fPLL is used as clock source fsource.
+/** Clock Selection: fERAY and fFSI. 1B fPLL is used as clock source fsource.
     Bits [28:29] */
 #define OSEE_TC_SCU_CCUCON0_CLKSEL(clk)\
   ((((OsEE_reg)(clk)) & (OsEE_reg)0x1U) << 28U)
@@ -1271,18 +1366,18 @@ typedef struct
   unsigned int lck        : 1;
 } OsEE_tc_SCU_CCUCON1_bits;
 
-/* STM Divider Reload Value. 0001B fSTM = fsource. Bits[8:11] */
+/** STM Divider Reload Value. 0001B fSTM = fsource. Bits[8:11] */
 #define OSEE_TC_SCU_CCUCON1_STMDIV(stm)\
   ((((OsEE_reg)(stm)) & (OsEE_reg)0x3U) << 8U)
-/* GTM Divider Reload Value. 0001B fGTM = fsource. Bits[12:15] */
+/** GTM Divider Reload Value. 0001B fGTM = fsource. Bits[12:15] */
 #define OSEE_TC_SCU_CCUCON1_GTMDIV(gtm)\
   ((((OsEE_reg)(gtm)) & (OsEE_reg)0x3U) << 12U)
-/* Input Selection source for the PLL and PLL_ERAY. 01B fOSC0
-   is used as clock source. Bits [28:29] */
+/** Input Selection source for the PLL and PLL_ERAY. 01B fOSC0
+    is used as clock source. Bits [28:29] */
 #define OSEE_TC_SCU_CCUCON1_INSEL(in)\
   ((((OsEE_reg)(in)) & (OsEE_reg)0x1U) << 28U)
 
-/*  CCU0 Init Value */
+/**  CCU0 Init Value */
 #if (!defined(OSEE_TC_SCU_CCUCON0_INIT))
 #define OSEE_TC_SCU_CCUCON0_INIT\
   (OSEE_TC_SCU_CCUCON0_BAUD1DIV(1U) |\
@@ -1291,14 +1386,14 @@ typedef struct
     OSEE_TC_SCU_CCUCON0_CLKSEL(1U) /* | OSEE_TC_SCU_CCUCON0_BAUD2DIV(1U) */)
 #endif /* !OSEE_TC_SCU_CCUCON0_INIT */
 
-/*  CCU1 Init Value */
+/**  CCU1 Init Value */
 #if (!defined(OSEE_TC_SCU_CCUCON1_INIT))
 #define OSEE_TC_SCU_CCUCON1_INIT\
   (OSEE_TC_SCU_CCUCON1_STMDIV(OSEE_TC_STMDIV_VALUE) |\
     OSEE_TC_SCU_CCUCON1_GTMDIV(1U) | OSEE_TC_SCU_CCUCON1_INSEL(1U))
 #endif /* !OSEE_TC_SCU_CCUCON1_INIT */
 
-/*  CCUCONX bit 30  This bit defined the update for the CCU.
+/** CCUCONX bit 30  This bit defined the update for the CCU.
     Please note that setting this bit request a CCU
     update based on all three registers,
     so only one UP bit have to be set.
@@ -1312,7 +1407,7 @@ typedef struct
 /** \brief OSC Control Register */
 typedef struct
 {
-  /** \brief [0:0] \internal Reserved */
+  /** \brief [0:0] Reserved */
   unsigned int          :1;
   /** \brief [1:1] Oscillator for PLL Valid Low Status Bit - PLLLV (rh) */
   unsigned int plllv    :1;
@@ -1332,11 +1427,11 @@ typedef struct
   unsigned int hysctl   :2;
   /** \brief [12:13] Amplitude Control (rw) */
   unsigned int ampctl   :2;
-  /** \brief [14:15] \internal Reserved */
+  /** \brief [14:15] Reserved */
   unsigned int          :2;
   /** \brief [16:20] OSC Frequency Value - OSCVAL (rw) */
   unsigned int oscval   :5;
-  /** \brief [21:22] \internal Reserved */
+  /** \brief [21:22] Reserved */
   unsigned int          :2;
   /** \brief [23:23] Amplitude Regulation Enable - APREN (rw) */
   unsigned int apren    :1;
@@ -1348,50 +1443,52 @@ typedef struct
   unsigned int cap2en   :1;
   /** \brief [27:27] Capacitance 3 Enable - CAP3EN (rw) */
   unsigned int cap3en   :1;
-  /** \brief [31:28] \internal Reserved */
+  /** \brief [31:28] Reserved */
   unsigned int          :4;
 } OsEE_tc_SCU_OSCCON_bits;
 
 /** \brief System PLL Configuration 0 Register */
 typedef struct
 {
-  /** \brief [1:0] \internal Reserved */
+  /** \brief [1:0] Reserved */
   unsigned int          :2;
   /** \brief [2:2] Modulation Enable - MODEN (rw) */
   unsigned int moden    :1;
-  /** \brief [3:8] \internal Reserved */
+  /** \brief [3:8] Reserved */
   unsigned int          :6;
   /** \brief [9:15] N-Divider Value - NDIV (rw) */
   unsigned int ndiv     :7;
   /** \brief [16:16] System PLL Power Saving Mode - PLLPWD (rw) */
   unsigned int pllpwd   :1;
-  /** \brief [17:17] \internal Reserved */
+  /** \brief [17:17] Reserved */
   unsigned int          :1;
   /** \brief [18:18] Restart DCO Lock Detection - RESLD (w) */
   unsigned int resld    :1;
-  /** \brief [19:23] \internal Reserved */
+  /** \brief [19:23] Reserved */
   unsigned int          :5;
   /** \brief [24:26] P-Divider Value - PDIV (rw) */
   unsigned int pdiv     :3;
-  /** \brief [29:27] \internal Reserved */
+  /** \brief [29:27] Reserved */
   unsigned int          :3;
   /** \brief [30:31] Input Selection - INSEL (rw) */
   unsigned int insel    :2;
 } OsEE_tc_SYSPLLCON0_bits;
 
-/*  Input Selection
+/** Input Selection
     This bit field defines as clock source for the two PLLs
     (System PLL and Peripheral PLL).
  */
-#define OSEE_TC_SCU_SYSPLLCON_INSEL_BACKUP  (0x0U)
-#define OSEE_TC_SCU_SYSPLLCON_INSEL_FOSC0   (0x1U)
-#define OSEE_TC_SCU_SYSPLLCON_INSEL_SYSCLK  (0x2U)
+#define OSEE_TC_SCU_SYSPLLCON_INSEL_BACKUP  (0x0U) /** Input Selection BACKUP */
+#define OSEE_TC_SCU_SYSPLLCON_INSEL_FOSC0   (0x1U) /** Input Selection FOSC0 */
+#define OSEE_TC_SCU_SYSPLLCON_INSEL_SYSCLK  (0x2U) /** Input Selection SYSCLK */
 
+/** \brief System PLL Configuration 0 Register */
 typedef union {
   OsEE_reg                reg;
   OsEE_tc_SYSPLLCON0_bits bits;
 } OsEE_tc_SYSPLLCON0;
 
+/** \brief System PLL Configuration 0 Register */
 #define OSEE_TC_SCU_SYSPLLCON0\
   (*(OsEE_tc_SYSPLLCON0 volatile *)\
     OSEE_TC_SCU_REG_ADDR(OSEE_TC_SCU_PLLCON0_OFF)\
@@ -1402,15 +1499,17 @@ typedef struct
 {
   /** \brief [0:2] K2-Divider Value - K2DIV (rw) */
   unsigned int k2div  :3;
-  /** \brief [3:31] \internal Reserved */
+  /** \brief [3:31] Reserved */
   unsigned int        :29;
 } OsEE_tc_SYSPLLCON1_bits;
 
+/** \brief System PLL Configuration 1 Register */
 typedef union {
   OsEE_reg                reg;
   OsEE_tc_SYSPLLCON1_bits bits;
 } OsEE_tc_SYSPLLCON1;
 
+/** \brief System PLL Configuration 1 Register */
 #define OSEE_TC_SCU_SYSPLLCON1\
   (*(OsEE_tc_SYSPLLCON1 volatile *)\
     OSEE_TC_SCU_REG_ADDR(OSEE_TC_SCU_PLLCON1_OFF)\
@@ -1419,29 +1518,31 @@ typedef union {
 /** \brief System PLL Status Register */
 typedef struct
 {
-  /** \brief [0:0] \internal Reserved */
+  /** \brief [0:0] Reserved */
   unsigned int          :1;
   /** \brief [1:1] System PLL Power-saving Mode Status - PWDSTAT (rh) */
   unsigned int  pwdstat :1;
   /** \brief [2:2] System PLL Lock Status - LOCK (rh) */
   unsigned int  lock    :1;
-  /** \brief [3:4] \internal Reserved */
+  /** \brief [3:4] Reserved */
   unsigned int          :2;
   /** \brief [5:5] K2 Divider Ready Status - K2RDY (rh) */
   unsigned int  k2rdy   :1;
-  /** \brief [6:6] \internal Reserved */
+  /** \brief [6:6] Reserved */
   unsigned int          :1;
   /** \brief [7:7] Modulation Run - MODRUN (rh) */
   unsigned int  modrun  :1;
-  /** \brief [8:31] \internal Reserved */
+  /** \brief [8:31] Reserved */
   unsigned int          :24;
 } OsEE_tc_SCU_SYSPLLSTAT_bits;
 
+/** \brief System PLL Status Register */
 typedef union {
   OsEE_reg                    reg;
   OsEE_tc_SCU_SYSPLLSTAT_bits bits;
 } OsEE_tc_SCU_SYSPLLSTAT;
 
+/** \brief System PLL Status Register */
 #define OSEE_TC_SCU_SYSPLLSTAT\
   (*(OsEE_tc_SCU_SYSPLLSTAT volatile *)\
     OSEE_TC_SCU_REG_ADDR(OSEE_TC_SCU_PLLSTAT_OFF)\
@@ -1450,29 +1551,31 @@ typedef union {
 /** \brief Peripheral PLL Status Register */
 typedef struct
 {
-  /** \brief [0:0] \internal Reserved */
+  /** \brief [0:0] Reserved */
   unsigned int          :1;
   /** \brief [1:1] Peripheral PLL Power-saving Mode Status - PWDSTAT (rh) */
   unsigned int pwdstat  :1;
   /** \brief [2:2] Peripheral PLL Lock Status - LOCK (rh) */
   unsigned int lock     :1;
-  /** \brief [3:3] \internal Reserved */
+  /** \brief [3:3] Reserved */
   unsigned int          :1;
   /** \brief [4:4] K3 Divider Ready Status - K3RDY (rh) */
   unsigned int k3rdy    :1;
   /** \brief [5:5] K2 Divider Ready Status - K2RDY (rh) */
   unsigned int k2rdy    :1;
-  /** \brief [6:6] \internal Reserved */
+  /** \brief [6:6] Reserved */
   unsigned int          :1;
-  /** \brief [7:31] \internal Reserved */
+  /** \brief [7:31] Reserved */
   unsigned int          :25;
 } OsEE_tc_SCU_PERPLLSTAT_bits;
 
+/** \brief Peripheral PLL Status Register */
 typedef union {
   OsEE_reg                    reg;
   OsEE_tc_SCU_PERPLLSTAT_bits bits;
 } OsEE_tc_SCU_PERPLLSTAT;
 
+/** \brief Peripheral PLL Status Register */
 #define OSEE_TC_SCU_PERPLLSTAT\
   (*(OsEE_tc_SCU_PERPLLSTAT volatile *)\
     OSEE_TC_SCU_REG_ADDR(OSEE_TC_SCU_PLLERAYSTAT_OFF)\
@@ -1483,21 +1586,21 @@ typedef struct
 {
   /** \brief [0:0] Divider Bypass - DIVBY (rw) */
   unsigned int divby    :1;
-  /** \brief [1:8] \internal Reserved */
+  /** \brief [1:8] Reserved */
   unsigned int          :8;
   /** \brief [9:15] N-Divider Value - NDIV (rw) */
   unsigned int ndiv     :7;
   /** \brief [16:16] Peripheral PLL Power Saving Mode - PLLPWD (rw) */
   unsigned int pllwd    :1;
-  /** \brief [17:17] \internal Reserved */
+  /** \brief [17:17] Reserved */
   unsigned int          :1;
   /** \brief [18:18] Restart DCO Lock Detection - RESLD (w) */
   unsigned int resld    :1;
-  /** \brief [19:23] \internal Reserved */
+  /** \brief [19:23] Reserved */
   unsigned int          :5;
   /** \brief [24:26] P-Divider Value - PDIV (rw) */
   unsigned int pdiv     :3;
-  /** \brief [31:27] \internal Reserved */
+  /** \brief [31:27] Reserved */
   unsigned int          :5;
 } OsEE_tc_SCU_PERPLLCON0_bits;
 
@@ -1506,11 +1609,11 @@ typedef struct
 {
   /** \brief [0:2] K2-Divider Value - K2DIV (rw) */
   unsigned int k2div    :3;
-  /** \brief [3:7] \internal Reserved */
+  /** \brief [3:7] Reserved */
   unsigned int          :5;
   /** \brief [10:8] K3-Divider Value - K3DIV (rw) */
   unsigned int k3div    :3;
-  /** \brief [11:31] \internal Reserved */
+  /** \brief [11:31] Reserved */
   unsigned int          :21;
 } OsEE_tc_SCU_PERPLLCON1_bits;
 
@@ -1525,7 +1628,7 @@ typedef struct
   unsigned int sridiv   :4;
   /** \brief [12:14] Low Power Divider Reload Value - LPDIV (rw) */
   unsigned int lpdiv    :3;
-  /** \brief [15:15] \internal Reserved */
+  /** \brief [15:15] Reserved */
   unsigned int          :1;
   /** \brief [16:19] SPB Divider Reload Value - SPBDIV (rw) */
   unsigned int spbdiv   :4;
@@ -1550,45 +1653,47 @@ typedef struct
   unsigned int mcandiv    :4;
   /** \brief [4:5] Clock Selection for MCAN - CLKSELMCAN (rw) */
   unsigned int clkselmcan :2;
-  /** \brief [6:6] \internal Reserved */
+  /** \brief [6:6] Reserved */
   unsigned int            :1;
   /** \brief [7:7] Divider Disable for fPLL1 - PLL1DIVDIS (rw) */
   unsigned int pll1divdis :1;
   /** \brief [8:11] I2C Divider Reload Value - I2CDIV (rw) */
   unsigned int i2cdiv     :4;
-  /** \brief [12:15] \internal Reserved */
+  /** \brief [12:15] Reserved */
   unsigned int            :4;
   /** \brief [16:19] MSC Divider Reload Value - MSCDIV (rw) */
   unsigned int mscdiv     :4;
   /** \brief [20:21] Clock Selection for MSC - CLKSELMSC (rw) */
   unsigned int clkselmsc  :2;
-  /** \brief [22:23] \internal Reserved */
+  /** \brief [22:23] Reserved */
   unsigned int            :2;
   /** \brief [24:27] QSPI Divider Reload Value - QSPIDIV (rw) */
   unsigned int qspidiv    :4;
   /** \brief [28:29] Clock Selection for QSPI - CLKSELQSPI (rw) */
   unsigned int clkselqspi :2;
-  /** \brief [30:30] \internal Reserved */
+  /** \brief [30:30] Reserved */
   unsigned int            :1;
   /** \brief [31:31] Lock Status - LCK (rh) */
   unsigned int lck        :1;
 } OsEE_tc_SCU_CCUCON1_bits;
 #endif  /* !OSEE_TC_2G */
 
+/** \brief  OSC Control Register */
 typedef union {
-  OsEE_reg                reg;
-  OsEE_tc_SCU_OSCCON_bits bits;
+  OsEE_reg                reg;  /**< the register value */
+  OsEE_tc_SCU_OSCCON_bits bits; /**< the bits of the SCU OSCCON Register */
 } OsEE_tc_SCU_OSCCON;
 
-/* Command to reset Watchdog Oscillator. Bits[2] */
+/** Command to reset Watchdog Oscillator. Bits[2] */
 #define OSEE_TC_SCU_OSCCON_OSCRES ((OsEE_reg)1U << 2U)
-/* Default Reset Value for OSCCCON.GAIN Should not be Changed. Bits[3:4] */
+/** Default Reset Value for OSCCCON.GAIN Should not be Changed. Bits[3:4] */
 #define OSEE_TC_SCU_OSCCON_GAINSEL ((OsEE_reg)3U << 3U)
-/* Extern Cristall is 00 mode so this define doesn't change the OSSCON
-   Value. Bits[5:6] */
+/** Extern Cristall is 00 mode so this define doesn't change the OSSCON
+    Value. Bits[5:6] */
 #define OSEE_TC_SCU_OSCCON_MODE(mode)\
   ((((OsEE_reg)(mode)) & (OsEE_reg)0x3U) << 5U)
-/* OSCVAL  defines the divider value that generates  the reference clock
+/**
+ *   OSCVAL  defines the divider value that generates  the reference clock
  *  that is supervised by the oscillator watchdog.
  *  We want a reference frequency of 2.5
  *  fOSC / (OSCVAL + 1) ~ 2.5Mhz  => OSCVAL = (fOSC / 2.5Mhz) - 1 */
@@ -1600,34 +1705,43 @@ typedef union {
 #define OSEE_TC_SCU_OSCCON_OSCVAL(oscval)\
   ((((OsEE_reg)(oscval)) & (OsEE_reg)0xFU) << 16U)
 
+/** \brief  OSC Control Register */
 #define OSEE_TC_SCU_OSCCON\
   (*(OsEE_tc_SCU_OSCCON volatile *)\
     OSEE_TC_SCU_REG_ADDR(OSEE_TC_SCU_OSCCON_OFF)\
   )
-
+/** \brief  SCU Clock Control Register 0 */
 typedef union {
-  OsEE_reg                  reg;
-  OsEE_tc_SCU_CCUCON0_bits  bits;
+  OsEE_reg                  reg;  /**< the register value */
+  OsEE_tc_SCU_CCUCON0_bits  bits; /**< the bits of the SCU Clk Control Reg 0 */
 } OsEE_tc_SCU_CCUCON0;
 
+/** \brief  SCU Clock Control Register 0 */
 #define OSEE_TC_SCU_CCUCON0\
   (*(OsEE_tc_SCU_CCUCON0 volatile *)\
     OSEE_TC_SCU_REG_ADDR(OSEE_TC_SCU_CCUCON0_OFF)\
   )
 
+/** \brief  SCU Clock Control Register 1 */
 typedef union {
-  OsEE_reg                  reg;
-  OsEE_tc_SCU_CCUCON1_bits  bits;
+  OsEE_reg                  reg;  /**< the register value */
+  OsEE_tc_SCU_CCUCON1_bits  bits; /**< the bits of the SCU Clk Control Reg 1 */
 } OsEE_tc_SCU_CCUCON1;
 
+/** \brief  SCU Clock Control Register 1 */
 #define OSEE_TC_SCU_CCUCON1\
   (*(OsEE_tc_SCU_CCUCON1 volatile *)\
     OSEE_TC_SCU_REG_ADDR(OSEE_TC_SCU_CCUCON1_OFF)\
   )
 
-/** @brief  Return fSOURCE in HZ. **/
+/**
+ *  \brief Returns fSOURCE in HZ.
+ *  
+ *  \return Returns fSOURCE in HZ.
+ */
 OsEE_reg osEE_tc_get_fsource(void);
 
+/** Initialization of the clock control registers */
 #if (!defined(OSEE_TC_2G))
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_tc_conf_clock_ctrl(void) {
 /* N.B The following initialization order is not casual */
@@ -1660,6 +1774,7 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_tc_conf_clock_ctrl(void) {
 #endif /* OSEE_TC_SCU_CCUCON2_INIT */
 }
 
+/** Initialization of the osclillators */
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_tc_conf_osc_ctrl(void)
 {
   /*
@@ -1679,7 +1794,11 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_tc_conf_osc_ctrl(void)
   }
 }
 
-/** @brief  Set PLL frequency (fSOURCE). This function accept fpll HZ **/
+/**
+ *  \brief Set PLL frequency (fSOURCE). 
+ *  
+ *  \param [in] fpll frequency in Hz
+ */
 void osEE_tc_set_pll_fsource(OsEE_reg fpll);
 
 /** \brief Macro to get the STM divider */
@@ -1730,7 +1849,6 @@ typedef struct
 /** \brief 0x1F0: 32-bit CODE, (always same)*/
   uint32_t  confirmation;
 } OsEE_tc_ssw_bmhd;
-
 #endif /* !OSEE_TC_2G */
 
 #if (defined(__cplusplus))

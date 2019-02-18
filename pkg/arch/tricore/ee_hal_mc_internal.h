@@ -104,27 +104,35 @@ typedef union
   (*(OsEE_tc_CPU_PC volatile *)OSEE_TC_CFSR_ADDR((c),OSEE_TC_CFSR_PC))
 
 #if (!defined(OSEE_TC_2G))
+
+#if (defined(__TASKING__))
+/* Needed to force 32bit access to the following bitfield registers */
+#define OSEE_TC_32BIT __sfrbit32
+#else
+#define OSEE_TC_32BIT
+#endif
+
 /** \brief  Debug Status Register */
 typedef struct OsEE_tc_CPU_DBGSR_bits_tag
 {
 /**< \brief [0:0] Debug Enable (rh) */
-  unsigned de       : 1;
+  unsigned OSEE_TC_32BIT de       : 1;
 /**< \brief [2:1] CPU Halt Request / Status Field (rwh) */
-  unsigned halt     : 2;
+  unsigned OSEE_TC_32BIT halt     : 2;
 /**< \brief [3:3] Suspend-in Halt (rh) */
-  unsigned sih      : 1;
+  unsigned OSEE_TC_32BIT sih      : 1;
 /**< \brief [4:4] Current State of the Core Suspend-Out Signal (rwh) */
-  unsigned susp     : 1;
+  unsigned OSEE_TC_32BIT susp     : 1;
 /**< \brief \internal Reserved */
-  unsigned          : 1;
+  unsigned OSEE_TC_32BIT          : 1;
 /**< \brief [6:6] Previous State of Core Suspend-Out Signal (rh) */
-  unsigned prevsusp : 1;
+  unsigned OSEE_TC_32BIT prevsusp : 1;
 /**< \brief [7:7] Posted Event (rwh) */
-  unsigned pevt     : 1;
+  unsigned OSEE_TC_32BIT pevt     : 1;
 /**< \brief [12:8] Event Source (rh) */
-  unsigned evtsrc   : 5;
+  unsigned OSEE_TC_32BIT evtsrc   : 5;
 /**< \brief \internal Reserved */
-  unsigned          : 19;
+  unsigned OSEE_TC_32BIT          : 19;
 } OsEE_tc_CPU_DBGSR_bits;
 
 /** \brief Debug Status Register */

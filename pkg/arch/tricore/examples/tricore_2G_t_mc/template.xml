@@ -43,26 +43,31 @@
   ###*E*###
   -->
 
-<evidence_example version="1" ID="tricore_2G_spinlocks">
+<evidence_example version="1" ID="tricore_2G_mc">
 
-  <category>TriCore/AURIX 2G/HIGHTEC</category>
-  <title>Spinlocks</title>
+  <category>TriCore/AURIX 2G/TASKING</category>
+  <title>MultiCore</title>
 
   <small_descr>
-    Spinlocks examples
+    MultiCore Demo.
   </small_descr>
 
   <long_descr>
-    Example of mutual exclusion in multicore enviroment with spinlocks
+    MultiCore Demo. Test remote task activation, with ActivateTask primitive
+    (from Core1 to Core2) and with alarm (from Core2 to Core0), and remote
+    task release with primitive SetEvent (from Core0 to Core1).
 
-    This demo is pre-configured to use HIGHTEC compiler
-    (CPU_DATA.COMPILER=GCC; with ID = 0x0)
+    This demo is pre-configured to use TASKING compiler
+    (CPU_DATA.COMPILER=TASKING; with ID = 0x0)
   </long_descr>
 
   <file_section>
-    <file     name="code.c"/>
-    <file     name="conf.oil"/>
+    <file     name="master.c"/>
+    <file     name="slave1.c"/>
+    <file     name="slave2.c"/>
     <!-- <file     name="appl.oil"/> -->
+    <file     name="conf.oil"/>
+    <file     name="shared.h"/>
     <!-- <file     name="os.oil"/> -->
     <!-- <file     name="makefile"/> -->
  </file_section>

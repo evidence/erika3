@@ -54,6 +54,11 @@ void ErrorHook ( StatusType Error ) {
   }
 }
 
+#if (defined(__TASKING__))
+#define OS_CORE0_START_SEC_CODE
+#include "Os_MemMap.h"
+#endif /* __TASKING__ */
+
 TASK(Task1)
 {
   NextScheduleTable(SchedTab1, SchedTab2);
@@ -83,6 +88,11 @@ TASK(Task2)
   ++task_counter;
   TerminateTask();
 }
+
+#if (defined(__TASKING__))
+#define OS_CORE0_STOP_SEC_CODE
+#include "Os_MemMap.h"
+#endif /* __TASKING__ */
 
 #if (defined(OSEE_CORE_ID_VALID_MASK))
 #if   (OSEE_CORE_ID_VALID_MASK & 0x02U)

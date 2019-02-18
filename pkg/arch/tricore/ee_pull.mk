@@ -50,14 +50,19 @@
 
 ifeq ($(call iseeopt, OSEE_ARCH_TRICORE), yes)
 
+ifeq ($(call iseeopt, OS_EE_GCC), yes)
+OS_EE_PULL_MK_FILES += $(ERIKA_FILES)/pkg/arch/tricore/ee_arch_compiler_gcc.mk
+endif # OS_EE_GCC
+ifeq ($(call iseeopt, OSEE_TASKING_CTC), yes)
+OS_EE_PULL_MK_FILES += $(ERIKA_FILES)/pkg/arch/tricore/ee_arch_compiler_tasking_ctc.mk
+endif # OSEE_TASKING_CTC
+
 OS_EE_PULL_MK_FILES += $(ERIKA_FILES)/pkg/arch/tricore/ee_arch_rules.mk
 OS_EE_PULL_MK_FILES += $(ERIKA_FILES)/pkg/arch/tricore/ee_arch_cfg.mk
-OS_EE_PULL_MK_FILES += $(ERIKA_FILES)/pkg/arch/tricore/ee_arch_compiler_gcc.mk
 
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/tricore/ee_arch_override.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/tricore/ee.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/tricore/ee_conf.h
-OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/tricore/ee_arch_compiler_gcc.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/tricore/ee_platform_types.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/tricore/ee_get_kernel_and_core.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/tricore/ee_hal.h
@@ -66,9 +71,17 @@ OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/tricore/ee_hal_irq.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/tricore/ee_tc_trapvec.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/tricore/ee_hal_mc.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/tricore/ee_tc_csfr.h
+
 ifeq ($(call iseeopt, OS_EE_GCC), yes)
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/tricore/ee_os_mem_map_gnu_hightec.h
+OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/tricore/ee_arch_compiler_gcc.h
 endif # OS_EE_GCC
+
+ifeq ($(call iseeopt,  OSEE_TASKING_CTC), yes)
+OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/tricore/ee_os_mem_map_tasking_ctc.h
+OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/tricore/ee_arch_compiler_tasking_ctc.h
+endif #  OSEE_TASKING_CTC
+
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/tricore/Os_MemMap.h
 
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/tricore/ee_hal_internal.h
@@ -85,7 +98,12 @@ OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/std/arch/ee_std_hal_init.c
 endif # OSEE_DYNAMIC_API
 
 ifneq ($(call iseeopt, OSEE_TRICORE_ILLD), yes)
+ifeq ($(call iseeopt, OS_EE_GCC), yes)
 OS_EE_PULL_MK_FILES  += $(ERIKA_FILES)/pkg/arch/tricore/no_iLLD/$(OSEE_TRICORE_MCU)/ee_tc_gcc_flash.ld
+endif # OS_EE_GCC
+ifeq ($(call iseeopt,  OSEE_TASKING_CTC), yes)
+OS_EE_PULL_MK_FILES  += $(ERIKA_FILES)/pkg/arch/tricore/no_iLLD/$(OSEE_TRICORE_MCU)/ee_tc_tasking_flash.lsl
+endif # OSEE_TASKING_CTC
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/tricore/no_iLLD/$(OSEE_TRICORE_MCU)/ee_tc_src.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/tricore/no_iLLD/ee_tc_system.h
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/tricore/no_iLLD/ee_tc_cstart.c

@@ -63,6 +63,13 @@
 /* The following prevent unwanted inline */
 #pragma GCC optimize ("-fno-inline-small-functions")
 #endif /* __GNUC__ */
+#if (defined(__TASKING__))
+/* The following prevent that the compiler mess up with the stack */
+#pragma optimize 3
+
+#pragma extern osEE_scheduler_task_wrapper_restore
+#pragma extern osEE_scheduler_task_wrapper_run
+#endif /* __TASKING__ */
 
 /* This function allocate a ERIKA's context on the stack. It's a real ALLOCA
    function (automatically freed memory), since it will be the CSA restoring

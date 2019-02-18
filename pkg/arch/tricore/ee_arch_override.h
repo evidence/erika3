@@ -54,7 +54,7 @@
 /*==============================================================================
                                 Stack
  =============================================================================*/
-/*
+/**
  * TriCore has 2 word alignment requirement for the stack
  */
 #define   OSEE_STACK_ALIGN_SIZE         (8U)
@@ -63,19 +63,19 @@
                     Arch dependent Configuration Switches
  =============================================================================*/
 
-/* Used to override default definition of osEE_hal_get_msb,
-   in ee_std_change_context.h that is not inlined */
+/** Used to override default definition of osEE_hal_get_msb,
+ *  in ee_std_change_context.h that is not inlined */
 #define OSEE_GET_MSB_INLINE OSEE_STATIC_INLINE
 
-/* Used to override default definition of osEE_hal_change_context_from_isr2,
-   in ee_std_change_context.h that is not inlined.
-   In any case all the TASK termination functionality have to be override
-   to take in account TriCore special CSA behavior. */
+/** Used to override default definition of osEE_hal_change_context_from_isr2,
+ *  in ee_std_change_context.h that is not inlined.
+ *  In any case all the TASK termination functionality have to be overridden
+ *  to take in account TriCore special CSA behavior. */
 #define OSEE_ISR2_INLINE OSEE_STATIC_INLINE
 
-/* Override Terminate Activation Kernel Callback (CB).
-   Actually I TriCore porting cannot use the CB, so NULL is used as override
-   value. */
+/** Override Terminate Activation Kernel Callback (CB).
+ *  Actually I TriCore porting cannot use the CB, so NULL is used as override
+ *  value. */
 #define OSEE_KERNEL_TERMINATE_ACTIVATION_CB NULL
 
 

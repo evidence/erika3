@@ -43,6 +43,11 @@
 
 unsigned int entry_mask;
 
+#if (defined(__TASKING__))
+#define OS_CORE0_START_SEC_CODE
+#include "Os_MemMap.h"
+#endif /* __TASKING__ */
+
 TASK(TaskMaster) {
   ActivateTask(TaskSlave1);
 
@@ -65,6 +70,16 @@ TASK(TaskMaster) {
   ShutdownAllCores(E_OK);
 };
 
+#if (defined(__TASKING__))
+#define OS_CORE0_STOP_SEC_CODE
+#include "Os_MemMap.h"
+#endif /* __TASKING__ */
+
+#if (defined(__TASKING__))
+#define OS_CORE1_START_SEC_CODE
+#include "Os_MemMap.h"
+#endif /* __TASKING__ */
+
 TASK(TaskSlave1) {
   SuspendOSInterrupts();
   GetSpinlock(spinlock_1);
@@ -78,6 +93,14 @@ TASK(TaskSlave1) {
   TerminateTask();
 };
 
+#if (defined(__TASKING__))
+#define OS_CORE1_STOP_SEC_CODE
+#include "Os_MemMap.h"
+
+#define OS_CORE2_START_SEC_CODE
+#include "Os_MemMap.h"
+#endif /* __TASKING__ */
+
 TASK(TaskSlave2) {
   SuspendOSInterrupts();
   GetSpinlock(spinlock_2);
@@ -90,6 +113,11 @@ TASK(TaskSlave2) {
 
   TerminateTask();
 };
+
+#if (defined(__TASKING__))
+#define OS_CORE2_STOP_SEC_CODE
+#include "Os_MemMap.h"
+#endif /* __TASKING__ */
 
 int main(void) {
   if (GetCoreID() == OS_CORE_ID_MASTER) {

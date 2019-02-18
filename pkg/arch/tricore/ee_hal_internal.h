@@ -76,6 +76,40 @@
 extern "C" {
 #endif
 
+#if (defined(__TASKING__))
+/*=============================================================================
+                  HANDLE SPECIFIC TASKING WARNING INSIDE THE KERNEL
+ ============================================================================*/
+#define OSEE_WARN_LABEL(l) l:
+/* Hide specific warnings inside the kernel that actually points to expected
+   behavior */
+/* Dead assignment to "ev" is needed to make ECLAIR MISRA checker happy */
+#pragma osee_useless_ev_assign:warning 588
+/* Disable Warnings for Infinite Loops inside the Kernel */
+#pragma warning 557
+
+#if (defined(OSEE_TC_CLONE_OS))
+/* TASKING
+  code_core_association {value | default | restore} (*)
+  Switch to another code core association, where value is one of share,
+  privaten (for core n) or clone.
+  The code core association of this pragma is assigned to the functions
+  declarations or definitions that follow.
+  - clone     Multiple code instances, each executed by one core
+  - privaten  One code instance executed by core n. n can be 0 .. 7,
+              depending on the available cores.
+  - share     One code instance shared between cores. (default)
+
+*/
+/* I use the TASKING compiler supoort to replicate the OS on each core */
+#pragma code_core_association clone
+#endif /* OSEE_TC_CLONE_OS */
+#endif /* __TASKING__ */
+
+/* Used to clean bits [6:0] corresponding to PSW.CDC (call depth counter) */
+#define OSEE_TC_PSW_CDC_CLEAN_MASK     (0xFFFFFF80U)
+
+#if (defined(__GNUC__))
 /*=============================================================================
                           Stack utilities
  ============================================================================*/
@@ -87,10 +121,6 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_set_SP(OsEE_stack * sp)
 /*=============================================================================
                           ERIKA's Context utilities
  ============================================================================*/
-
-/* Used to clean bits [6:0] corresponding to PSW.CDC (call depth counter) */
-#define OSEE_TC_PSW_CDC_CLEAN_MASK     (0xFFFFFF80U)
-
 OSEE_STATIC_INLINE OsEE_addr OSEE_ALWAYS_INLINE osEE_tc_get_RA(void)
 {
   OsEE_addr ra;
@@ -98,7 +128,6 @@ OSEE_STATIC_INLINE OsEE_addr OSEE_ALWAYS_INLINE osEE_tc_get_RA(void)
   __asm__ volatile ("mov.aa %0, %%a11" : "=a"(ra) : : "memory");
   return ra;
 }
-
 
 /* The type of the parameter ra generates an explicit MISRA violation.
    - Changing ra to a pointer to a void (*)(void) function generates 
@@ -116,11 +145,47 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_tc_set_RA(OsEE_addr ra)
   /* sets the return address */
   __asm__ volatile ("mov.aa %%a11, %0" : : "a"(ra) : "memory");
 }
+#elif (defined(__TASKING__))
+/*=============================================================================
+                          Stack utilities
+ ============================================================================*/
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_set_SP(OsEE_stack * sp)
+{
+  __set_sp(sp);
+}
+
+/*=============================================================================
+                          ERIKA's Context utilities
+ ============================================================================*/
+OSEE_STATIC_INLINE OsEE_addr OSEE_ALWAYS_INLINE osEE_tc_get_RA(void)
+{
+  OsEE_addr ra;
+  /* gets the current return address */
+  __asm volatile ("mov.aa %0, a11" : "=a"(ra) : : "memory");
+  return ra;
+}
+
+/* The type of the parameter ra generates an explicit MISRA violation.
+   - Changing ra to a pointer to a void (*)(void) function generates 
+     another MISRA violation, because the return function programmed 
+     in the context has type void(*)(const struct OsEE_TDB_tag*).
+   - Changing ra to type void(*)(const struct OsEE_TDB_tag*) is not 
+     the best option, because we would need to change the OsEE_CTX ra 
+     member to something which is in general not of that type (the return
+     address is a pointer to a code location.
+   Therefore, we chose to use OsEE_addr, which is not the best option,
+   but it minimizes the MISRA violation to a single documented point.
+*/
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_tc_set_RA(OsEE_addr ra)
+{
+  /* sets the return address */
+  __asm volatile ("mov.aa a11, %0" : : "a"(ra) : "memory");
+}
+#endif /* __GNUC__ || __TASKING__ */
 
 /*=============================================================================
                         CSA handling utilities
  ============================================================================*/
-
 /** Convert context link to context pointer
  * \param[in] l_csa link to context save area
  * \return csa address pointer
@@ -274,7 +339,7 @@ OSEE_STATIC_INLINE MemSize OSEE_ALWAYS_INLINE
   osEE_hal_get_msb(OsEE_rq_mask mask)
 {
 #if (OSEE_RQ_PRIO_NUM <= 32U)
-  int32_t nbits = 31 - __builtin_clz(mask);
+  int32_t nbits = 31 - osEE_tc_clz(mask);
   return (MemSize)(nbits);
 #elif (OSEE_RQ_PRIO_NUM <= 64U)
   int32_t nbits = 63 - __builtin_clzll(mask);
@@ -378,7 +443,8 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
     Note: In products where PDMA or CPUx is not implemented, the related TOS
       encoding will not be used and treated as RESERVED.
  */
-#if (!defined(OSEE_SINGLECORE))
+#if (!defined(OSEE_SINGLECORE)) &&\
+    ((defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK != 0x41U))
   OsEE_reg tos_num;
   if ((tos == OS_CORE_ID_0)
 #if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x40U)
@@ -389,11 +455,9 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
   } else {
     tos_num = (OsEE_reg)tos + 1U;
   }
-#else
-  OsEE_reg const tos_num = (OsEE_reg)OS_CORE_ID_0;
-  /* Touch unused parameter */
-  (void)tos;
-#endif /* !OSEE_SINGLECORE */
+#else /* OSEE_SINGLECORE || OSEE_CORE_ID_VALID_MASK == 0x41U */
+  OsEE_reg const tos_num = tos;
+#endif /* !OSEE_SINGLECORE && OSEE_CORE_ID_VALID_MASK != 0x41U */
 
   OSEE_TC_SRC_REG(src_offset) = OSEE_TC_SRN_TYPE_OF_SERVICE(tos_num) |
     OSEE_TC_SRN_ENABLE | OSEE_TC_SRN_PRIORITY(prio);
@@ -406,6 +470,28 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
 #if (defined(OSEE_HAS_SYSTEM_TIMER))
 extern void osEE_tc_initialize_system_timer(OsEE_TDB * p_tdb);
 #endif /* OSEE_HAS_SYSTEM_TIMER */
+
+#if (defined(OSEE_DEBUG))
+#if (!defined(OSEE_TC_COMPL_INTTAB))
+/* Enabled  if the interrupt vectors have to be complete */
+#define OSEE_TC_COMPL_INTTAB
+#endif /* !OSEE_TC_COMPL_INTTAB */
+#endif /* OSEE_DEBUG */
+
+/* Second step for macro arguments expansions */
+#define OSEE_ISR2_DECLARE_EX(c, p)\
+  OSEE_PRAGMA(extern osEE_tc##c##isr2_entry_##p)
+#define OSEE_ISR1_DECLARE_EX(c, p)\
+  OSEE_PRAGMA(extern osEE_tc##c##isr1_entry_##p)
+#define OSEE_DUMMY_ISR_EX(c, p)\
+  OSEE_PRAGMA(extern osEE_tc##c##isr_dummy_entry_##p)
+
+/* TASKING specific macro used to force ISR2 linkage from libee.a */
+#define OSEE_ISR2_DECLARE(c, p) OSEE_ISR2_DECLARE_EX(c, p)
+/* TASKING specific macro used to force ISR1 linkage from libee.a */
+#define OSEE_ISR1_DECLARE(c, p) OSEE_ISR1_DECLARE_EX(c, p)
+/* TASKING specific macro used to force dummy ISR linkage from libee.a */
+#define OSEE_DUMMY_ISR(c, p)    OSEE_DUMMY_ISR_EX(c, p)
 
 #if (defined(__cplusplus))
 }

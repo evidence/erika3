@@ -78,14 +78,12 @@ OS_EE_OPT += OS_EE_VERBOSE
 export OS_EE_OPT
 endif
 
-.PHONY:	all config pull os appl \
+.PHONY:	all pull os appl \
 	clean os-clean appl-clean \
 	dist-clean os-dist-clean appl-dist-clean \
 	upload
 
 all: os appl
-
-config: $(ERIKA_DIR)
 
 pull: $(ERIKA_DIR)
 	$(MAKE) -C $< mk

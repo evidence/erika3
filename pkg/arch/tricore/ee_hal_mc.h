@@ -180,7 +180,19 @@ extern "C" {
 #endif
 #endif /* OSEE_TRICORE_ILLD */
 
-#if (defined(__GNUC__))
+#if (defined(__TASKING__))
+OSEE_STATIC_INLINE OsEE_reg OSEE_ALWAYS_INLINE osEE_tc_cmpswapw(
+  OsEE_reg volatile * const p_var, OsEE_reg new_val, OsEE_reg expected_val
+)
+{
+  return __cmpswapw((unsigned int *)p_var, new_val, expected_val);
+}
+
+/* Insert LDMST instruction. Note that all operands must be word-aligned. */
+#define osEE_tc_imask_ldmst(p_var, value, offset, width)\
+  __imaskldmst((int *)p_var, value, offset, width);
+
+#elif (defined(__GNUC__))
 /* New HighTec GCC versions have built-in support for these functions, so
    I prefer to switch to the them, but I want to maintain hand-coded version
    commented here as reference, so MISRA: deal with it. */
@@ -242,7 +254,8 @@ OSEE_STATIC_INLINE OsEE_reg OSEE_ALWAYS_INLINE osEE_tc_cmpswapw(
   OsEE_reg volatile * const p_var, OsEE_reg new_val, OsEE_reg expected_val
 )
 {
-  return __builtin_tricore_cmpswapw((volatile void *)p_var, new_val, expected_val);
+  return __builtin_tricore_cmpswapw((volatile void *)p_var, new_val,
+    expected_val);
 }
 
 /** Insert LDMST instruction. Note that all operands must be word-aligned. */
@@ -255,7 +268,7 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
 #endif
 #else
 #error Unsorported compiler!
-#endif /* __GNUC__ */
+#endif /* __TASKING || __GNUC__ */
 
 /* Spinlocks Trivial Implementation */
 

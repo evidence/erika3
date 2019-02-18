@@ -75,19 +75,22 @@
 #undef MEM_SW_MINOR_VERSION
 #undef MEM_SW_PATCH_VERSION
 
-#define MEM_VENDOR_ID        (0x0065) /* Evidence S.r.l Vendor ID */
+/** Evidence S.r.l Vendor ID */
+#define MEM_VENDOR_ID        (0x0065)
 
 /* AUTOSAR Software Specification Version Information */
-#define MEM_AR_MAJOR_VERSION        /* ? */
-#define MEM_AR_MINOR_VERSION        /* ? */
-#define MEM_AR_PATCH_VERSION        /* ? */
+#define MEM_AR_MAJOR_VERSION        /**< Major version */
+#define MEM_AR_MINOR_VERSION        /**< Minor version */
+#define MEM_AR_PATCH_VERSION        /**< Patch version */
 
-#define MEM_SW_MAJOR_VERSION        /* ? */
-#define MEM_SW_MINOR_VERSION        /* ? */
-#define MEM_SW_PATCH_VERSION        /* ? */
+#define MEM_SW_MAJOR_VERSION        /**< Major version */
+#define MEM_SW_MINOR_VERSION        /**< Minor version */
+#define MEM_SW_PATCH_VERSION        /**< Patch version */
 
 #if (defined(__GNUC__))
 #include "ee_os_mem_map_gnu_hightec.h"
+#elif (defined(__TASKING__))
+#include "ee_os_mem_map_tasking_ctc.h"
 #else
 #error Unsupported Compiler!
 #endif

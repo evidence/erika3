@@ -1,7 +1,7 @@
 /* ###*B*###
  * Erika Enterprise, version 3
  * 
- * Copyright (C) 2017 - 2018 Evidence s.r.l.
+ * Copyright (C) 2017 Evidence s.r.l.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
  * 
  * You should have received a copy of the GNU General Public License,
  * version 2, along with this program; if not, see
- * < www.gnu.org/licenses/old-licenses/gpl-2.0.html >.
+ * <https://www.gnu.org/licenses/old-licenses/gpl-2.0.html >.
  * 
  * This program is distributed to you subject to the following
  * clarifications and special exceptions to the GNU General Public
@@ -38,24 +38,27 @@
  * license, is present in the file THIRDPARTY.TXT in the root of the
  * project.
  * ###*E*### */
-
-/** \file   ee_internal.h
- *  \brief  ERIKA's Internals Collector.
+/**
  *
- *  This files is the main collector in Erika Enterprise for internals
- *  files.
+ * This file derives from a modification of the TASKING linker scripts,
+ * distributed under the following license:
  *
- *  \author Errico Guidieri
- *  \date   2017
+ * TASKING VX-toolset for TriCore
+ * Eclipse project linker script file
+ *
  */
 
-#ifndef OSEE_INTERNAL_H
-#define OSEE_INTERNAL_H
+/** \file   ee_tc_tasking_flash.lsl
+ *  \brief  Linker script file for TASKING compiler (no iLLD integration)
+ *  \author Errico Guidieri
+ *  \date   2019
+ */
+#if (!defined(USTACK_TC0))
+#define USTACK_TC0 4k
+#endif /* !USTACK_TC0 */
+#if defined(__PROC_TC23X__)
+#include "tc23x.lsl"
 
-#include "ee_conf.h"
-#include "ee_tc_trapvec.h"
-#include "ee_hal_internal.h"
-#include "ee_hal_mc_internal.h"
-#include "ee_kernel.h"
-
-#endif /* !OSEE_INTERNAL_H */
+#else
+#include <cpu.lsl>
+#endif
