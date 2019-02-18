@@ -116,6 +116,7 @@ OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/$(OSEE_X86_64_BOARD)/ee_b
 endif # OSEE_X86_64_BOARD
 
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/ee_x86_64_tsc.h
+OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/ee_x86_64_tsc_internal.h
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/ee_x86_64_tsc.c
 
 ifeq ($(call iseeopt, OSEE_HAS_SYSTEM_TIMER), yes)
@@ -137,4 +138,10 @@ endif
 ifndef OSEE_PLATFORM_X86_64_INT_CONTROLLER
 $(error "Not valid interrupt controller provided for the chosen platform!")
 endif
+
+ifeq ($(call iseeopt, OSEE_PLATFORM_X86_64_ENABLE_INTEL_I210_DRIVER), yes)
+OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/intel_i210/intel_i210.h
+OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/x86-64/intel_i210/intel_i210.c
+endif
+
 endif # OSEE_ARCH_X86_64

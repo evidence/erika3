@@ -55,32 +55,6 @@
 #ifndef OSEE_X86_64_TSC_H
 #define OSEE_X86_64_TSC_H
 
-/* Check whether the TSC is supported (cpu property) */
-OSEE_STATIC_INLINE OsEE_reg osEE_x86_64_tsc(void)
-{
-	uint32_t ecx, edx;
-
-	/* CPUID with EAX=1: 4th bit of EDX */
-	__asm__ volatile("cpuid" : "=c" (ecx), "=d" (edx) : "a" (1) : "memory");
-
-	return  (OsEE_reg)(!!(edx & (1 << 4)));
-}
-
-/* Read from the tsc register */
-OSEE_STATIC_INLINE
-OsEE_reg OSEE_ALWAYS_INLINE osEE_x86_64_rdtsc(void)
-{
-	uint32_t lo, hi;
-
-	__asm__ volatile("rdtsc" : "=a" (lo), "=d" (hi));
-	__asm__ volatile("mfence" : : : "memory");
-
-	return (uint64_t)lo | (((uint64_t)hi) << 32U);
-}
-
-/* Initialize the tsc */
-void osEE_x86_64_tsc_init(uint64_t tsc_freq_hz);
-
 /* Read the tsc (convert the TSC reg ticks)*/
 uint64_t osEE_x86_64_tsc_read(void);
 

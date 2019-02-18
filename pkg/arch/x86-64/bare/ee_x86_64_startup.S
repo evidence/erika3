@@ -141,6 +141,16 @@ setPTEntry:
     or $0x80000000, %eax    # Set the PG-bit (bit 31 of CR0)
     mov %eax, %cr0
 
+    # Enabling Streaming SIMD Extensions (SSE)
+    # Note: used to allow float/double operations
+    mov %cr0, %eax
+    and $0xFFFFFFFB, %eax	# clear coprocessor emulation CR0.EM
+    or $0x2, %eax		# set coprocessor monitoring  CR0.MP
+    mov %eax, %cr0
+    mov %cr4, %eax
+    or  $0x600, %eax		# set CR4.OSFXSR, CR4.OSXMMEXCPT (bit 9,10)
+    mov %eax, %cr4
+
     # Load the 64-bit global descriptor table
     lgdt (GDTD64)
     # Jump to 64-bit long mode

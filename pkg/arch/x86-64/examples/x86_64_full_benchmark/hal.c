@@ -49,6 +49,7 @@
  */
 
 #include "hal.h"
+#include "ee_x86_64_tsc.h"
 
 FUNC(void, APPL_CODE) DemoHAL_IdleHook (void )
 {

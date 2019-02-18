@@ -49,7 +49,7 @@
 
 #include "ee_internal.h"
 #include <inmate.h>
-#include "ee_x86_64_tsc.h"
+#include "ee_x86_64_tsc_internal.h"
 #if (defined(OSEE_PLATFORM_X86_64_INT_CONTROLLER_X2APIC))
 #include "ee_x86_64_x2apic_internal.h"
 #endif /* OSEE_PLATFORM_X86_64_INT_CONTROLLER_X2APIC */

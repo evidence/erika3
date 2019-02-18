@@ -53,6 +53,7 @@
 
 /* ERIKA Enterprise. */
 #include "ee.h"
+#include "hal_platform.h"
 
 #if (defined(__cplusplus))
 extern "C" {
@@ -128,12 +129,15 @@ typedef enum {
 	DEMO_HAL_ISR_1,
 	DEMO_HAL_ISR_2,
 	DEMO_HAL_ISR_3,
+	DEMO_HAL_ISR_4,
 	DEMO_HAL_ISR_NUM
 } DemoHAL_ISR;
 
 FUNC(void, APPL_CODE) DemoHAL_ISRInit( void );
 
 FUNC(void, APPL_CODE) DemoHAL_ISRTrigger( VAR(DemoHAL_ISR, AUTOMATIC) isr );
+
+FUNC(void, APPL_CODE) DemoHAL_ISRDisable( void );
 
 /* Timer HAL */
 

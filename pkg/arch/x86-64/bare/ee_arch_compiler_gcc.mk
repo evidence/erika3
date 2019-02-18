@@ -118,10 +118,11 @@ endif
 OPT_CC += $(CFLAGS)
 
 ## OPT_CXX are the options for X86_64 C++ compiler invocation
-# removed: -nostdinc, added -mno-red-zone
-OPT_CXX += -c -m64 -Werror -fno-pie -Wall -Wstrict-prototypes -mno-red-zone    \
--Wtype-limits -Wmissing-declarations -Wmissing-prototypes -fno-strict-aliasing \
--fno-pic -fno-common -fno-stack-protector
+# removed: -nostdinc -Werror -Wstrict-prototypes -Wmissing-prototypes,
+# added -mno-red-zone -fno-exceptions
+OPT_CXX += -c -m64 -fno-pie -Wall -mno-red-zone    \
+-Wtype-limits -Wmissing-declarations -fno-strict-aliasing \
+-fno-pic -fno-common -fno-stack-protector -fno-exceptions
 ifeq ($(or	\
     $(and $(call iseeopt, OS_EE_BUILD), $(call iseeopt, OS_EE_BUILD_DEBUG)),	    \
     $(and $(call iseeopt, OS_EE_APP_BUILD), $(call iseeopt, OS_EE_APP_BUILD_DEBUG)) \
@@ -163,6 +164,7 @@ OPT_LINK += -Wl,-Map=$(TARGET_NAME).map -Os -Wl,--gc-sections -Wl,-n -Wl,--build
 ifeq	($(call iseeopt, OS_EE_VERBOSE), yes)
 OPT_LINK += -Wl,--verbose
 endif
+OPT_LINK += $(LDFLAGS)
 
 ifeq ($(call iseeopt, OS_EE_BUILD), yes)
 OS_EE_DEFS_AS	+= -DOS_EE_BUILD
@@ -196,7 +198,7 @@ OPT_LIBS += -l$(EELIB) -L .
 LIBDEP += lib/$(ERIKALIB)
 else	# OS_EE_BUILD
 OPT_LIBS += -L $(call short_native_path,$(abspath $(OS_EE_LIB_BASE_DIR)))
-OPT_LIBS += -Wl,--start-group -l$(EELIB) -lc -Wl,--end-group
+OPT_LIBS += -Wl,--start-group -l$(EELIB) -lc $(LIBS) -Wl,--end-group
 LIBDEP += $(OS_EE_LIB_BASE_DIR)/lib$(EELIB).a 
 endif	# OS_EE_BUILD
 

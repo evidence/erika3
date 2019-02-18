@@ -147,7 +147,7 @@ void osEE_pci_msix_set_vector(uint16_t bdf, unsigned int vector,
 	uint32_t addr;
 	uint16_t ctrl;
 	uint32_t table;
-	OsEE_core_id cpu_id = 0, cpu_id_msr = 0;
+	OsEE_core_id cpu_id = 0;
 	OsEE_paddr apic_paddr;
 
 	cap = osEE_pci_find_cap(bdf, OSEE_PCI_CAP_MSIX);

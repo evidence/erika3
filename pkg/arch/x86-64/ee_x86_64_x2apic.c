@@ -49,7 +49,7 @@
 #include "ee_internal.h"
 #include "ee_utils.h"
 #include "ee_x86_64_x2apic_internal.h"
-#include "ee_x86_64_tsc.h"
+#include "ee_x86_64_tsc_internal.h"
 
 #ifdef OSEE_X86_64_X2APIC_DEBUG
 #include "ee_print.h"

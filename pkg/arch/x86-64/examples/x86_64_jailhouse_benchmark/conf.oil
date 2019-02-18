@@ -61,6 +61,9 @@ CPU mySystem {
     EE_OPT = "OSEE_ASSERT";
 
     CPU_DATA = X86_64 {
+      /* Choose the platform (i.e., JAILHOUSE or BARE) */
+      PLATFORM = JAILHOUSE;
+
       MULTI_STACK = TRUE;
       COMPILER = GCC;
       IDLEHOOK = TRUE {

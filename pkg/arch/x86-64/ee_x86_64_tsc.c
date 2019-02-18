@@ -48,6 +48,7 @@
 
 #include "ee_internal.h"
 #include "ee_x86_64_tsc.h"
+#include "ee_x86_64_tsc_internal.h"
 
 /* Defines whether TSC is supported */
 static uint64_t tsc_supported = 0;

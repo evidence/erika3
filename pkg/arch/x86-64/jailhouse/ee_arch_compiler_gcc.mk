@@ -128,9 +128,10 @@ endif
 OPT_CC += $(CFLAGS)
 
 ## OPT_CXX are the options for X86_64 C++ compiler invocation
-# removed: -nostdinc, added -mno-red-zone
-OPT_CXX += -c -m64 -Werror -fno-pie -Wall -Wstrict-prototypes -mno-red-zone    \
--Wtype-limits -Wmissing-declarations -Wmissing-prototypes -fno-strict-aliasing \
+# removed: -nostdinc -Werror -Wstrict-prototypes -Wmissing-prototypes,
+# added -mno-red-zone -fno-exceptions
+OPT_CXX += -c -m64 -fno-pie -Wall -mno-red-zone    \
+-Wtype-limits -Wmissing-declarations -fno-strict-aliasing -fno-exceptions \
 -fomit-frame-pointer -fno-pic -fno-common -fno-stack-protector
 ifeq ($(or	\
     $(and $(call iseeopt, OS_EE_BUILD), $(call iseeopt, OS_EE_BUILD_DEBUG)),	    \

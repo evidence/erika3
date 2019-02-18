@@ -39,59 +39,29 @@
  * project.
  * ###*E*### */
 
-/** \file	hal.c
- *  \brief	Hardware Abstraction Layer Sources.
+/** \file	hal_platform.h
+ *  \brief	Hw-specific Hardware Abstraction Layer header.
  *
- *  This file contains the sources of the HAL for Erika Enterprise.
+ *  This file contains the header of the hw-specific HAL for Erika Enterprise.
  *
- *  \author	Giuseppe Serano
+ *  \author	Claudio Scordino
  *  \date	2018
  */
 
-#include "hal.h"
-#include "ee_x86_64_tsc.h"
+#ifndef HAL_PLATFORM_H_
+#define HAL_PLATFORM_H_
 
-#define CUSTOM_ISR 0x21
+#include "ee.h"
 
-/* ISR HAL */
+#if (defined(__cplusplus))
+extern "C" {
+#endif
 
-FUNC(void, APPL_CODE) DemoHAL_ISRInit( void ) {}
+#undef DEMOHAL_PRINTF
+#define DEMOHAL_PRINTF	OSEE_PRINT
 
-FUNC(void, APPL_CODE) DemoHAL_ISRTrigger(
-	VAR(DemoHAL_ISR, AUTOMATIC) isr
-) {
-	switch (isr) {
-	case DEMO_HAL_ISR_0:
-		call_int(CUSTOM_ISR);
-		break;
-
-	case DEMO_HAL_ISR_1:
-	case DEMO_HAL_ISR_2:
-	case DEMO_HAL_ISR_3:
-	default:
-		break;
-	}
+#if (defined(__cplusplus))
 }
+#endif
 
-FUNC(void, APPL_CODE) DemoHAL_ISRDisable( void )
-{
-	// TODO
-}
-
-/* Timer HAL */
-FUNC(void, APPL_CODE) DemoHAL_TimerInit( VAR(MemSize, AUTOMATIC) period ) {}
-
-/*! \brief      Return timer value (expressed in ns) */
-FUNC(OSEE_TICK_TYPE, APPL_CODE) DemoHAL_TimerGetValue( void ) {
-	return osEE_x86_64_tsc_read();
-}
-
-/* Serial HAL */
-
-FUNC(void, APPL_CODE) DemoHAL_SerialInit( void ) {}
-
-FUNC(void, APPL_CODE) DemoHAL_SerialWrite(
-	P2CONST(uint8_t, AUTOMATIC, OS_APPL_DATA)	buffer,
-	VAR(MemSize, AUTOMATIC)						length
-) { DEMOHAL_PRINTF((char*) buffer);}
-
+#endif /* HAL_PLATFORM_H_ */

@@ -48,7 +48,7 @@
 
 #include "ee_internal.h"
 #include "ee_ioport.h"
-#include "ee_x86_64_tsc.h"
+#include "ee_x86_64_tsc_internal.h"
 
 #if (defined(OSEE_PLATFORM_X86_64_INT_CONTROLLER_APIC))
 #include "ee_x86_64_apic_internal.h"

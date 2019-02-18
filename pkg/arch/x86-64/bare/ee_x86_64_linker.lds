@@ -42,7 +42,7 @@
 /** \file   ee_x86_64_linker.lds
  *  \brief  Linker script
  *
- *  \author Bruno Morelli, Ida Savino
+ *  \author Bruno Morelli, Ida Savino, Luca Cuomo
  *  \date   2018
  */
 
@@ -54,8 +54,11 @@ OUTPUT_FORMAT("elf64-x86-64", "elf64-x86-64", "elf64-x86-64")
 OUTPUT_ARCH(i386:x86-64)
 
 MEMORY {
-	RAM(rwx) : ORIGIN = 0x0, LENGTH = 640K
+	PT(rwx) : ORIGIN = 0x0, LENGTH = 640K
 	/* Reserved memory (VGA, Video BIOS, Motherboard BIOS) */
+	RSVD_1(x): ORIGIN = 0x9fc00, LENGTH = 1K
+	RSVD_2(x): ORIGIN = 0xf0000, LENGTH = 64K
+	RAM(rwx): ORIGIN = 0x100000, LENGTH = 200M
 }
 
 SECTIONS {
@@ -72,7 +75,7 @@ SECTIONS {
 	. += 0x1000;
 	heap_pt = .;
 	. += 0x1000;
-    } > RAM
+    } > PT
 
     /* Code and readonly data */
     .text 	: {
@@ -169,6 +172,14 @@ SECTIONS {
         *(".data*")
         *(COMMON);
         _edata = .;
+
+	/* HEAP lenght: 2M */
+	_pt_heap_base = .;
+    	_pt_heap_end = _pt_heap_base + 2 * 1024 * 1024;
+
+    	_libc_heap_base = _pt_heap_end;
+    	_libc_heap_end = _libc_heap_base + 2 * 1024 * 1024;
+
     } > RAM
 
     /* Statically-allocated variables */
@@ -177,13 +188,6 @@ SECTIONS {
 	. = ALIGN(4096);
 	code_end = .;
     } > RAM
-
-    /* Heap starting from 2M (lenght: 2M) */
-    _pt_heap_base = 0x200000;
-    _pt_heap_end = _pt_heap_base + 2 * 1024 * 1024;
-
-    _libc_heap_base = _pt_heap_end;
-    _libc_heap_end = _libc_heap_base + 2 * 1024 * 1024;
 
     /* Get rid of unnecessary GCC bits */
     /DISCARD/ : {
