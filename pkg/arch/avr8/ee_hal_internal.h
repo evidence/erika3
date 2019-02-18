@@ -64,6 +64,7 @@
 #include "ee_std_change_context.h"
 
 #if (defined(OSEE_HAS_SYSTEM_TIMER))
+#include "ee_atmega_timer0ctc.h"
 #include "ee_atmega_timer1ctc.h"
 #endif	/* OSEE_HAS_SYSTEM_TIMER */
 

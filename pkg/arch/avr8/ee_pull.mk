@@ -74,10 +74,13 @@ ifeq	($(call iseeopt, OS_EE_ARCH_AVR8_ATMEGA), yes)
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/avr8/ee_atmega_internal.h
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/avr8/ee_atmega_intvect.c
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/avr8/ee_atmega_system_timer.c
+OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/avr8/ee_atmega_timer0ctc.c
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/avr8/ee_atmega_timer1ctc.c
 ifeq	($(call iseeopt, OSEE_HAS_SYSTEM_TIMER), yes)
+OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/avr8/ee_atmega_timer0ctc.h
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/avr8/ee_atmega_timer1ctc.h
 else
+OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/avr8/ee_atmega_timer0ctc.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/avr8/ee_atmega_timer1ctc.h
 endif
 endif	#OS_EE_ARCH_AVR8_ATMEGA

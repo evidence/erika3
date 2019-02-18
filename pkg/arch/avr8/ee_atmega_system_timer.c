@@ -53,21 +53,31 @@
 /* ERIKA Enterprise Internals */
 #include "ee_internal.h"
 
+#if	(defined(OSEE_HAS_SYSTEM_TIMER))
+
 #define OSEE_AVR8_TIMER1_COMPA  (0U)
-#define OSEE_AVR8_TIMER1_COMPB  (1U)
+#define OSEE_AVR8_TIMER0_COMPA  (1U)
 
-#if (defined(OSEE_SYSTEM_TIMER_DEVICE))
-#if (OSEE_SYSTEM_TIMER_DEVICE == OSEE_AVR8_TIMER1_COMPA)
-
+#if	(defined(OSEE_SYSTEM_TIMER_DEVICE))
+#if	(OSEE_SYSTEM_TIMER_DEVICE == OSEE_AVR8_TIMER1_COMPA)
 void osEE_avr8_system_timer_init(void) {
   OsEE_atmega_startTimer1(OSTICKDURATION / OSEE_KILO);
 }
+#elif	(OSEE_SYSTEM_TIMER_DEVICE == OSEE_AVR8_TIMER0_COMPA)
+void osEE_avr8_system_timer_init(void) {
+  OsEE_atmega_startTimer0(OSTICKDURATION / OSEE_KILO);
+}
+#else
+#error Unsupported System Timer Device: OSEE_SYSTEM_TIMER_DEVICE!
+#endif	/*
+	 * OSEE_SYSTEM_TIMER_DEVICE == OSEE_AVR8_TIMER1_COMPA ||
+	 * OSEE_SYSTEM_TIMER_DEVICE == OSEE_AVR8_TIMER0_COMPA ||
+	 */
+#endif	/* OSEE_SYSTEM_TIMER_DEVICE */
 
 ISR2(osEE_avr8_system_timer_handler) {
   OsEE_CDB * p_cdb = osEE_get_curr_core();
   osEE_counter_increment(p_cdb->p_sys_counter_db);
 }
-#else
-#error Unsupported System Timer Device: OSEE_SYSTEM_TIMER_DEVICE!
-#endif /* OSEE_SYSTEM_TIMER_DEVICE == OSEE_AVR8_TIMER1_COMPA */
-#endif /* OSEE_SYSTEM_TIMER_DEVICE */
+
+#endif	/* OSEE_HAS_SYSTEM_TIMER */

@@ -58,6 +58,7 @@ EE_SRCS += ee_avr8_asm.S
 EE_SRCS += ee_avr8_irqstub.c
 EE_SRCS += ee_avr8_utils.c
 
+EE_SRCS += ee_atmega_timer0ctc.c
 EE_SRCS += ee_atmega_timer1ctc.c
 
 ifeq ($(call iseeopt, OSEE_HAS_SYSTEM_TIMER), yes)
