@@ -44,8 +44,6 @@
  *
  *  Contains the types for different scheduler data structures
  *
- *  \note TO BE DOCUMENTED!!!
- *
  *  \author Errico Guidieri
  *  \date   2016
  */
@@ -70,26 +68,52 @@ struct OsEE_TDB_tag;
  *                    Scheduler Node (SN) Data Structure
  =============================================================================*/
 
+/**
+ *  Scheduler node data structure.
+ *  The Scheduler queues are composed by lists of nodes.
+ */
 typedef struct OsEE_SN_tag {
+  /** next pointer for the list of scheduler nodes */
   P2VAR(struct OsEE_SN_tag, TYPEDEF, OS_APPL_DATA)  p_next;
+  /** pointer to the task TDB in this scheduler node */
   P2VAR(struct OsEE_TDB_tag OSEE_CONST, TYPEDEF, OS_APPL_DATA) p_tdb;
 } OsEE_SN;
 
+/**
+ *  \brief Removes the first node from a node list.
+ *  
+ *  Removes the first node in a task list. Typically called on the free 
+ *  node list.
+ *  
+ *  \param [in,out] pp_first Pointer to (the pointer to the first node 
+ *                  of a queue)
+ *  \return Returns a pointer to a node.
+ */
 LOCAL_INLINE FUNC_P2VAR(OsEE_SN, OS_APPL_DATA, OS_CODE)
   osEE_sn_alloc
 (
-  P2VAR(OsEE_SN *, AUTOMATIC, OS_APPL_DATA) pp_fist
+  P2VAR(OsEE_SN *, AUTOMATIC, OS_APPL_DATA) pp_first
 )
 {
   P2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA) p_sn_allocated;
 
-  p_sn_allocated          = (*pp_fist);
-  (*pp_fist)              = p_sn_allocated->p_next;
+  p_sn_allocated          = (*pp_first);
+  (*pp_first)              = p_sn_allocated->p_next;
   p_sn_allocated->p_next  = NULL;
 
   return p_sn_allocated;
 }
 
+/**
+ *  \brief Inserts a node as the first of a list.
+ *  
+ *  Inserts a node as the first of a list. Typically called on the free 
+ *  node list to "release" a scheduler node.
+ *  
+ *  \param [in,out] pp_first Pointer to (the pointer to the first node of a 
+ *                 queue)
+ *  \param [in,out] p_to_free Node to be inserted in the list
+ */
 LOCAL_INLINE FUNC(void, OS_CODE)
   osEE_sn_release
 (
@@ -101,6 +125,23 @@ LOCAL_INLINE FUNC(void, OS_CODE)
   (*pp_first)       = p_to_free;
 }
 
+/**
+ *  \brief Ordered insertion in a queue.
+ *  
+ *  This functon inserts a task inside a task queue, following the order of the
+ *  task.
+ *  
+ *  \param [in,out] pp_first Pointer to (the pointer to the first node of a 
+ *                 queue)
+ *  \param [in]    p_sn_new Node to be inserted in the list following the 
+ *                 priority of its task
+ *  \param [in]    as_ready If OSEE_TRUE, use the ready_priority and not the 
+ *                 current priority to queue the task. The usage of the ready
+ *                 priority is useful when doing global schedulng. In AUTOSAR
+ *                 conformance classes, onlt the current priority is used.
+ *  
+ *  \return The function returns OSEE_TRUE if the head pp_first changed.
+ */
 FUNC(OsEE_bool, OS_CODE)
   osEE_sn_priority_insert
 (
@@ -161,8 +202,14 @@ typedef struct {
 
 #else
 #if (!defined(OSEE_RQ_LL))
+/** in case it is not defined the OSEE_RQ_MULTIQUEUE, define the OSEE_RQ_LL,
+ *  which is the linked list implementation.
+ */
 #define OSEE_RQ_LL
 #endif /* !OSEE_RQ_LL */
+/** When implemented with a linked list, a ready queue is a list of scheduler 
+ *  nodes.
+ */
 typedef OsEE_SN * OsEE_RQ;
 #endif /* RQ Data Structures */
 

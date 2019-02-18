@@ -52,6 +52,10 @@
  */
 #include "ee_internal.h"
 
+#if (!defined(OSEE_WARN_LABEL))
+#define OSEE_WARN_LABEL(l)
+#endif /* !OSEE_WARN_LABEL */
+
 /* [SWS_Os_00299] The Operating System module shall provide the services
    DisableAllInterrupts(), EnableAllInterrupts(), SuspendAllInterrupts(),
    ResumeAllInterrupts() prior to calling StartOS() and after calling
@@ -759,8 +763,7 @@ FUNC(StatusType, OS_CODE)
     if (p_tdb_act->task_type <= OSEE_TASK_TYPE_EXTENDED) {
       VAR(OsEE_reg, AUTOMATIC)  flags;
 #if (!defined(OSEE_HAS_SERVICE_PROTECTION))
-      /* Reset ISR Counters */
-      p_ccb->s_isr_all_cnt = 0U;
+      /* Silently reset ISR counters if service protection is not configured */
       if (p_ccb->s_isr_all_cnt > 0U) {
         p_ccb->s_isr_all_cnt = 0U;
         osEE_hal_resumeIRQ(p_ccb->prev_s_isr_all_status);
@@ -887,8 +890,7 @@ FUNC(StatusType, OS_CODE)
   {
     VAR(OsEE_reg, AUTOMATIC) flags;
 #if (!defined(OSEE_HAS_SERVICE_PROTECTION))
-      /* Reset ISR Counters */
-      p_ccb->s_isr_all_cnt = 0U;
+      /* Silently reset ISR counters if service protection is not configured */
       if (p_ccb->s_isr_all_cnt > 0U) {
         p_ccb->s_isr_all_cnt = 0U;
         osEE_hal_resumeIRQ(p_ccb->prev_s_isr_all_status);
@@ -1291,6 +1293,7 @@ FUNC(StatusType, OS_CODE)
 #endif /* OSEE_HAS_SERVICE_PROTECTION */
   if ((os_status == OSEE_KERNEL_STARTED) || (os_status == OSEE_KERNEL_STARTING))
   {
+OSEE_WARN_LABEL(osee_useless_ev_assign)
     ev = E_OK;
     osEE_shutdown_os(p_cdb, Error);
   } else {

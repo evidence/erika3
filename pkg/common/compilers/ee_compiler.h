@@ -118,7 +118,7 @@ extern "C" {
 #if (!defined(CONST))
 /** \brief  Macro for the declaration and definition of constants
             [SWS_COMPILER_00023]
-    \param  type      type of the constant
+    \param  consttype type of the constant
     \param  memclass  classification of the constant itself
  */
 #define CONST(consttype, memclass) consttype const memclass
@@ -217,7 +217,7 @@ extern "C" {
 
     \param  type      type of the function return or type for the array
     \param  ptrclass  defines the classification of the pointer's distance
-    \param  symname   function or array pointer name
+    \param  ptrname   function or array pointer name
                       respectivly name of the defined type
  */
 #define P2SYM_VAR(type, ptrclass, ptrname)\
@@ -231,7 +231,7 @@ extern "C" {
 
     \param  type      type of the function return or type for the array
     \param  ptrclass  defines the classification of the pointer's distance
-    \param  symname   function or array pointer name
+    \param  ptrname   function or array pointer name
                       respectivly name of the defined type
  */
 #define P2SYM_P2VAR(type, ptrclass, ptrname)\
@@ -244,7 +244,7 @@ extern "C" {
 
     \param  type      type of the function return or type for the array
     \param  ptrclass  defines the classification of the pointer's distance
-    \param  symname   function or array pointer name
+    \param  ptrname   function or array pointer name
                       respectivly name of the defined type
  */
 #define P2SYM_CONSTP2VAR(type, ptrclass, ptrname)\

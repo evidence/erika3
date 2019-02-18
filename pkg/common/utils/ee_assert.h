@@ -107,17 +107,6 @@
  *    will read the value field only once, to avoid problems due to the
  *    fact that assertion runs with interrupts enabled.
  *
- *  Types that have to be defined in types.h
- *
- *  - \c OSEE_TYPEASSERT is the type used for the assertion index.
- *    MUST BE SIGNED!!!
- *
- *  - \c OSEE_TYPEASSERTVALUE contains at least 3 values:
- *    \c 0, \c OSEE_ASSERT_NO, \c OSEE_ASSERT_YES
- *    The type \c OSEE_INT8 should work for most architectures.
- *
- *  \note  TO BE DOCUMENTED!!!
- *
  *  \author  Paolo Gai
  *  \date  2016
  */
@@ -132,25 +121,32 @@ extern "C" {
 #endif
 
 
-/* types.h */
 #ifndef OSEE_TYPEASSERT
+/** Type used for the assertion index. must be signed. */
 #define OSEE_TYPEASSERT OsEE_reg
 #endif
 
 #ifndef OSEE_TYPEASSERTVALUE
+/** OSEE_TYPEASSERTVALUE contains at least 3 values:
+ *    \c 0, \c OSEE_ASSERT_NO, \c OSEE_ASSERT_YES
+ *    The type \c uint8_t should work for most architectures.
+ */
 #define OSEE_TYPEASSERTVALUE uint8_t
 #endif
 
 
 
 
-/* this is an invalid value for the index */
+/** this is an invalid value for the index */
 #define OSEE_ASSERT_NIL      ((OSEE_TYPEASSERT)(-1))
 
-/* these are the results of each assertion test */
+/** Initial value for the assertion */
 #define OSEE_ASSERT_INITVALUE   ((OSEE_TYPEASSERTVALUE)0)
+/** The assertion passed correctly */
 #define OSEE_ASSERT_YES         ((OSEE_TYPEASSERTVALUE)1)
+/** The assertion failed because of some error */
 #define OSEE_ASSERT_NO          ((OSEE_TYPEASSERTVALUE)2)
+/** The assertion was evaluated twice (this is an error too) */
 #define OSEE_ASSERT_ALREADYUSED ((OSEE_TYPEASSERTVALUE)3)
 
 /* If MemMap.h support is enabled (i.e. because memory protection): use it */
@@ -160,53 +156,105 @@ extern "C" {
 #include "MemMap.h"
 #endif /* OSEE_SUPPORT_MEMMAP_H */
 
+/** the assertion array storing all the assertions value */
 #if (defined(ASSERT_LENGTH))
-/* the assertion array */
 extern OSEE_TYPEASSERTVALUE osEE_assertions[ASSERT_LENGTH];
 #else
 extern OSEE_TYPEASSERTVALUE osEE_assertions[];
 #endif
 
-/* This is the simplest assertion that can be made:
+/**
+ *  \brief Test of a single assertion.
+ *  
+ *  This is the simplest assertion that can be made:
  *
- * the assertion "id" become YES if the test is true and the prev
- * assertion is YES.
+ *  the assertion "id" become YES if the test is true and the prev
+ *  assertion is OSEE_ASSERT_YES.
+ *  
+ *  \param [in] id   The assertion ID
+ *  \param [in] test The test result (an expression is passed as parameter)
+ *  \param [in] prev The previous assertion that must be true in order 
+ *                   for this test to succeed, or OSEE_ASSERT_NIL
  *
- * If no PREVious assertion has to be checked, the prev parameter
- * should be OSEE_ASSERT_NIL.
- *
- * The return value is either YES or NO depending on the result.
+ *  \return OSEE_ASSERT_YES or OSEE_ASSERT_NO depending on the result of this
+ *          assertion test.
  */
 OSEE_TYPEASSERTVALUE osEE_assert(OSEE_TYPEASSERT id,
            OsEE_bool test,
            OSEE_TYPEASSERT prev);
 
-/* These are a simple or/and assertion:
+/**
+ *  \brief OR Assertion Test.
+ *  
+ *  the assertion "id" become OSEE_ASSERT_YES if the prev1 OR prev2
+ *  assertions have a value of OSEE_ASSERT_YES.
+ *  
+ *  \param [in] id    The assertion ID
+ *  \param [in] prev1 The previous assertion that must be true in order 
+ *                    for this test to succeed.
+ *  \param [in] prev2 The previous assertion that must be true in order 
+ *                    for this test to succeed.
  *
- * the assertion "id" become YES if the prev1 or/and prev2
- * assertions are YES.
+ *  \return OSEE_ASSERT_YES or OSEE_ASSERT_NO depending on the result of this
+ *          assertion test.
  */
 OSEE_TYPEASSERTVALUE osEE_assert_or(OSEE_TYPEASSERT id,
         OSEE_TYPEASSERT prev1,
         OSEE_TYPEASSERT prev2);
 
+/**
+ *  \brief AND Assertion Test.
+ *  
+ *  the assertion "id" become OSEE_ASSERT_YES if the prev1 AND prev2
+ *  assertions have a value of OSEE_ASSERT_YES.
+ *  
+ *  \param [in] id    The assertion ID
+ *  \param [in] prev1 The previous assertion that must be true in order 
+ *                    for this test to succeed.
+ *  \param [in] prev2 The previous assertion that must be true in order 
+ *                    for this test to succeed.
+ *
+ *  \return OSEE_ASSERT_YES or OSEE_ASSERT_NO depending on the result of this
+ *          assertion test.
+ */
 OSEE_TYPEASSERTVALUE osEE_assert_and(OSEE_TYPEASSERT id,
          OSEE_TYPEASSERT prev1,
          OSEE_TYPEASSERT prev2);
 
-/* This is a range assertion, typically used as last assertion.
- *
- * the assertion "id" become YES if ALL the assertions between begin
- * and end are YES.
- */
 
+/**
+ *  \brief Range Assertion Test.
+ *  
+ *  the assertion "id" become OSEE_ASSERT_YES if all the assertion from begin 
+ *  to end have a value of OSEE_ASSERT_YES.
+ *  
+ *  This is typically used as the last command, to check all assertion and put
+ *  the result in assertion number 0, that will be later checked by the 
+ *  debugger.
+ *  
+ *  \param [in] id    The assertion ID
+ *  \param [in] begin The first assertion that must be true in order 
+ *                    for this test to succeed.
+ *  \param [in] end   The last assertion that must be true in order 
+ *                    for this test to succeed.
+ *
+ *  \return OSEE_ASSERT_YES or OSEE_ASSERT_NO depending on the result of this
+ *          assertion test.
+ */
 OSEE_TYPEASSERTVALUE osEE_assert_range(OSEE_TYPEASSERT id,
            OSEE_TYPEASSERT begin,
            OSEE_TYPEASSERT end);
 
-/* This is the last assertion. It simply does nothing, and must be
- * included in all the examples with the purpose of setting a
- * breakpoint there.
+ 
+/**
+ *  \brief Last (breakpoint!) Assertion.
+ *  
+ *  This is the last assertion. It simply does nothing, and must be
+ *  included in all the examples with the purpose of setting a
+ *  breakpoint there.
+ *
+ *  \return returns the value of assertion number 0, which typically contains 
+ *          the overall result.
  */
 OSEE_TYPEASSERTVALUE osEE_assert_last(void);
 

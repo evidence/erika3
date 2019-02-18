@@ -549,13 +549,10 @@ FUNC(void, OS_CODE)
           CONSTP2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_CONST)
             p_trigger_to_be_handled_db = p_triggered_db;
 
-          /* Prepare next trigger to be handled here, before actually handle the
-           * current one, otherwise cycling triggers will mess with the list of
-           * triggers that have to be handled now */
+          /* Prepare next trigger to be handled here, before actually handle
+           * the current one, otherwise cycling triggers will mess with the
+           * list of triggers that have to be handled now */
           p_triggered_db = p_triggered_db->p_trigger_cb->p_next;
-          if (p_triggered_db != NULL) {
-            p_triggered_cb = p_triggered_db->p_trigger_cb;
-          }
 
 #if (defined(OSEE_COUNTER_TRIGGER_TYPES))
           {

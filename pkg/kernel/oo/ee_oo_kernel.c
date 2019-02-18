@@ -169,12 +169,14 @@ FUNC(void, OS_CODE) osEE_stack_monitoring
   P2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb
 )
 {
-  if (osEE_hal_check_stack_overflow(p_cdb)) {
+  if (p_cdb->p_ccb->os_status == OSEE_KERNEL_STARTED) {
+    if (osEE_hal_check_stack_overflow(p_cdb)) {
 #if (defined(OSEE_HAS_PROTECTIONHOOK))
-  /* TODO */
+    /* TODO */
 #else
-  osEE_shutdown_os(p_cdb, E_OS_STACKFAULT);
+    osEE_shutdown_os(p_cdb, E_OS_STACKFAULT);
 #endif /*  OSEE_HAS_PROTECTIONHOOK */
+    }
   }
 }
 #endif /* OSEE_HAS_STACK_MONITORING */

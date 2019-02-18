@@ -39,88 +39,84 @@
  * project.
  * ###*E*### */
 
-/** \file   ee_compiler_gcc.h
- *  \brief  Common GCC Compilers Definitions.
+/** \file   ee_compiler_ti_cgt_arm.h
+ *  \brief  Common TI Code Generator Tool ARM Compilers Definitions.
  *
  *  This file contains all the common compiler-dependent definitions for
- *  GNU GCC Compiler.
+ *  Common TI Code Generator Tool ARM Compiler.
  *
  *  \note This file \b MUST contain only \c defines, because it is also
  *        included by the \c .S files. \n
  *
- *  \note   TO BE DOCUMENTED!!!
- *
  *  \author Errico Guidieri
- *  \date   2016
+ *  \date   2018
  */
 
 /*
  * Compiler dependent interface
  */
-#ifndef OSEE_COMPILER_GCC_H
-#define OSEE_COMPILER_GCC_H
+#ifndef OSEE_COMPILER_TI_CGT_ARM_H
+#define OSEE_COMPILER_TI_CGT_ARM_H
 
-#include "ee_arch_compiler_gcc.h"
+#include "ee_arch_compiler_ti_cgt_arm.h"
 
-#if (defined(__cplusplus))
-extern "C" {
-#endif
-
+#if (!defined(OSEE_INLINE)) && (!defined(OSEE_STATIC_INLINE))
 #if (defined(OSEE_NO_INLINE))
-/** Inline functions */
 #define OSEE_INLINE
-/** Static Inline functions */
 #define OSEE_STATIC_INLINE  static
 #elif (defined(__STRICT_ANSI__))
 /*
-                          GCC Alternate Keywords
-  -ansi and the various -std options disable certain keywords...
+                      TI Code Generator Tool Keywords
+  --strict_ansi options disable certain keywords...
   The way to solve these problems is to put "__" at the beginning and end of
-  each problematical keyword...
-  gcc.gnu.org/onlinedocs/gcc/Alternate-Keywords.html */
-/** Inline functions */
-#define OSEE_INLINE         __inline__
-/** Static Inline functions */
-#define OSEE_STATIC_INLINE  static __inline__
+  each problematical keyword... */
+#define OSEE_INLINE         __inline
+#define OSEE_STATIC_INLINE  static __inline
 #else
-/** Inline functions */
 #define OSEE_INLINE         inline
-/** Static Inline functions */
 #define OSEE_STATIC_INLINE  static inline
 #endif /* OSEE_NO_INLINE || __STRICT_ANSI__ */
+#endif /* !OSEE_INLINE && !OSEE_STATIC_INLINE */
 
-/** Always Inline functions */
+/*
+  TI Code Generator Tool support standard c99 _Pragma operator, so I would
+  have loved to use it when available.
+  Unfortunately the pragma
+  to force inlining
+  (#pragma FUNC_ALWAYS_INLINE( func ))
+  and to prevent it 
+  (#pragma FUNC_CANNOT_INLINE( func ))
+
+  stupidly require the function name as parameter and are not applied to the
+  following declaration for C files.
+  This prevent us to use it in our macro and rely to GNU extension support
+  implemented by the compiler (always be praised).
+  The most upsetting aspect is that the pragmas behave correctly in C++. :( */
+#if 0
+#if (defined(_Pragma))
+#if (!defined(OSEE_PRAGMA))
+#define OSEE_PRAGMA(s) _Pragma(#s)
+#endif /* !OSEE_PRAGMA */
+#endif /* _Pragma */
+#endif /* 0 */
+
+#if (!defined(OSEE_ALWAYS_INLINE))
 #define OSEE_ALWAYS_INLINE      __attribute__((always_inline))
-/** Never Inline functions */
+#endif /* !OSEE_ALWAYS_INLINE */
 #define OSEE_NEVER_INLINE       __attribute__((noinline))
-/** Function does not return */
 #define OSEE_NORETURN           __attribute__((noreturn))
-/** Minimum alignment for a variable */
 #define OSEE_COMPILER_ALIGN(a)  __attribute__((aligned(a)))
-/** Mark a function as used also if nevere referenced.
- *  Useful for interrupt handlers that are nevere explicitly referenced 
- *  in the code.
- */
-#define OSEE_COMPILER_KEEP      __attribute__((used))
-/** IRQ Function */ 
-#define OSEE_COMPILER_IRQ       __attribute__((interrupt(IRQ)))
+#define OSEE_COMPILER_KEEP
+#define OSEE_COMPILER_IRQ       __interrupt
 
 #if (!defined(OSEE_INIT))
-#if (!defined(OSEE_INIT_SECTION))
-/** Default init section */
-#define OSEE_INIT_SECTION ".init8"
-#endif /* !OSEE_INIT_SECTION */
-/** Default init section */
-#define OSEE_INIT               __attribute__((section(OSEE_INIT_SECTION)))
+/* Arbitrary priority chosen to 10, under investigation */
+#define OSEE_INIT               __attribute__((constructor(10)))
 #endif /* !OSEE_INIT */
-
-/** \brief  Software "memory barrier" (or "memory clobber") to enforce NOT code
-            reordering. At compile level.
-   www.nongnu.org/avr-libc/user-manual/optimization.html */
-#define OSEE_BARRIER() __asm__ volatile("" : : : "memory")
 
 #if (defined(__cplusplus))
 }
 #endif
 
-#endif /* !OSEE_COMPILER_GCC_H */
+#endif /* !OSEE_COMPILER_TI_CGT_ARM_H */
+

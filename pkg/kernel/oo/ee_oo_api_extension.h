@@ -44,8 +44,6 @@
  *
  *  This files contains all OSEK Kernel Extended APIs in Erika Enterprise.
  *
- *  \note  TO BE DOCUMENTED!!!
- *
  *  \author  Errico Guidieri
  *  \date  2016
  */
@@ -57,8 +55,6 @@
 
 #if (defined(OSEE_API_EXTENSION))
 
-#define OS_SERVICE_ID_EXTENSION OS_SERVICE_ID_OSEK
-
 #include "ee_api_types.h"
 
 #if (defined(__cplusplus))
@@ -68,15 +64,36 @@ extern "C" {
 /* Semaphore forward declaration */
 struct OsEE_sem_tag;
 
+/**
+ *  Pointer to a Semaphore data structure.
+ *  \ingroup primitives-sem
+ */
 typedef P2VAR(struct OsEE_sem_tag, TYPEDEF, OS_APPL_DATA) SemRefType;
 
 #if (!defined(OSEE_COUNT_TYPE))
+/** Internal type for the semaphore counter */
 #define OSEE_COUNT_TYPE               VAR(OsEE_reg, TYPEDEF)
 #endif /* !OSEE_COUNT_TYPE */
-
+/**
+ *  Type for the semaphore counter
+ *  \ingroup primitives-sem
+ */
 typedef OSEE_COUNT_TYPE               CountType;
 
 #if (defined(OSEE_API_DYNAMIC))
+
+/**
+ *  \brief Initialize a Semaphore at runtime
+ *  \ingroup primitives-sem
+ *  
+ *  This macro can be used to initialize a semaphore at runtime. It
+ *  receives as a parameter the init value of the semaphore counter.
+ * 
+ *  Conformance Classes: ECC1, ECC2
+ *  
+ *  \param [out] pSem The semaphore being initialized. 
+ *  \param [in] count The counter value for the semaphore being initialized.
+ */
 FUNC(void, OS_CODE)
   InitSem
 (
@@ -85,12 +102,50 @@ FUNC(void, OS_CODE)
 );
 #endif /* OSEE_API_DYNAMIC */
 
+/**
+ *  \brief Semaphore blocking wait.
+ *  \ingroup primitives-sem
+ *  
+ *  If the semaphore counter is greater than 0, then the counter is
+ *  decremented by one. If the counter has a value of 0, then the
+ *  calling (running) task blocks. 
+ *
+ *  This function can only be called by extended tasks in conformance
+ *  classes ECC1 and ECC2.
+ *
+ *  Conformance Classes: ECC1, ECC2
+ *  
+ *  \param [in] Sem The semaphore used by the primitive.
+ *  \return The function returns a StatusType.
+ *          - E_OK No error.
+ *          - E_OS_CALLEVEL (Extended) The primitive was called at interrupt
+ *            level.
+ *          - E_OS_RESOURCE (Extended) The calling task occupies resources.
+ *          - E_OS_ACCESS (Extended) The calling task is not an extended task.
+ */
 FUNC(StatusType, OS_CODE)
   WaitSem
 (
   VAR(SemRefType, AUTOMATIC) Sem
 );
 
+/**
+ *  \brief Post on a semaphore
+ *  \ingroup primitives-sem
+ *  
+ *  This primitive unblocks a task eventually blocked on the
+ *  semaphore. If there are no tasks blocked on the semaphore, then
+ *  the semaphore counter is incremented by one.
+ *
+ *  Conformance Classes: ECC1, ECC2
+ *  
+ *  \param [in] Sem The semaphore used by the primitive.
+ *  \return The function returns a StatusType.
+ *          - E_OK No error.
+ *          - E_OS_VALUE The semaphore has not been incremented because
+ *            its counter was equal to the semaphore maximum value
+ *            EE_MAX_SEM_COUNTER.
+ */
 FUNC(StatusType, OS_CODE)
   PostSem
 (
@@ -102,7 +157,5 @@ FUNC(StatusType, OS_CODE)
 #endif
 
 #endif /* OSEE_API_EXTENSION */
-
-#define OS_SERVICE_ID_EXTENSION OS_SERVICE_ID_OSEK
 
 #endif /* !OSEE_API_EXTENSION_H_ */

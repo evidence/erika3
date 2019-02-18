@@ -58,6 +58,13 @@ endif	# OS_EE_GCC
 ifeq	($(call iseeopt, OSEE_WR_DIAB), yes)
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/common/compilers/ee_compiler_wr_diab.h
 endif	# OSEE_WR_DIAB
+ifeq	($(call iseeopt, OSEE_TI_CGT_ARM), yes)
+OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/common/compilers/ee_compiler_ti_cgt_arm.h
+endif	# OSEE_TI_CGT_ARM
+ifeq	($(call iseeopt, OSEE_TASKING_CTC), yes)
+OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/common/compilers/ee_compiler_tasking_ctc.h
+endif	# OSEE_TASKING_CTC
+
 
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/common/compilers/ee_compiler_cfg.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/common/compilers/ee_compiler.h

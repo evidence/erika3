@@ -218,7 +218,7 @@ extern "C" {
 
 #if (!defined(OSEE_STACK_ALIGN_INDEX))
 #define OSEE_STACK_ALIGN_INDEX \
-  (~((OSEE_STACK_ALIGN_SIZE/sizeof(OsEE_stack)) -1U))
+  (~((OSEE_STACK_ALIGN_SIZE/sizeof(OsEE_stack)) - 1U))
 #endif /* OSEE_STACK_ALIGN_INDEX */
 
 #if (!defined(OSEE_STACK_WORD_LENGHT))
@@ -259,7 +259,7 @@ extern "C" {
 /** \brief Utility macro that convert an amount of ms in number of ticks of a
            given frequency (rounded up) */
 #define OSEE_MILLI_TO_TICKS(X_MS, REF_FREQ_HZ)  \
-  (((X_MS) * ((REF_FREQ_HZ) - OSEE_ONE) / OSEE_KILO) + OSEE_ONE)
+  ((X_MS) * (((REF_FREQ_HZ) + OSEE_KILO - 1U) / OSEE_KILO))
 #endif /* !OSEE_MILLI_TO_TICKS */
 
 #if (!defined(OSEE_MICRO_TO_TICKS))

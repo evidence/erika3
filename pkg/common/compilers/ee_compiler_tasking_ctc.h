@@ -39,8 +39,8 @@
  * project.
  * ###*E*### */
 
-/** \file   ee_compiler_gcc.h
- *  \brief  Common GCC Compilers Definitions.
+/** \file   ee_compiler_tasking_ctc.h
+ *  \brief  Common TASKING Compilers Definitions.
  *
  *  This file contains all the common compiler-dependent definitions for
  *  GNU GCC Compiler.
@@ -48,46 +48,56 @@
  *  \note This file \b MUST contain only \c defines, because it is also
  *        included by the \c .S files. \n
  *
- *  \note   TO BE DOCUMENTED!!!
  *
  *  \author Errico Guidieri
- *  \date   2016
+ *  \date   2019
  */
+#ifndef OSEE_COMPILER_TASKING_CTC_H
+#define OSEE_COMPILER_TASKING_CTC_H
 
-/*
- * Compiler dependent interface
- */
-#ifndef OSEE_COMPILER_GCC_H
-#define OSEE_COMPILER_GCC_H
-
-#include "ee_arch_compiler_gcc.h"
+#include "ee_arch_compiler_tasking_ctc.h"
 
 #if (defined(__cplusplus))
 extern "C" {
 #endif
+
+/*=============================================================================
+ * TASKING implements the C99 standard pragma operator that let you embed 
+ * pragmas inside macros.
+ * So where will be possible we'll use pragmas instead that attributes,
+ * because more 'standard' and preferred by MISRA-C.
+ * (1.7. Pragmas to Control the Compiler)
+ * Syntax for _Pragma operator:
+ * _Pragma("[label:]pragma-spec pragma-arguments [on|off|default|restore]")
+ ============================================================================*/
+/* Used for second level macro expansion and token stringification */
+#if (!defined(OSEE_PRAGMA))
+#define OSEE_PRAGMA(s) _Pragma(#s)
+
+/*
+ * I will use label pragmas
+ * (1.7. Pragmas to Control the Compiler -  Label Pragmas)
+ * for alignment and sections where I should not share code between
+ * TASKING and other (GCC) compilers.
+ * I do that to minimize the need of "#pragma ... restore" statments.
+ */
+#define OSEE_PRAGMA_ALIGN(label,align_value)  \
+    OSEE_PRAGMA(label:align align_value)
+#define OSEE_PRAGMA_SECTION(label,section_name)   \
+    OSEE_PRAGMA(label:section all #section_name)
+#endif /* !OSEE_PRAGMA */
 
 #if (defined(OSEE_NO_INLINE))
 /** Inline functions */
 #define OSEE_INLINE
 /** Static Inline functions */
 #define OSEE_STATIC_INLINE  static
-#elif (defined(__STRICT_ANSI__))
-/*
-                          GCC Alternate Keywords
-  -ansi and the various -std options disable certain keywords...
-  The way to solve these problems is to put "__" at the beginning and end of
-  each problematical keyword...
-  gcc.gnu.org/onlinedocs/gcc/Alternate-Keywords.html */
-/** Inline functions */
-#define OSEE_INLINE         __inline__
-/** Static Inline functions */
-#define OSEE_STATIC_INLINE  static __inline__
 #else
 /** Inline functions */
 #define OSEE_INLINE         inline
 /** Static Inline functions */
 #define OSEE_STATIC_INLINE  static inline
-#endif /* OSEE_NO_INLINE || __STRICT_ANSI__ */
+#endif /* OSEE_NO_INLINE  */
 
 /** Always Inline functions */
 #define OSEE_ALWAYS_INLINE      __attribute__((always_inline))
@@ -96,31 +106,42 @@ extern "C" {
 /** Function does not return */
 #define OSEE_NORETURN           __attribute__((noreturn))
 /** Minimum alignment for a variable */
-#define OSEE_COMPILER_ALIGN(a)  __attribute__((aligned(a)))
+#define OSEE_COMPILER_ALIGN(a)  __attribute__((__align(a)))
 /** Mark a function as used also if nevere referenced.
  *  Useful for interrupt handlers that are nevere explicitly referenced 
  *  in the code.
  */
-#define OSEE_COMPILER_KEEP      __attribute__((used))
-/** IRQ Function */ 
-#define OSEE_COMPILER_IRQ       __attribute__((interrupt(IRQ)))
+#define OSEE_COMPILER_KEEP      __attribute__((used)) __attribute__((protect))
 
 #if (!defined(OSEE_INIT))
-#if (!defined(OSEE_INIT_SECTION))
 /** Default init section */
-#define OSEE_INIT_SECTION ".init8"
-#endif /* !OSEE_INIT_SECTION */
-/** Default init section */
-#define OSEE_INIT               __attribute__((section(OSEE_INIT_SECTION)))
+#define OSEE_INIT               __attribute__((construct))
 #endif /* !OSEE_INIT */
+
+#if 0
+#define OSEE_COMPILER_WEAK        __attribute__((weak))
+#define OSEE_COMPILER_EXPORT      __attribute__((export))
+#endif /* 0 */
+
+/* __vector_table is not defined for single-core CPUs... :( */
+#if (defined(__CPU_TC22X__)) || (defined(__CPU_TC23X__))
+#define OSEE_VECTORS_TABLE(c)
+#else
+#define OSEE_VECTORS_TABLE(c)  __vector_table(c)
+#endif /* __CPU_TC22X__ || __CPU_TC23X__ */
+
+/* This define is needed to enhance equivalence between GCC compiler and
+   TASKING compiler so they can share mostly of the code. */
+#define __asm__ __asm
 
 /** \brief  Software "memory barrier" (or "memory clobber") to enforce NOT code
             reordering. At compile level.
    www.nongnu.org/avr-libc/user-manual/optimization.html */
-#define OSEE_BARRIER() __asm__ volatile("" : : : "memory")
+#define OSEE_BARRIER() __asm volatile("" : : : "memory")
 
 #if (defined(__cplusplus))
 }
 #endif
 
-#endif /* !OSEE_COMPILER_GCC_H */
+#endif /* !OSEE_COMPILER_TASKING_CTC_H */
+
