@@ -219,14 +219,17 @@ EE_SRCS_ARDUINO_SDK += libraries/Firmata/utility/EthernetClientStream.cpp
 EE_SRCS_ARDUINO_SDK += libraries/Firmata/utility/SerialFirmata.cpp
 ifeq	$(or	\
 		$(call islibopt, OS_EE_LIB_ARDUINO_SDK_CC_1_6_10),	\
-		$(call islibopt, OS_EE_LIB_ARDUINO_SDK_CC_1_8_5)	\
+		$(call islibopt, OS_EE_LIB_ARDUINO_SDK_CC_1_8_5),	\
+		$(call islibopt, OS_EE_LIB_ARDUINO_SDK_CC_1_8_8)
 	)
 	, yes
 )
 EE_SRCS_ARDUINO_SDK += libraries/Firmata/utility/BLEStream.cpp
-else	# OS_EE_LIB_ARDUINO_SDK_CC_1_6_10 || OS_EE_LIB_ARDUINO_SDK_CC_1_8_5
+else	# OS_EE_LIB_ARDUINO_SDK_CC_1_6_10 || OS_EE_LIB_ARDUINO_SDK_CC_1_8_5 ||
+	# OS_EE_LIB_ARDUINO_SDK_CC_1_8_8
 EE_SRCS_ARDUINO_SDK += libraries/Firmata/utility/WiFi101Stream.cpp
-endif	# OS_EE_LIB_ARDUINO_SDK_CC_1_6_10 || OS_EE_LIB_ARDUINO_SDK_CC_1_8_5
+endif	# OS_EE_LIB_ARDUINO_SDK_CC_1_6_10 || OS_EE_LIB_ARDUINO_SDK_CC_1_8_5 ||
+	# OS_EE_LIB_ARDUINO_SDK_CC_1_8_8
 EE_SRCS_ARDUINO_SDK += libraries/Firmata/utility/WiFiStream.cpp
 endif	# OS_EE_LIB_ARDUINO_SDK_CC
 ifeq	($(call islibopt, OS_EE_LIB_ARDUINO_SDK_ORG), yes)
@@ -471,10 +474,12 @@ EE_SRCS_ARDUINO_SDK += libraries/Robot_Motor/src/lineFellow.cpp
 EE_SRCS_ARDUINO_SDK += libraries/Robot_Motor/src/Multiplexer.cpp
 endif	# OS_EE_LIB_ARDUINO_SDK_LIB_ROBOT_MOTOR
 
-ifeq	($(call islibopt, OS_EE_LIB_ARDUINO_SDK_LIB_ROBOT_IREMOTE), yes)
-EE_SRCS_ARDUINO_SDK += libraries/RobotIRemote/src/IRemote.cpp
-EE_SRCS_ARDUINO_SDK += libraries/RobotIRemote/src/IRemoteTools.cpp
-endif	# OS_EE_LIB_ARDUINO_SDK_LIB_ROBOT_IREMOTE
+ifeq	($(call islibopt, OS_EE_LIB_ARDUINO_SDK_LIB_ROBOT_IR_REMOTE), yes)
+EE_SRCS_ARDUINO_SDK += libraries/RobotIRremote/src/IRremote.cpp
+ifeq	($(call islibopt, OS_EE_LIB_ARDUINO_SDK_LIB_ROBOT_IR_REMOTE_TOOLS), yes)
+EE_SRCS_ARDUINO_SDK += libraries/RobotIRremote/src/IRremoteTools.cpp
+endif	# OS_EE_LIB_ARDUINO_SDK_LIB_ROBOT_IR_REMOTE_TOOLS
+endif	# OS_EE_LIB_ARDUINO_SDK_LIB_ROBOT_IR_REMOTE
 
 ifeq	($(call islibopt, OS_EE_LIB_ARDUINO_SDK_LIB_RTC), yes)
 ifeq	($(call islibopt, OS_EE_LIB_ARDUINO_SDK_ORG), yes)

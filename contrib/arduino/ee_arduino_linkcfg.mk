@@ -58,6 +58,9 @@ ifeq	($(and	\
 
 ifndef	ARDUINO_SDK_FILES
 ifeq	($(call islibopt, OS_EE_LIB_ARDUINO_SDK_CC), yes)
+ifeq	($(call islibopt, OS_EE_LIB_ARDUINO_SDK_CC_1_8_8), yes)
+export	ARDUINO_SDK_FILES = C:/arduino-1.8.5
+else	# OS_EE_LIB_ARDUINO_SDK_CC_1_8_8
 ifeq	($(call islibopt, OS_EE_LIB_ARDUINO_SDK_CC_1_8_5), yes)
 export	ARDUINO_SDK_FILES = C:/arduino-1.8.5
 else	# OS_EE_LIB_ARDUINO_SDK_CC_1_8_5
@@ -71,6 +74,7 @@ export	ARDUINO_SDK_FILES = C:/arduino-1.6.8
 endif	# OS_EE_LIB_ARDUINO_SDK_CC_1_6_9
 endif	# OS_EE_LIB_ARDUINO_SDK_CC_1_6_10
 endif	# OS_EE_LIB_ARDUINO_SDK_CC_1_8_5
+endif	# OS_EE_LIB_ARDUINO_SDK_CC_1_8_8
 else	# OS_EE_LIB_ARDUINO_SDK_CC
 ifeq	($(call islibopt, OS_EE_LIB_ARDUINO_SDK_ORG), yes)
 ifeq	($(call islibopt, OS_EE_LIB_ARDUINO_SDK_ORG_1_7_10), yes)
@@ -97,6 +101,12 @@ ifeq	($(or	\
 		$(call islibopt, OS_EE_LIB_ARDUINO_SDK_ORG)	\
 	), yes)
 ifeq	($(call islibopt, OS_EE_LIB_ARDUINO_SDK_CC), yes)
+ifeq	($(call islibopt, OS_EE_LIB_ARDUINO_SDK_CC_1_8_8), yes)
+#OS_EE_OPT += ARDUINO=10808
+OS_EE_DEFS_AS	+= -DARDUINO=10808
+OS_EE_DEFS_CC	+= -DARDUINO=10808
+OS_EE_DEFS_CXX	+= -DARDUINO=10808
+else	# OS_EE_LIB_ARDUINO_SDK_CC_1_8_8
 ifeq	($(call islibopt, OS_EE_LIB_ARDUINO_SDK_CC_1_8_5), yes)
 #OS_EE_OPT += ARDUINO=10805
 OS_EE_DEFS_AS	+= -DARDUINO=10805
@@ -122,6 +132,7 @@ OS_EE_DEFS_CXX	+= -DARDUINO=10608
 endif	# OS_EE_LIB_ARDUINO_SDK_CC_1_6_9
 endif	# OS_EE_LIB_ARDUINO_SDK_CC_1_6_10
 endif	# OS_EE_LIB_ARDUINO_SDK_CC_1_8_5
+endif	# OS_EE_LIB_ARDUINO_SDK_CC_1_8_8
 endif	# OS_EE_LIB_ARDUINO_SDK_CC
 ifeq	($(call islibopt, OS_EE_LIB_ARDUINO_SDK_ORG), yes)
 ifeq	($(call islibopt, OS_EE_LIB_ARDUINO_SDK_ORG_1_7_10), yes)
@@ -381,9 +392,9 @@ ifeq	($(call islibopt, OS_EE_LIB_ARDUINO_SDK_LIB_ROBOT_MOTOR), yes)
 INCLUDE_PATH :=	$(ARDUINO_SDK_ROOT)/libraries/Robot_Motor/src	$(INCLUDE_PATH)
 endif	# OS_EE_LIB_ARDUINO_SDK_LIB_ROBOT_MOTOR
 
-ifeq	($(call islibopt, OS_EE_LIB_ARDUINO_SDK_LIB_ROBOT_IREMOTE), yes)
-INCLUDE_PATH :=	$(ARDUINO_SDK_ROOT)/libraries/RobotIRemote/src	$(INCLUDE_PATH)
-endif	# OS_EE_LIB_ARDUINO_SDK_LIB_ROBOT_IREMOTE
+ifeq	($(call islibopt, OS_EE_LIB_ARDUINO_SDK_LIB_ROBOT_IR_REMOTE), yes)
+INCLUDE_PATH :=	$(ARDUINO_SDK_ROOT)/libraries/RobotIRremote/src	$(INCLUDE_PATH)
+endif	# OS_EE_LIB_ARDUINO_SDK_LIB_ROBOT_IR_REMOTE
 
 ifeq	($(call islibopt, OS_EE_LIB_ARDUINO_SDK_LIB_RTC), yes)
 ifeq	($(call islibopt, OS_EE_LIB_ARDUINO_SDK_ORG), yes)
