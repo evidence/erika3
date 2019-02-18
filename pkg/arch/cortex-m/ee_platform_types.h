@@ -48,8 +48,6 @@
  *  \note	COULD BE raplaced by AUTOSAR Type definition paradigm or being
  *  		the implementation.
  *
- *  \note	TO BE DOCUMENTED!!!
- *
  *  \author	Errico Guidieri
  *  \author	Giuseppe Serano
  *  \date	2018
@@ -71,23 +69,25 @@ extern "C" {
 #endif
 
 #if	(!defined(OSEE_BOOL_TYPE))
+/** Boolean Type */
 typedef	enum {
   OSEE_FALSE = OSEE_M_FALSE,
   OSEE_TRUE  = OSEE_M_TRUE
 } OsEE_bool;
+/** Boolean type override */
 #define	OSEE_BOOL_TYPE	OsEE_bool
 #endif	/* !OSEE_BOOL_TYPE */
 
 /* Define HAL types */
-typedef	void *			OsEE_addr;
-typedef	int32_t			OsEE_sreg;
-typedef	uint32_t		OsEE_reg;
-typedef	uint32_t		OsEE_stack;
+typedef	void *			OsEE_addr;               /**< Memory address */
+typedef	uint32_t		OsEE_reg;                /**< Register size, unsigned */
+typedef	int32_t			OsEE_sreg;               /**< Register size, signed */
+typedef	uint32_t		OsEE_stack;              /**< Stack word, unsigned */
 
-typedef uint8_t			OsEE_isr_src_id;
-#define	OSEE_ISR_SOURCE_TYPE	OsEE_isr_src_id
+typedef uint8_t			OsEE_isr_src_id;         /**< ISR Source ID Type */
+#define	OSEE_ISR_SOURCE_TYPE	OsEE_isr_src_id          /**< ISR Source ID override */
 
-typedef void (* OsEE_void_cb) (void);
+typedef void (* OsEE_void_cb) (void);            /**< Callback type */
 
 #if (defined(__cplusplus))
 }

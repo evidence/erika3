@@ -72,9 +72,13 @@
 extern "C" {
 #endif
 
+/** \brief Function to be executed at startup.
+ *
+ *  Function to be executed at startup.
+ */
 #define	OSEE_INIT			__attribute__((constructor))
 
-/** \def	OSEE_RETURN()
+/** \brief Returns from a function.
  *
  *  Returns from a function. This should be the last command executed before
  *  leaving a function defined with the EE_NAKED attribute.
@@ -84,7 +88,7 @@ extern "C" {
  */
 #define	OSEE_RETURN()			__asm__ volatile("ret" ::)
 
-/** \def	OSEE_NAKED
+/** \brief Function is created with no prologue or epilogue.
  *
  *  The function is created with no prologue or epilogue code.
  *
@@ -96,47 +100,47 @@ extern "C" {
  */
 #define	OSEE_NAKED			__attribute__((naked))
 
-/** \def	OSEE_GET_SP()
+/** \brief Stack Pointer Register retrieval.
  *
  *  Stack Pointer Register retrieval.
  */
 #define	OSEE_GET_SP(SP)		\
 	__asm__ volatile("mov %0, sp" : "=r" (SP))
 
-/** \def	OSEE_CLI()
+/** \brief Clear Interrupts.
  *
  *  Clear Interrupts.
  */
 #define OSEE_CLI()			__asm__ volatile("cpsid i" ::)
 
-/** \def	OSEE_SEI()
+/** \brief Enable Interrupts.
  *
  *  Enable Interrupts.
  */
 #define OSEE_SEI()			__asm__ volatile("cpsie i" ::)
 
-/** \def	OSEE_GET_ISR()
+/** \brief	Read the interrupt status register.
  *
  *  Interrupts Status Register retrieval.
  */
 #define	OSEE_GET_ISR(SR)		\
 	__asm__ volatile("mrs %0, primask" : "=r" (SR))
 
-/** \def	OSEE_SET_ISR()
+/** \brief	Set the interrupt status register
  *
  *  Interrupts Status Register set-up.
  */
 #define	OSEE_SET_ISR(SR)		\
 	__asm__ volatile("msr primask, %0" :: "r" (SR))
 
-/** \def	OSEE_GET_IPL()
+/** \brief  Read the Interrupt priority Level register.
  *
  *  Interrupts Priority Level retrieval.
  */
 #define	OSEE_GET_IPL(SR)		\
 	__asm__ volatile("mrs %0, basepri" : "=r" (SR))
 
-/** \def	OSEE_SET_IPL()
+/** \brief  Set the Interrupt priority level register.
  *
  *  Interrupts Priority Level set-up.
  */
@@ -144,9 +148,9 @@ extern "C" {
 	__asm__ volatile("msr basepri, %0" :: "r" (SR))
 
 
-/** \def	OSEE_CLZ()
+/** \brief	CLZ instruction, if available.
  *
- *  CLZ Instruction.
+ *  CLZ Instruction. This returns the count leading zeroes of the input word.
  */
 #define	OSEE_CLZ(MASK)		\
 	__builtin_clz(MASK)

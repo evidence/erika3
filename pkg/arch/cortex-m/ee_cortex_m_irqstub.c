@@ -57,8 +57,6 @@
  */
 #include "ee_internal.h"
 
-VAR(OsEE_SCCB, OS_VAR_NO_INIT)	osEE_cortex_m_sccb;
-
 FUNC(void, OS_CODE) osEE_cortex_m_change_context_from_task_end(
   P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA) p_orig_tdb
 )

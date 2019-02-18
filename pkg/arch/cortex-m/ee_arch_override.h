@@ -54,14 +54,14 @@
 #ifndef OSEE_ARCH_OVERRIDE_H
 #define	OSEE_ARCH_OVERRIDE_H
 
-
+/**  On Microcontrollers, StartOS() does not return. */
 #define	OSEE_SHUTDOWN_DO_NOT_RETURN_ON_MAIN
 
 
 /*==============================================================================
                                 Stack
  =============================================================================*/
-/*
+/**
  * CORTEX-M seems to not have any rquirement for stack alignment,
  * in any case the following macro enables it.
  */
@@ -72,17 +72,17 @@
                     Arch dependent Configuration Switches
  =============================================================================*/
 
-/* Used to override default definition of osEE_hal_get_msb,
+/** Used to override default definition of osEE_hal_get_msb,
    in ee_std_change_context.h that is not inlined */
 #define OSEE_GET_MSB_INLINE OSEE_STATIC_INLINE
 
-/*
+/**
  * Used to override default definition of osEE_scheduler_task_end,
  * in ee_std_change_context.c
  */
 #define OSEE_KERNEL_TERMINATE_ACTIVATION_OVERRIDE
 
-/* Override Terminate Activation Kernel Callback (CB). */
+/** Override Terminate Activation Kernel Callback (CB). */
 #define OSEE_KERNEL_TERMINATE_ACTIVATION_CB osEE_cortex_m_scheduler_task_end
 
 #endif	/* !OSEE_ARCH_OVERRIDE_H */

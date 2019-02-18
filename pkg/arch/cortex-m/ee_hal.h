@@ -74,12 +74,15 @@ extern "C" {
                             Array Utilities
  =============================================================================*/
 
-/* Fill Pattern Used for Array Monitoring */
 #if	(!defined(OSEE_FILL_PATTERN))
-#define	OSEE_FILL_PATTERN	0xA5A5A5A5U
+/** Fill Pattern Used for Stack Monitoring */
+#define	OSEE_FILL_PATTERN	(0xA5A5A5A5U)
 #endif	/* !OSEE_FILL_PATTERN */
 
-/* Use Range Designated Initializers */
+/** Fill Pattern Used for Stack Monitoring.
+  * Uses Range Designated Initializers
+  * \param [in] array The array to be filled.
+  */
 #define	OSEE_FILL_ARRAY(array) = {				\
 	[0 ... (sizeof(array)/sizeof((array)[0U]) - 1U)] =	\
 	OSEE_FILL_PATTERN					\
@@ -93,6 +96,13 @@ extern "C" {
                  Utility Functions
  =============================================================================*/
 
+/**
+ *  \brief Returns the current stack pointer.
+ *  
+ *  Returns the current stack pointer.
+ *  
+ *  \return Returns an address which is the current value of the stack pointer.
+ */
 OSEE_STATIC_INLINE FUNC(OsEE_addr, OS_CODE) OSEE_ALWAYS_INLINE
 osEE_get_SP (
 void
@@ -102,6 +112,13 @@ void
   return temp;
 }
 
+/**
+ *  \brief Returns the current core ID.
+ *  
+ *  Returns the current core ID. Always 0 on single cores.
+ *  
+ *  \return Returns the current core ID.
+ */
 OSEE_STATIC_INLINE FUNC(CoreIdType, OS_CODE) OSEE_ALWAYS_INLINE
 osEE_get_curr_core_id (
   void

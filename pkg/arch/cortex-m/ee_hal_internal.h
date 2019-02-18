@@ -253,9 +253,6 @@ osEE_cpu_startos ( void )
   return cpu_startos_ok;
 }
 
-/* Switch-Context control block instanced in ee_cortex_m_irqstub.c. */
-extern VAR(OsEE_SCCB, OS_VAR_NO_INIT)	osEE_cortex_m_sccb;
-
 /* Trigger PendSV. */
 extern FUNC(void, OS_CODE) osEE_cortex_m_trigger_pend_sv( void );
 

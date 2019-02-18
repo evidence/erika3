@@ -39,7 +39,7 @@
  * project.
  * ###*E*### */
 
-/** \file	ee_internal_types.h
+/** \file	ee_hal_internal_types.h
  *  \brief	HAL Internal Types.
  *
  *  This files contains all HAL internal types and symbols for specific
@@ -65,56 +65,68 @@ extern "C" {
 #endif
 
 /* R0-R3 and R12 are scratch registers, R13 ->(MSP), R14 ->(LR), R15 -> (PC) */
+/** \brief Context block, storing register values */
 typedef struct OsEE_CTX_tag {
+  /** This is the pointer to the previous context. In the case of
+   *  ERIKA3, every time a context is saved, and a new task is stacked
+   *  on top of it, we need to remember the previous context, because
+   *  in case of a TerminateTask() we need to unwind the stack and
+   *  recover the previous context */
   struct OsEE_CTX_tag * p_ctx;
-  OsEE_reg dummy0;
+  OsEE_reg dummy0;                      /**< padding to 8 bytes */
 #if (defined(OSEE_CORTEX_MX_FP))
-  OsEE_reg control;
-  OsEE_reg dummy1;
+  OsEE_reg control;                     /**< control register for floating point operations */
+  OsEE_reg dummy1;                      /**< padding to 8 bytes */
 #endif	/* OSEE_CORTEX_MX_FP */
-  OsEE_reg psr;		/* PSR */
-  OsEE_reg r4;
-  OsEE_reg r5;
-  OsEE_reg r6;
-  OsEE_reg r7;
-  OsEE_reg r8;
-  OsEE_reg r9;
-  OsEE_reg r10;
-  OsEE_reg r11;
-  OsEE_reg r14;		/* LR */
+  OsEE_reg psr;		                /**< PSR */
+  OsEE_reg r4;		                /**< R4 */
+  OsEE_reg r5;		                /**< R5 */
+  OsEE_reg r6;		                /**< R6 */
+  OsEE_reg r7;		                /**< R7 */
+  OsEE_reg r8;		                /**< R8 */
+  OsEE_reg r9;		                /**< R9 */
+  OsEE_reg r10;		                /**< R10 */
+  OsEE_reg r11;		                /**< R11 */
+  OsEE_reg r14;		                /**< R14 (LR) */
 } OsEE_CTX;
 
 struct OsEE_TDB_tag;
 
-/** @brief	Switch-Context Control Block. */
-typedef struct OsEE_SCCB_tag {
-  P2VAR(struct OsEE_TDB_tag OSEE_CONST, TYPEDEF, OS_APPL_DATA)	p_from;
-  P2VAR(struct OsEE_TDB_tag OSEE_CONST, TYPEDEF, OS_APPL_DATA)	p_to;
-} OsEE_SCCB;
-
-/* Stack Control Block: contine le informazioni dinamiche relative allo stack */
+/** Stack Control Block: contains runtime information about the stack */
 typedef struct OsEE_SCB_tag {
-  OsEE_CTX	* p_tos;	/* Saved Context */
+  OsEE_CTX	* p_tos;	/**< Saved Context */
 } OsEE_SCB;
 
+/** Stack Descriptor Block. Contains static information about the stack */
 typedef struct OsEE_SDB_tag {
-  OsEE_CTX	* p_bos;	/* Base Of Stack */
-  MemSize	stack_size;
+  OsEE_CTX	* p_bos;	  /**< pointer to the base of the stack */
+  MemSize	stack_size;   /**< stack size */
 } OSEE_CONST OsEE_SDB;
 
+/** HAL (Task) Descriptor block. Contains static information about the 
+ *  configuration of a task in the HAL (in particular, information on the 
+ *  task stacks and on ISR2 IDs in case of the dynamic API */
 typedef struct OsEE_HDB_tag {
-  OsEE_SDB		* p_sdb;
-  OsEE_SCB		* p_scb;
+  OsEE_SDB		* p_sdb;        /**< pointer to the Stack Descriptor Block */
+  OsEE_SCB		* p_scb;        /**< pointer to the Stack Control Block */
 #if (defined(OSEE_API_DYNAMIC))
+  /** This id stores the physical hardware source to which this ISR2
+   *  is linked. It is useful during the setup phase, and afterwards
+   *  with the functions EnableInterruptSource() and
+   *  DisableInterruptSource() that act on the single source of
+   *  interrupts */
   OsEE_isr_src_id	isr2_src;
 #endif /* OSEE_API_DYNAMIC */
 } OSEE_CONST OsEE_HDB;
 
 #if (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
+/** Core HAL Descriptor block. Contains information related to the core, in
+  * particular it contains the stack pointers to the various stacks allocated 
+  * on each core. */
 typedef struct OsEE_CHDB_tag {
-  OsEE_SDB (* p_sdb_array)[];
-  OsEE_SCB (* p_scb_array)[];
-  size_t   stack_num;
+  OsEE_SDB (* p_sdb_array)[];  /**< Pointer to the array of Stack SDB (ram) */
+  OsEE_SCB (* p_scb_array)[];  /**< Pointer to the array of Stack SCB /flash */
+  size_t   stack_num;          /**< number of stack on this core */
 } OSEE_CONST OsEE_CHDB;
 #endif /* OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
 
