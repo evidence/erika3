@@ -84,11 +84,10 @@ Evidence provides the possibility to statically link ERIKA3 to any version of
 the "COMASSO Basic Software Modules", as defined at point 1.6 of the 
 COMASSO License and Contribution Agreement, Version 3.
 
-Platform: Infineon Tricore AURIX
-(*) Infineon iLLD Drivers (any version)
-    Infineon MC-ISAR MCAL Drivers for Tricore AURIX (any version)
-	Infineon SafeTlib and SHE+ Libraries (any version)
-    License: Closed source. Contact Infineon directly.
-    Website:
-https://www.infineon.com/cms/en/product/microcontroller/32-bit-tricore
--microcontroller/
+Platform: Infineon 32-bit TriCoreTM AURIXTM  Microcontroller
+- Infineon AURIXTM  Security Software HSM SHE+ 
+- Infineon AURIXTM PRO-SILTM SafeTlib
+- Infineon AURIXTM iLLD Driver
+- Infineon MC-ISAR AURIXTM MCAL Driver
+License: Closed source. Contact Infineon Technologies directly.
+Website: https://www.infineon.com/cms/en/product/microcontroller/32-bit-tricore-microcontroller
