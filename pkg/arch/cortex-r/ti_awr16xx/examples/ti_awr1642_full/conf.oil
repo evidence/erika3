@@ -79,7 +79,7 @@ CPU mySystem {
   };
 
   APPDATA ti_awr16xx {
-    APP_SRC = "main.c";
+    APP_SRC = "code.c";
   };
 
   COUNTER SystemTimer {

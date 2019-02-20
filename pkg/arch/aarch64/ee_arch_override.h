@@ -54,15 +54,18 @@
 #ifndef OSEE_ARCH_OVERRIDE_H
 #define	OSEE_ARCH_OVERRIDE_H
 
-/*==============================================================================
+/*=============================================================================
                                 Stack
- =============================================================================*/
+ ============================================================================*/
 
 #define OSEE_STACK_ALIGN_SIZE         (16U)
 
-/*==============================================================================
+/*=============================================================================
                     Arch dependent Configuration Switches
- =============================================================================*/
+ ============================================================================*/
+/* OSEE Integer constants need unsigned long suffix to be generated with
+   registers length */
+#define OSEE_INTEGER_DEFINES_SUFFIX UL
 
 /* Used to override default definition of osEE_hal_get_msb,
    in ee_std_change_context.h that is not inlined */

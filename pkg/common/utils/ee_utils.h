@@ -259,7 +259,7 @@ extern "C" {
 /** \brief Utility macro that convert an amount of ms in number of ticks of a
            given frequency (rounded up) */
 #define OSEE_MILLI_TO_TICKS(X_MS, REF_FREQ_HZ)  \
-  ((X_MS) * (((REF_FREQ_HZ) + OSEE_KILO - 1U) / OSEE_KILO))
+  (((X_MS) * (((REF_FREQ_HZ) - OSEE_ONE) / OSEE_KILO)) + OSEE_ONE)
 #endif /* !OSEE_MILLI_TO_TICKS */
 
 #if (!defined(OSEE_MICRO_TO_TICKS))

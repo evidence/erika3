@@ -59,7 +59,7 @@ CPU mySystem {
 
     CPU_DATA = TRICORE {
       MULTI_STACK = TRUE;
-      COMPILER = TASKING;
+      COMPILER = GCC;
       IDLEHOOK = TRUE {
         HOOKNAME = "idle_hook";
       };
