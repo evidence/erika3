@@ -61,6 +61,20 @@ OsEE_isr_prio osEE_gic_max_num_prio;
 
 OsEE_core_id osEE_aarch64_vcore_id_offset = INVALID_CORE_ID;
 
+/* Address of the first global constructor (Defined by the linker script) */
+extern void (*__CTORS_START)(void);
+/* Address of the last global constructor (Defined by the linker script) */
+extern void (*__CTORS_END)(void);
+
+static void osEE_aarch64_run_constructors(void)
+{
+	    void (** volatile ctor)(void);
+
+	        /* Call constructors of all global object instances */
+	        for (ctor = &__CTORS_START; ctor != &__CTORS_END; ++ctor)
+			        (*ctor)();
+}
+
 void osEE_c_start(void)
 {
   if (osEE_aarch64_vcore_id_offset == INVALID_CORE_ID) {
@@ -99,11 +113,14 @@ void osEE_c_start(void)
 	* enable MMU
 	* enable Cache
 	* map inmate's RAM and the COM memory region
-  NOTE: the required Jailhouse version is v0.9.1 (and later) */
+  NOTE: the required Jailhouse version is v0.9.1 (or later) */
   arch_init_early();
 
   /* Mapping the GIC as non cachable memory */
   map_range((void *) OSEE_GIC_BASE, OSEE_GICV_OFFSET + PAGE_SIZE, MAP_UNCACHED);
+
+  /* Calling C++ constructors */
+  osEE_aarch64_run_constructors();
 #endif /* OSEE_PLATFORM_JAILHOUSE */
 
   /* Application main */

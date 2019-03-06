@@ -229,11 +229,19 @@ LOCAL_INLINE FUNC(CoreIdType, OS_CODE)
   P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_tdb
 )
 {
+  CoreIdType core_id;
+
+  if (p_tdb != NULL) {
 #if (!defined(OSEE_ALLOW_TASK_MIGRATION))
-  return p_tdb->orig_core_id;
+    core_id = p_tdb->orig_core_id;
 #else
-  return p_tdb->p_tcb->current_core_id;
+    core_id = p_tdb->p_tcb->current_core_id;
 #endif /* !OSEE_ALLOW_TASK_MIGRATION */
+  } else {
+    core_id = INVALID_CORE_ID;
+  }
+
+  return core_id;
 }
 #endif /* !OSEE_SINGLECORE */
 

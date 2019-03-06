@@ -63,15 +63,27 @@ section_layout mpe:vtc:abs18
 {
   group abs18_not_cached ( run_addr=mem:mpe:lmuram/not_cached ) {
     select ".zbss.ee_gbl_kernel_bss";
+    select ".zdata.ee_gbl_kernel_data";
     select ".zdata.ee_kernel_data";
+  }
+
+  group api_abs18_not_cached ( run_addr=mem:mpe:lmuram/not_cached ) {
+    select ".zbss.ee_api_bss";
+    select ".zdata.ee_api_data";
   }
 }
 
 section_layout mpe:vtc:linear
 {
-  group liner_not_cached ( run_addr=mem:mpe:lmuram/not_cached ) {
+  group linear_not_cached ( run_addr=mem:mpe:lmuram/not_cached ) {
     select ".bss.ee_gbl_kernel_bss";
+    select ".data.ee_gbl_kernel_data";
     select ".data.ee_kernel_data";
+  }
+
+  group api_linear_not_cached ( run_addr=mem:mpe:lmuram/not_cached ) {
+    select ".bss.ee_api_bss";
+    select ".data.ee_api_data";
   }
 }
 #else

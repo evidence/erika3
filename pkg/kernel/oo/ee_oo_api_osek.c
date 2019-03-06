@@ -52,10 +52,6 @@
  */
 #include "ee_internal.h"
 
-#if (!defined(OSEE_WARN_LABEL))
-#define OSEE_WARN_LABEL(l)
-#endif /* !OSEE_WARN_LABEL */
-
 /* [SWS_Os_00299] The Operating System module shall provide the services
    DisableAllInterrupts(), EnableAllInterrupts(), SuspendAllInterrupts(),
    ResumeAllInterrupts() prior to calling StartOS() and after calling
@@ -107,19 +103,13 @@ FUNC(void, OS_CODE)
   return;
 }
 
-FUNC(void, OS_CODE)
-  SuspendAllInterrupts
+static FUNC(void, OS_CODE)
+  osEE_suspend_all_interrupts
 (
-  void
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)  p_cdb,
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)   p_ccb
 )
 {
-  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)  p_cdb = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)   p_ccb = p_cdb->p_ccb;
-
-  osEE_orti_trace_service_entry(p_ccb, OSServiceId_SuspendAllInterrupts);
-
-  osEE_stack_monitoring(p_cdb);
-
   if (p_ccb->s_isr_all_cnt == 0U) {
     CONST(OsEE_reg, AUTOMATIC) flags = osEE_hal_suspendIRQ();
     p_ccb->prev_s_isr_all_status = flags;
@@ -133,6 +123,22 @@ FUNC(void, OS_CODE)
     osEE_shutdown_os(p_cdb, E_OS_SYS_SUSPEND_NESTING_LIMIT);
 #endif /* OSEE_HAS_PROTECTIONHOOK */
   }
+}
+
+FUNC(void, OS_CODE)
+  SuspendAllInterrupts
+(
+  void
+)
+{
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)  p_cdb = osEE_get_curr_core();
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)   p_ccb = p_cdb->p_ccb;
+
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_SuspendAllInterrupts);
+
+  osEE_stack_monitoring(p_cdb);
+
+  osEE_suspend_all_interrupts(p_cdb, p_ccb);
 
   osEE_orti_trace_service_exit(p_ccb, OSServiceId_SuspendAllInterrupts);
 
@@ -153,8 +159,8 @@ FUNC(void, OS_CODE)
   osEE_stack_monitoring(p_cdb);
 
   if (p_ccb->s_isr_all_cnt > 0U) {
-    p_ccb->s_isr_all_cnt--;
-    
+    --p_ccb->s_isr_all_cnt;
+
     if (p_ccb->s_isr_all_cnt == 0U) {
       osEE_hal_resumeIRQ(p_ccb->prev_s_isr_all_status);
     }
@@ -211,8 +217,8 @@ FUNC(void, OS_CODE)
   osEE_stack_monitoring(p_cdb);
 
   if (p_ccb->s_isr_os_cnt > 0U) {
-    p_ccb->s_isr_os_cnt--;
-    
+    --p_ccb->s_isr_os_cnt;
+
     if (p_ccb->s_isr_os_cnt == 0U) {
       osEE_hal_end_nested_primitive(p_ccb->prev_s_isr_os_status);
     }
@@ -373,7 +379,9 @@ FUNC(StatusType, OS_CODE)
                 defines an AppMode different from DONOTCARE.
                 I choose to handle it using OSDEFAULTAPPMODE */
         p_ccb->app_mode = OSDEFAULTAPPMODE;
+#if (defined(OSEE_HAS_AUTOSTART_TRIGGER)) || (defined(OSEE_HAS_AUTOSTART_TASK))
         real_mode = OSDEFAULTAPPMODE;
+#endif /* OSEE_HAS_AUTOSTART_TRIGGER || OSEE_HAS_AUTOSTART_TASK */
       }
     }
 #endif /* OSEE_SINGLECORE */
@@ -1098,8 +1106,10 @@ FUNC(StatusType, OS_CODE)
     } else
 #if (!defined(OSEE_SINGLECORE))
     if ((p_reso_db->allowed_core_mask &
-        ((CoreMaskType)1U << osEE_get_curr_core_id())) != 0U)
+        ((CoreMaskType)1U << osEE_get_curr_core_id())) == 0U)
     {
+      osEE_end_primitive(flags);
+
       ev = E_OS_CORE;
     } else
 #endif /* !OSEE_SINGLECORE */
@@ -1293,8 +1303,6 @@ FUNC(StatusType, OS_CODE)
 #endif /* OSEE_HAS_SERVICE_PROTECTION */
   if ((os_status == OSEE_KERNEL_STARTED) || (os_status == OSEE_KERNEL_STARTING))
   {
-OSEE_WARN_LABEL(osee_useless_ev_assign)
-    ev = E_OK;
     osEE_shutdown_os(p_cdb, Error);
   } else {
     ev = E_OS_STATE;
@@ -1492,6 +1500,7 @@ FUNC(StatusType, OS_CODE)
         (*State) = RUNNING;
         break;
       default:
+	/* this should never happen */
         OSEE_RUN_ASSERT(OSEE_FALSE,"Invalid Task State");
         break;
     }
@@ -3277,7 +3286,7 @@ FUNC(StatusType, OS_CODE)
 #endif /* OSEE_HAS_ERRORHOOK */
   osEE_orti_trace_service_exit(p_ccb, OSServiceId_SyncScheduleTable);
 
-  return E_OK;
+  return ev;
 }
 
 
@@ -3609,9 +3618,17 @@ FUNC(StatusType, OS_CODE)
       p_curr_tcb = p_curr->p_tcb;
     CONSTP2VAR(OsEE_SpinlockDB, AUTOMATIC, OS_APPL_CONST)
       p_core_last_spinlock_db = p_ccb->p_last_spinlock;
-    CONSTP2VAR(OsEE_SpinlockDB, AUTOMATIC, OS_APPL_CONST)
-      p_task_last_spinlock_db = osEE_task_get_last_spinlock_db(p_curr_tcb);
+    CONSTP2VAR(OsEE_MDB, AUTOMATIC, OS_APPL_CONST)
+      p_last_m = p_curr_tcb->p_last_m;
+#if (defined(OSEE_SPINLOCKS_HAS_LOCK_METHOD))
+    CONST(TaskPrio, AUTOMATIC)
+      spinlock_prio = p_spinlock_db->prio;
+    CONST(TaskPrio, AUTOMATIC)
+      current_prio  = p_curr_tcb->current_prio;
+    VAR(OsEE_reg, AUTOMATIC)
+#else
     CONST(OsEE_reg, AUTOMATIC)
+#endif /* OSEE_SPINLOCKS_HAS_LOCK_METHOD */
       flags = osEE_begin_primitive();
 #if (defined(OSEE_HAS_OSAPPLICATIONS))
 /* [SWS_Os_00692]: The function GetSpinlock shall return E_OS_ACCESS if the
@@ -3653,15 +3670,11 @@ FUNC(StatusType, OS_CODE)
       ev = E_OS_INTERFERENCE_DEADLOCK;
     } else
 #if (defined(OSEE_SPINLOCKS_ORDERED))
-    if (
-      ((p_task_last_spinlock_db != NULL) &&
-        (p_task_last_spinlock_db >= p_spinlock_db))
-      ||
-      ((p_core_last_spinlock_db != NULL) &&
-        (p_core_last_spinlock_db >= p_spinlock_db))
+    if ((p_core_last_spinlock_db != NULL) &&
+        (p_core_last_spinlock_db >= p_spinlock_db)
     )
 #else /* OSEE_SPINLOCKS_ORDERED */
-    if ((p_task_last_spinlock_db != NULL) || (p_core_last_spinlock_db != NULL))
+    if (p_core_last_spinlock_db != NULL)
 #endif /* OSEE_SPINLOCKS_ORDERED */
     {
       ev = E_OS_NESTING_DEADLOCK;
@@ -3679,9 +3692,9 @@ FUNC(StatusType, OS_CODE)
       /* Spin until get the lock */
       osEE_hal_spin_lock(p_spinlock_db->p_spinlock_arch);
 
-      /* Populate Spinlocks Stack for Current TASK and for CCB */
-      p_spinlock_cb->p_next = (p_task_last_spinlock_db != NULL)?
-        p_task_last_spinlock_db: p_core_last_spinlock_db;
+      /* Populate M Stack for Current TASK and Spinlock Stack for CCB */
+      p_spinlock_cb->p_next = (p_last_m != NULL)?
+        p_last_m: p_core_last_spinlock_db;
 
       /* Update Heads pointers: Current TASK and CCB */
       p_curr_tcb->p_last_m = p_spinlock_db;
@@ -3690,13 +3703,42 @@ FUNC(StatusType, OS_CODE)
       /* Set Current TASK/ISR2 as spinlock locker */
       p_spinlock_cb->p_owner = p_curr;
 
+#if (defined(OSEE_SPINLOCKS_HAS_LOCK_METHOD))
+/* I need to enter the update priority block even if the new priority is equal
+   to the previous to handle the suspend interrupt nesting */
+      if (current_prio <= spinlock_prio) {
+        p_curr_tcb->current_prio = spinlock_prio;
+
+        if (spinlock_prio == OSEE_ISR_ALL_PRIO) {
+          /* Nest this spinlock as a SuspendAllInterrupts */
+          osEE_suspend_all_interrupts(p_cdb, p_ccb);
+        } else if (spinlock_prio >=  OSEE_ISR2_MAX_PRIO) {
+          /* Nest this spinlock as a SuspendOSInterrupts */
+          if (p_ccb->s_isr_os_cnt == 0U) {
+            p_ccb->prev_s_isr_os_status = flags;
+            ++p_ccb->s_isr_os_cnt;
+          } else if (p_ccb->s_isr_os_cnt < OSEE_MAX_BYTE) {
+            ++p_ccb->s_isr_os_cnt;
+          } else {
+#if (defined(OSEE_HAS_PROTECTIONHOOK))
+#error Add ProtectionHook call here once it has been implemented
+#else
+            osEE_shutdown_os(p_cdb, E_OS_SYS_SUSPEND_NESTING_LIMIT);
+#endif /* OSEE_HAS_PROTECTIONHOOK */
+          }
+        }
+
+        flags = osEE_hal_prepare_ipl(flags, spinlock_prio);
+        p_spinlock_cb->prev_prio = current_prio;
+      }
+#endif /* OSEE_SPINLOCKS_HAS_LOCK_METHOD */
+
     /* [SWS_Os_00688]: The function GetSpinlock shall return E_OK if no error
         was detected. The spinlock is now occupied by the calling TASK/ISR2 on
         the calling core. */
       ev = E_OK;
     }
-    
-    /* TODO: Handle Spinlock Lock Methods (OSEE_SPINLOCKS_HAS_LOCK_METHOD) */
+
     osEE_end_primitive(flags);
   }
 
@@ -3763,7 +3805,13 @@ FUNC(StatusType, OS_CODE)
       p_curr = p_ccb->p_curr;
     CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_CONST)
       p_curr_tcb = p_curr->p_tcb;
+#if (defined(OSEE_SPINLOCKS_HAS_LOCK_METHOD))
+    CONST(TaskPrio, AUTOMATIC)
+      spinlock_prio = p_spinlock_db->prio;
+    VAR(OsEE_reg, AUTOMATIC)
+#else
     CONST(OsEE_reg, AUTOMATIC)
+#endif /* OSEE_SPINLOCKS_HAS_LOCK_METHOD */
       flags = osEE_begin_primitive();
 #if (defined(OSEE_HAS_OSAPPLICATIONS))
 /* [SWS_Os_00700] The function ReleaseSpinlock shall return E_OS_ACCESS if the
@@ -3812,11 +3860,57 @@ FUNC(StatusType, OS_CODE)
       /* Release the spinlock */
       osEE_hal_spin_unlock(p_spinlock_db->p_spinlock_arch);
 
+#if (defined(OSEE_SPINLOCKS_HAS_LOCK_METHOD))
+      if (p_curr_tcb->p_last_m != NULL) {
+        CONST(TaskPrio, AUTOMATIC)
+          prev_prio = p_spinlock_cb->prev_prio;
+
+        p_curr_tcb->current_prio = prev_prio;
+        flags = osEE_hal_prepare_ipl(flags, prev_prio);
+      } else {
+        CONST(TaskPrio, AUTOMATIC)
+          dispatch_prio = p_curr->dispatch_prio;
+
+        p_curr_tcb->current_prio = dispatch_prio;
+        flags = osEE_hal_prepare_ipl(flags, dispatch_prio);
+      }
+
+      if (spinlock_prio == OSEE_ISR_ALL_PRIO) {
+        /* I can safely re-enable ALL interrupt here even for those
+           architecture without IPL because the critical section in actually
+           finished here. */
+        if (p_ccb->s_isr_all_cnt > 0U) {
+          --p_ccb->s_isr_all_cnt;
+          /* Check suspend ALL counter AND Disable ALL flag to allow
+             spinlocks to nest with DisableAllInterrupts too. */
+          if ((p_ccb->s_isr_all_cnt == 0U) && (p_ccb->d_isr_all_cnt == 0U)) {
+            osEE_hal_enableIRQ();
+          }
+        }
+      } else if (spinlock_prio >= OSEE_ISR2_MAX_PRIO) {
+        if (p_ccb->s_isr_os_cnt > 0U) {
+          --p_ccb->s_isr_os_cnt;
+          /* Nothing else to do: the right IPL handling is done by
+             the previous restore prev_prio procedure */
+        }
+      } else {
+        ; /* Nothing to do in this case */
+      }
+/* XXX: Make sense to keep this protected by a Macro or just enable
+        it for all? */
+#if 0
+      /* This begin nested primitives will be needed by architectures that do
+         not have IPL, to assure that preemption check is done in a
+         critical section */
+      (void)osEE_hal_begin_nested_primitive();
+#endif
+       /* Preemption point */
+      (void)osEE_scheduler_task_preemption_point(p_kdb);
+#endif /* OSEE_SPINLOCKS_HAS_LOCK_METHOD */
+
       ev = E_OK;
     }
 
-    /* TODO: Handle Spinlock Lock Methods (OSEE_SPINLOCKS_HAS_LOCK_METHOD)
-      ECUC_Os_01038 */
     osEE_end_primitive(flags);
   }
 
@@ -3890,9 +3984,17 @@ FUNC(StatusType, OS_CODE)
       p_curr_tcb = p_curr->p_tcb;
     CONSTP2VAR(OsEE_SpinlockDB, AUTOMATIC, OS_APPL_CONST)
       p_core_last_spinlock_db = p_ccb->p_last_spinlock;
-    CONSTP2VAR(OsEE_SpinlockDB, AUTOMATIC, OS_APPL_CONST)
-      p_task_last_spinlock_db = osEE_task_get_last_spinlock_db(p_curr_tcb);
+    CONSTP2VAR(OsEE_MDB, AUTOMATIC, OS_APPL_CONST)
+      p_last_m = p_curr_tcb->p_last_m;
+#if (defined(OSEE_SPINLOCKS_HAS_LOCK_METHOD))
+    CONST(TaskPrio, AUTOMATIC)
+      spinlock_prio = p_spinlock_db->prio;
+    CONST(TaskPrio, AUTOMATIC)
+      current_prio  = p_curr_tcb->current_prio;
+    VAR(OsEE_reg, AUTOMATIC)
+#else
     CONST(OsEE_reg, AUTOMATIC)
+#endif /* OSEE_SPINLOCKS_HAS_LOCK_METHOD */
       flags = osEE_begin_primitive();
 #if (defined(OSEE_HAS_OSAPPLICATIONS))
 /* [SWS_Os_00710] The function TryToGetSpinlock shall return E_OS_ACCESS if the
@@ -3928,15 +4030,11 @@ FUNC(StatusType, OS_CODE)
       ev = E_OS_INTERFERENCE_DEADLOCK;
     } else
 #if (defined(OSEE_SPINLOCKS_ORDERED))
-    if (
-      ((p_task_last_spinlock_db != NULL) &&
-        (p_task_last_spinlock_db >= p_spinlock_db))
-      ||
-      ((p_core_last_spinlock_db != NULL) &&
-        (p_core_last_spinlock_db >= p_spinlock_db))
+    if ((p_core_last_spinlock_db != NULL) &&
+        (p_core_last_spinlock_db >= p_spinlock_db)
     )
 #else /* OSEE_SPINLOCKS_ORDERED */
-    if ((p_task_last_spinlock_db != NULL) || (p_core_last_spinlock_db != NULL))
+    if (p_core_last_spinlock_db != NULL)
 #endif /* OSEE_SPINLOCKS_ORDERED */
     {
       ev = E_OS_NESTING_DEADLOCK;
@@ -3958,9 +4056,9 @@ FUNC(StatusType, OS_CODE)
     success is returned. (SRS_Os_80021) */
       /* Try to get the lock */
       if (osEE_hal_try_spin_lock(p_spinlock_db->p_spinlock_arch)) {
-        /* Populate Spinlocks Stack for Current TASK and for CCB */
-        p_spinlock_cb->p_next = (p_task_last_spinlock_db != NULL)?
-          p_task_last_spinlock_db: p_core_last_spinlock_db;
+        /* Populate M Stack for Current TASK and Spinlock Stack for CCB */
+        p_spinlock_cb->p_next = (p_last_m != NULL)?
+          p_last_m: p_core_last_spinlock_db;
 
         /* Update Heads pointers: Current TASK and CCB */
         p_curr_tcb->p_last_m = p_spinlock_db;
@@ -3968,6 +4066,36 @@ FUNC(StatusType, OS_CODE)
 
         /* Set Current TASK/ISR2 as spinlock locker */
         p_spinlock_cb->p_owner = p_curr;
+
+#if (defined(OSEE_SPINLOCKS_HAS_LOCK_METHOD))
+/* I need to enter the update priority block even if the new priority is equal
+   to the previous to handle the suspend interrupt nesting */
+        if (current_prio <= spinlock_prio) {
+          p_curr_tcb->current_prio = spinlock_prio;
+
+          if (spinlock_prio == OSEE_ISR_ALL_PRIO) {
+            /* Nest this spinlock as a SuspendAllInterrupts */
+            osEE_suspend_all_interrupts(p_cdb, p_ccb);
+          } else if (spinlock_prio >=  OSEE_ISR2_MAX_PRIO) {
+            /* Nest this spinlock as a SuspendOSInterrupts */
+            if (p_ccb->s_isr_os_cnt == 0U) {
+              p_ccb->prev_s_isr_os_status = flags;
+              ++p_ccb->s_isr_os_cnt;
+            } else if (p_ccb->s_isr_os_cnt < OSEE_MAX_BYTE) {
+              ++p_ccb->s_isr_os_cnt;
+            } else {
+#if (defined(OSEE_HAS_PROTECTIONHOOK))
+#error Add ProtectionHook call here once it has been implemented
+#else
+              osEE_shutdown_os(p_cdb, E_OS_SYS_SUSPEND_NESTING_LIMIT);
+#endif /* OSEE_HAS_PROTECTIONHOOK */
+            }
+          }
+
+          flags = osEE_hal_prepare_ipl(flags, spinlock_prio);
+          p_spinlock_cb->prev_prio = current_prio;
+        }
+#endif /* OSEE_SPINLOCKS_HAS_LOCK_METHOD */
 
       /* [SWS_Os_00705] The function TryToGetSpinlock shall set the OUT
            parameter "Success" to TRYTOGETSPINLOCK_SUCCESS if the spinlock was

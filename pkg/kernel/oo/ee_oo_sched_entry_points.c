@@ -84,15 +84,18 @@ static FUNC_P2VAR(OsEE_MDB, OS_APPL_CONST, OS_CODE)
     }
 #endif /* OSEE_HAS_SPINLOCKS */
 
-    /* Pop the Resources head */
+    /* Pop the M head */
     p_tcb->p_last_m = p_last_m_cb->p_next;
     /* No need to work on IPL, it will be the normal context restore to handle
        that. */
   }
 #if (defined(OSEE_HAS_SPINLOCKS))
-  /* Restore last spinlock on CCB */
-  if (p_tcb->p_last_m != NULL) {
-    CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)  p_cdb = osEE_get_curr_core();
+  /* Restore last spinlock on CCB
+    (N.B. maybe p_tcb->p_last_m is already NULL maybe not...
+          I set it to NULL in any case) */
+  {
+    CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
+      p_cdb = osEE_get_curr_core();
 
     p_cdb->p_ccb->p_last_spinlock = p_tcb->p_last_m;
     p_tcb->p_last_m = NULL;

@@ -157,8 +157,10 @@ OsEE_bool osEE_cpu_startos(void)
  
     for (i = 0U; i  < isr1_max; ++i) {
       if ((*p_isr1_db->p_isr1_src_array)[i].isr1_src != OSEE_TC_SRC_INVALID) {
-        OsEE_reg const srn_priority_tmp =
-          OSEE_TC_SRN_PRIORITY((*p_isr1_db->p_isr1_src_array)[i].isr_prio);
+        OsEE_prio const srn_priority_tmp =
+          (OsEE_prio)OSEE_TC_SRN_PRIORITY(
+            (*p_isr1_db->p_isr1_src_array)[i].isr_prio
+          );
         osEE_tc_conf_src(curr_core_id,
           (*p_isr1_db->p_isr1_src_array)[i].isr1_src, srn_priority_tmp);
           

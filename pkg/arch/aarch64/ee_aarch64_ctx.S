@@ -248,8 +248,8 @@ osEE_aarch64_change_context_from_isr2_end:
     orr x8, x8, #0x80
     msr spsr_el1, x8
 /* Prepare to jump on scheduler function */
-/*#adrp x8, :pg_hi21:osEE_change_context_from_task_end
-  #add  x8, x8, #:lo12:osEE_change_context_from_task_end */
+/*# adrp x8, :pg_hi21:osEE_change_context_from_task_end
+  # add  x8, x8, #:lo12:osEE_change_context_from_task_end */
     ldr x8, =osEE_change_context_from_task_end
     msr elr_el1, x8
 /* Returning from ISR */

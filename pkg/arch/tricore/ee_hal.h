@@ -237,6 +237,7 @@ OSEE_STATIC_INLINE OsEE_reg OSEE_ALWAYS_INLINE
   osEE_tc_extru(OsEE_reg reg, OsEE_reg start, uint8_t size)
 {
   OsEE_reg res;
+  /* This is the extr.u assembler instruction */
   __asm__ volatile (
     "extr.u %0,%1,%2,%3":
       "=d" (res): "d" (reg), "i" (start), "i" (size): "memory"

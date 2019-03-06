@@ -133,8 +133,8 @@ ee_k1_interrupt_wrapper:
   ;;
   scall MOS_VC_RFE
   ;;
-  #I CANNOT FIND INFORMATION ABOUT THIS DIRECTIVE. I suppose that the effect is
-  #equal to: .size ee_k1_interrupt_wrapper, .-ee_k1_interrupt_wrapper
+  # I CANNOT FIND INFORMATION ABOUT THIS DIRECTIVE. I suppose that the effect is
+  # equal to: .size ee_k1_interrupt_wrapper, .-ee_k1_interrupt_wrapper
   .endp osEE_k1_interrupt_wrapper
 
 #==============================================================================#

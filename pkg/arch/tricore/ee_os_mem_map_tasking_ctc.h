@@ -236,6 +236,34 @@
 #endif
 
 /******************************************************************************
+          ERIKA OS global memory mapping initialized data section
+ *****************************************************************************/
+#ifdef OS_STOP_SEC_GLOBAL_VAR_INIT
+  #undef OS_STOP_SEC_GLOBAL_VAR_INIT
+  #ifdef OS_START_SEC_GLOBAL_VAR_INIT
+    #undef MEMMAP_ERROR
+    #undef OS_START_SEC_GLOBAL_VAR_INIT
+    #undef OSEE_OPEN_DATA_SECTION
+    #pragma section fardata  restore
+    #pragma section neardata restore
+  #else
+    #error No section "ee_gbl_kernel_data" started
+  #endif
+#endif
+
+#ifdef OS_START_SEC_GLOBAL_VAR_INIT
+  #ifdef OSEE_OPEN_DATA_SECTION
+    #error Starting a ".ee_gbl_kernel_data" section while a DATA section\
+ is already started
+  #else
+    #undef MEMMAP_ERROR
+    #pragma section farbss  "ee_gbl_kernel_data"
+    #pragma section nearbss "ee_gbl_kernel_data"
+    #define OSEE_OPEN_DATA_SECTION
+  #endif
+#endif
+
+/******************************************************************************
                   ERIKA API memory mapping code section
  *****************************************************************************/
 #ifdef API_STOP_SEC_CODE
@@ -244,9 +272,7 @@
     #undef MEMMAP_ERROR
     #undef API_START_SEC_CODE
     #undef OSEE_OPEN_CODE_SECTION
-    #if 0
-      #pragma section code restore
-    #endif
+    #pragma section code restore
   #else
     #error No section "ee_api_text" started
   #endif
@@ -258,9 +284,7 @@
  is already started
   #else
     #undef MEMMAP_ERROR
-    #if 0
-      #pragma section code "ee_api_text"
-    #endif
+    #pragma section code "ee_api_text"
     #define OSEE_OPEN_CODE_SECTION
   #endif
 #endif
@@ -274,10 +298,8 @@
     #undef MEMMAP_ERROR
     #undef API_START_SEC_VAR_CLEARED
     #undef OSEE_OPEN_DATA_SECTION
-    #if 0
-      #pragma section farbss  restore
-      #pragma section nearbss restore
-    #endif
+    #pragma section farbss  restore
+    #pragma section nearbss restore
   #else
     #error "No section "ee_api_bss" started"
   #endif
@@ -289,10 +311,8 @@
  is already started
   #else
     #undef MEMMAP_ERROR
-    #if 0
-      #pragma section farbss  "ee_api_bss"
-      #pragma section nearbss "ee_api_bss"
-    #endif
+    #pragma section farbss  "ee_api_bss"
+    #pragma section nearbss "ee_api_bss"
     #define OSEE_OPEN_DATA_SECTION
   #endif
 #endif
@@ -306,10 +326,8 @@
     #undef MEMMAP_ERROR
     #undef API_START_SEC_VAR_INIT
     #undef OSEE_OPEN_DATA_SECTION
-    #if 0
-      #pragma section fardata   restore
-      #pragma section neardata  restore
-    #endif
+    #pragma section fardata   restore
+    #pragma section neardata  restore
   #else
     #error No section "ee_api_data" started
   #endif
@@ -321,10 +339,8 @@
  is already started
   #else
     #undef MEMMAP_ERROR
-    #if 0
-      #pragma section fardata  "ee_api_data"
-      #pragma section neardata "ee_api_data"
-    #endif
+    #pragma section fardata  "ee_api_data"
+    #pragma section neardata "ee_api_data"
     #define OSEE_OPEN_DATA_SECTION
   #endif
 #endif

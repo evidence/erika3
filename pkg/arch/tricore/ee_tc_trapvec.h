@@ -210,10 +210,11 @@ typedef void (* OsEE_tc_trap_handler)(OsEE_tc_tin par);
 OSEE_STATIC_INLINE OsEE_tc_tin osEE_tc_get_tin(void)
 {
   OsEE_tc_tin tin;
-  /* Register d15 holds the Trap Id Nr inside a Trap handler */
 #if (defined(__TASKING__))
+  /* Register d15 holds the Trap Id Nr inside a Trap handler */
   __asm volatile("mov  %0, d15": "=d"(tin) : : "memory");
 #elif (defined(__GNUC__))
+  /* Register d15 holds the Trap Id Nr inside a Trap handler */
   __asm__ volatile("mov  %0,%%d15": "=d"(tin) : : "memory");
 #endif /* __TASKING__ || __GNUC__ */
   return tin;

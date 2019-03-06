@@ -63,6 +63,9 @@
 #endif /* !OSEE_TRICORE_ILLD */
 #include "ee_hal_mc.h"
 #include "ee_api.h"
+#if (defined(OSEE_ASSERT))
+#include "ee_assert.h"
+#endif /* OSEE_ASSERT */
 #if (!defined(OS_EE_BUILD)) && (!defined(OSEE_API_DYNAMIC))
 #include "ee_declcfg.h"
 #endif /* !OS_EE_BUILD && !OSEE_API_DYNAMIC */

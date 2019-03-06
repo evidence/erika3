@@ -132,7 +132,7 @@ FUNC(void, OS_CODE)
 {
   CONSTP2VAR(OsEE_CounterCB, AUTOMATIC, OS_APPL_DATA)
     p_counter_cb  = p_counter_db->p_counter_cb;
-  CONSTP2VAR(OsEE_TriggerCB, AUTOMATIC, OS_APPL_DATA)
+  CONSTP2CONST(OsEE_TriggerCB, AUTOMATIC, OS_APPL_DATA)
     p_trigger_cb  = p_trigger_db->p_trigger_cb;
   P2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_DATA)
     p_current     = p_counter_cb->trigger_queue;

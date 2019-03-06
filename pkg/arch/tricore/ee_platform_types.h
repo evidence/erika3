@@ -125,8 +125,12 @@ typedef enum {
 #if (defined(OSEE_CORE_ID_VALID_MASK)) && (OSEE_CORE_ID_VALID_MASK & 0x40U)
   OS_CORE_ID_6 = 6,
 #endif /* OSEE_CORE_ID_VALID_MASK & 0x40U */
-  OS_CORE_ID_ARR_SIZE
+  OS_CORE_ID_ARR_SIZE,
+  OS_CODE_ID_INVALID = -1
 } OsEE_core_id;
+
+/** Flag an invalid core ID */
+#define INVALID_CORE_ID OS_CODE_ID_INVALID
 
 /** Maximum core ID on this platform */
 #define OSEE_CORE_ID_MAX      ((CoreNumType)OS_CORE_ID_ARR_SIZE - 1U)

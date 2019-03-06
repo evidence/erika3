@@ -150,11 +150,11 @@ extern "C" {
 #define OSEE_ASSERT_ALREADYUSED ((OSEE_TYPEASSERTVALUE)3)
 
 /* If MemMap.h support is enabled (i.e. because memory protection): use it */
-#ifdef OSEE_SUPPORT_MEMMAP_H
+#if (!defined(OSEE_SINGLECORE))
 #define API_START_SEC_VAR_NOINIT
 #define API_START_SEC_CODE
-#include "MemMap.h"
-#endif /* OSEE_SUPPORT_MEMMAP_H */
+#include "Os_MemMap.h"
+#endif /* !OSEE_SINGLECORE */
 
 /** the assertion array storing all the assertions value */
 #if (defined(ASSERT_LENGTH))
@@ -259,11 +259,11 @@ OSEE_TYPEASSERTVALUE osEE_assert_range(OSEE_TYPEASSERT id,
 OSEE_TYPEASSERTVALUE osEE_assert_last(void);
 
 /* If MemMap.h support is enabled (i.e. because memory protection): use it */
-#ifdef OSEE_SUPPORT_MEMMAP_H
+#if (!defined(OSEE_SINGLECORE))
 #define API_STOP_SEC_VAR_NOINIT
 #define API_STOP_SEC_CODE
-#include "MemMap.h"
-#endif /* OSEE_SUPPORT_MEMMAP_H */
+#include "Os_MemMap.h"
+#endif /* !OSEE_SINGLECORE */
 
 #if (defined(__cplusplus))
 }

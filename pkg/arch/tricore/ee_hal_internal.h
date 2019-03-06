@@ -80,11 +80,7 @@ extern "C" {
 /*=============================================================================
                   HANDLE SPECIFIC TASKING WARNING INSIDE THE KERNEL
  ============================================================================*/
-#define OSEE_WARN_LABEL(l) l:
-/* Hide specific warnings inside the kernel that actually points to expected
-   behavior */
-/* Dead assignment to "ev" is needed to make ECLAIR MISRA checker happy */
-#pragma osee_useless_ev_assign:warning 588
+
 /* Disable Warnings for Infinite Loops inside the Kernel */
 #pragma warning 557
 
@@ -321,12 +317,17 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_hal_set_ipl(TaskPrio virt_prio)
   osEE_tc_set_icr(icr);
 }
 
+#define OSEE_TC_ICR_IE_POS (8U)
+
 OSEE_STATIC_INLINE OsEE_reg OSEE_ALWAYS_INLINE
   osEE_hal_prepare_ipl(OsEE_reg flags, TaskPrio virt_prio)
 {
   OsEE_reg ret_flags;
   if (virt_prio < OSEE_ISR2_PRIO_BIT) {
     ret_flags = OSEE_B_SET(flags, 8U, 0U, OSEE_ISR_UNMASKED);
+  } else if (virt_prio == OSEE_ISR_ALL_PRIO) {
+    /* Remove the ICR.IE bit from flags */
+    ret_flags = OSEE_B_CLEAR(flags, 1U, OSEE_TC_ICR_IE_POS);
   } else {
     ret_flags =
       OSEE_B_SET(flags, 8U, 0U, OSEE_ISR2_VIRT_TO_HW_PRIO(virt_prio));
@@ -339,10 +340,10 @@ OSEE_STATIC_INLINE MemSize OSEE_ALWAYS_INLINE
   osEE_hal_get_msb(OsEE_rq_mask mask)
 {
 #if (OSEE_RQ_PRIO_NUM <= 32U)
-  int32_t nbits = 31 - osEE_tc_clz(mask);
+  uint32_t nbits = ((uint32_t)31) - osEE_tc_clz(mask);
   return (MemSize)(nbits);
 #elif (OSEE_RQ_PRIO_NUM <= 64U)
-  int32_t nbits = 63 - __builtin_clzll(mask);
+  uint32_t nbits = ((uint32_t)63) - __builtin_clzll(mask);
   return (MemSize)(nbits);
 #else
 #error TriCore ISA cannot handle a bitmask long OSEE_RQ_PRIO_NUM
@@ -376,9 +377,11 @@ OSEE_STATIC_INLINE OsEE_reg OSEE_ALWAYS_INLINE
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
   osEE_hal_end_nested_primitive(OsEE_reg flags)
 {
+  OsEE_icr flags_icr;
   OsEE_icr icr = osEE_tc_get_icr();
-  if (icr.reg != flags) {
-    icr.reg = flags;
+  flags_icr.reg = flags;
+  if (icr.bits.ccpn != flags_icr.bits.ccpn) {
+    icr.bits.ccpn = flags_icr.bits.ccpn;
     osEE_tc_set_icr(icr);
   }
 }
@@ -456,7 +459,7 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
     tos_num = (OsEE_reg)tos + 1U;
   }
 #else /* OSEE_SINGLECORE || OSEE_CORE_ID_VALID_MASK == 0x41U */
-  OsEE_reg const tos_num = tos;
+  OsEE_reg const tos_num = (OsEE_reg)tos;
 #endif /* !OSEE_SINGLECORE && OSEE_CORE_ID_VALID_MASK != 0x41U */
 
   OSEE_TC_SRC_REG(src_offset) = OSEE_TC_SRN_TYPE_OF_SERVICE(tos_num) |

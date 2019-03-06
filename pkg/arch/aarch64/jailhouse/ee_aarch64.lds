@@ -31,6 +31,21 @@ SECTIONS {
 
   . = ALIGN(4);
   .text   : {
+	/* constructors */
+          . = ALIGN(8);
+          PROVIDE(__CTORS_START = .);
+          KEEP (*(.ctors*))
+          KEEP (*(.init_array*))
+          PROVIDE(__CTORS_END = .);
+
+          /* constructor code */
+          _stext_constructors = .;
+          KEEP (*(".text.startup"))
+          _etext_constructors = .;
+
+	 /* Adding hidden symbol for C++ linkage */
+         __dso_handle = .;
+
     *(.text)
   }
 
@@ -41,6 +56,11 @@ SECTIONS {
   .data   : {
     *(.data)
   }
+
+
+  . = ALIGN(8);
+  /* "end" is used by newlib's syscalls */
+  PROVIDE(end = .);
 
   . = ALIGN(16);
   stack_bottom = .;

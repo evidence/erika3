@@ -1,7 +1,7 @@
 /* ###*B*###
  * Erika Enterprise, version 3
  * 
- * Copyright (C) 2017 - 2018 Evidence s.r.l.
+ * Copyright (C) 2017 - 2019 Evidence s.r.l.
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,59 +45,117 @@
  *  This file contains the System Configuration for Erika Enterprise.
  *
  *  \author  Errico Guidieri
- *  \date  2018
+ *  \date  2019
  */
+CPU test_application {
 
-CPU mySystem {
-
-  OS myOs {
-
+  OS EE {
     /* EE_OPT = "OS_EE_VERBOSE"; */
     EE_OPT = "OSEE_DEBUG";
     EE_OPT = "OS_EE_APPL_BUILD_DEBUG";
     EE_OPT = "OS_EE_BUILD_DEBUG";
+    EE_OPT = "OSEE_ASSERT";
 
+    STATUS = EXTENDED;
+
+    ERRORHOOK = TRUE;
     USERESSCHEDULER = FALSE;
 
     CPU_DATA = TRICORE {
       CPU_CLOCK = 200.0;
       COMPILER = GCC;
+      IDLEHOOK = TRUE {
+        HOOKNAME = "idle_hook";
+      };
     };
 
     CPU_DATA = TRICORE {
       ID = 1;
     };
 
-    CPU_DATA = TRICORE {
-      ID = 2;
-    };
+    MCU_DATA = TC27X;
 
     KERNEL_TYPE = OSEK {
       CLASS = BCC1;
     };
   };
 
-  APPDATA tricore_spinlocks {
+  APPDATA tricore_spinlocks_wlm {
     APP_SRC = "code.c";
   };
 
-  TASK TaskMaster {
+  TASK Task1 {
     PRIORITY = 1;
-    AUTOSTART = TRUE;
+    ACTIVATION = 1;
+    RESOURCE = ResISRLow;
   };
 
+  TASK Task2 {
+    PRIORITY = 2;
+    ACTIVATION = 1;
+  };
+
+  TASK Task3 {
+    PRIORITY = 3;
+    ACTIVATION = 1;
+  };
+  
   TASK TaskSlave1 {
     CPU_ID = 1;
     PRIORITY = 1;
+    ACTIVATION = 1;
   };
 
-  TASK TaskSlave2 {
-    CPU_ID = 2;
-    PRIORITY = 1;
-    AUTOSTART = TRUE;
+  ISR IsrLow {
+    CATEGORY = 2;
+    PRIORITY = 2;
+    SOURCE = "GPSR10";
+    RESOURCE = ResISRLow;
   };
 
-  SPINLOCK spinlock_1 { NEXT_SPINLOCK=spinlock_2; };
-  SPINLOCK spinlock_2 {};
+  ISR IsrMedium {
+    CATEGORY = 2;
+    PRIORITY = 3;
+    SOURCE = "GPSR11";
+  };
+
+  ISR IsrHigh {
+    CATEGORY = 1;
+    PRIORITY = 4;
+    SOURCE = "GPSR12";
+  };
+
+  ISR IsrSlave {
+    CPU_ID = 1;
+    CATEGORY = 2;
+    PRIORITY = 2;
+    SOURCE = "GPSR20";
+  };
+
+  RESOURCE ResISRLow { RESOURCEPROPERTY = STANDARD; };
+
+  SPINLOCK Spinlock1 {
+    NEXT_SPINLOCK = Spinlock2;
+    LOCK_METHOD = LOCK_NOTHING;
+  };
+
+  SPINLOCK Spinlock2 {
+    NEXT_SPINLOCK = Spinlock3;
+    LOCK_METHOD = LOCK_WITH_RES_SCHEDULER;
+  };
+
+  SPINLOCK Spinlock3 {
+    NEXT_SPINLOCK = Spinlock4;
+    LOCK_METHOD = LOCK_CAT2_INTERRUPTS;
+  };
+
+  SPINLOCK Spinlock4 {
+    NEXT_SPINLOCK = SpinlockAssert;
+    LOCK_METHOD = LOCK_ALL_INTERRUPTS;
+  };
+
+  SPINLOCK SpinlockAssert {
+    LOCK_METHOD = LOCK_ALL_INTERRUPTS;
+  };
 };
 
