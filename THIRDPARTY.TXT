@@ -79,10 +79,26 @@ Platform: Renesas RH850, E2X-FCC2
     Website: https://www.renesas.com/us/en/products/microcontrollers-microprocessors/rh850/softtools.html
 
 Platform: All
-For all the members of the COMASSO Association (http://www.comasso.org),
-Evidence provides the possibility to statically link ERIKA3 to any version of 
-the "COMASSO Basic Software Modules", as defined at point 1.6 of the 
-COMASSO License and Contribution Agreement, Version 3.
+(*) For all the members of the COMASSO Association (http://www.comasso.org),
+    Evidence provides the possibility to statically link ERIKA3 to any version of 
+    the "COMASSO Basic Software Modules", as defined at point 1.6 of the 
+    COMASSO License and Contribution Agreement, Version 3.
+
+(*) FatFs - Generic FAT Filesystem Module  Rx.xx
+    License : Copyright (C) 20xx, ChaN, all right reserved.
+
+              FatFs module is an open source software. Redistribution and use of FatFs in
+              source and binary forms, with or without modification, are permitted provided
+              that the following condition is met:
+             
+              1. Redistributions of source code must retain the above copyright notice,
+                 this condition and the following disclaimer.
+             
+              This software is provided by the copyright holder and contributors "AS IS"
+              and any warranties related to this software are DISCLAIMED.
+              The copyright owner or contributors be NOT LIABLE for any damages caused
+              by use of this software.
+    Website:  http://elm-chan.org/fsw/ff/00index_e.html
 
 Platform: Infineon 32-bit TriCoreTM AURIXTM  Microcontroller
 - Infineon AURIXTM  Security Software HSM SHE+ 
