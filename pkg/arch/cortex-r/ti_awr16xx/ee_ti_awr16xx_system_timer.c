@@ -47,6 +47,7 @@
  */
 
 #include "ee_internal.h"
+#include "ee_ti_awr16xx_rti.h"
 #include <ti/drivers/osal/DebugP.h>
 
 /* RTI Device Regs */
@@ -128,23 +129,13 @@ typedef struct {
 #define OSEE_TI_RTI_GCTRL_COS         (0x8000U)
 
 #if (!defined(OSEE_HAS_SYSTEM_TIMER))
-#error No system timer have been configured this file should have not been built
+#define OSEE_TI_RTI_INIT_STORAGE
 #else
-#if (!defined(OSEE_SYSTEM_TIMER_CORE0_DEVICE))
-#define OSEE_SYSTEM_TIMER_CORE0_DEVICE OSEE_CORTEX_R_DEVICE_RTIC3
-#else
-#if (OSEE_SYSTEM_TIMER_CORE0_DEVICE != OSEE_CORTEX_R_DEVICE_RTIC0) &&\
-    (OSEE_SYSTEM_TIMER_CORE0_DEVICE != OSEE_CORTEX_R_DEVICE_RTIC1) &&\
-    (OSEE_SYSTEM_TIMER_CORE0_DEVICE != OSEE_CORTEX_R_DEVICE_RTIC2) &&\
-    (OSEE_SYSTEM_TIMER_CORE0_DEVICE != OSEE_CORTEX_R_DEVICE_RTIC3)
-#error Unknown system timer device
-#endif /* Device Check */
-#endif /* !OSEE_SYSTEM_TIMER_CORE0_DEVICE */
+#define OSEE_TI_RTI_INIT_STORAGE static
 #endif /* !OSEE_HAS_SYSTEM_TIMER */
 
-void osEE_cortex_r_initialize_system_timer(OsEE_TDB * p_tdb) {
-  TickType period_tick;
-
+OSEE_TI_RTI_INIT_STORAGE void osEE_ti_awr16xx_rti_init(void)
+{
   /* Disable both counters in initialization */
   OSEE_TI_RTI_P->RTIGCTRL &=
     (~(OSEE_TI_RTI_GCTRL_CNT0EN | OSEE_TI_RTI_GCTRL_CNT1EN));
@@ -182,16 +173,60 @@ void osEE_cortex_r_initialize_system_timer(OsEE_TDB * p_tdb) {
   /* Set the minimum possible prescaler... */
   OSEE_TI_RTI_P->RTICPUC0 = 1U;
   OSEE_TI_RTI_P->RTICPUC1 = 1U;
-  /* So evaluate period_tick halving Core Frequency */
-  period_tick =
-    OSEE_MICRO_TO_TICKS((OSTICKDURATION/1000U), (OSEE_CPU_CLOCK/2U));
 
   /* Arbitrarily assign CMP0 and CMP1 to FRC0 and CMP2 and CMP3 to FRC1.
      The selection bit is the first of each byte, with CMP3 assigned to the
      MSB and other descending order */
   OSEE_TI_RTI_P->RTICOMPCTRL = 0x010100U;
 
-  /* Set the right compare, update registers and enabl ethe right interrupt */
+#if (!defined(OSEE_HAS_SYSTEM_TIMER))
+  /* Re-enable both counters */
+  OSEE_TI_RTI_P->RTIGCTRL |= (
+    OSEE_TI_RTI_GCTRL_CNT0EN | OSEE_TI_RTI_GCTRL_CNT1EN
+#if (!defined(OSEE_DEBUG))
+  /* When we are in debug block the counters on breakpoints */
+      | OSEE_RTI_GCTRL_COS
+#endif /* !OSEE_DEBUG */
+  );
+#endif /* !OSEE_HAS_SYSTEM_TIMER */
+}
+
+OsEE_reg osEE_ti_awr16xx_get_frc(enum ti_rti_frc frc)
+{
+  OsEE_reg ret_value;
+  switch (frc) {
+    case TI_RTI_FRC_1:
+      ret_value = OSEE_TI_RTI_P->RTIFRC1;
+      break;
+    case TI_RTI_FRC_0:
+    default:
+      ret_value = OSEE_TI_RTI_P->RTIFRC0;
+      break;
+  }
+  return ret_value;
+}
+
+#if (defined(OSEE_HAS_SYSTEM_TIMER))
+#if (!defined(OSEE_SYSTEM_TIMER_CORE0_DEVICE))
+#define OSEE_SYSTEM_TIMER_CORE0_DEVICE OSEE_CORTEX_R_DEVICE_RTIC3
+#else
+#if (OSEE_SYSTEM_TIMER_CORE0_DEVICE != OSEE_CORTEX_R_DEVICE_RTIC0) &&\
+    (OSEE_SYSTEM_TIMER_CORE0_DEVICE != OSEE_CORTEX_R_DEVICE_RTIC1) &&\
+    (OSEE_SYSTEM_TIMER_CORE0_DEVICE != OSEE_CORTEX_R_DEVICE_RTIC2) &&\
+    (OSEE_SYSTEM_TIMER_CORE0_DEVICE != OSEE_CORTEX_R_DEVICE_RTIC3)
+#error Unknown system timer device
+#endif /* Device Check */
+#endif /* !OSEE_SYSTEM_TIMER_CORE0_DEVICE */
+
+void osEE_cortex_r_initialize_system_timer(OsEE_TDB * p_tdb) {
+  /* Evaluate period_tick halving Core Frequency */
+  const TickType period_tick =
+    OSEE_MICRO_TO_TICKS((OSTICKDURATION/1000U), (OSEE_CPU_CLOCK/2U));
+
+  /* Init RTI */
+  osEE_ti_awr16xx_rti_init();
+
+  /* Set the right compare, update registers and enable the right interrupt */
   /* RTISETINTENA has bits corresponding to RTIINTFLAG */
   switch (p_tdb->hdb.isr2_src) {
     case OSEE_CORTEX_R_DEVICE_RTIC0:
@@ -242,3 +277,6 @@ void osEE_cortex_r_system_timer_handler(void) {
   OSEE_TI_RTI_P->RTIINTFLAG = (OsEE_reg)1U <<
     (p_cdb->p_ccb->p_curr->hdb.isr2_src - OSEE_TI_RTI_COMP_INT_OFFSET);
 }
+
+#endif /* OSEE_HAS_SYSTEM_TIMER */
+

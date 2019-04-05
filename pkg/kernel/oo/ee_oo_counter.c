@@ -154,6 +154,7 @@ FUNC(void, OS_CODE)
   }
 }
 
+#if (defined(OSEE_HAS_ALARMS)) || (defined(OSEE_HAS_SCHEDULE_TABLES))
 static FUNC(StatusType, OS_CODE)
   osEE_handle_action
 (
@@ -231,6 +232,7 @@ static FUNC(StatusType, OS_CODE)
 
   return ev;
 }
+#endif /* OSEE_HAS_ALARMS || OSEE_HAS_SCHEDULE_TABLES */
 
 #if (defined(OSEE_HAS_ALARMS))
 static FUNC(void, OS_CODE)
@@ -546,8 +548,10 @@ FUNC(void, OS_CODE)
 
         /* Handle Actions */
         do {
+#if (defined(OSEE_HAS_ALARMS)) || (defined(OSEE_HAS_SCHEDULE_TABLES))
           CONSTP2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_CONST)
             p_trigger_to_be_handled_db = p_triggered_db;
+#endif /* OSEE_HAS_ALARMS || OSEE_HAS_SCHEDULE_TABLES */
 
           /* Prepare next trigger to be handled here, before actually handle
            * the current one, otherwise cycling triggers will mess with the

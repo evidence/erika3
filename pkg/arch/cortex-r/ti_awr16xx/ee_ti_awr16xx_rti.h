@@ -39,52 +39,32 @@
  * project.
  * ###*E*### */
 
-/** \file   ee_ti_awr16xx_internal_types.h
- *  \brief  Internal Types Override for TI AWR16XX
+/** \file   ee_ti_awr16xx_rti.h
+ *  \brief  TI RTI minimal driver
  *
  *  \author Errico Guidieri
- *
- *  \date 2018
+ *  \date   2019
  */
-#ifndef OSEE_TI_AWR16XX_INTERNAL_TYPES_H
-#define OSEE_TI_AWR16XX_INTERNAL_TYPES_H
 
-#include "ee_hal_internal_types.h"
+#ifndef OSEE_TI_AWR16XX_RTI_H
+#define OSEE_TI_AWR16XX_RTI_H
 
-typedef OsEE_isr_src_id OsEE_isr_channel;
+#include "ee_cfg.h"
+#include "ee_arch_override.h"
 
-typedef struct {
-  OsEE_reg            mask_set0;
-  OsEE_reg            mask_set1;
-  OsEE_reg            mask_set2;
-  OsEE_reg            mask_set3;
-} OsEE_HCB;
+#include "ee_compiler.h"
+#include "ee_utils.h"
+#include "ee_platform_types.h"
 
-typedef struct {
-  OsEE_SDB          * p_sdb;
-  OsEE_SCB          * p_scb;
-  OsEE_HCB          * p_hcb;
-  OsEE_isr_src_id     isr2_src;
-} OSEE_CONST OsEE_HDB;
+#if (!defined(OSEE_HAS_SYSTEM_TIMER))
+extern void osEE_ti_awr16xx_rti_init(void);
+#endif /* !OSEE_HAS_SYSTEM_TIMER */
 
-#if (defined(OSEE_CORTEX_R_HAS_ISR1_TO_CONF))
-/** This is a single ISR1 entry. Needed when we have to program the IRQ Table
- *  after the StartOS()
- */
-typedef struct {
-  OsEE_isr_src_id     isr1_src;   /**< Interrupt Type 1 source */
-  OsEE_isr_channel    isr_prio;   /**< Interrupt Priority */
-  OsEE_void_cb        p_hnd_func; /**< Function Handler */
-} OSEE_CONST OsEE_isr1_src;
+enum ti_rti_frc {
+  TI_RTI_FRC_0,
+  TI_RTI_FRC_1
+};
 
-/** This is a single ISR1 entry. Needed when we have to program the IRQ Table
- *  after the StartOS()
- */
-typedef struct OsEE_isr1_db_tag {
-  OsEE_isr1_src (* p_isr1_src_array)[]; /**< Array of ISR1 sources */
-  size_t        isr1_num;               /**< Number of ISR Type configured in 
-                                             the OIL file */
-} OSEE_CONST OsEE_isr1_db;
-#endif /* OSEE_TC_HAS_ISR1_TO_CONF */
+OsEE_reg osEE_ti_awr16xx_get_frc(enum ti_rti_frc);
 
-#endif /* OSEE_CORTEX_R_HAS_ISR1_TO_CONF */
+#endif /* OSEE_TI_AWR16XX_RTI_H */

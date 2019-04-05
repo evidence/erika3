@@ -45,7 +45,7 @@
  *  This file contains the System Configuration for Erika Enterprise.
  *
  *  \author  Errico Guidieri
- *  \date    2017
+ *  \date    2019
  */
 
 CPU mySystem {

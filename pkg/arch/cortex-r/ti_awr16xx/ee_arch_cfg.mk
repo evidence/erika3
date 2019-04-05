@@ -58,9 +58,6 @@ EE_SRCS += ee_std_hal_init.c
 endif # OSEE_DYNAMIC_API
 
 EE_SRCS += ee_mmwave_osal.c
-
-ifeq ($(call iseeopt, OSEE_HAS_SYSTEM_TIMER), yes)
 EE_SRCS += ee_ti_awr16xx_system_timer.c
-endif # OSEE_HAS_SYSTEM_TIMER
 
 endif # OSEE_ARCH_CORTEX_R

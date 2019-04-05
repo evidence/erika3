@@ -56,17 +56,29 @@
 
 #include "ee_internal.h"
 #include "ee_mmwave_osal_vim.h"
+#include "ee_ti_awr16xx_rti.h"
+
+#if (defined(OSEE_CORTEX_R_HAS_ISR1_TO_CONF))
+extern OsEE_isr1_db osEE_isr1_db_instance;
+#endif /* OSEE_CORTEX_R_HAS_ISR1_TO_CONF */
 
 /* Assembly Function declared here for now */
 extern void osEE_cortex_r_switch_to_system_mode(void);
 
 static OsEE_bool volatile vim_initStatus;
 
+#if (defined(OSEE_DEBUG))
+#define OSEE_INT_VECTORS_STORAGE
+#else
+#define OSEE_INT_VECTORS_STORAGE static
+#endif /* OSEE_DEBUG */
+
 /* I save this in RAM allowing mmWave to registers interrupts a Run Time */
-static OsEE_cortex_r_hnd_type
+OSEE_INT_VECTORS_STORAGE OsEE_cortex_r_hnd_type
   osEE_cortex_r_int_vectors[OSEE_CORTEX_R_VIM_CHANNELS];
 
-static OsEE_isr_channel osEE_cortex_r_int_channel[OSEE_CORTEX_R_VIM_CHANNELS];
+OSEE_INT_VECTORS_STORAGE OsEE_isr_channel
+  osEE_cortex_r_int_channel[OSEE_CORTEX_R_VIM_CHANNELS];
 
 /*
  *  ======== HwiP_DispatchEntry ========
@@ -122,6 +134,76 @@ static StatusType osEE_ti_awr16xx_set_channel_hnd
   return ev;
 }
 
+static void osEE_ti_awr16xx_hnd_req_and_ch
+(
+  OsEE_isr_src_id           request,
+  OsEE_isr_channel          channel,
+  OsEE_cortex_r_hnd_type  * p_hnd_to_conf
+)
+{
+  OsEE_cortex_r_hnd_type * p_hnd;
+
+  DebugP_assert(request < OSEE_CORTEX_R_VIM_CHANNELS);
+  DebugP_assert(channel < OSEE_CORTEX_R_VIM_CHANNELS);
+
+  p_hnd = &osEE_cortex_r_int_vectors[channel];
+
+  /* Before initialization disable and clear the channel & request */
+  osEE_vim_disable_interrupt(channel);
+  osEE_vim_clear_interrupt(channel);
+
+  if (channel != request) {
+    osEE_vim_disable_interrupt((OsEE_isr_channel)request);
+    osEE_vim_clear_interrupt((OsEE_isr_channel)request);
+  }
+
+  /* Remap previous set ISR1/TRAP on higher priority
+     "request" channel, if possible...  */
+  if ((p_hnd->cat != OSEE_ISR_CAT_2) && (p_hnd->hnd.p_hnd_func != NULL)) {
+    /* Swap previous HwiP entry from channel to request */
+    HwiP_DispatchEntry const * p_dispatch_entry = &HwiP_dispatchTable[channel];
+
+    if (channel > request) {
+      /* Map the number to the interrupt handler */
+      osEE_vim_channel_map(p_dispatch_entry->intNum,
+        (OsEE_isr_channel)request);
+
+#if 0
+      HwiP_dispatchTable[request].entry     = p_dispatch_entry->entry;
+      HwiP_dispatchTable[request].arg       = p_dispatch_entry->arg;
+      HwiP_dispatchTable[request].vim_type  = p_dispatch_entry->vim_type;
+      HwiP_dispatchTable[request].intNum    = p_dispatch_entry->intNum;
+#endif  /* 0 */
+
+      HwiP_dispatchTable[request] = *p_dispatch_entry;
+
+      osEE_ti_awr16xx_set_channel_hnd(p_hnd, (OsEE_isr_channel)request);
+      osEE_cortex_r_int_channel[p_dispatch_entry->intNum] =
+        (OsEE_isr_channel)request;
+
+      /* If the previous channel is enabled, enable the new "request"
+         channel */
+      if (osEE_vim_is_enabled_interrupt(channel)) {
+        osEE_vim_enable_interrupt(request, p_dispatch_entry->vim_type);
+      }
+    } else {
+      /* Assert False */
+      DebugP_assert(0);
+    }
+  } else if (channel != request) {
+    /* In any case swap request with channel otherwise, double
+       interrupt mapping. */
+    osEE_vim_channel_map((OsEE_isr_src_id)channel, (OsEE_isr_channel)request);
+  }
+
+  /* Configure and enable the new ISR */
+  (*p_hnd) = *p_hnd_to_conf;
+
+  osEE_cortex_r_int_channel[request] = channel;
+
+  osEE_vim_channel_map(request, channel);
+}
+
 OsEE_bool osEE_cpu_startos(void) {
   /* TODO ISR Mapping */
   OsEE_KDB *  const p_kdb    = osEE_get_kernel();
@@ -129,8 +211,18 @@ OsEE_bool osEE_cpu_startos(void) {
   size_t            i;
 
   if (vim_initStatus == OSEE_FALSE) {
+    /* ERIKA's initialization need to be executed in supervisor mode too */
+    osEE_cortex_r_switch_to_system_mode();
     osEE_vim_init();
   }
+
+  /* Disable all software interrupts AT reset at least SW0 is enabled and
+     active */
+  osEE_vim_disable_sw_int((OsEE_isr_channel)-1);
+#if (!defined(OSEE_HAS_SYSTEM_TIMER))
+  /* This will reset RTI interrupts */
+  osEE_ti_awr16xx_rti_init();
+#endif /* !OSEE_HAS_SYSTEM_TIMER */
 
   for (i = 0U; i < tdb_size; ++i) {
     /* ISR2 initialization */
@@ -139,69 +231,12 @@ OsEE_bool osEE_cpu_startos(void) {
       OsEE_isr_src_id  const request = p_tdb->hdb.isr2_src;
       OsEE_isr_channel const channel =
         OSEE_ISR2_VIRT_TO_HW_PRIO(p_tdb->ready_prio);
+      OsEE_cortex_r_hnd_type hnd_to_conf;
 
-      DebugP_assert(request < OSEE_CORTEX_R_VIM_CHANNELS);
-      DebugP_assert(channel < OSEE_CORTEX_R_VIM_CHANNELS);
+      hnd_to_conf.cat     = OSEE_ISR_CAT_2;
+      hnd_to_conf.hnd.tid = p_tdb->tid;
 
-      OsEE_cortex_r_hnd_type * const p_hnd =
-        &osEE_cortex_r_int_vectors[channel];
-
-      /* Before initialization disable and clear the channel  & request */
-      osEE_vim_disable_interrupt(channel);
-      osEE_vim_clear_interrupt(channel);
-      if (channel != request) {
-        osEE_vim_disable_interrupt((OsEE_isr_channel)request);
-        osEE_vim_clear_interrupt((OsEE_isr_channel)request);
-      }
-
-      /* Remap previous set ISR1/TRAP on higher priority
-         "request" channel, if possible...  */
-      if ((p_hnd->cat != OSEE_ISR_TRAP) || (p_hnd->hnd.p_hnd_func != NULL)) {
-        /* Swap previous HwiP entry from channel to request */
-        HwiP_DispatchEntry const * p_dispatch_entry =
-          &HwiP_dispatchTable[channel];
-
-        if (channel > request) {
-          /* Map the number to the interrupt handler */
-          osEE_vim_channel_map(p_dispatch_entry->intNum,
-            (OsEE_isr_channel)request);
-
-#if 0
-          HwiP_dispatchTable[request].entry     = p_dispatch_entry->entry;
-          HwiP_dispatchTable[request].arg       = p_dispatch_entry->arg;
-          HwiP_dispatchTable[request].vim_type  = p_dispatch_entry->vim_type;
-          HwiP_dispatchTable[request].intNum    = p_dispatch_entry->intNum;
-#endif  /* 0 */
-
-          HwiP_dispatchTable[request] = *p_dispatch_entry;
-
-          osEE_ti_awr16xx_set_channel_hnd(p_hnd, (OsEE_isr_channel)request);
-          osEE_cortex_r_int_channel[p_dispatch_entry->intNum] =
-            (OsEE_isr_channel)request;
-
-          /* If the previous channel is enabled, enable the new "request"
-             channel */
-          if (osEE_vim_is_enabled_interrupt(channel)) {
-            osEE_vim_enable_interrupt(request, p_dispatch_entry->vim_type);
-          }
-        } else {
-          /* Assert False */
-          DebugP_assert(0);
-        }
-      } else if (channel != request) {
-        /* In any case swap request with channel otherwise, double
-           interrupt mapping. */
-        osEE_vim_channel_map((OsEE_isr_src_id)channel,
-            (OsEE_isr_channel)request);
-      }
-
-      /* Configure and enable the new ISR2 */
-      p_hnd->cat      = OSEE_ISR_CAT_2;
-      p_hnd->hnd.tid  = (TaskType)i;
-
-      osEE_cortex_r_int_channel[request] = channel;
-
-      osEE_vim_channel_map(request, channel);
+      osEE_ti_awr16xx_hnd_req_and_ch(request, channel, &hnd_to_conf);
 
 #if (defined(OSEE_HAS_SYSTEM_TIMER))
       if (p_tdb->task_func == &osEE_cortex_r_system_timer_handler) {
@@ -212,6 +247,28 @@ OsEE_bool osEE_cpu_startos(void) {
       osEE_vim_enable_interrupt(channel, OSEE_VIM_SYS_IRQ);
     }
   }
+#if (defined(OSEE_CORTEX_R_HAS_ISR1_TO_CONF))
+  {
+    MemSize const isr1_num = osEE_isr1_db_instance.isr1_num;
+ 
+    for (i = 0U; i < isr1_num; ++i) {
+      OsEE_isr_src_id  const request =
+        (*osEE_isr1_db_instance.p_isr1_src_array)[i].isr1_src;
+      OsEE_isr_channel const channel = OSEE_CORTEX_R_VIM_CHANNELS -
+        (*osEE_isr1_db_instance.p_isr1_src_array)[i].isr_prio;
+      OsEE_cortex_r_hnd_type hnd_to_conf;
+
+      hnd_to_conf.cat             = OSEE_ISR_CAT_1;
+      hnd_to_conf.hnd.p_hnd_func  =
+        (*osEE_isr1_db_instance.p_isr1_src_array)[i].p_hnd_func;
+
+      osEE_ti_awr16xx_hnd_req_and_ch(request, channel, &hnd_to_conf);
+
+      osEE_vim_enable_interrupt(channel, OSEE_VIM_SYS_IRQ);
+    }
+  }
+#endif /* OSEE_CORTEX_R_HAS_ISR1_TO_CONF */
+
 
   return osEE_std_cpu_startos();
 }
@@ -442,8 +499,11 @@ void osEE_vim_init(void) {
     {
       size_t i;
       /* Initialize the RAM Map Channel->Int Source with reset status, that is
-        Int Source mapped on corresponding channel */
+         Int Source mapped on corresponding channel + Clear stale IRQ status.
+      */
       for (i = 0U; i < OSEE_CORTEX_R_VIM_CHANNELS; ++i) {
+        osEE_vim_disable_interrupt(i);
+        osEE_vim_clear_interrupt(i);
         osEE_cortex_r_int_channel[i] = i;
       }
     }
@@ -842,10 +902,6 @@ void osEE_cortex_r_irq_hnd(void) {
       if (p_hnd->cat == OSEE_ISR_CAT_2) {
         TaskType const tid = p_hnd->hnd.tid;
         if (tid != INVALID_TASK) {
-#if (defined(OSEE_HAS_STACK_MONITORING))
-          osEE_stack_monitoring(osEE_get_curr_core());
-#endif /* OSEE_HAS_STACK_MONITORING */
-        {
           /* Implement here osEE_activate_isr2 since I need to save REQENASET */
           CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
             p_kdb = osEE_get_kernel();
@@ -853,6 +909,9 @@ void osEE_cortex_r_irq_hnd(void) {
             p_act_tdb = (*p_kdb->p_tdb_ptr_array)[tid];
           CONSTP2VAR(OsEE_HCB, AUTOMATIC, OS_APPL_DATA)
             p_act_hcb = p_act_tdb->hdb.p_hcb;
+#if (defined(OSEE_HAS_STACK_MONITORING))
+          osEE_stack_monitoring(osEE_get_curr_core());
+#endif /* OSEE_HAS_STACK_MONITORING */
 
           /* Mark the TASK as Activated */
           ++p_act_tdb->p_tcb->current_num_of_act;
@@ -868,19 +927,19 @@ void osEE_cortex_r_irq_hnd(void) {
       } else {
         OsEE_void_cb p_hnd_func = p_hnd->hnd.p_hnd_func;
         if (p_hnd_func != NULL) {
-            if (p_hnd_func == HwiP_dispatch) {
-              HwiP_DispatchEntry * const p_hwi = &HwiP_dispatchTable[channel];
-              if (p_hwi->entry != NULL) {
-                (p_hwi->entry)(p_hwi->arg);
-              }
-            } else {
-              p_hnd_func();
+          if (p_hnd_func == HwiP_dispatch) {
+            HwiP_DispatchEntry * const p_hwi = &HwiP_dispatchTable[channel];
+            if (p_hwi->entry != NULL) {
+              (p_hwi->entry)(p_hwi->arg);
             }
-            /* Clear the channel */
-            osEE_vim_clear_interrupt(channel);
+          } else {
+            p_hnd_func();
           }
         }
+        /* Clear the channel */
+        osEE_vim_clear_interrupt(channel);
       }
+
       /* VIM restore REQENASET[0,1,2,3] */
       OSEE_CORTEX_R_VIM_REG(OSEE_CORTEX_R_VIM_REQMASKSET0) = prev_REQMASKSET0;
       OSEE_CORTEX_R_VIM_REG(OSEE_CORTEX_R_VIM_REQMASKSET1) = prev_REQMASKSET1;
@@ -896,6 +955,143 @@ void osEE_cortex_r_irq_hnd(void) {
     }
   } else {
     /* Phantom Interrupt */;
+  }
+}
+
+/** @fn void osEE_vim_trigger_soft_int(OsEE_isr_channel channel,
+*         uint8 sw_int_data)
+*   @brief Trigger Software interrupt for given channel
+*
+*   @param[in] channel: vim interrupt channel
+*   @param[in] sw_int_data: system software interrupt data
+*
+*   This function will trigger software interrupt with assigning interrupt
+*   data to it.
+*
+*/
+
+#define TI_RCM_REG_P   ((RCMRegs*)SOC_XWR16XX_MSS_RCM_BASE_ADDRESS)
+
+void osEE_vim_trigger_soft_int(OsEE_isr_channel channel, uint8_t sw_int_data)
+{
+  OsEE_reg regVal;
+
+  /* I cannot use osEE_reg_write_read_back since the interrupt can happen
+     before I actually I read back */
+  switch (channel) {
+    case SOC_XWR16XX_MSS_SYS_SW0_INT:
+      regVal = TI_RCM_REG_P->SWIRQA;
+      regVal |= (0xADU << 8U) | (OsEE_reg)sw_int_data;
+      TI_RCM_REG_P->SWIRQA = regVal;
+      regVal = TI_RCM_REG_P->SWIRQA;
+    break;
+    case SOC_XWR16XX_MSS_SYS_SW2_INT:
+      regVal = TI_RCM_REG_P->SWIRQB;
+      regVal |= (0xADU << 8U) | (OsEE_reg)sw_int_data;
+      TI_RCM_REG_P->SWIRQB = regVal;
+      regVal = TI_RCM_REG_P->SWIRQB;
+    break;
+    case SOC_XWR16XX_MSS_SYS_SW4_INT:
+      regVal = TI_RCM_REG_P->SWIRQC;
+      regVal |= (0xADU << 8U) | (OsEE_reg)sw_int_data;
+      TI_RCM_REG_P->SWIRQC = regVal;
+      regVal = TI_RCM_REG_P->SWIRQC;
+    break;
+    case SOC_XWR16XX_MSS_SYS_SW1_INT:
+      regVal = TI_RCM_REG_P->SWIRQA;
+      regVal |= (0xADU << 24U) | (OsEE_reg)sw_int_data;
+      TI_RCM_REG_P->SWIRQA = regVal;
+      regVal = TI_RCM_REG_P->SWIRQA;
+    break;
+    case SOC_XWR16XX_MSS_SYS_SW3_INT:
+      regVal = TI_RCM_REG_P->SWIRQB;
+      regVal |= (0xADU << 24U) | (OsEE_reg)sw_int_data;
+      TI_RCM_REG_P->SWIRQB = regVal;
+      regVal = TI_RCM_REG_P->SWIRQB;
+    break;
+    case SOC_XWR16XX_MSS_SYS_SW5_INT:
+      regVal = TI_RCM_REG_P->SWIRQC;
+      regVal |= (0xADU << 24U) | (OsEE_reg)sw_int_data;
+      TI_RCM_REG_P->SWIRQC = regVal;
+      regVal = TI_RCM_REG_P->SWIRQC;
+    break;
+    default:
+    break;
+  }
+}
+
+
+/** @fn uint8 osEE_vim_get_sw_int_data(OsEE_isr_channel channel)
+*   @brief Get Software interrupt data for given SW Vim Channel
+*
+*    @param[in] channel: vim interrupt channel
+*   This function will ret Software interrupt data for given SW Vim Channel
+*
+*/
+uint8_t osEE_vim_get_sw_int_data(OsEE_isr_channel channel) {
+  uint8_t sw_int_data;
+
+  switch (channel) {
+    case SOC_XWR16XX_MSS_SYS_SW0_INT:
+      sw_int_data = (uint8_t)OSEE_B_GET(TI_RCM_REG_P->SWIRQA, 8U, 0U);
+    break;
+    case SOC_XWR16XX_MSS_SYS_SW2_INT:
+      sw_int_data = (uint8_t)OSEE_B_GET(TI_RCM_REG_P->SWIRQB, 8U, 0U);
+    break;
+    case SOC_XWR16XX_MSS_SYS_SW4_INT:
+      sw_int_data = (uint8_t)OSEE_B_GET(TI_RCM_REG_P->SWIRQC,8U, 0U);
+    break;
+    case SOC_XWR16XX_MSS_SYS_SW1_INT:
+      sw_int_data = (uint8_t)OSEE_B_GET(TI_RCM_REG_P->SWIRQA, 8U, 0U);
+    break;
+    case SOC_XWR16XX_MSS_SYS_SW3_INT:
+      sw_int_data = (uint8_t)(OSEE_B_GET(TI_RCM_REG_P->SWIRQB, 8U, 16U) >> 16U);
+    break;
+    case SOC_XWR16XX_MSS_SYS_SW5_INT:
+      sw_int_data = (uint8_t)(OSEE_B_GET(TI_RCM_REG_P->SWIRQC, 8U, 16U) >> 16);
+    break;
+    default:
+      sw_int_data = 0U;
+    break;
+  }
+
+  return sw_int_data;
+}
+
+/** @fn void osEE_vim_disable_sw_int(OsEE_isr_channel channel)
+*   @brief Mask Software interrupt for given channel
+*
+*   @param[in] channel: vim interrupt channel
+*   This function will mask Software interrupt and its data value for given
+*   channel
+*
+*/
+void osEE_vim_disable_sw_int(OsEE_isr_channel channel) {
+  switch (channel) {
+    case SOC_XWR16XX_MSS_SYS_SW0_INT:
+      TI_RCM_REG_P->SWIRQA &= 0xFFFF0000U;
+    break;
+    case SOC_XWR16XX_MSS_SYS_SW2_INT:
+      TI_RCM_REG_P->SWIRQB &= 0xFFFF0000U;
+    break;
+    case SOC_XWR16XX_MSS_SYS_SW4_INT:
+      TI_RCM_REG_P->SWIRQC &= 0xFFFF0000U;
+    break;
+    case SOC_XWR16XX_MSS_SYS_SW1_INT:
+      TI_RCM_REG_P->SWIRQA &= 0x0000FFFFU;
+    break;
+    case SOC_XWR16XX_MSS_SYS_SW3_INT:
+      TI_RCM_REG_P->SWIRQB &= 0x0000FFFFU;
+    break;
+    case SOC_XWR16XX_MSS_SYS_SW5_INT:
+      TI_RCM_REG_P->SWIRQC &= 0x0000FFFFU;
+    break;
+    default:
+      /* Disable All Software interrupts */
+      TI_RCM_REG_P->SWIRQA = 0x0U;
+      TI_RCM_REG_P->SWIRQB = 0x0U;
+      TI_RCM_REG_P->SWIRQC = 0x0U;
+    break;
   }
 }
 

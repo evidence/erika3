@@ -56,6 +56,7 @@ endif # OSEE_TI_CGT_ARM
 
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/cortex-r/ti_awr16xx/ee_ti_awr16xx_internal_types.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/cortex-r/ti_awr16xx/ee_mmwave_osal_vim.h
+OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/pkg/arch/cortex-r/ti_awr16xx/ee_ti_awr16xx_rti.h
 
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/cortex-r/ti_awr16xx/ee_cortex_r_vectors.S
 OS_EE_PULL_SRC_FILES += $(ERIKA_FILES)/pkg/arch/cortex-r/ti_awr16xx/ee_cortex_r_ctx.S

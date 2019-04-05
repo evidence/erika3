@@ -61,41 +61,45 @@ ERIKALIB = $(ERIKALIB_NAME).a
 TARGET_NAME ?= erika3app
 
 # TI_ARM_C_DIR variable
-ifneq (${TI_ARM_C_DIR},)
+ifneq ($(TI_ARM_C_DIR),)
 #Assure the existence of the trailing slash eventually remove it with realpath
 #and adding it back
-TI_ARM_C_DIR := $(call ti_path, $(realpath ${TI_ARM_C_DIR}))
+TI_ARM_C_DIR_LOC := $(call ti_path, $(realpath $(TI_ARM_C_DIR)))
 endif # TI_ARM_C_DIR
 
 # TI_MMWAVE_SDK_PATH
-ifneq (${TI_MMWAVE_SDK_PATH},)
+ifneq ($(TI_MMWAVE_SDK_PATH),)
 #Assure the existence of the trailing slash eventually remove it with realpath
 #and adding it back
-TI_MMWAVE_SDK_PATH := $(call ti_path, $(realpath ${TI_MMWAVE_SDK_PATH}))
+TI_MMWAVE_SDK_PATH_LOC := $(call ti_path, $(realpath $(TI_MMWAVE_SDK_PATH)))
+else
+$(error TI_MMWAVE_SDK_PATH must be provided)
 endif # TI_MMWAVE_SDK_PATH
 
 # ALLINCPATH is a colon separated list of directories for source file searching
 # --include_path= adds directories to the source file search path
 # System libraries include files
-SYSTEM_PATH += "$(TI_MMWAVE_SDK_PATH)"
-SYSTEM_PATH += "$(TI_MMWAVE_SDK_PATH)/packages"
-SYSTEM_PATH += "$(TI_ARM_C_DIR)/include"
+SYSTEM_PATH += "$(TI_MMWAVE_SDK_PATH_LOC)"
+SYSTEM_PATH += "$(TI_MMWAVE_SDK_PATH_LOC)/packages"
+ifneq ($(TI_ARM_C_DIR),)
+SYSTEM_PATH += "$(TI_ARM_C_DIR_LOC)/include"
+endif
 
 ALLINCPATH += $(foreach d, $(SYSTEM_PATH),$(addprefix --include_path=,$d))
 ALLINCPATH += $(foreach d,$(INCLUDE_PATH),$(addprefix --include_path=,"$(call ti_path, $d)"))
 
-EE_OBJDUMP ?= $(TI_ARM_C_DIR)/bin/armdis
+EE_OBJDUMP ?= $(TI_ARM_C_DIR_LOC)/bin/armdis
 
 # GNUPro compilers
-EE_LINK ?= $(TI_ARM_C_DIR)/bin/armcl
+EE_LINK ?= $(TI_ARM_C_DIR_LOC)/bin/armcl
 
-OS_EE_AS ?= $(TI_ARM_C_DIR)/bin/armcl
+OS_EE_AS ?= $(TI_ARM_C_DIR_LOC)/bin/armcl
 
-EE_CC ?= $(TI_ARM_C_DIR)/bin/armcl
+EE_CC ?= $(TI_ARM_C_DIR_LOC)/bin/armcl
 
-EE_CXX ?= $(TI_ARM_C_DIR)/bin/armcl
+EE_CXX ?= $(TI_ARM_C_DIR_LOC)/bin/armcl
 
-OS_EE_AR ?= $(TI_ARM_C_DIR)/bin/armar
+OS_EE_AR ?= $(TI_ARM_C_DIR_LOC)/bin/armar
 
 ## OPT_CC are the options for TI CGT ARM C compiler invocation
 # Useful options:
@@ -195,17 +199,17 @@ else # OS_EE_VERBOSE
 OS_EE_AR_OPT = $(subst v,,$(subst $(OS_EE_SPACE),,ru $(ARFLAGS)))
 endif # OS_EE_VERBOSE
 
-LIB_PATH += "$(TI_ARM_C_DIR)/lib"
-LIB_PATH += "$(TI_MMWAVE_SDK_PATH)/packages/ti/control/mmwavelink/lib"
-LIB_PATH += "$(TI_MMWAVE_SDK_PATH)/packages/ti/drivers/crc/lib"
-LIB_PATH += "$(TI_MMWAVE_SDK_PATH)/packages/ti/drivers/esm/lib"
-LIB_PATH += "$(TI_MMWAVE_SDK_PATH)/packages/ti/drivers/gpio/lib"
-LIB_PATH += "$(TI_MMWAVE_SDK_PATH)/packages/ti/drivers/soc/lib"
-LIB_PATH += "$(TI_MMWAVE_SDK_PATH)/packages/ti/drivers/pinmux/lib"
-LIB_PATH += "$(TI_MMWAVE_SDK_PATH)/packages/ti/drivers/mailbox/lib"
-LIB_PATH += "$(TI_MMWAVE_SDK_PATH)/packages/ti/drivers/dma/lib"
-LIB_PATH += "$(TI_MMWAVE_SDK_PATH)/packages/ti/drivers/uart/lib"
-LIB_PATH += "$(TI_MMWAVE_SDK_PATH)/packages/ti/utils/cli/lib"
+LIB_PATH += "$(TI_ARM_C_DIR_LOC)/lib"
+LIB_PATH += "$(TI_MMWAVE_SDK_PATH_LOC)/packages/ti/control/mmwavelink/lib"
+LIB_PATH += "$(TI_MMWAVE_SDK_PATH_LOC)/packages/ti/drivers/crc/lib"
+LIB_PATH += "$(TI_MMWAVE_SDK_PATH_LOC)/packages/ti/drivers/esm/lib"
+LIB_PATH += "$(TI_MMWAVE_SDK_PATH_LOC)/packages/ti/drivers/gpio/lib"
+LIB_PATH += "$(TI_MMWAVE_SDK_PATH_LOC)/packages/ti/drivers/soc/lib"
+LIB_PATH += "$(TI_MMWAVE_SDK_PATH_LOC)/packages/ti/drivers/pinmux/lib"
+LIB_PATH += "$(TI_MMWAVE_SDK_PATH_LOC)/packages/ti/drivers/mailbox/lib"
+LIB_PATH += "$(TI_MMWAVE_SDK_PATH_LOC)/packages/ti/drivers/dma/lib"
+LIB_PATH += "$(TI_MMWAVE_SDK_PATH_LOC)/packages/ti/drivers/uart/lib"
+LIB_PATH += "$(TI_MMWAVE_SDK_PATH_LOC)/packages/ti/utils/cli/lib"
 LIB_PATH += "$(call ti_path, $(OS_EE_LIB_BASE_DIR))"
 
 LIB_PATH_OPT := $(foreach d, $(LIB_PATH),$(addprefix -i,$d))

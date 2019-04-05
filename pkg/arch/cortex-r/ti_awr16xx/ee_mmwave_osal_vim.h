@@ -203,10 +203,11 @@ extern void osEE_vim_clear_interrupt(OsEE_isr_channel channel);
 extern void osEE_vim_wakeup_config(OsEE_isr_channel channel);
 extern void osEE_vim_phantom_interrupt(void);
 
+void osEE_vim_trigger_soft_int(OsEE_isr_channel channel, uint8_t sw_int_data);
+uint8_t osEE_vim_get_sw_int_data(OsEE_isr_channel channel);
+void osEE_vim_disable_sw_int(OsEE_isr_channel channel);
+
 #if 0
-void vimTriggerSoftInt(uint32_t channel, uint8_t swIntData);
-uint8_t vimGetSwIntData(uint32_t channel);
-void vimDisableSoftInt(RCMRegs *rcmBaseAddr,uint32_t channel);
 void vimGetConfigValue(vim_config_reg_t *config_reg, uint8_t type);
 void vimParityErrorHandler(void);
 void vimWakeupConfigClr(uint32_t channel);

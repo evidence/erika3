@@ -96,7 +96,7 @@
 #endif /* !ISR */
 
 #if (!defined(ISR1))
-#define ISR1 void f(void)
+#define ISR1(f) void f(void)
 #endif /* !ISR1 */
 
 #if (!defined(ISR2))

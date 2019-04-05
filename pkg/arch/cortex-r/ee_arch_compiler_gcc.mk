@@ -53,7 +53,15 @@
 ##
 
 # BINDIR variable, (if not empty), must end with separator
-BINDIR ?=
+ifneq ($(BINDIR),)
+#Assure the existence of the trailing slash eventually remove it with realpath
+#and adding it back
+ifeq ($(call iseeopt, OS_EE_RTD_BUILD_ENV_CYGWIN), yes)
+BINDIRLOC := $(realpath $(shell cygpath `cygpath -ms '$(BINDIR)'`))/
+else
+BINDIRLOC := $(realpath $(CCTCBIN))/
+endif # OS_EE_RTD_BUILD_ENV_CYGWIN
+endif # CCTCBIN
 
 # ALLINCPATH is a colon separated list of directories for source file searching
 # -I = adds directories to the source file search path (for both gcc and gas)
@@ -64,24 +72,24 @@ ALLINCPATH += $(foreach d,$(INCLUDE_PATH),$(addprefix -I,$(call native_path,$d))
 
 CORTEX_R_GCCPREFIX ?= arm-none-eabi-
 
-EE_OBJDUMP ?= $(BINDIR)$(CORTEX_R_GCCPREFIX)objdump
+EE_OBJDUMP ?= $(BINDIRLOC)$(CORTEX_R_GCCPREFIX)objdump
 
 # GNUPro compilers
-EE_LINK ?= $(BINDIR)$(CORTEX_R_GCCPREFIX)ld
+EE_LINK ?= $(BINDIRLOC)$(CORTEX_R_GCCPREFIX)ld
 
-OS_EE_AS ?= $(BINDIR)$(CORTEX_R_GCCPREFIX)gcc
+OS_EE_AS ?= $(BINDIRLOC)$(CORTEX_R_GCCPREFIX)gcc
 
-EE_CC ?= $(BINDIR)$(CORTEX_R_GCCPREFIX)gcc
+EE_CC ?= $(BINDIRLOC)$(CORTEX_R_GCCPREFIX)gcc
 
-EE_CXX ?= $(BINDIR)$(CORTEX_R_GCCPREFIX)g++
+EE_CXX ?= $(BINDIRLOC)$(CORTEX_R_GCCPREFIX)g++
 
-OS_EE_AR ?= $(BINDIR)$(CORTEX_R_GCCPREFIX)ar
+OS_EE_AR ?= $(BINDIRLOC)$(CORTEX_R_GCCPREFIX)ar
 
-EE_NM ?= $(BINDIR)$(CORTEX_R_GCCPREFIX)nm
+EE_NM ?= $(BINDIRLOC)$(CORTEX_R_GCCPREFIX)nm
 
-EE_OBJCOPY ?= $(BINDIR)$(CORTEX_R_GCCPREFIX)objcopy
+EE_OBJCOPY ?= $(BINDIRLOC)$(CORTEX_R_GCCPREFIX)objcopy
 
-EE_SIZE ?= $(BINDIR)$(CORTEX_R_GCCPREFIX)size
+EE_SIZE ?= $(BINDIRLOC)$(CORTEX_R_GCCPREFIX)size
 
 ## OPT_CC are the options for CORTEX R C compiler invocation
 
