@@ -58,7 +58,7 @@
 
 #if (!defined(OSEE_TC_2G))
 #define GPSR_OFFSET     (0x1000U)
-#define GPSR_MAX_CH     (2U)
+#define GPSR_MAX_CH     (3U)
 #else
 #define GPSR_OFFSET     (0x0990U)
 #define GPSR_MAX_CH     (7U)

@@ -53,7 +53,15 @@
 ##
 
 # BINDIR variable, (if not empty), must end with separator
-BINDIR ?=
+ifneq ($(BINDIR),)
+#Assure the existence of the trailing slash eventually remove it with realpath
+#and adding it back
+ifeq ($(call iseeopt, OS_EE_RTD_BUILD_ENV_CYGWIN), yes)
+BINDIRLOC := $(realpath $(shell cygpath `cygpath -ms '$(BINDIR)'`))/
+else
+BINDIRLOC := $(realpath $(BINDIR))/
+endif # OS_EE_RTD_BUILD_ENV_CYGWIN
+endif # CCTCBIN
 
 # ALLINCPATH is a colon separated list of directories for source file searching
 # -I = adds directories to the source file search path (for both gcc and gas)
@@ -64,24 +72,24 @@ ALLINCPATH += $(foreach d,$(INCLUDE_PATH),$(addprefix -I,$d))
 
 TRICORE_GCCPREFIX ?= tricore-
 
-EE_OBJDUMP ?= $(BINDIR)$(TRICORE_GCCPREFIX)objdump
+EE_OBJDUMP ?= $(BINDIRLOC)$(TRICORE_GCCPREFIX)objdump
 
 # GNUPro compilers
-EE_LINK ?= $(BINDIR)$(TRICORE_GCCPREFIX)gcc
+EE_LINK ?= $(BINDIRLOC)$(TRICORE_GCCPREFIX)gcc
 
-OS_EE_AS ?= $(BINDIR)$(TRICORE_GCCPREFIX)gcc
+OS_EE_AS ?= $(BINDIRLOC)$(TRICORE_GCCPREFIX)gcc
 
-EE_CC ?= $(BINDIR)$(TRICORE_GCCPREFIX)gcc
+EE_CC ?= $(BINDIRLOC)$(TRICORE_GCCPREFIX)gcc
 
-EE_CXX ?= $(BINDIR)$(TRICORE_GCCPREFIX)g++
+EE_CXX ?= $(BINDIRLOC)$(TRICORE_GCCPREFIX)g++
 
-OS_EE_AR ?= $(BINDIR)$(TRICORE_GCCPREFIX)ar
+OS_EE_AR ?= $(BINDIRLOC)$(TRICORE_GCCPREFIX)ar
 
-EE_NM ?= $(BINDIR)$(TRICORE_GCCPREFIX)nm
+EE_NM ?= $(BINDIRLOC)$(TRICORE_GCCPREFIX)nm
 
-EE_OBJCOPY ?= $(BINDIR)$(TRICORE_GCCPREFIX)objcopy
+EE_OBJCOPY ?= $(BINDIRLOC)$(TRICORE_GCCPREFIX)objcopy
 
-EE_SIZE ?= $(BINDIR)$(TRICORE_GCCPREFIX)size
+EE_SIZE ?= $(BINDIRLOC)$(TRICORE_GCCPREFIX)size
 
 ## OPT_CC are the options for TriCore C compiler invocation
 #-ffunction-sections -fdata-sections

@@ -164,7 +164,7 @@ extern void osEE_hal_start_core(CoreIdType core_id);
 
 #if (!defined(OSEE_TC_2G))
 #define OSEE_TC_GPSR_OFFSET     (0x1000U)
-#define OSEE_TC_GPSR_MAX_CH     (2U)
+#define OSEE_TC_GPSR_MAX_CH     (3U)
 #else
 #define OSEE_TC_GPSR_OFFSET     (0x0990U)
 #define OSEE_TC_GPSR_MAX_CH     (7U)

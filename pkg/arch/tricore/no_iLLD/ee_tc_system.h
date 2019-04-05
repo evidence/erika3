@@ -64,7 +64,7 @@ extern "C" {
                             Frequencies References
  ******************************************************************************/
 /** PLL Frequencies Bound Defines (Min) */
-#define OSEE_TC_CLOCK_MIN           20000000U
+#define OSEE_TC_CLOCK_MIN          20000000U
 #if (defined(OSEE_TC_TC29X))
 /** PLL Frequencies Bound Defines (Max) */
 #define OSEE_TC_CLOCK_MAX          300000000U /* 300Mhz for TC29x MCU */

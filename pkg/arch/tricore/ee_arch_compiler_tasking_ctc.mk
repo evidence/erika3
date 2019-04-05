@@ -53,7 +53,15 @@
 ##
 
 # CCTCBIN variable, (if not empty), must end with separator
-CCTCBIN ?=
+ifneq ($(CCTCBIN),)
+#Assure the existence of the trailing slash eventually remove it with realpath
+#and adding it back
+ifeq ($(call iseeopt, OS_EE_RTD_BUILD_ENV_CYGWIN), yes)
+CCTCBINLOC := $(realpath $(shell cygpath `cygpath -ms '$(CCTCBIN)'`))/
+else
+CCTCBINLOC := $(realpath $(CCTCBIN))/
+endif # OS_EE_RTD_BUILD_ENV_CYGWIN
+endif # CCTCBIN
 
 # ALLINCPATH is a colon separated list of directories for source file searching
 # -I = adds directories to the source file search path (for both gcc and gas)
@@ -62,19 +70,19 @@ CCTCBIN ?=
 # from the config files generated from eclipse...
 ALLINCPATH += $(foreach d,$(INCLUDE_PATH),$(addprefix -I,$d))
 
-EE_OBJDUMP ?= $(CCTCBIN)hldumptc
+EE_OBJDUMP ?= $(CCTCBINLOC)hldumptc
 
-EE_LINK ?= $(CCTCBIN)cctc
+EE_LINK ?= $(CCTCBINLOC)cctc
 
-OS_EE_AS ?= $(CCTCBIN)cctc
+OS_EE_AS ?= $(CCTCBINLOC)cctc
 
-EE_CC ?= $(CCTCBIN)cctc
+EE_CC ?= $(CCTCBINLOC)cctc
 
-EE_CXX ?= $(CCTCBIN)cctc
+EE_CXX ?= $(CCTCBINLOC)cctc
 
-OS_EE_AR ?= $(CCTCBIN)artc
+OS_EE_AR ?= $(CCTCBINLOC)artc
 
-EE_SIZE ?= $(CCTCBIN)elfsize
+EE_SIZE ?= $(CCTCBINLOC)elfsize
 
 ## OPT_CC are the options for TASKING CTC TriCore C compiler invocation
 # -t keep temporary files
