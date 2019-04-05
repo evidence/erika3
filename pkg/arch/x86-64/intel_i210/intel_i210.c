@@ -508,8 +508,14 @@ int eth_discover_devices(void)
 				pci_read_config(bdf, PCI_CFG_DEVICE_ID, 2),
 				bdf >> 8, (bdf >> 3) & 0x1f, bdf & 0x3);
 
+#if !(defined(OSEE_PLATFORM_JAILHOUSE))
 		sprintf(devs[devs_nb].name, "%d", devs_nb);
-
+#else
+		/* Jailhouse has no sprintf in the inmate library */
+#define ASCII_DIGIT_START (0x30)
+		devs[devs_nb].name[0] = (unsigned char)(devs_nb + ASCII_DIGIT_START);
+		devs[devs_nb].name[1] = '\0';
+#endif
 		ctrl = pci_read_config(bdf, 0x4, 2);
 		OSEE_PRINT("PCI Control register = %x\n", ctrl);
 		ctrl |= 6; // Enable BME and other stuff

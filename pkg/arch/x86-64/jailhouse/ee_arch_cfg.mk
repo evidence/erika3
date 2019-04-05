@@ -66,4 +66,8 @@ ifeq ($(call iseeopt, OSEE_HAS_SYSTEM_TIMER), yes)
 EE_SRCS += ee_x86_64_system_timer.c
 endif # OSEE_DYNAMIC_API
 
+ifeq ($(call iseeopt, OSEE_PLATFORM_X86_64_ENABLE_INTEL_I210_DRIVER), yes)
+EE_SRCS += intel_i210.c
+endif #OSEE_PLATFORM_X86_64_ENABLE_INTEL_I210_DRIVER
+
 endif	# OSEE_ARCH_X86_64

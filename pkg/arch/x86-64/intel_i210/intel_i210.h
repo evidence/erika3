@@ -51,6 +51,8 @@
 
 #include <ee.h>
 #include <ee_hal.h>
+
+#if !(defined(OSEE_PLATFORM_JAILHOUSE))
 #include <ee_pci.h>
 #include <ee_x86_64_memory_mgmt.h>
 
@@ -73,8 +75,6 @@
 #define  map_range(x, y, z)	osEE_x86_64_map_range((OsEE_paddr)(x), y, z)
 
 #define pci_msix_set_vector 	osEE_pci_msix_set_vector
-
-#define MAX_DEVICE_NAME		10
 
 typedef uint8_t u8;
 typedef uint16_t u16;
@@ -101,7 +101,9 @@ static inline void delay_us(uint64_t max_cycles)
 		cpu_relax();
 		//asm volatile("nop":::"memory");
 }
+#endif
 
+#define MAX_DEVICE_NAME                10
 
 // ============================ Hardware =======================================
 /* Taken using "sudo lspci -nn" */

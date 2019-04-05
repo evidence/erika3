@@ -212,9 +212,12 @@ FUNC(OsEE_bool, OS_CODE) osEE_cpu_startos(void)
 }
 
 #ifdef __x86_64__
-
+/*
+ * First push/Last pop added for 16-byte alignment
+ */
 asm(
 ".macro irq_prologue vector\n\t"
+    "push %rdi\n\t"
     "push %rdi\n\t"
     "mov $vector,%rdi\n\t"
     "jmp irq_common\n"
@@ -232,6 +235,11 @@ asm(
     ".balign 16             \n\t"
 ".endr                      \n"
 
+/*
+ * **Issue TO BE FIXED **
+ * In case of shared stack, osEE_x86_64_isr_wrapper can be
+ * executed with not-aligned stack
+ */
 "irq_common:    \n\t"
     "push %rax  \n\t"
     "push %rcx  \n\t"
@@ -253,6 +261,7 @@ asm(
     "pop %rcx   \n\t"
     "pop %rax   \n\t"
 
+    "pop %rdi   \n\t"
     "pop %rdi   \n\t"
 
     "iretq"

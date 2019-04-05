@@ -66,9 +66,8 @@
 .section .kernel_stack
 .Lstack_bottom:
 .align 0x1000
-.byte 0
 .skip 8 * 1024 # 8 KB
-.byte 0
+.align 32
 .Lstack_top:
 
 # The linker script specifies _start as the entry point to the kernel and the
@@ -182,11 +181,6 @@ startup64:
     movw %ax, %ss
 
 	movq $.Lstack_top, %rsp
-
-    # Prepare frame pointer
-    xor %rbp, %rbp
-    push %rbp
-    mov %rsp,%rbp
 
        # PIC: disable all IRQs
        movb $0xff, %al

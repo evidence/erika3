@@ -124,7 +124,8 @@ osEE_hal_restore_ctx:
   /*  %rdi parameter: OsEE_TDB * p_to_tdb
       %rsi parameter: OsEE_SCB * p_to_scb */
     osEE_hal_restore_ctx_m %rsi
-    jmp osEE_scheduler_task_wrapper_restore
+    callq osEE_scheduler_task_wrapper_restore
+    ret
   .size osEE_hal_restore_ctx, .-osEE_hal_restore_ctx
 
 /*
@@ -142,7 +143,7 @@ osEE_hal_ready2stacked:
       %rsi parameter:  OsEE_SCB * p_to_scb */
 /* SP = p_to_scb->p_tos */
     mov (%rsi), %rsp
-    jmp osEE_scheduler_task_wrapper_run
+    callq osEE_scheduler_task_wrapper_run
   .size osEE_hal_ready2stacked, .-osEE_hal_ready2stacked
 
 /*
@@ -180,6 +181,6 @@ osEE_hal_terminate_ctx:
 /* Unwind SP */
     movq  (%rdi), %rsp
 
-    jmp *%rsi
+    callq *%rsi
 /* This is a NORETURN Function */
   .size osEE_hal_terminate_ctx, .-osEE_hal_terminate_ctx
