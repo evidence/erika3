@@ -209,9 +209,9 @@ ifeq ($(call iseeopt, OS_EE_BUILD), yes)
 OPT_LIBS += -l$(EELIB) -L .
 LIBDEP += lib/$(ERIKALIB)
 else	# OS_EE_BUILD
-OPT_LIBS += -L $(call short_native_path,$(abspath $(OS_EE_LIB_BASE_DIR)))
-#OPT_LIBS += --start-group -l$(EELIB) -l:lib.a --end-group
-OPT_LIBS += -l$(EELIB)
+OPT_LIBS := -L $(call short_native_path,$(abspath $(OS_EE_LIB_BASE_DIR))) \
+-Wl,--start-group $(OPT_LIBS) -l$(EELIB) -Wl,--end-group
+# OPT_LIBS += -l$(EELIB)
 LIBDEP += $(OS_EE_LIB_BASE_DIR)/$(ERIKALIB)
 endif	# OS_EE_BUILD
 
