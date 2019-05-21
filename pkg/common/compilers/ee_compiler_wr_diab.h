@@ -97,7 +97,7 @@ extern "C" {
 #endif /* !OSEE_INIT */
 
 /** \brief  Enforce NOT code reordering at compile level. */
-#define OSEE_BARRIER() __scheduling_barrier(void);
+#define OSEE_BARRIER() __scheduling_barrier()
 
 #if (defined(__cplusplus))
 }

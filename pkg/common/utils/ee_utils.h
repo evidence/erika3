@@ -164,7 +164,7 @@ extern "C" {
 
 #if (!defined(OSEE_BIT))
 /* \brief Single bit bitmask generator. */
-#define OSEE_BIT(type, bit)     (((type)1U) << (bit))
+#define OSEE_BIT(type, thebit)     (((type)1U) << (thebit))
 #endif /* !OSEE_BIT */
 
 #if (!defined(OSEE_ONES))

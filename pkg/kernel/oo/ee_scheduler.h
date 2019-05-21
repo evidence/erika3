@@ -135,12 +135,14 @@ FUNC(OsEE_bool, OS_CODE)
   P2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)  p_kdb
 );
 
+#if (defined(OSEE_API_EXTENSION))
 FUNC_P2VAR(OsEE_TDB, OS_APPL_DATA, OS_CODE)
   osEE_scheduler_task_block_current
 (
   P2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)    p_kdb,
   P2VAR(OsEE_SN *,  AUTOMATIC, OS_APPL_DATA)  p_sn_blocked
 );
+#endif /* OSEE_API_EXTENSION */
 
 FUNC(OsEE_bool, OS_CODE)
   osEE_scheduler_task_unblocked

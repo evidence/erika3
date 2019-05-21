@@ -1,4 +1,4 @@
-<img src="doc/erika3.png" width="400">
+<img src="doc/erika3_midresolution.png" width="400">
 
 ----
 

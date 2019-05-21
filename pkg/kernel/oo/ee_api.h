@@ -60,6 +60,6 @@
 #include "ee_oo_api_osek.h"
 #include "ee_oo_api_dynamic.h"
 #include "ee_oo_api_extension.h"
-#include "ee_kernel_types.h"
+#include "ee_scheduler_types.h"
 
 #endif /* OSEE_API_H */

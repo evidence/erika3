@@ -106,8 +106,8 @@ FUNC(OsEE_bool, OS_CODE)
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA) p_curr      = p_ccb->p_curr;
   CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA) p_curr_tcb  = p_curr->p_tcb;
 #if (!defined(OSEE_SINGLECORE))
-  VAR(CoreIdType, AUTOMATIC) curr_core_id;
-#endif
+  CONST(CoreIdType, AUTOMATIC)        curr_core_id = osEE_get_curr_core_id();
+#endif /* !OSEE_SINGLECORE */
 
   /* Touch unused parameters */
   (void)p_kdb;
@@ -115,7 +115,6 @@ FUNC(OsEE_bool, OS_CODE)
 
 #if (!defined(OSEE_SINGLECORE))
   /* Check if this is a remote activation */
-  curr_core_id = osEE_get_curr_core_id();
   if (p_tdb_act->orig_core_id != curr_core_id) {
     CONST(OsEE_bool, AUTOMATIC) rq_head_changed =
       osEE_scheduler_task_insert_rq(p_ccb, p_tdb_act, p_tcb_act);
@@ -164,6 +163,7 @@ FUNC(OsEE_bool, OS_CODE)
   } else {
     /* Actually Insert the activated in READY Queue */
     (void)osEE_scheduler_task_insert_rq(p_ccb, p_tdb_act, p_tcb_act);
+
     osEE_unlock_core(p_cdb);
 
     is_preemption = OSEE_FALSE;
@@ -180,13 +180,16 @@ FUNC(OsEE_bool, OS_CODE)
 )
 {
   VAR(OsEE_bool, AUTOMATIC)   head_changed;
-  CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA) p_tcb_act   = p_tdb_act->p_tcb;
+  CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
+    p_tcb_act     = p_tdb_act->p_tcb;
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
-    p_cdb = osEE_task_get_curr_core(p_tdb_act);
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb       = p_cdb->p_ccb;
+    p_cdb         = osEE_task_get_curr_core(p_tdb_act);
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+    p_ccb         = p_cdb->p_ccb;
 #if (!defined(OSEE_SINGLECORE))
-  VAR(CoreIdType, AUTOMATIC) curr_core_id;
-#endif
+  CONST(CoreIdType, AUTOMATIC)
+    curr_core_id  = osEE_get_curr_core_id();
+#endif /* !OSEE_SINGLECORE */
 
   /* Touch unused parameters */
   (void)p_kdb;
@@ -194,9 +197,11 @@ FUNC(OsEE_bool, OS_CODE)
 
 #if (!defined(OSEE_SINGLECORE))
   /* Check if this is a remote activation */
-  curr_core_id = osEE_get_curr_core_id();
   if (p_tdb_act->orig_core_id != curr_core_id) {
     head_changed = osEE_scheduler_task_insert_rq(p_ccb, p_tdb_act, p_tcb_act);
+
+    osEE_unlock_core(p_cdb);
+
     if (head_changed) {
       /* if RQ Head is changed, signal the remote core, it needs to
          reschedule */
@@ -208,13 +213,14 @@ FUNC(OsEE_bool, OS_CODE)
   {
     /* Actually Insert the activated in READY Queue */
     head_changed  = osEE_scheduler_task_insert_rq(p_ccb, p_tdb_act, p_tcb_act);
-  }
 
-  osEE_unlock_core(p_cdb);
+    osEE_unlock_core(p_cdb);
+  }
 
   return head_changed;
 }
 
+#if (defined(OSEE_API_EXTENSION))
 FUNC_P2VAR(OsEE_TDB, OS_APPL_DATA, OS_CODE)
   osEE_scheduler_task_block_current
 (
@@ -239,6 +245,7 @@ FUNC_P2VAR(OsEE_TDB, OS_APPL_DATA, OS_CODE)
 
   return p_ccb->p_curr;
 }
+#endif /*OSEE_API_EXTENSION */
 
 FUNC(OsEE_bool, OS_CODE)
   osEE_scheduler_task_unblocked

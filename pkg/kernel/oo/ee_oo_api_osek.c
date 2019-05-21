@@ -1301,10 +1301,14 @@ FUNC(StatusType, OS_CODE)
     ev = E_OS_CALLEVEL;
   } else
 #endif /* OSEE_HAS_SERVICE_PROTECTION */
-  if ((os_status == OSEE_KERNEL_STARTED) || (os_status == OSEE_KERNEL_STARTING))
   {
-    osEE_shutdown_os(p_cdb, Error);
-  } else {
+    if ((os_status == OSEE_KERNEL_STARTED) ||
+        (os_status == OSEE_KERNEL_STARTING))
+    {
+      osEE_shutdown_os(p_cdb, Error);
+    }
+    /* This only executes when the if is not taken;
+       see solution s1, bugseng 354 */
     ev = E_OS_STATE;
   }
 
@@ -1942,11 +1946,7 @@ FUNC(StatusType, OS_CODE)
   VAR(StatusType, AUTOMATIC)  ev;
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb       = osEE_get_curr_core();
-#if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
-  CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-#else
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
-#endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
     p_ccb       = p_cdb->p_ccb;
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
     p_curr      = p_ccb->p_curr;
@@ -1999,28 +1999,35 @@ FUNC(StatusType, OS_CODE)
     ev = E_OS_ACCESS;
   } else
 #endif /* OSEE_HAS_CHECKS */
-  /* Check if we have to wait */
-  if ((p_curr_tcb->event_mask & Mask) == 0U) {
-    P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_to;
+  {
     /* Start Critical Section */
     CONST(OsEE_reg, AUTOMATIC) flags = osEE_begin_primitive();
+    osEE_lock_core(p_cdb);
 
-    /* Set the waiting mask */
-    p_curr_tcb->wait_mask = Mask;
+    /* Check if we have to wait */
+    if ((p_curr_tcb->event_mask & Mask) == 0U) {
+      /* Set the waiting mask */
+      p_curr_tcb->wait_mask = Mask;
 
-    p_to = osEE_scheduler_task_block_current(osEE_get_kernel(),
-              &p_curr_tcb->p_own_sn);
+      p_curr_tcb->p_own_sn =
+        osEE_scheduler_core_pop_running(p_cdb, &p_ccb->rq);
 
-    osEE_change_context_from_running(p_curr, p_to);
+      p_curr_tcb->status = OSEE_TASK_WAITING;
 
-    /* Reset the waiting mask */
-    p_curr_tcb->wait_mask = 0U;
+      osEE_unlock_core(p_cdb);
+
+      osEE_change_context_from_running(p_curr, p_ccb->p_curr);
+
+      /* Reset the waiting mask when we exit from the wait condition. */
+      p_curr_tcb->wait_mask = 0U;
+
+      ev = E_OK;
+    } else {
+      osEE_unlock_core(p_cdb);
+      ev = E_OK;
+    }
 
     osEE_end_primitive(flags);
-
-    ev = E_OK;
-  } else {
-    ev = E_OK;
   }
 
 #if (defined(OSEE_HAS_ERRORHOOK))
@@ -2214,6 +2221,7 @@ FUNC(StatusType, OS_CODE)
       ev = E_OS_PARAM_POINTER;
     } else
     {
+      /* N.B. XXX This MUST Be ATOMIC! */
       (*Event) = p_tcb_event->event_mask;
 
       ev = E_OK;
@@ -2288,8 +2296,16 @@ FUNC(StatusType, OS_CODE)
   } else
 #endif /* OSEE_HAS_CHECKS */
   {
-    /* clear the event */
+    /* Clear the event */
+    CONST(OsEE_reg, AUTOMATIC)
+      flags = osEE_begin_primitive();
+    osEE_lock_core(p_cdb);
+    /* XXX: Maybe we need to introduce an HAL for atomic Load-Modify-Store
+            Operations */
     p_curr_tcb->event_mask &= ~Mask;
+
+    osEE_unlock_core(p_cdb);
+    osEE_end_primitive(flags);
 
     ev = E_OK;
   }

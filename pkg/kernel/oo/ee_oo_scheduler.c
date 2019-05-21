@@ -240,7 +240,7 @@ FUNC_P2VAR(OsEE_preempt, OS_APPL_DATA, OS_CODE)
 {
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
   CONSTP2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA)  p_rq_sn  = (*p_rq);
-  P2CONST(OsEE_SN, AUTOMATIC, OS_APPL_DATA)       p_ret_sn = p_ccb->p_stk_sn;
+  P2CONST(OsEE_SN, AUTOMATIC, OS_APPL_DATA)     p_ret_sn = p_ccb->p_stk_sn;
 
   VAR(OsEE_bool, AUTOMATIC)                     is_rq_preemption = OSEE_FALSE;
   P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)      p_ret_tdb;
@@ -411,7 +411,7 @@ FUNC_P2VAR(OsEE_SN, OS_APPL_DATA, OS_CODE)
       p_ccb->p_curr            = p_tdb_stk;
     }
 #if (defined(OSEE_ALLOW_TASK_MIGRATION))
-    else if ( p_curr_stk_sn != NULL ) {
+    else if (p_curr_stk_sn != NULL) {
       /* Restore the STK data structures. After "preemption in termination"
          (i.e. using Preemption Code corrupt the STK queue) */
       p_curr_stk_sn->p_next = p_next_stk_sn;

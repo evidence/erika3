@@ -242,14 +242,17 @@ FUNC(void, OS_CODE)
 #endif /* OSEE_HAS_PRETASKHOOK || OSEE_HAS_CONTEXT */
 
 #if (defined(OSEE_SCHEDULER_GLOBAL))
-  CONSTP2VAR(OsEE_spin_lock, AUTOMATIC, OS_APPL_DATA)
-    p_lock_to_be_released = p_ccb->p_lock_to_be_released;
+  {
+    CONSTP2VAR(OsEE_spin_lock, AUTOMATIC, OS_APPL_DATA)
+      p_lock_to_be_released = p_ccb->p_lock_to_be_released;
 
-  osEE_unlock_kernel();
-
-  if (p_lock_to_be_released != NULL) {
-    osEE_hal_spin_unlock(p_lock_to_be_released);
     p_ccb->p_lock_to_be_released = NULL;
+
+    osEE_unlock_kernel();
+
+    if (p_lock_to_be_released != NULL) {
+      osEE_hal_spin_unlock(p_lock_to_be_released);
+    }
   }
 #endif /* OSEE_SCHEDULER_GLOBAL */
 

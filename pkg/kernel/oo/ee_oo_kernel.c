@@ -112,13 +112,15 @@ FUNC_P2VAR(OsEE_SN, OS_APPL_DATA, OS_CODE)
 (
   P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)    p_tdb_waking_up,
   VAR(EventMaskType, AUTOMATIC)               Mask,
-  P2VAR(StatusType, AUTOMATIC, OS_APPL_DATA)  p_ev  
+  P2VAR(StatusType, AUTOMATIC, OS_APPL_DATA)  p_ev
 )
 {
+  /* Initialize the return value to NULL to handle failed error checks. */
   P2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA)
     p_own_sn        = NULL;
   CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
     p_tcb_waking_up = p_tdb_waking_up->p_tcb;
+
 #if (!defined(OSEE_SINGLECORE))
 #if (!defined(OSEE_SCHEDULER_GLOBAL))
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
@@ -145,6 +147,8 @@ FUNC_P2VAR(OsEE_SN, OS_APPL_DATA, OS_CODE)
     if ((p_tcb_waking_up->wait_mask & Mask) != 0U) {
       p_own_sn = p_tcb_waking_up->p_own_sn;
 
+      /* Set p_own_sn of waking up task to NULL so it won't be inserted in
+         RQ more than once. */
       if (p_own_sn != NULL) {
         p_tcb_waking_up->p_own_sn = NULL;
       }
@@ -195,7 +199,9 @@ FUNC(void, OS_CODE)
     CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
       p_act_tdb = (*p_kdb->p_tdb_ptr_array)[isr2_id];
 
-    /* Mark the TASK as Activated */
+    /* Mark the TASK as Activated (I don't need to protect this increment
+       since ISRs cannot be activated by another core (exception done for
+       IPI, that have to be handled in a special way in any case). */
     ++p_act_tdb->p_tcb->current_num_of_act;
 
     osEE_scheduler_task_set_running(p_kdb, p_act_tdb, NULL);

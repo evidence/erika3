@@ -80,7 +80,7 @@ include $(OS_EE_MK_BASE_DIR)/ee_verbose.mk
 # application. Symbols specified in OS_EE_OPT are implicitly defined when
 # compiling the application using the -D compiler option
 
-# The simbol OS_EE_BUILD in OS_EE_OPT is used to check the OS against the application.
+# The symbol OS_EE_BUILD in OS_EE_OPT is used to check the OS against the application.
 ifeq ($(call iseeopt,OS_EE_BUILD), yes)
 
 #include only if one library configuration file exists

@@ -143,6 +143,7 @@ FUNC(OsEE_bool, OS_CODE)
   return head_changed;
 }
 
+#if (defined(OSEE_API_EXTENSION))
 FUNC_P2VAR(OsEE_TDB, OS_APPL_DATA, OS_CODE)
   osEE_scheduler_task_block_current
 (
@@ -164,6 +165,7 @@ FUNC_P2VAR(OsEE_TDB, OS_APPL_DATA, OS_CODE)
   /* Kernel Unlocking Postponed */
   return p_ccb->p_curr;
 }
+#endif /* OSEE_API_EXTENSION */
 
 FUNC(OsEE_bool, OS_CODE)
   osEE_scheduler_task_unblocked

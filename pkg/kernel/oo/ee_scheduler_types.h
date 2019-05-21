@@ -74,9 +74,9 @@ struct OsEE_TDB_tag;
  */
 typedef struct OsEE_SN_tag {
   /** next pointer for the list of scheduler nodes */
-  P2VAR(struct OsEE_SN_tag, TYPEDEF, OS_APPL_DATA)  p_next;
+  P2VAR(struct OsEE_SN_tag, TYPEDEF, OS_APPL_DATA)              p_next;
   /** pointer to the task TDB in this scheduler node */
-  P2VAR(struct OsEE_TDB_tag OSEE_CONST, TYPEDEF, OS_APPL_DATA) p_tdb;
+  P2VAR(struct OsEE_TDB_tag OSEE_CONST, TYPEDEF, OS_APPL_DATA)  p_tdb;
 } OsEE_SN;
 
 /**
@@ -145,9 +145,9 @@ LOCAL_INLINE FUNC(void, OS_CODE)
 FUNC(OsEE_bool, OS_CODE)
   osEE_sn_priority_insert
 (
-  P2VAR(OsEE_SN *, AUTOMATIC, OS_APPL_DATA) pp_first,
-  P2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA)   p_sn_new,
-  CONST(OsEE_bool, AUTOMATIC)               as_ready
+  P2VAR(OsEE_SN * , AUTOMATIC,  OS_APPL_DATA) pp_first,
+  P2VAR(OsEE_SN   , AUTOMATIC,  OS_APPL_DATA) p_sn_new,
+  CONST(OsEE_bool , AUTOMATIC)                as_ready
 );
 
 /*==============================================================================
@@ -213,6 +213,23 @@ typedef struct {
 typedef OsEE_SN * OsEE_RQ;
 #endif /* RQ Data Structures */
 
+#if (defined(OSEE_API_EXTENSION))
+/** Semaphore Data structure. A counter, a blocked queue, and a spinlock in 
+  * case of multicores. */
+typedef struct OsEE_sem_tag {
+#if (!defined(OSEE_SINGLECORE))
+  /** the semaphore has a spinlock to be used in case of multicore systems */
+  VAR(OsEE_spin_lock, TYPEDEF)          lock;
+#endif /* !OSEE_SINGLECORE */
+  /** This is the semaphore blocked queue */
+  P2VAR(OsEE_SN, TYPEDEF, OS_APPL_DATA) blocked_queue;
+  /** This is the semaphore counter */
+  VAR(CountType, TYPEDEF)               count;
+} OsEE_sem;
+
+/** A semaphore data structure with a OSEK/VDX naming convention flavour */
+typedef struct OsEE_sem_tag SemType;
+#endif /* OSEE_API_EXTENSION */
 
 #if (defined(__cplusplus))
 }

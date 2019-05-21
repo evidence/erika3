@@ -100,7 +100,11 @@ extern "C" {
 #endif /* OSEE_NO_INLINE  */
 
 /** Always Inline functions */
+#if (!defined(__cplusplus))
 #define OSEE_ALWAYS_INLINE      __attribute__((always_inline))
+#else
+#define OSEE_ALWAYS_INLINE
+#endif /* !__cplusplus */
 /** Never Inline functions */
 #define OSEE_NEVER_INLINE       __attribute__((noinline))
 /** Function does not return */

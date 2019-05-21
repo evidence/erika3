@@ -92,32 +92,22 @@ define check_and_set_cygwin_compiler_path
 ifndef $(1)
 
 ifeq ($$(strip $(2)),)
-# usually this happens if RT-Druid was not able to find the default value.
-# Even if is deprecated, for some cases it is possible to search the compiler
-# using the PATH.
-
-# list here all special cases (es. a b c)
-ifneq (,$$(findstring $$(strip $(1)),PPC_DIAB_BASEDIR))
-$$(warning The environment variable $(1) is unset.)
-$$(warning The compiler will be searched using the PATH)
+$$(error Please set a value into $(1) variable before run the makefile)
 else
-$$(error Please set the compiler path into $(1) variable before run the makefile)
+CHECK_PATH := $$(shell test -d "$(2)" 2>/dev/null && echo "0")
+ifneq ($$(CHECK_PATH),0)
+$$(error Provided path '$(2)' not found.)
 endif
-else
-CHECK_COMPILER_PATH := $$(shell test -d "$(2)" 2>/dev/null && echo "0")
-ifneq ($$(CHECK_COMPILER_PATH),0)
-$$(error Compiler not found. Provided path is '$(2)')
-endif
-CHECK_COMPILER_PATH :=
+CHECK_PATH :=
 $(1) := $$(shell cygpath `cygpath -ms '$(2)'`)
 endif
 
 else
-CHECK_COMPILER_PATH := $$(shell test -d "$$($(1))" 2>/dev/null && echo "0")
-ifneq ($$(CHECK_COMPILER_PATH),0)
-$$(error Compiler not found. Provided path is '$$($(1))')
+CHECK_PATH := $$(shell test -d "$$($(1))" 2>/dev/null && echo "0")
+ifneq ($$(CHECK_PATH),0)
+$$(Provided path '$$($(1))' not found.)
 endif
-CHECK_COMPILER_PATH :=
+CHECK_PATH :=
 endif
 
 endef # check_and_set_cygwin_compiler_path
@@ -137,32 +127,22 @@ define check_and_set_linux_compiler_path
 ifndef $(1)
 
 ifeq ($$(strip $(2)),)
-# usually this happens if RT-Druid was not able to find the default value.
-# Even if is deprecated, for some cases it is possible to search the compiler
-# using the PATH.
-
-# list here all special cases (es. a b c)
-ifneq (,$$(findstring $$(strip $(1)),PPC_DIAB_BASEDIR))
-$$(warning The environment variable $(1) is unset.)
-$$(warning The compiler will be searched using the PATH)
+$$(error Please set a value into $(1) variable before run the makefile)
 else
-$$(error Please set the compiler path into $(1) variable before run the makefile)
+CHECK_PATH := $$(shell test -d "$(2)" 2>/dev/null && echo "0")
+ifneq ($$(CHECK_PATH),0)
+$$(error Provided path '$(2)' not found.)
 endif
-else
-CHECK_COMPILER_PATH := $$(shell test -d "$(2)" 2>/dev/null && echo "0")
-ifneq ($$(CHECK_COMPILER_PATH),0)
-$$(error Compiler not found. Provided path is '$(2)')
-endif
-CHECK_COMPILER_PATH :=
+CHECK_PATH :=
 $(1) := $(2)
 endif
 
 else
-CHECK_COMPILER_PATH := $$(shell test -d "$$($(1))" 2>/dev/null && echo "0")
-ifneq ($$(CHECK_COMPILER_PATH),0)
-$$(error Compiler not found. Provided path is '$$($(1))')
+CHECK_PATH := $$(shell test -d "$$($(1))" 2>/dev/null && echo "0")
+ifneq ($$(CHECK_PATH),0)
+$$(Provided path '$$($(1))' not found.)
 endif
-CHECK_COMPILER_PATH :=
+CHECK_PATH :=
 endif
 
 endef # check_and_set_linux_compiler_path

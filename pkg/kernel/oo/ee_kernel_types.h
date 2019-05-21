@@ -64,7 +64,7 @@ extern "C" {
 
 #if (!defined(OSEE_SINGLECORE)) && (defined(OSEE_SCHEDULER_GLOBAL))
 #define OSEE_ALLOW_TASK_MIGRATION
-#endif /* OSEE_SINGLECORE && OSEE_SCHEDULER_GLOBAL */
+#endif /* !OSEE_SINGLECORE && OSEE_SCHEDULER_GLOBAL */
 
 #if (defined(OSEE_HAS_ERRORHOOK)) || (defined(OSEE_HAS_SERVICE_PROTECTION))
 /** This architecture requires the saving of a context in the CCB 
@@ -1018,25 +1018,6 @@ typedef struct {
   VAR(MemSize, TYPEDEF)                             spinlock_array_size;
 #endif /* OSEE_HAS_SPINLOCKS */
 } OSEE_CONST OsEE_KDB;
-
-#if (defined(OSEE_API_EXTENSION))
-/** Semaphore Data structure. A counter, a blocked queue, and a spinlock in 
-  * case of multicores. */
-typedef struct OsEE_sem_tag {
-#if (!defined(OSEE_SINGLECORE))
-  /** the semaphore has a spinlock to be used in case of multicore systems */
-  VAR(OsEE_spin_lock, TYPEDEF)          lock;
-#endif /* !OSEE_SINGLECORE */
-  /** This is the semaphore blocked queue */
-  P2VAR(OsEE_SN, TYPEDEF, OS_APPL_DATA) blocked_queue;
-  /** This is the semaphore counter */
-  VAR(CountType, TYPEDEF)               count;
-} OsEE_sem;
-
-/** A semaphore dtaa structure with a OSEK/VDX naming convention flavour */
-typedef struct OsEE_sem_tag SemType;
-
-#endif /* OSEE_API_EXTENSION */
 
 #if (!defined(OSEE_ISR2_INLINE))
 /**
