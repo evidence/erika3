@@ -47,9 +47,9 @@
 /* Memory size */
 #define MEM_SIZE (MINIMUM_FAT_SIZE)
 
-#define EE_MEM_LOCAL //use executable data as memory device
+#define OSEE_FATFS_MEM_LOCAL //use executable data as memory device
 
-#if defined(EE_MEM_LOCAL)
+#if defined(OSEE_FATFS_MEM_LOCAL)
 unsigned char memory[MEM_SIZE];
 #else
 #define memory (const void*)(0x274800000)
@@ -118,7 +118,7 @@ int main(void) {
 			"|______|______|____/  \n"
 			"                      ";
 
-#if !defined(EE_MEM_LOCAL)
+#if !defined(OSEE_FATFS_MEM_LOCAL)
 	/* The shared memory must be mapped as UNCACHED if it's shared
 	 * between cpus on different clusters (e.g. Denver and A57)
 	 * NOTE: please use proper erika function to map memory or,
@@ -128,7 +128,7 @@ int main(void) {
 
 	f_mem_init(memory, MEM_SIZE);
 
-#if defined(EE_MEM_LOCAL)
+#if defined(OSEE_FATFS_MEM_LOCAL)
 	/* Creating the file system and a file */
 	/* Create FAT volume */
 	res = f_mkfs("", FM_ANY, 0, work, sizeof work);
