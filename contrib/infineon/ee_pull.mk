@@ -58,7 +58,14 @@ OS_EE_PULL_MK_FILES += $(ERIKA_FILES)/contrib/infineon/ee_isar_linkcfg.mk
 ##
 ## ERIKA3 Integration header files.
 ##
+ifneq	($(call islibopt, OS_EE_LIB_ISAR_MCAL_BSW), yes)
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/contrib/infineon/ISAR/inc/Compiler.h
+else
+OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/contrib/infineon/ISAR/inc/Dem.h
+OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/contrib/infineon/ISAR/inc/Dem_Types.h
+OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/contrib/infineon/ISAR/inc/Dem_PBcfg.h
+endif # OS_EE_LIB_ISAR_MCAL_BSW
+# OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/contrib/infineon/ISAR/inc/Compiler.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/contrib/infineon/ISAR/inc/intrinsics.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/contrib/infineon/ISAR/inc/McalOsConfig.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/contrib/infineon/ISAR/inc/SchM_17_McalCfg.h
@@ -129,10 +136,24 @@ endif	# OS_EE_LIB_ISAR_MCAL_FLS_DRIVER
 ##
 ifeq	($(call islibopt, OS_EE_LIB_ISAR_MCAL_CAN_DRIVER), yes)
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/contrib/infineon/ISAR/inc/SchM_Can_17_MCanP.h
+ifeq	($(call islibopt, OS_EE_LIB_ISAR_MCAL_BSW), yes)
+OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/contrib/infineon/ISAR/inc/Can_Cfg.h
+OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/contrib/infineon/ISAR/inc/Can.h
+else 	# OS_EE_LIB_ISAR_MCAL_BSW - bare metal
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/contrib/infineon/ISAR/inc/Can_GeneralTypes.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/contrib/infineon/ISAR/inc/CanIf.h
 OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/contrib/infineon/ISAR/inc/CanIf_Types.h
+endif	# OS_EE_LIB_ISAR_MCAL_BSW
 endif	# OS_EE_LIB_ISAR_MCAL_CAN_DRIVER
+
+##
+## CAN Transciever Driver header files.
+##
+ifeq	($(call islibopt, OS_EE_LIB_ISAR_MCAL_CAN_TRCV_6250GV33), yes)
+ifeq	($(call islibopt, OS_EE_LIB_ISAR_MCAL_BSW), yes)
+OS_EE_PULL_INC_FILES += $(ERIKA_FILES)/contrib/infineon/ISAR/inc/CanTrcv.h
+endif # OS_EE_LIB_ISAR_MCAL_BSW
+endif	# CAN_TRCV_6250GV33
 
 ##
 ## FEE Driver NVM Callbacks header file.

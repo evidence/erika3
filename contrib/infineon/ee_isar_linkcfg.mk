@@ -51,7 +51,7 @@
 ## Check the Infineon AUTOSAR MCAL Library selection
 
 ##
-## S32 SDK
+## ISAR MCAL
 ##
 ifeq	($(call islibopt, OS_EE_LIB_ISAR_MCAL), yes)
 
@@ -137,11 +137,18 @@ $(INCLUDE_PATH)
 ## General
 ##
 ifeq	($(call islibopt, OS_EE_LIB_ISAR_MCAL_6_0_0), yes)
+ifeq	($(call islibopt, OS_EE_LIB_ISAR_MCAL_BSW), yes)
+INCLUDE_PATH :=	\
+$(ISAR_MCAL_BASE_ROOT)/general/tricore/inc		\
+$(ISAR_MCAL_BASE_ROOT)/general/tricore/inc/TC27xD	\
+$(INCLUDE_PATH)
+else
 INCLUDE_PATH :=	\
 $(ISAR_MCAL_BASE_ROOT)/general/inc			\
 $(ISAR_MCAL_BASE_ROOT)/general/tricore/inc		\
 $(ISAR_MCAL_BASE_ROOT)/general/tricore/inc/TC27xD	\
 $(INCLUDE_PATH)
+endif
 endif
 
 ifeq	($(call islibopt, OS_EE_LIB_ISAR_MCAL_3_0_0), yes)
@@ -305,6 +312,15 @@ INCLUDE_PATH :=	\
 $(ISAR_MCAL_COM_BASIC_FILES)/can_17_mcanp_infineon_tricore/ssc/inc	\
 $(INCLUDE_PATH)
 endif	# OS_EE_LIB_ISAR_MCAL_CAN_DRIVER
+
+##
+## CAN Transciever 
+##
+ifeq	($(call islibopt, OS_EE_LIB_ISAR_MCAL_CAN_TRCV_6250GV33), yes)
+INCLUDE_PATH :=	\
+$(ISAR_MCAL_COM_BASIC_FILES)/cantrcv_17_6250gv33_infineon_tricore/ssc/inc	\
+$(INCLUDE_PATH)
+endif	# OS_EE_LIB_ISAR_MCAL_CAN_TRCV_6250GV33
 
 ifneq	($(if $(filter OS_EE_BUILD,$(OS_EE_OPT)),yes,), yes)
 ifeq	($(call islibopt, OS_EE_LIB_ISAR_MCAL_SA), yes)

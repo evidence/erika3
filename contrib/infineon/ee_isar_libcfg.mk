@@ -64,7 +64,8 @@ ifeq	($(findstring tc27x, $(OSEE_TRICORE_MCU)), tc27x)
 ##
 ## Tricore General
 ##
-#EE_SRCS_ISAR_MCAL += tricore_general/ssc/src/Mcal.c
+# removed because force build of Infineon Demo_app
+# EE_SRCS_ISAR_MCAL += tricore_general/ssc/src/Mcal.c
 EE_SRCS_ISAR_MCAL += tricore_general/ssc/src/Mcal_TcLib.c
 EE_SRCS_ISAR_MCAL += tricore_general/ssc/src/Mcal_WdgLib.c
 
@@ -294,6 +295,14 @@ EE_SRCS_ISAR_MCAL += can_17_mcanp_infineon_tricore/ssc/src/Can_17_MCanP.c
 EE_SRCS_ISAR_MCAL += can_17_mcanp_infineon_tricore/ssc/src/Can_17_MCanP_Platform.c
 EE_SRCS_ISAR_MCAL += src/Can_17_MCanP_PBCfg.c
 endif	# OS_EE_LIB_ISAR_MCAL_CAN_DRIVER
+
+##
+## CAN Transciever Configuration
+##
+ifeq	($(call islibopt, OS_EE_LIB_ISAR_MCAL_CAN_TRCV_6250GV33), yes)
+EE_SRCS_ISAR_MCAL += cantrcv_17_6250gv33_infineon_tricore/ssc/src/CanTrcv_17_6250GV33.c
+EE_SRCS_ISAR_MCAL += src/CanTrcv_17_6250GV33_Cfg.c
+endif	# OS_EE_LIB_ISAR_MCAL_CAN_TRCV_6250GV33
 
 ifeq	($(call islibopt, OS_EE_LIB_ISAR_MCAL_SA), yes)
 
