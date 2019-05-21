@@ -57,6 +57,10 @@
 #include "ee_compiler.h"
 #include "ee_utils.h"
 
+#if (defined(__cplusplus))
+extern "C" {
+#endif
+
 /* Macros for Trap Classes */
 #define OSEE_CLASS_TRAPMMU    (0U)  /**< MMU Trap */
 #define OSEE_CLASS_TRAPPROT   (1U)  /**< Memory Protection Trap */
@@ -206,19 +210,31 @@ typedef uint8_t OsEE_tc_tin;
 /** Type pointing to a Trap Handler */
 typedef void (* OsEE_tc_trap_handler)(OsEE_tc_tin par);
 
+#if (defined(__TASKING__)) && (!defined(__cplusplus))
 /** inline function to get the Trap Id Number */
 OSEE_STATIC_INLINE OsEE_tc_tin osEE_tc_get_tin(void)
 {
   OsEE_tc_tin tin;
-#if (defined(__TASKING__))
   /* Register d15 holds the Trap Id Nr inside a Trap handler */
   __asm volatile("mov  %0, d15": "=d"(tin) : : "memory");
-#elif (defined(__GNUC__))
-  /* Register d15 holds the Trap Id Nr inside a Trap handler */
-  __asm__ volatile("mov  %0,%%d15": "=d"(tin) : : "memory");
-#endif /* __TASKING__ || __GNUC__ */
+
   return tin;
 }
+#elif (defined(__GNUC__))
+/** inline function to get the Trap Id Number */
+OSEE_STATIC_INLINE OsEE_tc_tin osEE_tc_get_tin(void)
+{
+  OsEE_tc_tin tin;
+  /* Register d15 holds the Trap Id Nr inside a Trap handler */
+  __asm__ volatile("mov  %0,%%d15": "=d"(tin) : : "memory");
+
+  return tin;
+}
+#endif /* (__TASKING__ && !__cplusplus) || __GNUC__ */
+
+#if (defined(__cplusplus))
+}
+#endif
 
 #endif /* OSEE_TC_TRAP_HANDLING_OFF */
 #endif /* OSEE_TC_TRAPVEC_H */

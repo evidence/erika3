@@ -389,13 +389,13 @@ OSEE_STATIC_INLINE uint16_t OSEE_ALWAYS_INLINE
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
  osEE_tc_clear_cpu_endinit(OsEE_reg core_index, uint16_t pw)
 {
+  OsEE_tc_SCU_WDTCPU_CON0 cpu_wdt_con0;
 /* Prepare a "reference" to the CPU watchdog */
   OsEE_tc_SCU_WDTCPU volatile * const
     p_cpu_wdt = &OSEE_TC_SCU_WDTCPU[core_index];
 
 /* Read Config_0 register */
-  OsEE_tc_SCU_WDTCPU_CON0
-    cpu_wdt_con0 = p_cpu_wdt->con0;
+  cpu_wdt_con0.reg = p_cpu_wdt->con0.reg;
 
 /* If locked unlock it */
   if (cpu_wdt_con0.bits.lck != 0U) {
@@ -428,13 +428,13 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
   osEE_tc_set_cpu_endinit(OsEE_reg core_index, uint16_t pw)
 {
+  OsEE_tc_SCU_WDTCPU_CON0 cpu_wdt_con0;
 /* Prepare a "reference" to the CPU watchdog */
   OsEE_tc_SCU_WDTCPU volatile * const
     p_cpu_wdt = &OSEE_TC_SCU_WDTCPU[core_index];
 
 /* Read Config_0 register */
-  OsEE_tc_SCU_WDTCPU_CON0
-    cpu_wdt_con0 = p_cpu_wdt->con0;
+  cpu_wdt_con0.reg = p_cpu_wdt->con0.reg;
 
 /* If locked unlock it */
   if (cpu_wdt_con0.bits.lck != 0U) {
@@ -496,8 +496,9 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
   osEE_tc_clear_safety_endinit(uint16_t pw)
 {
 /* Read Config_0 register */
-  OsEE_tc_SCU_WDTS_CON0
-    safety_wdt_con0 = OSEE_TC_SCU_WDTS.con0;
+  OsEE_tc_SCU_WDTS_CON0 safety_wdt_con0;
+
+  safety_wdt_con0.reg = OSEE_TC_SCU_WDTS.con0.reg;
 
 /* If locked unlock it */
   if (safety_wdt_con0.bits.lck != 0U) {
@@ -531,8 +532,9 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
   osEE_tc_set_safety_endinit(uint16_t pw)
 {
 /* Read Config_0 register */
-  OsEE_tc_SCU_WDTS_CON0
-    safety_wdt_con0 = OSEE_TC_SCU_WDTS.con0;
+  OsEE_tc_SCU_WDTS_CON0 safety_wdt_con0;
+
+  safety_wdt_con0.reg = OSEE_TC_SCU_WDTS.con0.reg;
 
 /* If locked unlock it */
   if (safety_wdt_con0.bits.lck != 0U) {

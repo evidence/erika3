@@ -155,6 +155,11 @@ OSEE_STATIC_INLINE OsEE_stack * OSEE_ALWAYS_INLINE osEE_get_SP(void)
   return sp;
 }
 
+/** The dsync assembler instruction */
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_tc_dsync(void) {
+  __asm__ volatile ("dsync" : : : "memory");
+}
+
 #elif (defined(__TASKING__))
 /* The builtin requires a 16-bit immediate, so it cannot be encapsulated inside
    an inline */
@@ -193,10 +198,15 @@ OSEE_STATIC_INLINE OsEE_stack * OSEE_ALWAYS_INLINE osEE_get_SP(void) {
   return (OsEE_stack *)__get_sp();
 }
 
+/** The dsync assembler instruction */
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_tc_dsync(void) {
+  __dsync();
+}
 #else
 #error Unsupported Compiler!
 #endif
 
+#if (!defined(__TASKING__)) || (!defined(__cplusplus))
 /** The debug assembler instruction */
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_tc_debug(void) {
   __asm__ volatile ("debug" : : : "memory");
@@ -205,11 +215,6 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_tc_debug(void) {
 /** The wait assembler instruction */
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_tc_wait(void) {
   __asm__ volatile ("wait" : : : "memory");
-}
-
-/** The dsync assembler instruction */
-OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_tc_dsync(void) {
-  __asm__ volatile ("dsync" : : : "memory");
 }
 
 /** The isync assembler instruction */
@@ -244,6 +249,7 @@ OSEE_STATIC_INLINE OsEE_reg OSEE_ALWAYS_INLINE
   );
   return res;
 }
+#endif /* !__TASKING__ || !__cplusplus */
 
 /** Inline assembly instruction j, used to jump to a function */
 #define osEE_tc_jump(f)           __asm__ volatile ("j " OSEE_S(f))

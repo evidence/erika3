@@ -297,7 +297,7 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
 OSEE_STATIC_INLINE OsEE_bool OSEE_ALWAYS_INLINE
   osEE_hal_try_spin_lock(OsEE_spin_lock * p_lock)
 {
-  OsEE_bool result = (osEE_tc_cmpswapw(p_lock, 1U, 0U) == 0U);
+  OsEE_bool result = (OsEE_bool)(osEE_tc_cmpswapw(p_lock, 1U, 0U) == 0U);
   return (result)? OSEE_TRUE: OSEE_FALSE;
 }
 

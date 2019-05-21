@@ -122,8 +122,7 @@ OPT_CC += $(CFLAGS)
 ifeq	($(call iseeopt, OS_EE_GCC_MINIMAL_OPTS), yes)
 OPT_CXX += -c -Wall -Wextra $(OPT_CPU)
 else	# OS_EE_GCC_MINIMAL_OPTS
-OPT_CXX += -c -Wall -Wextra $(OPT_CPU) -Wstrict-prototypes\
- -Wtype-limits -Wmissing-declarations -Wmissing-prototypes\
+OPT_CXX += -c -Wall -Wextra $(OPT_CPU) -Wtype-limits -Wmissing-declarations\
  -Wdiv-by-zero -Wdouble-promotion -Wcast-align -Wformat-security\
  -Wignored-qualifiers\
  -fno-common -fshort-enums -fstrict-volatile-bitfields -finline-functions\

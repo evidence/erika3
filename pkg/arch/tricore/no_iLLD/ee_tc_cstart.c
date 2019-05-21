@@ -94,6 +94,9 @@
  *****************************************************************************/
 
 #if (defined(__TASKING__))
+/* The following prevent that the compiler do not inline some calls */
+#pragma optimize 3
+
 #pragma weak   exit
 #pragma extern _Exit
 /* prevent profiling information on cstart */
@@ -198,6 +201,9 @@ extern void _c_init_tc5(void);
 
 
 #elif defined (__GNUC__)
+/* The following prevent that the compiler do not inline some calls */
+#pragma GCC optimize ("-O3")
+
 extern void _exit (int status);
 /* libc exit function remapping  */
 #define OSEE_EXIT _exit

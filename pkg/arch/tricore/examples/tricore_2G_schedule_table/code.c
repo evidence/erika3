@@ -45,6 +45,11 @@
 
 #include "ee.h"
 
+#if (defined(__TASKING__))
+/* Disable Warnings for Infinite Loops inside this module */
+#pragma warning 557
+#endif /* __TASKING__ */
+
 unsigned int volatile task_counter;
 
 void ErrorHook ( StatusType Error ) {
