@@ -1,38 +1,38 @@
 /* ###*B*###
  * Erika Enterprise, version 3
- * 
+ *
  * Copyright (C) 2017 - 2018 Evidence s.r.l.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or (at
  * your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License, version 2, for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License,
  * version 2, along with this program; if not, see
  * < www.gnu.org/licenses/old-licenses/gpl-2.0.html >.
- * 
+ *
  * This program is distributed to you subject to the following
  * clarifications and special exceptions to the GNU General Public
  * License, version 2.
- * 
+ *
  * THIRD PARTIES' MATERIALS
- * 
+ *
  * Certain materials included in this library are provided by third
  * parties under licenses other than the GNU General Public License. You
  * may only use, copy, link to, modify and redistribute this library
  * following the terms of license indicated below for third parties'
  * materials.
- * 
+ *
  * In case you make modified versions of this library which still include
  * said third parties' materials, you are obligated to grant this special
  * exception.
- * 
+ *
  * The complete list of Third party materials allowed with ERIKA
  * Enterprise version 3, together with the terms and conditions of each
  * license, is present in the file THIRDPARTY.TXT in the root of the
@@ -118,10 +118,10 @@ static StatusType osEE_ti_awr16xx_set_channel_hnd
     ev = E_OS_ID;
   } else
 #if (defined(OSEE_HAS_CHECKS))
-  if ((p_hnd->cat == OSEE_ISR_CAT_2) && (p_hnd->tid == INVALID_TASK)) {
+  if ((p_hnd->cat == OSEE_ISR_CAT_2) && (p_hnd->hnd.tid == INVALID_TASK)) {
     ev = E_OS_NOFUNC;
   } else
-  if ((p_hnd->cat != OSEE_ISR_CAT_2) && (p_hnd->p_hnd_func == NULL)) {
+  if ((p_hnd->cat != OSEE_ISR_CAT_2) && (p_hnd->hnd.p_hnd_func == NULL)) {
     ev = E_OS_NOFUNC;
   } else
 #endif /* OSEE_HAS_CHECKS */
@@ -250,7 +250,7 @@ OsEE_bool osEE_cpu_startos(void) {
 #if (defined(OSEE_CORTEX_R_HAS_ISR1_TO_CONF))
   {
     MemSize const isr1_num = osEE_isr1_db_instance.isr1_num;
- 
+
     for (i = 0U; i < isr1_num; ++i) {
       OsEE_isr_src_id  const request =
         (*osEE_isr1_db_instance.p_isr1_src_array)[i].isr1_src;
@@ -289,13 +289,13 @@ FUNC(void, OS_CODE)
   osEE_vim_clear_interrupt(channel);
 
   /* Restore previous interrupt enabled masks */
-  OSEE_CORTEX_R_VIM_REG(OSEE_CORTEX_R_VIM_REQMASKSET0) = 
+  OSEE_CORTEX_R_VIM_REG(OSEE_CORTEX_R_VIM_REQMASKSET0) =
     p_fromt_hcb->mask_set0;
-  OSEE_CORTEX_R_VIM_REG(OSEE_CORTEX_R_VIM_REQMASKSET1) = 
+  OSEE_CORTEX_R_VIM_REG(OSEE_CORTEX_R_VIM_REQMASKSET1) =
     p_fromt_hcb->mask_set1;
-  OSEE_CORTEX_R_VIM_REG(OSEE_CORTEX_R_VIM_REQMASKSET2) = 
+  OSEE_CORTEX_R_VIM_REG(OSEE_CORTEX_R_VIM_REQMASKSET2) =
     p_fromt_hcb->mask_set2;
-  OSEE_CORTEX_R_VIM_REG(OSEE_CORTEX_R_VIM_REQMASKSET3) = 
+  OSEE_CORTEX_R_VIM_REG(OSEE_CORTEX_R_VIM_REQMASKSET3) =
     p_fromt_hcb->mask_set3;
 
   /*
@@ -532,13 +532,13 @@ void osEE_vim_init(void) {
     OSEE_CORTEX_R_VIM_REG(OSEE_CORTEX_R_VIM_INTREQ3) = (0xFFFFFFFFU);
 
     /* Enable Interrupts */
-    OSEE_CORTEX_R_VIM_REG(OSEE_CORTEX_R_VIM_REQMASKSET0) = 
+    OSEE_CORTEX_R_VIM_REG(OSEE_CORTEX_R_VIM_REQMASKSET0) =
       OSEE_CORTEX_R_VIM_REQMASKSET0_CFGVAL;
-    OSEE_CORTEX_R_VIM_REG(OSEE_CORTEX_R_VIM_REQMASKSET1) = 
+    OSEE_CORTEX_R_VIM_REG(OSEE_CORTEX_R_VIM_REQMASKSET1) =
       OSEE_CORTEX_R_VIM_REQMASKSET1_CFGVAL;
-    OSEE_CORTEX_R_VIM_REG(OSEE_CORTEX_R_VIM_REQMASKSET2) = 
+    OSEE_CORTEX_R_VIM_REG(OSEE_CORTEX_R_VIM_REQMASKSET2) =
       OSEE_CORTEX_R_VIM_REQMASKSET2_CFGVAL;
-    OSEE_CORTEX_R_VIM_REG(OSEE_CORTEX_R_VIM_REQMASKSET3) = 
+    OSEE_CORTEX_R_VIM_REG(OSEE_CORTEX_R_VIM_REQMASKSET3) =
       OSEE_CORTEX_R_VIM_REQMASKSET3_CFGVAL;
 
     /* Set Capture Event Sources */
@@ -694,7 +694,7 @@ void osEE_vim_enable_interrupt(OsEE_isr_channel channel, OsEE_vim_irq_type type)
     }
 
     if (regFIRQPRoff != 0U) {
-      OsEE_reg const  delta_from_firqpr_to_set = 
+      OsEE_reg const  delta_from_firqpr_to_set =
         (OSEE_CORTEX_R_VIM_REQMASKSET0 - OSEE_CORTEX_R_VIM_FIRQPR0);
 
       OsEE_reg        regVal = OSEE_CORTEX_R_VIM_REG(regFIRQPRoff);
@@ -726,7 +726,7 @@ void osEE_vim_enable_interrupt(OsEE_isr_channel channel, OsEE_vim_irq_type type)
  *  @fn void osEE_vim_is_enabled_interrupt(OsEE_isr_channel channel)
  *  @brief Disable interrupt for the the selected channel
  *
- *  @param[in] channel: VIM Channel number 2..127  
+ *  @param[in] channel: VIM Channel number 2..127
  *
  *  This function will disable interrupt for the selected channel.
  *
@@ -759,7 +759,7 @@ OsEE_bool osEE_vim_is_enabled_interrupt(OsEE_isr_channel channel) {
  *  @fn void osEE_vim_disable_interrupt(OsEE_isr_channel channel)
  *  @brief Disable interrupt for the the selected channel
  *
- *  @param[in] channel: VIM Channel number 2..127  
+ *  @param[in] channel: VIM Channel number 2..127
  *
  *  This function will disable interrupt for the selected channel.
  *
@@ -950,7 +950,7 @@ void osEE_cortex_r_irq_hnd(void) {
       /*
        * Perform DSB to complete ongoing VIM register writes
        */
-      __asm volatile (" dsb"); 
+      __asm volatile (" dsb");
 #endif /* 0 */
     }
   } else {
