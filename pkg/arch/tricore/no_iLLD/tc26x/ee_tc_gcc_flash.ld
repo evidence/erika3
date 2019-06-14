@@ -429,7 +429,7 @@ SECTIONS
     *(.gnu.linkonce.b.*) 	
   } > GLOBAL_RAM
 
-  CORE_SEC(.heap) (NOLOAD) : ALIGN(4) FLAGS(aw)
+  CORE_SEC(.heap) (NOLOAD) : ALIGN(8) FLAGS(aw)
   {
     PROVIDE(__HEAP = .);
     . += __HEAP_SIZE;

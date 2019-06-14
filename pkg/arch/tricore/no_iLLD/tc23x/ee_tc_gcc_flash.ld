@@ -346,7 +346,7 @@ SECTIONS
     *(.gnu.linkonce.b.*) 	
   } > DMI_DSPR
 
-  .heap (NOLOAD) : ALIGN(4) FLAGS(aw)
+  .heap (NOLOAD) : ALIGN(8) FLAGS(aw)
   {
     PROVIDE(__HEAP = .);
     . += __HEAP_SIZE;
