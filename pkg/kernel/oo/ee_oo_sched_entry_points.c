@@ -180,8 +180,7 @@ static FUNC(void, OS_CODE)
 #endif /* OSEE_HAS_RESOURCES || OSEE_HAS_SPINLOCKS */
   }
 
-  osEE_hal_terminate_activation(&p_to_term->hdb,
-    OSEE_KERNEL_TERMINATE_ACTIVATION_CB);
+  osEE_terminate_activation(p_to_term, OSEE_KERNEL_TERMINATE_ACTIVATION_CB);
 }
 
 FUNC(void, OS_CODE)

@@ -90,24 +90,20 @@ endif
 
 all: os appl
 
-pull: $(ERIKA_DIR)
-	$(MAKE) -C $< mk
+pull: config
+	$(MAKE) -C $(ERIKA_DIR) mk
 
-config: $(ERIKA_DIR)
 
-os: $(ERIKA_DIR)
-	$(MAKE) -C $< all
-
-appl: $(OUTPUT_DIR) $(ERIKA_DIR)
-	$(MAKE) -C $< all
+appl: pull os
+	$(MAKE) -C $(OUTPUT_DIR) all
 
 clean: os-clean appl-clean
 
-os-clean: $(ERIKA_DIR)
+os-clean: config
 	@echo os cleaning...
 	$(MAKE) -C $(ERIKA_DIR) clean
 
-appl-clean: $(OUTPUT_DIR) $(ERIKA_DIR)
+appl-clean: config
 	@echo application cleaning...
 	$(MAKE) -C $(OUTPUT_DIR) clean
 
@@ -156,7 +152,7 @@ endif
 #  --generateAppl
 #                   enable the generation of Application
 #                   configuration files
-$(ERIKA_DIR) $(OUTPUT_DIR): $(CONF_OIL)
+config: $(CONF_OIL)
 #	@echo "Generating configuration with RT-Druid"
 #	@java -jar ${RTDRUID_ECLIPSE_HOME}/plugins/org.eclipse.equinox.launcher_*.jar\
 #			-data $(WS)\

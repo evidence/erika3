@@ -43,6 +43,7 @@
  *          Enterprise.
  *
  *  \author Francesco Bagagli
+ *  \author Giuseppe Serano
  *  \date   2019
  */
 #ifndef CAN_CFG_H
@@ -91,62 +92,62 @@ typedef VAR(uint16, TYPEDEF) Can_HwHandleType;
 
 /* Remapping of Hardware objects names from ISAR-MCAL and COMASSO */
 
-#define CanHO_L_Pdu_Tx_1        \
-                             Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Tx_1
+#define	CanHO_L_Pdu_Tx_0_TEST		\
+	Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Tx_0_TEST
 
-#define CanHO_L_Pdu_Tx_BCCM2    \
-                         Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Tx_BCCM2
+#define	CanHO_L_Pdu_Tx_1_TEST		\
+	Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Tx_1_TEST
 
-#define CanHO_L_Pdu_Tx_UDSresp_BCCM2F0  \
-               Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Tx_UDSresp_BCCM2F0
+#define	CanHO_L_Pdu_Tx_UDS_Resp_0 	\
+	Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Tx_UDS_Resp_0
 
-#define CanHO_L_Pdu_Tx_UDSresp_BCCM2F1  \
-               Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Tx_UDSresp_BCCM2F1
+#define	CanHO_L_Pdu_Tx_UDS_Resp_1	\
+	Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Tx_UDS_Resp_1
 
-#define CanHO_L_Pdu_Tx_Nm   \
-                            Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Tx_Nm
+#define	CanHO_L_Pdu_Tx_NM		\
+	Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Tx_NM
 
-#define CanHO_L_Pdu_Tx_XCPresp  \
-                       Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Tx_XCPresp
+#define	CanHO_L_Pdu_Tx_XCP_Resp		\
+	Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Tx_XCP_Resp
 
-#define CanHO_L_Pdu_Tx_BCCM_MAHLE0  \
-                   Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Tx_BCCM_MAHLE0
+#define	CanHO_L_Pdu_Tx_2_TEST		\
+	Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Tx_2_TEST
 
-#define CanHO_L_Pdu_Tx_BCCM_MAHLE1  \
-                   Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Tx_BCCM_MAHLE1
+#define	CanHO_L_Pdu_Tx_3_TEST		\
+	Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Tx_3_TEST
 
-#define CanHO_L_Pdu_Tx_BCCM_MAHLE2  \
-                   Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Tx_BCCM_MAHLE2
+#define	CanHO_L_Pdu_Tx_4_TEST		\
+	Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Tx_4_TEST
 
-#define CanHO_L_Pdu_Rx_0  \
-                             Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Rx_0
+#define	CanHO_L_Pdu_Rx_0_TEST		\
+	Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Rx_0_TEST
 
-#define CanHO_L_Pdu_Rx_BCCM1  \
-                         Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Rx_BCCM1
+#define	CanHO_L_Pdu_Rx_1_TEST		\
+	Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Rx_1_TEST
 
-#define CanHO_L_Pdu_Rx_diagVehState_BASE  \
-             Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Rx_diagVehState_BASE
+#define	CanHO_L_Pdu_Rx_2_TEST		\
+	Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Rx_2_TEST
 
-#define CanHO_L_Pdu_Rx_UDSreq_F02BCCM  \
-                Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Rx_UDSreq_F02BCCM
+#define	CanHO_L_Pdu_Rx_UDS_Req_0	\
+	Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Rx_UDS_Req_0
 
-#define CanHO_L_Pdu_Rx_UDSreq_F12BCCM  \
-                Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Rx_UDSreq_F12BCCM
+#define	CanHO_L_Pdu_Rx_UDS_Req_1	\
+	Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Rx_UDS_Req_1
 
-#define CanHO_L_Pdu_Rx_UDSreqFCN_BASIS \
-               Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Rx_UDSreqFCN_BASIS
+#define	CanHO_L_Pdu_Rx_UDS_Req_0_FCN	\
+	Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Rx_UDS_Req_0_FCN
 
-#define CanHO_L_Pdu_Rx_UDSreq_BCCM_UUDT \
-              Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Rx_UDSreq_BCCM_UUDT
+#define	CanHO_L_Pdu_Rx_UDS_Req_2	\
+	Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Rx_UDS_Req_2
 
-#define CanHO_L_Pdu_Rx_XCPreq \
-                        Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Rx_XCPreq
+#define	CanHO_L_Pdu_Rx_XCP_Req		\
+	Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Rx_XCP_Req
 
-#define CanHO_L_Pdu_Rx_Nm \
-                            Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Rx_Nm
+#define	CanHO_L_Pdu_Rx_NM		\
+	Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Rx_NM
 
-#define CanHO_L_Pdu_Rx_BCCM_MAHLE0 \
-                   Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Rx_BCCM_MAHLE0
+#define	CanHO_L_Pdu_Rx_3_TEST		\
+	Can_17_MCanPConf_CanHardwareObject_CanHO_L_Pdu_Rx_3_TEST
 
 #endif /*END OF  CANIF_H */
 

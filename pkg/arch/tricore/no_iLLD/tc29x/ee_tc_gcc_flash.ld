@@ -489,11 +489,12 @@ SECTIONS
   {
     *(.bss)
     *(.bss.*)
-    *(.gnu.linkonce.b.*) 	
+    *(.gnu.linkonce.b.*)
   } > GLOBAL_RAM
 
   CORE_SEC(.heap) (NOLOAD) : ALIGN(8) FLAGS(aw)
   {
+    . = 8;
     PROVIDE(__HEAP = .);
     . += __HEAP_SIZE;
     PROVIDE(__HEAP_END = .);

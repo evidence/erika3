@@ -275,9 +275,6 @@ static FUNC(void, OS_CODE)
 #endif /* OSEE_HAS_ALARMS */
 
 #if (defined(OSEE_HAS_SCHEDULE_TABLES))
-
-#define INVALID_SCHEDULETABLE_POSITION ((MemSize)-1)
-
 static FUNC(void, OS_CODE)
   osEE_counter_handle_st_expiry_point
 (
@@ -310,6 +307,7 @@ static FUNC(void, OS_CODE)
       VAR(MemSize, AUTOMATIC)   expiry_position = p_st_cb->position;
 
       /* This can happen:
+          - If the Schedule Table has been started relatively
           - If a Next Schedule Table is activated, to stop the original
             Schedule Table after the final delay.
           - IF Original Schedule Table is repeating */
@@ -347,7 +345,7 @@ static FUNC(void, OS_CODE)
           }
           /* else first expiry point is handled immediately */
         } else {
-          /* Repeating Schedule Table */
+          /* Schedule Table started relatively or Repeating Schedule Table */
           p_st_cb->position = 0U;
           /* Set Repeating ST Start value */
           p_st_cb->start    = p_counter_db->p_counter_cb->value;

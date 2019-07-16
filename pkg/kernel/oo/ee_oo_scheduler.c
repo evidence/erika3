@@ -356,23 +356,10 @@ FUNC_P2VAR(OsEE_SN, OS_APPL_DATA, OS_CODE)
 {
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb         = p_cdb->p_ccb;
   CONSTP2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA)  p_prev_stk_sn = p_ccb->p_stk_sn;
-  CONSTP2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA)
-    p_next_stk_sn = p_prev_stk_sn->p_next;
 
   /* Pop the current STK SN, if not IDLE TASK. This function MUST not be
    * called inside IDLE TASK. */
-  p_ccb->p_stk_sn = p_next_stk_sn;
-#if (defined(OSEE_HAS_POSTTASKHOOK))
-  /* Call PostTaskHook before switching active TASK, if the next stacked
-     is IdleTask and the Task Terminated is not an ISR2
-     (Case not handled inside osEE_scheduler_core_rq_preempt_stk) */
-  if ((p_next_stk_sn == NULL) &&
-      (p_ccb->p_curr->task_type <= OSEE_TASK_TYPE_EXTENDED)
-  )
-  {
-    osEE_call_post_task_hook(p_ccb);
-  }
-#endif /* OSEE_HAS_POSTTASKHOOK */
+  p_ccb->p_stk_sn = p_prev_stk_sn->p_next;
 
   /* No need to set Temporary ccb.p_curr, obtaining coherence, since
    * osEE_scheduler_core_rq_preempt_stk won't rely on that.

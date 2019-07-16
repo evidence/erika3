@@ -146,22 +146,14 @@ SECTIONS
   GROUP : {
     /* Core0 TASKs private stacks */
     .CPU0.ee_kernel_stack (BSS) align(16) : {}
+    /* Core1 TASKs private stacks */
+    .CPU1.ee_kernel_stack (BSS) align(16) : {}
 
     /* Initialized Core0 Kernel Data */
     .CPU0.ee_kernel_data (DATA) LOAD(>R_FLASH) COPYTABLE align(4) : {
       *(.CPU0.ee_kernel_data)
       *(.CPU0.ee_kernel_sdata)
     }
-
-    .CPU0.ee_kernel_data (BSS) align(4) : {
-      *(.CPU0.ee_kernel_bss)
-      *(.CPU0.ee_kernel_sbss)
-    }
-  } > R_LRAM_CPU0
-
-  GROUP : {
-    /* Core1 TASKs private stacks */
-    .CPU1.ee_kernel_stack (BSS) align(16) : {}
 
     /* Initialized Core1 Kernel Data.
        (I use a named copytable, since core local data have to (re-)initialized
@@ -174,12 +166,16 @@ SECTIONS
       *(.CPU1.ee_kernel_sdata)
     }
 
+    .CPU0.ee_kernel_data (BSS) align(4) : {
+      *(.CPU0.ee_kernel_bss)
+      *(.CPU0.ee_kernel_sbss)
+    }
+
     .CPU1.ee_kernel_data (BSS) COPYTABLE[WR_CPU1_CT] align(4) : {
       *(.CPU1.ee_kernel_bss)
       *(.CPU1.ee_kernel_sbss)
     }
-  } > R_LRAM_CPU1
-
+  } > R_GRAM
 }
 
 /******************************************************************************

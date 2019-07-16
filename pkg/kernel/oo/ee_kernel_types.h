@@ -350,7 +350,7 @@ typedef struct {
 } OsEE_CounterCB;
 
 #if (defined(OSEE_HAS_COUNTER_HARD))
-/** Hardware Counter Descriptor Block. This data structure was defined for 
+/** Hardware Counter Descriptor Block. This data structure was defined for
  *  future usage and has not been used yet in ERIKA3. */
 typedef struct OsEE_CounterHardDB {
   /** To be refined in the next versions of ERIKA3 */
@@ -413,6 +413,10 @@ typedef struct {
 } OSEE_CONST OsEE_action;
 
 #if (defined(OSEE_HAS_SCHEDULE_TABLES))
+
+/** Invalid expiry point index */
+#define INVALID_SCHEDULETABLE_POSITION ((MemSize)-1)
+
 /** Schedule Table Synchronization strategies symbols */
 typedef enum {
   /** No support for synchronization. (default) */
@@ -435,7 +439,7 @@ typedef struct OsEE_st_exipiry_point_tag{
   VAR(TickType, TYPEDEF)                offset;
   /** Array of the expiry point's actions */
   P2SYM_VAR(OsEE_action, OS_APPL_DATA,  p_action_array)[];
-  /** Sizeof array of the expiry point's actions */
+  /** Size of array of the expiry point's actions */
   VAR(MemSize, TYPEDEF)                 action_array_size;
   /** Maximum value that can be subtracted from the expiry offset */
   VAR(TickType, TYPEDEF)                max_shorten;
@@ -606,7 +610,7 @@ typedef struct {
 } OsEE_TriggerCB;
 
 /**
- *  Trigger Descriptor Block is the elemnt containing the information of Alarms
+ *  Trigger Descriptor Block is the element containing the information of Alarms
  *  and Schedule Tables. If both Alarms and Schedule Tables are present in the
  *  Application, the struct has two pointers to the Alarm and to the Schedule
  *  Table Descriptor blocks. Only one of them is different from NULL (this is

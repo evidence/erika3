@@ -129,9 +129,11 @@ OS_EE_DEFS_CXX	+=-D_GNU_C_TRICORE_=1 -DOS_KERNEL_TYPE
 ##
 ## MemMap.h
 ##
+ifneq	($(call islibopt, OS_EE_LIB_ISAR_MCAL_BSW), yes)
 INCLUDE_PATH :=	\
 $(ISAR_MCAL_BASE_ROOT)/demoapp/tricore/compiler	\
 $(INCLUDE_PATH)
+endif	# OS_EE_LIB_ISAR_MCAL_BSW
 
 ##
 ## General
@@ -309,7 +311,7 @@ endif	# OS_EE_LIB_ISAR_MCAL_FEE_DRIVER
 ##
 ifeq	($(call islibopt, OS_EE_LIB_ISAR_MCAL_CAN_DRIVER), yes)
 INCLUDE_PATH :=	\
-$(ISAR_MCAL_COM_BASIC_FILES)/can_17_mcanp_infineon_tricore/ssc/inc	\
+$(ISAR_MCAL_COM_BASIC_ROOT)/can_17_mcanp_infineon_tricore/ssc/inc	\
 $(INCLUDE_PATH)
 endif	# OS_EE_LIB_ISAR_MCAL_CAN_DRIVER
 
@@ -318,7 +320,7 @@ endif	# OS_EE_LIB_ISAR_MCAL_CAN_DRIVER
 ##
 ifeq	($(call islibopt, OS_EE_LIB_ISAR_MCAL_CAN_TRCV_6250GV33), yes)
 INCLUDE_PATH :=	\
-$(ISAR_MCAL_COM_BASIC_FILES)/cantrcv_17_6250gv33_infineon_tricore/ssc/inc	\
+$(ISAR_MCAL_COM_BASIC_ROOT)/cantrcv_17_6250gv33_infineon_tricore/ssc/inc	\
 $(INCLUDE_PATH)
 endif	# OS_EE_LIB_ISAR_MCAL_CAN_TRCV_6250GV33
 

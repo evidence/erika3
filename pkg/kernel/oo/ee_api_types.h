@@ -170,7 +170,7 @@ typedef P2VAR(TaskType, TYPEDEF, OS_APPL_DATA)  TaskRefType;
  *  - The task priority
  *  - The ISR2 ''virtual'' priority.
  *  
- *  The ISR2 virtual priority maps the interrupt controller prioriries on top
+ *  The ISR2 virtual priority maps the interrupt controller priorities on top
  *  of the Task priorities. This is done by allocating the two kind of 
  *  priorities into two non-overlapping ranges.
  *
@@ -184,7 +184,7 @@ typedef P2VAR(TaskType, TYPEDEF, OS_APPL_DATA)  TaskRefType;
  *    (typically the hardware priority range is smaller than the size of this 
  *    range)
  *    (value for n=8, 128..254)
- *  - 2^n - 1 Special value used to not reenable interrupts
+ *  - 2^n - 1 Special value used to not re-enable interrupts
  *    (used for internal interrupts when we want prevent preemption,
  *    like for system timer or for Scheduling Inter Core Interrupts).
  *    (value for n=8, 255)
@@ -192,7 +192,7 @@ typedef P2VAR(TaskType, TYPEDEF, OS_APPL_DATA)  TaskRefType;
  *  ISR2 virtual priorities are mapped to hardware priorities by a HAL porting
  *  function in the following way:
  *
- *  Virtual priority 2^(n-1)     == lowest_hardware priority
+ *  Virtual priority 2^(n-1)     == lowest_hardware_priority
  *  Virtual priority 2^(n-1) + 1 == second_lowest_harware_priority
  *  ...
  *  and so on. 

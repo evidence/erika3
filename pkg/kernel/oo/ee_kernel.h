@@ -934,7 +934,7 @@ FUNC(StatusType, OS_CODE)
 );
 
 FUNC(StatusType, OS_CODE)
-  osEE_st_syncronize
+  osEE_st_synchronize
 (
   P2VAR(OsEE_SchedTabDB, AUTOMATIC, OS_APPL_CONST)  p_st_db,
   VAR(TickType, AUTOMATIC)                          value

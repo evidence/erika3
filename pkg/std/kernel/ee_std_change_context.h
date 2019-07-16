@@ -132,13 +132,13 @@ FUNC(StatusType, OS_CODE)
 #endif /* OSEE_API_DYNAMIC */
 
 LOCAL_INLINE FUNC(void, OS_CODE)
-  osEE_hal_terminate_activation
+  osEE_terminate_activation
 (
-  P2VAR(OsEE_HDB, AUTOMATIC, OS_APPL_DATA)  p_to_term,
+  P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)  p_to_term,
   VAR(OsEE_kernel_cb, AUTOMATIC)            kernel_cb
 )
 {
-  osEE_hal_terminate_ctx(p_to_term->p_scb, kernel_cb);
+  osEE_hal_terminate_ctx(p_to_term->hdb.p_scb, kernel_cb);
 }
 
 LOCAL_INLINE FUNC(void, OS_CODE)

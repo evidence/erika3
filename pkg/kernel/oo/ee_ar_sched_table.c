@@ -80,7 +80,7 @@ FUNC(StatusType, OS_CODE)
     (Even though the ST is Reenabled it has to restart from the beginning) */
     
     p_st_cb->p_next_table = NULL;
-    p_st_cb->position     = 0U;
+    p_st_cb->position     = INVALID_SCHEDULETABLE_POSITION;
     p_st_cb->deviation    = 0;
     p_st_cb->st_status    = SCHEDULETABLE_RUNNING;
     p_st_cb->start        = osEE_counter_eval_when(p_counter_db, offset);
@@ -95,8 +95,7 @@ FUNC(StatusType, OS_CODE)
       p_trigger_cb->status = OSEE_TRIGGER_ACTIVE;
 
       osEE_counter_insert_rel_trigger(p_counter_db, p_trigger_db,
-        offset  + (*p_st_db->p_expiry_point_array)[0].offset
-      );
+        offset);
     }
     ev = E_OK;
   }
@@ -224,7 +223,7 @@ FUNC(StatusType, OS_CODE)
 }
 
 FUNC(StatusType, OS_CODE)
-  osEE_st_syncronize
+  osEE_st_synchronize
 (
   P2VAR(OsEE_SchedTabDB, AUTOMATIC, OS_APPL_CONST)  p_st_db,
   VAR(TickType, AUTOMATIC)                          value

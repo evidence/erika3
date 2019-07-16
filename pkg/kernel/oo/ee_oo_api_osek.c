@@ -259,7 +259,6 @@ FUNC(StatusType, OS_CODE)
   } else
 #if (!defined(OSEE_SINGLECORE))
   if (curr_core_id == OS_CORE_ID_MASTER) {
-    /* I rely in C shortcut for boolean expression */
 #endif /* !OSEE_SINGLECORE */
     if (osEE_cpu_startos() == OSEE_FALSE) {
 #if (defined(OSEE_ALLOW_TASK_MIGRATION))
@@ -796,7 +795,7 @@ FUNC(StatusType, OS_CODE)
       }
       if (ev == E_OK) {
         /* The following do not return! */
-        osEE_hal_terminate_activation(&osEE_get_curr_task()->hdb,
+        osEE_terminate_activation(osEE_get_curr_task(),
           OSEE_KERNEL_TERMINATE_ACTIVATION_CB);
       }
       osEE_end_primitive(flags);
@@ -912,9 +911,7 @@ FUNC(StatusType, OS_CODE)
     flags = osEE_begin_primitive();
 
     /* The following does not return! */
-    osEE_hal_terminate_activation(
-      &p_curr->hdb, OSEE_KERNEL_TERMINATE_ACTIVATION_CB
-    );
+    osEE_terminate_activation(p_curr, OSEE_KERNEL_TERMINATE_ACTIVATION_CB);
 
     osEE_end_primitive(flags);
 
@@ -3285,7 +3282,7 @@ FUNC(StatusType, OS_CODE)
     } else
 #endif /* OSEE_HAS_CHECKS */
     {
-      ev = osEE_st_syncronize(p_st_db, Value);
+      ev = osEE_st_synchronize(p_st_db, Value);
     }
 
     osEE_end_primitive(flags);
