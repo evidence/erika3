@@ -413,9 +413,12 @@ typedef struct {
 } OSEE_CONST OsEE_action;
 
 #if (defined(OSEE_HAS_SCHEDULE_TABLES))
-
 /** Invalid expiry point index */
-#define INVALID_SCHEDULETABLE_POSITION ((MemSize)-1)
+#define INVALID_SCHEDULETABLE_POSITION      ((MemSize)-1)
+/** Expiry point index for a ScheduleTable starting relative */
+#define SCHEDULETABLE_STARTING_REL_POSITION ((MemSize)-1)
+/** Expiry point index for the final delay */
+#define SCHEDULETABLE_FINAL_DELAY_POSITION  (((MemSize)-1) - (MemSize)1U)
 
 /** Schedule Table Synchronization strategies symbols */
 typedef enum {

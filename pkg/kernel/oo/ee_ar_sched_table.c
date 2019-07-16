@@ -77,17 +77,34 @@ FUNC(StatusType, OS_CODE)
     ev = E_OS_STATE;
   } else {
 /* Initialize ST data structure
-    (Even though the ST is Reenabled it has to restart from the beginning) */
-    
+    (Even if the ST is re-enabled it has to restart from the beginning) */
+
+/* Hold the delta value with which it is inserted in the triggers queue */
+    VAR(TickType, AUTOMATIC) trigger_delta;
+
+    if (offset != 0U) {
+      trigger_delta     = offset;
+      p_st_cb->position = SCHEDULETABLE_STARTING_REL_POSITION;
+    } else {
+      trigger_delta = (*p_st_db->p_expiry_point_array)[0].offset;
+      /* Handle the extreme case of starting offset == 0 and first
+         expiry point == 0 */
+      if (trigger_delta == 0U) {
+        trigger_delta     = 1U;
+        p_st_cb->position = SCHEDULETABLE_STARTING_REL_POSITION;
+      } else {
+        p_st_cb->position = 0U;
+      }
+    }
+
     p_st_cb->p_next_table = NULL;
-    p_st_cb->position     = INVALID_SCHEDULETABLE_POSITION;
-    p_st_cb->deviation    = 0;
-    p_st_cb->st_status    = SCHEDULETABLE_RUNNING;
-    p_st_cb->start        = osEE_counter_eval_when(p_counter_db, offset);
+    p_st_cb->deviation  = 0;
+    p_st_cb->st_status  = SCHEDULETABLE_RUNNING;
+    p_st_cb->start      = osEE_counter_eval_when(p_counter_db, trigger_delta);
 
     if (p_trigger_cb->status == OSEE_TRIGGER_CANCELED) {
-      /* Re-turn on the trigger, that is in handling, since is handling I'll set
-         'here' when based on offset */
+      /* Re-turn on the trigger, that is in handling, since is handling I'll
+         set 'here' when based on offset */
       p_trigger_cb->when   = p_st_cb->start;
       p_trigger_cb->status = OSEE_TRIGGER_REENABLED;
     } else {
@@ -95,7 +112,7 @@ FUNC(StatusType, OS_CODE)
       p_trigger_cb->status = OSEE_TRIGGER_ACTIVE;
 
       osEE_counter_insert_rel_trigger(p_counter_db, p_trigger_db,
-        offset);
+        trigger_delta);
     }
     ev = E_OK;
   }
@@ -142,8 +159,8 @@ FUNC(StatusType, OS_CODE)
     p_st_cb->start        = start;
 
     if (p_trigger_cb->status == OSEE_TRIGGER_CANCELED) {
-      /* Re-turn on the trigger, that is in handling, since is handling I'll set
-         here 'when' based on start */
+      /* Re-turn on the trigger, that is in handling, since is handling I'll
+         set here 'when' based on start */
       p_trigger_cb->when   = start;
       p_trigger_cb->status = OSEE_TRIGGER_REENABLED;
     } else {

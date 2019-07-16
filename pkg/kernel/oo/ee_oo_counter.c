@@ -311,12 +311,16 @@ static FUNC(void, OS_CODE)
           - If a Next Schedule Table is activated, to stop the original
             Schedule Table after the final delay.
           - IF Original Schedule Table is repeating */
-      if (expiry_position == INVALID_SCHEDULETABLE_POSITION) {
+      if ((expiry_position & SCHEDULETABLE_FINAL_DELAY_POSITION) ==
+        SCHEDULETABLE_FINAL_DELAY_POSITION)
+      {
         /* Get the next Schedule Table */
         CONSTP2VAR(OsEE_SchedTabDB, AUTOMATIC, OS_APPL_CONST)
           p_next_st_db = p_st_cb->p_next_table;
 
-        if (p_next_st_db != NULL) {
+        if ((expiry_position == SCHEDULETABLE_FINAL_DELAY_POSITION) &&
+          (p_next_st_db != NULL))
+        {
           /* Turn-off Orig Schedule Table */
           p_st_cb->st_status    = SCHEDULETABLE_STOPPED;
           osEE_st_get_trigger_db(p_st_db)->p_trigger_cb->
@@ -405,7 +409,7 @@ static FUNC(void, OS_CODE)
               p_st_db = NULL;
             } else {
               /* Schedule the final delay for original schedule table */
-              p_st_cb->position = INVALID_SCHEDULETABLE_POSITION;
+              p_st_cb->position = SCHEDULETABLE_FINAL_DELAY_POSITION;
               /* [SWS_Os_0427] If the schedule table is single-shot,
                   the Operating System module shall allow a Final Delay between
                   0 .. OsCounterMaxAllowedValue of the underlying counter. */
