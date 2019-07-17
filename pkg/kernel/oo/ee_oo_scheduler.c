@@ -316,9 +316,11 @@ FUNC(OsEE_bool, OS_CODE)
 
   /* Traverse the queue until needed */
   while (p_curr != NULL) {
-    VAR(TaskPrio, AUTOMATIC)                      prio_to_check;
-    CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA) p_cur_tdb = p_curr->p_tdb;
-    CONSTP2CONST(OsEE_TCB, AUTOMATIC, OS_APPL_DATA) p_cur_tcb = p_cur_tdb->p_tcb;
+    VAR(TaskPrio, AUTOMATIC)  prio_to_check;
+    CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
+      p_cur_tdb = p_curr->p_tdb;
+    CONSTP2CONST(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
+      p_cur_tcb = p_cur_tdb->p_tcb;
 
     if (as_ready) {
       prio_to_check = p_cur_tdb->ready_prio;
@@ -356,10 +358,27 @@ FUNC_P2VAR(OsEE_SN, OS_APPL_DATA, OS_CODE)
 {
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb         = p_cdb->p_ccb;
   CONSTP2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA)  p_prev_stk_sn = p_ccb->p_stk_sn;
+  CONSTP2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA)
+    p_next_stk_sn = p_prev_stk_sn->p_next;
 
   /* Pop the current STK SN, if not IDLE TASK. This function MUST not be
    * called inside IDLE TASK. */
-  p_ccb->p_stk_sn = p_prev_stk_sn->p_next;
+  p_ccb->p_stk_sn = p_next_stk_sn;
+#if (defined(OSEE_HAS_POSTTASKHOOK))
+  /* Call PostTaskHook before switching active TASK, if the next stacked
+     is IdleTask and the Task Terminated is not an ISR2.
+     This case inside osEE_scheduler_core_rq_preempt_stk is considered a
+     preemption, but osEE_call_post_task_hook is not called since is the
+     preemption of the Idle Task.
+     But since is a preemption p_preempt will be != to NULL and the following
+     osEE_call_post_task_hook call in this methond won't be reached. */
+  if ((p_next_stk_sn == NULL) &&
+      (p_ccb->p_curr->task_type <= OSEE_TASK_TYPE_EXTENDED)
+  )
+  {
+    osEE_call_post_task_hook(p_ccb);
+  }
+#endif /* OSEE_HAS_POSTTASKHOOK */
 
   /* No need to set Temporary ccb.p_curr, obtaining coherence, since
    * osEE_scheduler_core_rq_preempt_stk won't rely on that.
