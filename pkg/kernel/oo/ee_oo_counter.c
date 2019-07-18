@@ -291,123 +291,103 @@ static FUNC(void, OS_CODE)
     p_st_cb = osEE_st_get_cb(p_st_db);
 
   do {
-    /* Trigger to be reinserted */
-    P2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_CONST)
-      p_trigger_to_reinsert = NULL;
-    /* When the new trigger has to expire */
-    VAR(TickType, AUTOMATIC)  next_when = 0U;
+    /* NextScheduleTable to be handled, if not NULL can make the algorithm
+       re-enter the inner loop. */
+    P2VAR(OsEE_SchedTabDB, AUTOMATIC, OS_APPL_CONST) p_next_st_db = NULL;
 
-    /* Enter in Critical Section to Handle Expiry Point */
-    osEE_lock_core(p_cdb);
-    if (osEE_st_get_trigger_db(p_st_db)->p_trigger_cb->status ==
-         OSEE_TRIGGER_EXPIRED)
-    {
-      /* Utility local var to handle expiry point */
-      VAR(TickType, AUTOMATIC)  nextOffset;
-      VAR(MemSize, AUTOMATIC)   expiry_position = p_st_cb->position;
+    do {
+      /* Trigger to be reinserted */
+      P2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_CONST)
+        p_trigger_to_reinsert = NULL;
+      /* When the new trigger has to expire */
+      VAR(TickType, AUTOMATIC)  next_when = 0U;
 
-      /* This can happen:
-          - If the Schedule Table has been started relatively
-          - If a Next Schedule Table is activated, to stop the original
-            Schedule Table after the final delay.
-          - IF Original Schedule Table is repeating */
-      if ((expiry_position & SCHEDULETABLE_FINAL_DELAY_POSITION) ==
-        SCHEDULETABLE_FINAL_DELAY_POSITION)
+      /* Enter in Critical Section to Handle Expiry Point */
+      osEE_lock_core(p_cdb);
+      if (osEE_st_get_trigger_db(p_st_db)->p_trigger_cb->status ==
+           OSEE_TRIGGER_EXPIRED)
       {
-        /* Get the next Schedule Table */
-        CONSTP2VAR(OsEE_SchedTabDB, AUTOMATIC, OS_APPL_CONST)
-          p_next_st_db = p_st_cb->p_next_table;
+        /* Utility local vars to handle expiry point */
+        VAR(TickType, AUTOMATIC)  nextOffset;
+        VAR(MemSize, AUTOMATIC)   expiry_position = p_st_cb->position;
 
-        if ((expiry_position == SCHEDULETABLE_FINAL_DELAY_POSITION) &&
-          (p_next_st_db != NULL))
+        /* This can happen:
+            - If the Schedule Table has been started relatively
+            - If a Next Schedule Table is activated, to stop the original
+              Schedule Table after the final delay.
+            - IF Original Schedule Table is repeating */
+        if ((expiry_position & SCHEDULETABLE_FINAL_DELAY_POSITION) ==
+          SCHEDULETABLE_FINAL_DELAY_POSITION)
         {
-          /* Turn-off Orig Schedule Table */
-          p_st_cb->st_status    = SCHEDULETABLE_STOPPED;
-          osEE_st_get_trigger_db(p_st_db)->p_trigger_cb->
-            status = OSEE_TRIGGER_INACTIVE;
-
-          /* Next ST Handling */
-          p_st_db = p_next_st_db;
-          p_st_cb = osEE_st_get_cb(p_next_st_db);
-
-          p_st_cb->st_status = SCHEDULETABLE_RUNNING;
-
-          p_st_cb->position = 0U;
-          /* Set Next ST Start value */
-          p_st_cb->start    = p_counter_db->p_counter_cb->value;
-
-          nextOffset = (*p_st_db->p_expiry_point_array)[0U].offset;
-
-          /* Handle special case of some expiry points with offset equal to
-             zero */
-          if (nextOffset > 0U) {
-            /* Schedule the trigger tied to the next Schedule Table */
-            p_trigger_to_reinsert = osEE_st_get_trigger_db(p_st_db);
-            next_when = p_st_cb->start + nextOffset;
-            /* Exit From The Loop */
-            p_st_db = NULL;
+          if (expiry_position == SCHEDULETABLE_FINAL_DELAY_POSITION) {
+            /* Get Eventual Next Schedule Table */
+            p_next_st_db = p_st_cb->p_next_table;
           }
-          /* else first expiry point is handled immediately */
-        } else {
-          /* Schedule Table started relatively or Repeating Schedule Table */
-          p_st_cb->position = 0U;
-          /* Set Repeating ST Start value */
-          p_st_cb->start    = p_counter_db->p_counter_cb->value;
-          nextOffset        = (*p_st_db->p_expiry_point_array)[0U].offset;
 
-          if (nextOffset > 0U) {
-            /* Trigger CB "when" field is used to hold next trigger value, for
-               next expiry point */
-            p_trigger_to_reinsert = osEE_st_get_trigger_db(p_st_db);
-            next_when = p_st_cb->start + nextOffset;
-            /* Exit From The Loop */
-            p_st_db = NULL;
-          }
-          /* else (nextOffset == 0) the next loop iteration will handle the
-             first expiry point of the repeating ST */
-        }
-      } else {
-        /* Get the Expiry point */
-        VAR(MemSize, AUTOMATIC) i;
-        /* Expiry point description */
-        CONSTP2VAR(OsEE_st_exipiry_point, AUTOMATIC, OS_APPL_CONST)
-          p_expiry_point = &(*p_st_db->p_expiry_point_array)[expiry_position];
-        CONST(MemSize, AUTOMATIC)
-          action_array_size = p_expiry_point->action_array_size;
+          if ((expiry_position == SCHEDULETABLE_STARTING_REL_POSITION) ||
+              (p_st_db->repeated == OSEE_TRUE))
+          {
+            /* Schedule Table started relatively or Repeating Schedule Table */
+            p_st_cb->position = 0U;
+            /* Set Repeating ST Start value */
+            p_st_cb->start    = p_counter_db->p_counter_cb->value;
+            nextOffset        = (*p_st_db->p_expiry_point_array)[0U].offset;
 
-        /* Handle expiry point actions outside the Critical Section */
-        osEE_unlock_core(p_cdb);
-
-        for (i = 0U; i < action_array_size; ++i) {
-          (void)osEE_handle_action(&(*p_expiry_point->p_action_array)[i]);
-        }
-
-        /* Reenter in critical section after handling actions */
-        osEE_lock_core(p_cdb);
-
-        /* if the trigger is still valid... */
-        if (osEE_st_get_trigger_db(p_st_db)->p_trigger_cb->status ==
-            OSEE_TRIGGER_EXPIRED)
-        {
-          /* Handle next expiry point insertion in alarm queue */
-          /* if it is the last expiry point and if this is not a repeating
-             schedule table, handle next schedule table or stop it */
-          if (expiry_position == (p_st_db->expiry_point_array_size - 1U)) {
-            /* We reached the end of schedule table so we stop it */
-            if ((p_st_cb->p_next_table == NULL) && (!p_st_db->repeated)) {
-              /* [SWS_Os_00009] If the schedule table is single-shot, the
-                  Operating System module shall stop the processing of the
-                  schedule table Final Delay ticks after the Final Expiry Point
-                  is processed. */
-              p_st_cb->st_status  = SCHEDULETABLE_STOPPED;
-              /*  This is needed to stop the underlying Trigger tied to the
-                  Schedule Table, otherwise the Trigger will reschedule this
-                  trigger on the next occurrence of counter.value == when */
-              osEE_st_get_trigger_db(p_st_db)->p_trigger_cb->status =
-                OSEE_TRIGGER_INACTIVE;
-              /* Exit From The Loop */
+            if (nextOffset > 0U) {
+              /* Trigger CB "when" field is used to hold next trigger value, for
+                 next expiry point */
+              p_trigger_to_reinsert = osEE_st_get_trigger_db(p_st_db);
+              next_when = p_st_cb->start + nextOffset;
+              /* Exit From The Inner Loop */
               p_st_db = NULL;
-            } else {
+            }
+            /* else (nextOffset == 0) the next loop iteration will handle the
+               first expiry point of the ST */
+          } else if (p_st_db->repeated == OSEE_FALSE) {
+            /* We reached the end of schedule table so we stop it */
+            /* [SWS_Os_00009] If the schedule table is single-shot, the
+                Operating System module shall stop the processing of the
+                schedule table Final Delay ticks after the Final Expiry Point
+                is processed. */
+            p_st_cb->st_status  = SCHEDULETABLE_STOPPED;
+            /*  This is needed to stop the underlying Trigger tied to the
+                Schedule Table, otherwise the Trigger will reschedule this
+                trigger on the next occurrence of counter.value == when */
+            osEE_st_get_trigger_db(p_st_db)->p_trigger_cb->status =
+              OSEE_TRIGGER_INACTIVE;
+            /* Exit From The Inner Loop */
+            p_st_db = NULL;
+          } else {
+            /* Exit From The Inner Loop */
+            p_st_db = NULL;
+          }
+        } else {
+          /* Get the Expiry point */
+          VAR(MemSize, AUTOMATIC) i;
+          /* Expiry point description */
+          CONSTP2VAR(OsEE_st_exipiry_point, AUTOMATIC, OS_APPL_CONST)
+            p_expiry_point = &(*p_st_db->p_expiry_point_array)[expiry_position];
+          CONST(MemSize, AUTOMATIC)
+            action_array_size = p_expiry_point->action_array_size;
+
+          /* Handle expiry point actions outside the Critical Section */
+          osEE_unlock_core(p_cdb);
+
+          for (i = 0U; i < action_array_size; ++i) {
+            (void)osEE_handle_action(&(*p_expiry_point->p_action_array)[i]);
+          }
+
+          /* Reenter in critical section after handling actions */
+          osEE_lock_core(p_cdb);
+
+          /* if the trigger is still valid... */
+          if (osEE_st_get_trigger_db(p_st_db)->p_trigger_cb->status ==
+              OSEE_TRIGGER_EXPIRED)
+          {
+            /* Handle next expiry point insertion in alarm queue */
+            /* if it is the last expiry point and if this is not a repeating
+               schedule table, handle next schedule table or stop it */
+            if (expiry_position == (p_st_db->expiry_point_array_size - 1U)) {
               /* Schedule the final delay for original schedule table */
               p_st_cb->position = SCHEDULETABLE_FINAL_DELAY_POSITION;
               /* [SWS_Os_0427] If the schedule table is single-shot,
@@ -416,49 +396,87 @@ static FUNC(void, OS_CODE)
               if (p_st_db->duration > p_expiry_point->offset) {
                 p_trigger_to_reinsert = osEE_st_get_trigger_db(p_st_db);
                 next_when = p_st_cb->start + p_st_db->duration;
-                /* Exit From The Loop */
+              } else {
+                /* Get Eventual Next ScheduleTable */
+                p_next_st_db = p_st_cb->p_next_table;
+              }
+              /* Exit From The Inner Loop */
+              p_st_db = NULL;
+            } else {
+              if (p_st_db->sync_strategy == OSEE_SCHEDTABLE_SYNC_EXPLICIT) {
+                /* *** TODO: HANDLE SYNCRONIZATION *** */
+              }
+              /* Schedule the next expiry point */
+              ++expiry_position;
+              p_st_cb->position = expiry_position;
+
+              nextOffset = (*p_st_db->p_expiry_point_array)[expiry_position].
+                offset;
+
+              /* Check if new expiry point is not simultaneous of the
+                 previous one */
+              if (nextOffset > p_expiry_point->offset) {
+                p_trigger_to_reinsert = osEE_st_get_trigger_db(p_st_db);
+                next_when = p_st_cb->start + nextOffset;
+                /* Exit From The Inner Loop */
                 p_st_db = NULL;
               }
+              /* else handle the next expiry point immediately */
             }
           } else {
-            if (p_st_db->sync_strategy == OSEE_SCHEDTABLE_SYNC_EXPLICIT) {
-              /* *** TODO: HANDLE SYNCRONIZATION *** */
-            }
-            /* Schedule the next expiry point */
-            ++expiry_position;
-            p_st_cb->position = expiry_position;
-
-            nextOffset = (*p_st_db->p_expiry_point_array)[expiry_position].
-              offset;
-
-            /* Check if new expiry point is not simultaneous of the
-               previous one */
-            if (nextOffset > p_expiry_point->offset) {
-              p_trigger_to_reinsert = osEE_st_get_trigger_db(p_st_db);
-              next_when = p_st_cb->start + nextOffset;
-              /* Exit From The Loop */
-              p_st_db = NULL;
-            }
-            /* else handle the next expiry point immediately */
+            /* Exit From The Inner Loop */
+            p_st_db = NULL;
           }
-        } else {
-          /* Exit From The Loop */
-          p_st_db = NULL;
         }
+      } else {
+        /* Exit From The Inner Loop */
+        p_st_db = NULL;
       }
-    } else {
-      /* Exit From The Loop */
-      p_st_db = NULL;
-    }
 
-    /* Reinsert the trigger in queue if needed */
-    if (p_trigger_to_reinsert != NULL) {
-      p_trigger_to_reinsert->p_trigger_cb->status = OSEE_TRIGGER_ACTIVE;
-      osEE_counter_insert_abs_trigger(p_counter_db, p_trigger_to_reinsert,
-        next_when);
+      /* Reinsert the trigger in queue if needed */
+      if (p_trigger_to_reinsert != NULL) {
+        p_trigger_to_reinsert->p_trigger_cb->status = OSEE_TRIGGER_ACTIVE;
+        osEE_counter_insert_abs_trigger(p_counter_db, p_trigger_to_reinsert,
+          next_when);
+      }
+      /* Exit critical section for this loop */
+      osEE_unlock_core(p_cdb);
+    } while (p_st_db != NULL);
+
+    /* Next ST Handling */
+    if (p_next_st_db != NULL) {
+      /* Utility local var to handle expiry point */
+      VAR(TickType, AUTOMATIC)  nextOffset;
+
+      /* Enter in Critical Section to update ST data structure */
+      osEE_lock_core(p_cdb);
+
+      p_st_db = p_next_st_db;
+      p_st_cb = osEE_st_get_cb(p_next_st_db);
+
+      p_st_cb->st_status = SCHEDULETABLE_RUNNING;
+
+      p_st_cb->position = 0U;
+      /* Set Next ST Start value */
+      p_st_cb->start    = p_counter_db->p_counter_cb->value;
+
+      nextOffset = (*p_st_db->p_expiry_point_array)[0U].offset;
+
+      /* Handle special case of some expiry points with offset equal to
+         zero */
+      if (nextOffset > 0U) {
+        /* Schedule the trigger tied to the next Schedule Table */
+        osEE_counter_insert_abs_trigger(p_counter_db,
+          osEE_st_get_trigger_db(p_st_db),
+          p_st_cb->start + nextOffset);
+        /* Exit From The Outer Loop */
+        p_st_db = NULL;
+      }
+      /* else re-enter in the Inner Loop to handle the first expiry point of
+         the Next Schedule Table */
+      /* Exit critical section */
+      osEE_unlock_core(p_cdb);
     }
-    /* exit critical section for this loop */
-    osEE_unlock_core(p_cdb);
   } while (p_st_db != NULL);
 }
 #endif /* OSEE_HAS_SCHEDULE_TABLES */

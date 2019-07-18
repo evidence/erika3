@@ -173,7 +173,7 @@ FUNC_P2VAR(OsEE_preempt, OS_APPL_DATA, OS_CODE)
   } else if (p_rq_sn != NULL) {
     /* Only Idle TASK stacked -> RQ preempt STK. */
     /* Don't use p_ccb->p_curr, is not reliable here,
-     * It points to the terminated TASK, we are still evaluating
+     * It could point to a terminated TASK, we are still evaluating
      * the next one. */
     p_ret_tdb                 = p_cdb->p_idle_task;
     p_ret_tdb->p_tcb->status  = OSEE_TASK_READY_STACKED;
@@ -264,7 +264,7 @@ FUNC_P2VAR(OsEE_preempt, OS_APPL_DATA, OS_CODE)
   } else if (p_rq_sn != NULL) {
     /* Only Idle TASK stacked -> RQ preempt STK. */
     /* Don't use p_ccb->p_curr, is not reliable here,
-     * It points to the terminated TASK, we are still evaluating
+     * It could point to a terminated TASK, we are still evaluating
      * the next one. */
     p_ret_tdb                 = p_cdb->p_idle_task;
     p_ret_tdb->p_tcb->status  = OSEE_TASK_READY_STACKED;
@@ -367,11 +367,12 @@ FUNC_P2VAR(OsEE_SN, OS_APPL_DATA, OS_CODE)
 #if (defined(OSEE_HAS_POSTTASKHOOK))
   /* Call PostTaskHook before switching active TASK, if the next stacked
      is IdleTask and the Task Terminated is not an ISR2.
-     This case inside osEE_scheduler_core_rq_preempt_stk is considered a
-     preemption, but osEE_call_post_task_hook is not called since is the
-     preemption of the Idle Task.
-     But since is a preemption p_preempt will be != to NULL and the following
-     osEE_call_post_task_hook call in this methond won't be reached. */
+     If the Ready Queue is not empty osEE_scheduler_core_rq_preempt_stk
+     consider this a preemption, but osEE_call_post_task_hook is not called
+     since is the preemption of the Idle Task.
+     But since is a preemption, the p_preempt return value will be != to NULL
+     and the following osEE_call_post_task_hook call in this method
+     won't be reached. */
   if ((p_next_stk_sn == NULL) &&
       (p_ccb->p_curr->task_type <= OSEE_TASK_TYPE_EXTENDED)
   )
@@ -398,18 +399,21 @@ FUNC_P2VAR(OsEE_SN, OS_APPL_DATA, OS_CODE)
     if (p_preempt == NULL) {
       P2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)      p_tdb_stk;
 
-#if (defined(OSEE_HAS_POSTTASKHOOK))
-      /* Call PostTaskHook before switching active TASK, if the terminating
-         TASK is a real TASK and not an ISR2 */
-      if (p_ccb->p_curr->task_type <= OSEE_TASK_TYPE_EXTENDED) {
-        osEE_call_post_task_hook(p_ccb);
-      }
-#endif /* OSEE_HAS_POSTTASKHOOK */
-
       if (p_curr_stk_sn != NULL) {
+#if (defined(OSEE_HAS_POSTTASKHOOK))
+        /* Call PostTaskHook before switching active TASK, if the terminating
+           TASK is a real TASK and not an ISR2 and we are not returning to the
+           IdleTask. */
+        if (p_ccb->p_curr->task_type <= OSEE_TASK_TYPE_EXTENDED) {
+          osEE_call_post_task_hook(p_ccb);
+        }
+#endif /* OSEE_HAS_POSTTASKHOOK */
         /* Resume STK TASK */
         p_tdb_stk = p_curr_stk_sn->p_tdb;
       } else {
+        /* If we are returning to the IdleTask,
+           the call to osEE_call_post_task_hook has already been done at the
+           beginning of this function. */
         /* Resume IDLE TASK */
         p_tdb_stk = p_cdb->p_idle_task;
       }
