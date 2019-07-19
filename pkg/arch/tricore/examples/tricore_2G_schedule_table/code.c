@@ -67,11 +67,12 @@ void ErrorHook ( StatusType Error ) {
 TASK(Task1)
 {
   NextScheduleTable(SchedTab1, SchedTab2);
+  NextScheduleTable(SchedTab3, SchedTab4);
 
   /* Wait all the activation of TASK 2 */
-  /* 1 for ST1 + 2 for ST2 + 5 for ST3 on Core2 */
+  /* 1 for ST1 + 2 for ST2 + 6 for ST3-ST4 on Core2 */
   /* Last expiry point from ST3 will release this TASK */
-  while (task_counter < 8U) {
+  while (task_counter < 9U) {
     EventMaskType mask;
 
     WaitEvent(Event1);

@@ -396,12 +396,11 @@ static FUNC(void, OS_CODE)
               if (p_st_db->duration > p_expiry_point->offset) {
                 p_trigger_to_reinsert = osEE_st_get_trigger_db(p_st_db);
                 next_when = p_st_cb->start + p_st_db->duration;
-              } else {
-                /* Get Eventual Next ScheduleTable */
-                p_next_st_db = p_st_cb->p_next_table;
+                /* Exit From The Inner Loop */
+                p_st_db = NULL;
               }
-              /* Exit From The Inner Loop */
-              p_st_db = NULL;
+              /* else handle immediately the fake final delay position expiry
+                 point */
             } else {
               if (p_st_db->sync_strategy == OSEE_SCHEDTABLE_SYNC_EXPLICIT) {
                 /* *** TODO: HANDLE SYNCRONIZATION *** */
@@ -445,6 +444,11 @@ static FUNC(void, OS_CODE)
 
     /* Next ST Handling */
     if (p_next_st_db != NULL) {
+      /* Next ST Trigger */
+      CONSTP2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_CONST)
+        p_next_trigger_db = osEE_st_get_trigger_db(p_next_st_db);
+      CONSTP2VAR(OsEE_TriggerCB, AUTOMATIC, OS_APPL_CONST)
+        p_next_trigger_cb = p_next_trigger_db->p_trigger_cb;
       /* Utility local var to handle expiry point */
       VAR(TickType, AUTOMATIC)  nextOffset;
 
@@ -466,14 +470,17 @@ static FUNC(void, OS_CODE)
          zero */
       if (nextOffset > 0U) {
         /* Schedule the trigger tied to the next Schedule Table */
+        p_next_trigger_cb->status = OSEE_TRIGGER_ACTIVE;
         osEE_counter_insert_abs_trigger(p_counter_db,
-          osEE_st_get_trigger_db(p_st_db),
+          p_next_trigger_db,
           p_st_cb->start + nextOffset);
         /* Exit From The Outer Loop */
         p_st_db = NULL;
+      } else {
+        /* Re-enter in the Inner Loop to handle the first expiry point of
+           the Next Schedule Table */
+         p_next_trigger_cb->status = OSEE_TRIGGER_EXPIRED;
       }
-      /* else re-enter in the Inner Loop to handle the first expiry point of
-         the Next Schedule Table */
       /* Exit critical section */
       osEE_unlock_core(p_cdb);
     }

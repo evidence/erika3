@@ -177,7 +177,7 @@ CPU test_application {
 
   SCHEDULETABLE SchedTab3 {
     COUNTER = system_timer_core2;
-    DURATION = 900;
+    DURATION = 800;
     REPEATING = FALSE;
     AUTOSTART = TRUE;
     EXPIRE_POINT = ACTION {
@@ -198,6 +198,17 @@ CPU test_application {
     };
     EXPIRE_POINT = ACTION {
       EXPIRE_VALUE = 800;
+      ACTION = ACTIVATETASK { TASK = Task2; };
+    };
+  };
+
+  SCHEDULETABLE SchedTab4 {
+    COUNTER = system_timer_core2;
+    DURATION = 0;
+    REPEATING = FALSE;
+    AUTOSTART = FALSE;
+    EXPIRE_POINT = ACTION {
+      EXPIRE_VALUE = 0;
       ACTION = ACTIVATETASK { TASK = Task2; };
       ACTION = SETEVENT     { TASK = Task1; EVENT = Event1; };
     };
