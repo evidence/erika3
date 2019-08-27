@@ -84,6 +84,23 @@ extern void OSEE_SHUTDOWNOS_SYNC_BARRIER_CB(void);
 #endif /* OSEE_SHUTDOWNOS_SYNC_BARRIER_CB */
 #endif /* !OSEE_SINGLECORE */
 
+/**
+ * Function called when the system needs to switch from the current task
+ * (which is not terminated) to another task.
+ *
+ * Typically called when:
+ * <ul>
+ * <li> the new task is preempting the current task, or
+ * <li> the current task is blocking.
+ * </ul>
+ *
+ * It is not specified whether the new task was already on the stack
+ * (in which case we need to take back its context) because this check is
+ * delegated to the underlying layers.
+ *
+ * \param [in] p_from Pointer to the data structure of the current task
+ * \param [in] p_to   Pointer to the data structure of the new task
+ */
 FUNC(void, OS_CODE)
   osEE_change_context_from_running
 (
@@ -92,6 +109,7 @@ FUNC(void, OS_CODE)
 );
 
 #if (!defined(OSEE_CPU_STARTOS_INLINE))
+/** Arch-dependent StartOS procedure */
 #define OSEE_CPU_STARTOS_INLINE
 #endif /* !OSEE_CPU_STARTOS_INLINE */
 
@@ -100,7 +118,7 @@ FUNC(void, OS_CODE)
 FUNC(void, OS_CODE_INIT) osEE_os_init(void);
 #endif /* OSEE_API_DYNAMIC */
 
-/* For each CORE Arch dependent StartOS procedure */
+/** Arch-dependent StartOS procedure for each core */
 OSEE_CPU_STARTOS_INLINE FUNC(OsEE_bool, OS_CODE)
   osEE_cpu_startos
 (
@@ -163,6 +181,11 @@ FUNC(void, OS_CODE)
   VAR(TaskType, AUTOMATIC) isr2_id
 );
 
+/**
+ * Function returning the pointer of the TDB of the current task.
+ *
+ * \return Pointer to the TDB data structure of the current task.
+ */
 LOCAL_INLINE FUNC_P2VAR(OsEE_TDB, OS_APPL_DATA, OS_CODE)
   osEE_get_curr_task
 (
@@ -172,6 +195,14 @@ LOCAL_INLINE FUNC_P2VAR(OsEE_TDB, OS_APPL_DATA, OS_CODE)
   return osEE_get_curr_core()->p_ccb->p_curr ;
 }
 
+
+/**
+ * Function to insert an activated task in the ready queue.
+ *
+ * \param [in] p_tdb_act Pointer to the TDB of the activated task.
+ * \return E_OK in case the maximum number of activations has not been
+ *         exceeded; E_OS_LIMIT otherwise.
+ */
 FUNC(StatusType, OS_CODE)
   osEE_task_activated
 (
@@ -223,6 +254,12 @@ LOCAL_INLINE FUNC(void, OS_CODE)
 #endif /* OSEE_HAS_EVENTS */
 
 #if (!defined(OSEE_SINGLECORE))
+/**
+ * Function returning the ID of the core currently handling the task.
+ *
+ * \param [in] p_tdb Pointer to the TDB of the task
+ * \return Current core ID
+ */
 LOCAL_INLINE FUNC(CoreIdType, OS_CODE)
   osEE_task_get_curr_core_id
 (

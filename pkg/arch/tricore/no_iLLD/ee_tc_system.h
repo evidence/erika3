@@ -356,7 +356,12 @@ typedef struct OsEE_tc_SCU_WDTS_tag
     )\
   )
 
-/** Reads the whatchdog password from CON0 register */
+/**
+ * \brief Reads the whatchdog password from CON0 register
+ *
+ * \param [in] core_index The watchdog core id
+ * \return The watchdog password
+ */
 OSEE_STATIC_INLINE uint16_t OSEE_ALWAYS_INLINE
   osEE_tc_get_cpu_wdt_pw(OsEE_reg core_index)
 {
@@ -368,7 +373,11 @@ OSEE_STATIC_INLINE uint16_t OSEE_ALWAYS_INLINE
   return (uint16_t)pw_toggled;
 }
 
-/** Reads the safety whatchdog password from CON0 register */
+/**
+ * \brief Reads the safety whatchdog password from CON0 register
+ *
+ * \return The safety watchdog password
+ */
 OSEE_STATIC_INLINE uint16_t OSEE_ALWAYS_INLINE
   osEE_tc_get_safety_wdt_pw(void)
 {

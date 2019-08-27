@@ -39,7 +39,7 @@
  * project.
  * ###*E*### */
 
-/** \file   ee_sched_partitioned.c
+/** \file   ee_oo_scheduler.c
  *  \brief  OSEK Kernel Partitioned Scheduler.
  *
  *  This files contains the implementation of OSEK Kernel Partitioned Scheduler

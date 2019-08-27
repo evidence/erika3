@@ -39,7 +39,7 @@
  * project.
  * ###*E*### */
 
-/** \file  ee_sched_entry_points.c
+/** \file  ee_oo_sched_entry_points.c
  *  \brief  OSEK Kernel Scheduler Entry Points.
  *
  *  This files contains the implementation of all OSEK Kernel Scheduler Entry
