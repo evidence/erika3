@@ -61,7 +61,7 @@ BINDIRLOC := $(realpath $(shell cygpath `cygpath -ms '$(BINDIR)'`))/
 else
 BINDIRLOC := $(realpath $(BINDIR))/
 endif # OS_EE_RTD_BUILD_ENV_CYGWIN
-endif # CCTCBIN
+endif # BINDIR
 
 # ALLINCPATH is a colon separated list of directories for source file searching
 # -I = adds directories to the source file search path (for both gcc and gas)
