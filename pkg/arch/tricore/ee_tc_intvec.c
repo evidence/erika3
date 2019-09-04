@@ -17049,6 +17049,12 @@ static void OSEE_COMPILER_KEEP osEE_tc_isr2_wrapper(TaskType isr2_tid) {
         osEE_shutdown_os(p_curr_cdb,
           p_kcb->ar_shutdown_all_cores_error);
       } else {
+        /* Explicitly re-enable IRQs here to handle the SetEvent cross-core.
+           Context restoring executes osEE_scheduler_task_wrapper_restore that
+           does not explicitly re-enable interrupts,
+           as instead osEE_scheduler_task_wrapper_run does, that handles
+           context activation. */
+        osEE_hal_enableIRQ();
         (void)osEE_scheduler_task_preemption_point(osEE_get_kernel());
         /* I close OS critical section to handle TP (Timing Protection),
            for IPL (ICR.CCPN) it would have been enough CSA restoring from RFE. */
