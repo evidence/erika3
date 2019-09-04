@@ -604,7 +604,7 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
  *  
  *  \param [in] enable Flag to enable/disable the program cache
  */
-OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_tc_set_pcache(OsEE_bool enable)
+OSEE_STATIC_INLINE void osEE_tc_set_pcache(OsEE_bool enable)
 {
   uint16_t cpu_wdt_pw;
   OsEE_core_id  const core_id = osEE_get_curr_core_id();
@@ -638,7 +638,7 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_tc_set_pcache(OsEE_bool enable)
  *  
  *  \param [in] enable Flag to enable/disable the data cache
  */
-OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_tc_set_dcache(OsEE_bool enable)
+OSEE_STATIC_INLINE void osEE_tc_set_dcache(OsEE_bool enable)
 {
   uint16_t cpu_wdt_pw;
   OsEE_core_id  const core_id = osEE_get_curr_core_id();
@@ -662,6 +662,46 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_tc_set_dcache(OsEE_bool enable)
   osEE_tc_clear_cpu_endinit(core_index, cpu_wdt_pw);
   osEE_tc_set_csfr(OSEE_CSFR_DCON0, dcon0);
   osEE_tc_set_cpu_endinit(core_index, cpu_wdt_pw);
+}
+
+/**
+ *  \brief Enables/disables the program cache, without handling ENDINIT.
+ *  
+ *  \param [in] enable Flag to enable/disable the program cache
+ */
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
+  osEE_tc_set_pcache_wo_endinit(OsEE_bool enable)
+{
+/* PCON0[1:1](.PCBYP mask) Program Cache Bypass (rw).
+   PCBYP is the only not reserved bit in PCON0. */
+  OsEE_reg const pcon0 = (enable)? 0x0U: 0x2U;
+  if (enable) {
+    /* Step 1: Initiate invalidation of current pcache contents if any.
+       (i.e. PCON1[0:0](.PCINV) = 1 Program Cache Invalidate */
+    osEE_tc_set_csfr(OSEE_CSFR_PCON1, 0x1U);
+  }
+
+/* PCACHE enable steps */
+/* Step 2: Set PCBYP to 0 if cache is enabled */
+  osEE_tc_set_csfr(OSEE_CSFR_PCON0, pcon0);
+}
+
+/**
+ *  \brief Enables/disables the data cache, without handling ENDINIT.
+ *  
+ *  \param [in] enable Flag to enable/disable the data cache
+ */
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
+  osEE_tc_set_dcache_wo_endinit(OsEE_bool enable)
+{
+
+/* DCON0[1:1](.DCBYP mask) Data Cache Bypass (rw).
+   DCBYP is the only not reserved bit in DCON0. */
+  OsEE_reg const dcon0 = (enable)? 0x0U: 0x2U;
+
+/* DCACHE enable steps */
+/* Step 2: Set DCBYP to 0 if cache is enabled */
+  osEE_tc_set_csfr(OSEE_CSFR_DCON0, dcon0);
 }
 
 /**

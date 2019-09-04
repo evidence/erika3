@@ -565,14 +565,14 @@ void osEE_tc_core0_start(void)
   pcxi &= 0xFFF00000U;
   osEE_tc_set_csfr(OSEE_CSFR_PCXI, pcxi);
 
-/* TODO: Enable/Disable program cache depending on the configuration */
-  osEE_tc_set_pcache(OSEE_TC_PCACHE_ENABLED);
-
-/* TODO: Enable/Disable data cache depending on the configuration */
-  osEE_tc_set_dcache(OSEE_TC_DCACHE_ENABLED);
-
 /* Clear the ENDINIT bit in the WDT_CON0 register */
   osEE_tc_clear_cpu_endinit(0U, cpu_wdt_pw);
+
+/* TODO: Enable/Disable program cache depending on the configuration */
+  osEE_tc_set_pcache_wo_endinit(OSEE_TC_PCACHE_ENABLED);
+
+/* TODO: Enable/Disable data cache depending on the configuration */
+  osEE_tc_set_dcache_wo_endinit(OSEE_TC_DCACHE_ENABLED);
 
 /* Load Base Address of Trap Vector Table. */
   osEE_tc_set_csfr(OSEE_CSFR_BTV, (OsEE_reg)__TRAPTAB0);
@@ -650,7 +650,6 @@ void osEE_tc_core1_start(void)
 {
   OsEE_reg       pcxi;
   uint16_t const cpu_wdt_pw     = osEE_tc_get_cpu_wdt_pw(1U);
-  uint16_t const safety_wdt_pw  = osEE_tc_get_safety_wdt_pw();
 
 /* Load User stack pointer */
   osEE_set_SP(__USTACK1);
@@ -671,14 +670,14 @@ void osEE_tc_core1_start(void)
   pcxi &= 0xFFF00000U;
   osEE_tc_set_csfr(OSEE_CSFR_PCXI, pcxi);
 
-/* TODO: Enable/Disable program cache depending on the configuration */
-  osEE_tc_set_pcache(OSEE_TC_PCACHE_ENABLED);
-
-/* TODO: Enable/Disable data cache depending on the configuration */
-  osEE_tc_set_dcache(OSEE_TC_DCACHE_ENABLED);
-
 /* Clear the ENDINIT bit in the WDT_CON0 register */
   osEE_tc_clear_cpu_endinit(1U, cpu_wdt_pw);
+
+/* TODO: Enable/Disable program cache depending on the configuration */
+  osEE_tc_set_pcache_wo_endinit(OSEE_TC_PCACHE_ENABLED);
+
+/* TODO: Enable/Disable data cache depending on the configuration */
+  osEE_tc_set_dcache_wo_endinit(OSEE_TC_DCACHE_ENABLED);
 
 /* Load Base Address of Trap Vector Table. */
   osEE_tc_set_csfr(OSEE_CSFR_BTV, (OsEE_reg)__TRAPTAB1);
@@ -707,10 +706,9 @@ void osEE_tc_core1_start(void)
 /* Setup the context save area linked list for CPU0 */
   osEE_tc_csa_init_inline(__CSA1, __CSA1_END);
 
-/* CPU and safety watchdogs are enabled by default. Disable them here to be
+/* CPU watchdogs are enabled by default. Disable the core1 one here to be
    re-enabled by ERIKA or by the Application */
   osEE_tc_disable_cpu_wdt(1U, cpu_wdt_pw);
-  osEE_tc_disable_safety_wdt(safety_wdt_pw);
 
 #if (defined(__TASKING__))
 /* C core 1 private initialization */
@@ -742,7 +740,6 @@ void osEE_tc_core2_start(void)
 {
   OsEE_reg       pcxi;
   uint16_t const cpu_wdt_pw     = osEE_tc_get_cpu_wdt_pw(2U);
-  uint16_t const safety_wdt_pw  = osEE_tc_get_safety_wdt_pw();
 
 /* Load User stack pointer */
   osEE_set_SP(__USTACK2);
@@ -763,14 +760,14 @@ void osEE_tc_core2_start(void)
   pcxi &= 0xFFF00000U;
   osEE_tc_set_csfr(OSEE_CSFR_PCXI, pcxi);
 
-/* TODO: Enable/Disable program cache depending on the configuration */
-  osEE_tc_set_pcache(OSEE_TC_PCACHE_ENABLED);
-
-/* TODO: Enable/Disable data cache depending on the configuration */
-  osEE_tc_set_dcache(OSEE_TC_DCACHE_ENABLED);
-
 /* Clear the ENDINIT bit in the WDT_CON0 register */
   osEE_tc_clear_cpu_endinit(2U, cpu_wdt_pw);
+
+/* TODO: Enable/Disable program cache depending on the configuration */
+  osEE_tc_set_pcache_wo_endinit(OSEE_TC_PCACHE_ENABLED);
+
+/* TODO: Enable/Disable data cache depending on the configuration */
+  osEE_tc_set_dcache_wo_endinit(OSEE_TC_DCACHE_ENABLED);
 
 /* Load Base Address of Trap Vector Table. */
   osEE_tc_set_csfr(OSEE_CSFR_BTV, (OsEE_reg)__TRAPTAB2);
@@ -799,10 +796,9 @@ void osEE_tc_core2_start(void)
 /* Setup the context save area linked list for CPU0 */
   osEE_tc_csa_init_inline(__CSA2, __CSA2_END);
 
-/* CPU and safety watchdogs are enabled by default. Disable them here to be
+/* CPU watchdogs are enabled by default. Disable the core2 one here to be
    re-enabled by ERIKA or by the Application */
   osEE_tc_disable_cpu_wdt(2U, cpu_wdt_pw);
-  osEE_tc_disable_safety_wdt(safety_wdt_pw);
 
 #if (defined(__TASKING__))
 /* C core 2 private initialization */
@@ -835,7 +831,6 @@ void osEE_tc_core3_start(void)
 {
   OsEE_reg       pcxi;
   uint16_t const cpu_wdt_pw     = osEE_tc_get_cpu_wdt_pw(3U);
-  uint16_t const safety_wdt_pw  = osEE_tc_get_safety_wdt_pw();
 
 /* Load User stack pointer */
   osEE_set_SP(__USTACK3);
@@ -856,14 +851,14 @@ void osEE_tc_core3_start(void)
   pcxi &= 0xFFF00000U;
   osEE_tc_set_csfr(OSEE_CSFR_PCXI, pcxi);
 
-/* TODO: Enable/Disable program cache depending on the configuration */
-  osEE_tc_set_pcache(OSEE_TC_PCACHE_ENABLED);
-
-/* TODO: Enable/Disable data cache depending on the configuration */
-  osEE_tc_set_dcache(OSEE_TC_DCACHE_ENABLED);
-
 /* Clear the ENDINIT bit in the WDT_CON0 register */
   osEE_tc_clear_cpu_endinit(3U, cpu_wdt_pw);
+
+/* TODO: Enable/Disable program cache depending on the configuration */
+  osEE_tc_set_pcache_wo_endinit(OSEE_TC_PCACHE_ENABLED);
+
+/* TODO: Enable/Disable data cache depending on the configuration */
+  osEE_tc_set_dcache_wo_endinit(OSEE_TC_DCACHE_ENABLED);
 
 /* Load Base Address of Trap Vector Table. */
   osEE_tc_set_csfr(OSEE_CSFR_BTV, (OsEE_reg)__TRAPTAB3);
@@ -892,10 +887,9 @@ void osEE_tc_core3_start(void)
 /* Setup the context save area linked list for CPU0 */
   osEE_tc_csa_init_inline(__CSA3, __CSA3_END);
 
-/* CPU and safety watchdogs are enabled by default. Disable them here to be
+/* CPU watchdogs are enabled by default. Disable the core3 one here to be
    re-enabled by ERIKA or by the Application */
   osEE_tc_disable_cpu_wdt(3U, cpu_wdt_pw);
-  osEE_tc_disable_safety_wdt(safety_wdt_pw);
 
 #if (defined(__TASKING__))
 /* C core 3 private initialization */
@@ -927,7 +921,6 @@ void osEE_tc_core4_start(void)
 {
   OsEE_reg       pcxi;
   uint16_t const cpu_wdt_pw     = osEE_tc_get_cpu_wdt_pw(4U);
-  uint16_t const safety_wdt_pw  = osEE_tc_get_safety_wdt_pw();
 
 /* Load User stack pointer */
   osEE_set_SP(__USTACK4);
@@ -948,14 +941,14 @@ void osEE_tc_core4_start(void)
   pcxi &= 0xFFF00000U;
   osEE_tc_set_csfr(OSEE_CSFR_PCXI, pcxi);
 
-/* TODO: Enable/Disable program cache depending on the configuration */
-  osEE_tc_set_pcache(OSEE_TC_PCACHE_ENABLED);
-
-/* TODO: Enable/Disable data cache depending on the configuration */
-  osEE_tc_set_dcache(OSEE_TC_DCACHE_ENABLED);
-
 /* Clear the ENDINIT bit in the WDT_CON0 register */
   osEE_tc_clear_cpu_endinit(4U, cpu_wdt_pw);
+
+/* TODO: Enable/Disable program cache depending on the configuration */
+  osEE_tc_set_pcache_wo_endinit(OSEE_TC_PCACHE_ENABLED);
+
+/* TODO: Enable/Disable data cache depending on the configuration */
+  osEE_tc_set_dcache_wo_endinit(OSEE_TC_DCACHE_ENABLED);
 
 /* Load Base Address of Trap Vector Table. */
   osEE_tc_set_csfr(OSEE_CSFR_BTV, (OsEE_reg)__TRAPTAB4);
@@ -984,10 +977,9 @@ void osEE_tc_core4_start(void)
 /* Setup the context save area linked list for CPU0 */
   osEE_tc_csa_init_inline(__CSA4, __CSA4_END);
 
-/* CPU and safety watchdogs are enabled by default. Disable them here to be
+/* CPU watchdogs are enabled by default. Disable the core4 one here to be
    re-enabled by ERIKA or by the Application */
   osEE_tc_disable_cpu_wdt(4U, cpu_wdt_pw);
-  osEE_tc_disable_safety_wdt(safety_wdt_pw);
 
 #if (defined(__TASKING__))
 /* C core 4 private initialization */
@@ -1019,7 +1011,6 @@ void osEE_tc_core6_start(void)
 {
   OsEE_reg       pcxi;
   uint16_t const cpu_wdt_pw     = osEE_tc_get_cpu_wdt_pw(5U);
-  uint16_t const safety_wdt_pw  = osEE_tc_get_safety_wdt_pw();
 
 /* Load User stack pointer */
   osEE_set_SP(__USTACK6);
@@ -1040,14 +1031,14 @@ void osEE_tc_core6_start(void)
   pcxi &= 0xFFF00000U;
   osEE_tc_set_csfr(OSEE_CSFR_PCXI, pcxi);
 
-/* TODO: Enable/Disable program cache depending on the configuration */
-  osEE_tc_set_pcache(OSEE_TC_PCACHE_ENABLED);
-
-/* TODO: Enable/Disable data cache depending on the configuration */
-  osEE_tc_set_dcache(OSEE_TC_DCACHE_ENABLED);
-
 /* Clear the ENDINIT bit in the WDT_CON0 register */
   osEE_tc_clear_cpu_endinit(5U, cpu_wdt_pw);
+
+/* TODO: Enable/Disable program cache depending on the configuration */
+  osEE_tc_set_pcache_wo_endinit(OSEE_TC_PCACHE_ENABLED);
+
+/* TODO: Enable/Disable data cache depending on the configuration */
+  osEE_tc_set_dcache_wo_endinit(OSEE_TC_DCACHE_ENABLED);
 
 /* Load Base Address of Trap Vector Table. */
   osEE_tc_set_csfr(OSEE_CSFR_BTV, (OsEE_reg)__TRAPTAB6);
@@ -1076,10 +1067,9 @@ void osEE_tc_core6_start(void)
 /* Setup the context save area linked list for CPU0 */
   osEE_tc_csa_init_inline(__CSA6, __CSA6_END);
 
-/* CPU and safety watchdogs are enabled by default. Disable them here to be
+/* CPU watchdogs are enabled by default. Disable the core5 one here to be
    re-enabled by ERIKA or by the Application */
   osEE_tc_disable_cpu_wdt(5U, cpu_wdt_pw);
-  osEE_tc_disable_safety_wdt(safety_wdt_pw);
 
 #if (defined(__TASKING__))
 /* C core 6 private initialization */
