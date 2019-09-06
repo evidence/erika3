@@ -507,10 +507,16 @@ void _start(void)
 /******************************************************************************
                           Constant Definitions
  ******************************************************************************/
-#define OSEE_TC_START_PSW          (0x00000B80U)
+/* Reset value of PSW.
+   PSW.IS is set, Global Stack is needed since ERIKA's
+   use the stack to save context for the current TASK 
+   + 
+   CDC (Call Depth Counter) is turned off
+ */
+#define OSEE_TC_START_PSW          (0x00000BFFU)
 
 #if 0
-#define OSEE_TC_START_PSW_ISP      (0x00000980U)
+#define OSEE_TC_START_PSW_ISP      (0x000009FFU)
 #endif
 
 /* reset the sections defined above, to normal region */
