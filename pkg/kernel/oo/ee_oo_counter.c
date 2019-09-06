@@ -254,20 +254,37 @@ static FUNC(void, OS_CODE)
 
   p_trigger_to_be_handled_cb = p_trigger_to_be_handled_db->p_trigger_cb;
 
-  if (p_trigger_to_be_handled_cb->status == OSEE_TRIGGER_EXPIRED) {
-    CONST(TickType, AUTOMATIC) cycle = osEE_alarm_get_cb(
+  switch (p_trigger_to_be_handled_cb->status) {
+    case OSEE_TRIGGER_EXPIRED:
+    {
+      CONST(TickType, AUTOMATIC) cycle = osEE_alarm_get_cb(
         osEE_trigger_get_alarm_db(p_trigger_to_be_handled_db)
       )->cycle;
-    if (cycle > 0U) {
-      /* Reinsert the trigger in timer wheel as relative with delta equal to
-         cycle */
-      p_trigger_to_be_handled_cb->status = OSEE_TRIGGER_ACTIVE;
-      osEE_counter_insert_rel_trigger(p_counter_db,
-        p_trigger_to_be_handled_db, cycle);
-    } else {
-      p_trigger_to_be_handled_cb->status = OSEE_TRIGGER_INACTIVE;
+      if (cycle > 0U) {
+        /* Reinsert the trigger in timer wheel as relative with delta equal to
+          cycle */
+        p_trigger_to_be_handled_cb->status = OSEE_TRIGGER_ACTIVE;
+        osEE_counter_insert_rel_trigger(p_counter_db,
+          p_trigger_to_be_handled_db, cycle);
+      } else {
+        p_trigger_to_be_handled_cb->status = OSEE_TRIGGER_INACTIVE;
+      }
     }
+    break;
+    case OSEE_TRIGGER_REENABLED:
+      /* Reinsert the trigger in timer wheel absolutly with the saved when */
+      p_trigger_to_be_handled_cb->status = OSEE_TRIGGER_ACTIVE;
+      osEE_counter_insert_abs_trigger(p_counter_db,
+        p_trigger_to_be_handled_db, p_trigger_to_be_handled_cb->when);
+    break;
+    case OSEE_TRIGGER_CANCELED:
+      p_trigger_to_be_handled_cb->status = OSEE_TRIGGER_INACTIVE;
+    break;
+    default:
+      /* Nothing to do. */
+    break;
   }
+
   /* Exit from critical section for the next action */
   osEE_unlock_core(p_cdb);
 }
@@ -287,7 +304,7 @@ static FUNC(void, OS_CODE)
   /* Get Schedule Table Configuration Structures */
   P2VAR(OsEE_SchedTabDB, AUTOMATIC, OS_APPL_CONST)
     p_st_db = osEE_trigger_get_st_db(p_trigger_to_be_handled_db);
-  P2VAR(OsEE_SchedTabCB, AUTOMATIC, OS_APPL_CONST)
+  P2VAR(OsEE_SchedTabCB, AUTOMATIC, OS_APPL_DATA)
     p_st_cb = osEE_st_get_cb(p_st_db);
 
   do {
@@ -296,6 +313,9 @@ static FUNC(void, OS_CODE)
     P2VAR(OsEE_SchedTabDB, AUTOMATIC, OS_APPL_CONST) p_next_st_db = NULL;
 
     do {
+      /* Cache trigger to handle cancellation or reenabling */
+      CONSTP2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_DATA)
+        p_trigger_canc_or_reenabled = osEE_st_get_trigger_db(p_st_db);
       /* Trigger to be reinserted */
       P2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_CONST)
         p_trigger_to_reinsert = NULL;
@@ -437,6 +457,25 @@ static FUNC(void, OS_CODE)
         p_trigger_to_reinsert->p_trigger_cb->status = OSEE_TRIGGER_ACTIVE;
         osEE_counter_insert_abs_trigger(p_counter_db, p_trigger_to_reinsert,
           next_when);
+      } else if (p_st_db == NULL) {
+        /* Check and Handle Cancellation or Reenabling */
+        CONSTP2VAR(OsEE_TriggerCB, AUTOMATIC, OS_APPL_DATA)
+          p_trigger_cb = p_trigger_canc_or_reenabled->p_trigger_cb;
+        switch (p_trigger_cb->status) {
+          case OSEE_TRIGGER_REENABLED:
+          /* Reinsert the trigger in timer wheel absolutely with
+             the saved when */
+          p_trigger_cb->status = OSEE_TRIGGER_ACTIVE;
+          osEE_counter_insert_abs_trigger(p_counter_db,
+            p_trigger_canc_or_reenabled,
+            p_trigger_cb->when);
+          break;
+          case OSEE_TRIGGER_CANCELED:
+            p_trigger_cb->status = OSEE_TRIGGER_INACTIVE;
+          break;
+          default:
+          break;
+        }
       }
       /* Exit critical section for this loop */
       osEE_unlock_core(p_cdb);
