@@ -241,6 +241,12 @@ FUNC_P2VAR(OsEE_TDB, OS_APPL_DATA, OS_CODE)
 
   p_tdb_blocked->p_tcb->status = OSEE_TASK_WAITING;
 
+#if (defined(OSEE_HAS_PRETASKHOOK))
+  /* The TASK was the last one for which we called PreTaskHook, but
+     it's blocking so I need to reset the hook flag */
+  p_ccb->p_last_tdb_hook = NULL;
+#endif /* OSEE_HAS_PRETASKHOOK */
+
   osEE_unlock_core(p_cdb);
 
   return p_ccb->p_curr;
@@ -324,6 +330,12 @@ FUNC_P2VAR(OsEE_TDB, OS_APPL_DATA, OS_CODE)
     /* Prepare the TDB from return value */
     (*pp_tdb_from) = p_tdb_term;
 
+#if (defined(OSEE_HAS_PRETASKHOOK))
+    /* We are having a termination so the hook flag has to be
+       unset */
+    p_ccb->p_last_tdb_hook = NULL;
+#endif /* OSEE_HAS_PRETASKHOOK */
+
     if (p_tcb_term->status == OSEE_TASK_RUNNING) {
       /* Normal Termination */
       CONSTP2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA)
@@ -336,11 +348,6 @@ FUNC_P2VAR(OsEE_TDB, OS_APPL_DATA, OS_CODE)
       if (p_tdb_term != p_tdb_to) {
         osEE_task_end(p_tdb_term);
       } else {
-#if (defined(OSEE_HAS_PRETASKHOOK))
-        /* If TDB_TERM is equal to TDB_TO, the following assure that
-         * PreTaskHook will be called */
-        p_ccb->p_last_tdb_hook = NULL;
-#endif /* OSEE_HAS_PRETASKHOOK */
         --p_tcb_term->current_num_of_act;
       }
       /* In Normal Termination => SN released */
@@ -354,6 +361,16 @@ FUNC_P2VAR(OsEE_TDB, OS_APPL_DATA, OS_CODE)
        * called inside IDLE TASK. */
       p_ccb->p_stk_sn = p_sn_term->p_next;
       /* Wait to see p_ccb->p_curr until you are completely sure to what set */
+
+#if (defined(OSEE_HAS_POSTTASKHOOK))
+      /* Call PostTaskHook before switching active TASK, if the
+         next stacked is IdleTask.
+         osEE_scheduler_core_rq_preempt_stk won't call the PostTaskHook
+         since it is the preemption of the Idle Task. */
+      if (p_ccb->p_stk_sn == NULL) {
+        osEE_call_post_task_hook(p_ccb);
+      }
+#endif /* OSEE_HAS_POSTTASKHOOK */
 
       /* I need to release internal resource for Chained TASK
        * (set ready prio instead of dispatch prio) to let RQ Tasks 'preempt'
@@ -434,16 +451,28 @@ FUNC(void, OS_CODE)
   P2VAR(OsEE_SN,  AUTOMATIC, OS_APPL_DATA)  p_sn
 )
 {
-  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA) p_ccb = p_cdb->p_ccb;
-  CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA) p_preempted = p_ccb->p_curr;
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)  p_cdb = osEE_get_curr_core();
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)   p_ccb = p_cdb->p_ccb;
+  CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST)  p_preempted = p_ccb->p_curr;
+  CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
+    p_preempted_tcb = p_preempted->p_tcb;
   CONSTP2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA)
     p_preempted_sn = p_ccb->p_stk_sn;
 
   /* Set previous TASK as stacked only if the activation has been completed */
-  if (p_preempted->p_tcb->status == OSEE_TASK_RUNNING) {
-    p_preempted->p_tcb->status  = OSEE_TASK_READY_STACKED;
+  if (p_preempted_tcb->status == OSEE_TASK_RUNNING) {
+    p_preempted_tcb->status  = OSEE_TASK_READY_STACKED;
   }
+  /* Adjust current priority with dispatch priority: if needed */
+  {
+    CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA) p_to_tcb = p_tdb->p_tcb;
+    CONST(TaskPrio, AUTOMATIC)  dispatch_prio = p_tdb->dispatch_prio;
+
+    if (p_to_tcb->current_prio < dispatch_prio) {
+      p_to_tcb->current_prio = dispatch_prio;
+    }
+  }
+
   p_ccb->p_curr                 = p_tdb;
 
   /* Touch unused parameters */
