@@ -1197,6 +1197,9 @@ FUNC(StatusType, OS_CODE)
       p_reso_cb   = p_reso_db->p_cb;
 
 #if (defined(OSEE_HAS_CHECKS))
+    if (p_curr->ready_prio > p_reso_db->prio) {
+      ev = E_OS_ACCESS;
+    } else
     if ((p_reso_cb->p_owner == NULL) ||\
         (p_curr_tcb->p_last_m != p_reso_db))
     {
