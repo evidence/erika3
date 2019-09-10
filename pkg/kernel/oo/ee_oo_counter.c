@@ -319,8 +319,8 @@ static FUNC(void, OS_CODE)
       /* Trigger to be reinserted */
       P2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_CONST)
         p_trigger_to_reinsert = NULL;
-      /* When the new trigger has to expire */
-      VAR(TickType, AUTOMATIC)  next_when = 0U;
+      /* Delta for the next trigger's expiry point */
+      VAR(TickType, AUTOMATIC)  next_delta /* = 0U */;
 
       /* Enter in Critical Section to Handle Expiry Point */
       osEE_lock_core(p_cdb);
@@ -328,11 +328,11 @@ static FUNC(void, OS_CODE)
            OSEE_TRIGGER_EXPIRED)
       {
         /* Utility local vars to handle expiry point */
-        VAR(TickType, AUTOMATIC)  nextOffset;
         VAR(MemSize, AUTOMATIC)   expiry_position = p_st_cb->position;
 
         /* This can happen:
-            - If the Schedule Table has been started relatively
+            - When the Schedule Table has been started, under particular
+              circumstances.
             - If a Next Schedule Table is activated, to stop the original
               Schedule Table after the final delay.
             - IF Original Schedule Table is repeating */
@@ -344,24 +344,23 @@ static FUNC(void, OS_CODE)
             p_next_st_db = p_st_cb->p_next_table;
           }
 
-          if ((expiry_position == SCHEDULETABLE_STARTING_REL_POSITION) ||
+          if ((expiry_position == SCHEDULETABLE_STARTING_POSITION) ||
               (p_st_db->repeated == OSEE_TRUE))
           {
             /* Schedule Table started relatively or Repeating Schedule Table */
             p_st_cb->position = 0U;
             /* Set Repeating ST Start value */
             p_st_cb->start    = p_counter_db->p_counter_cb->value;
-            nextOffset        = (*p_st_db->p_expiry_point_array)[0U].offset;
+            next_delta        = (*p_st_db->p_expiry_point_array)[0U].offset;
 
-            if (nextOffset > 0U) {
-              /* Trigger CB "when" field is used to hold next trigger value, for
-                 next expiry point */
+            if (next_delta > 0U) {
+              /* Trigger CB "when" field is used to hold next trigger value,
+                 for next expiry point */
               p_trigger_to_reinsert = osEE_st_get_trigger_db(p_st_db);
-              next_when = p_st_cb->start + nextOffset;
               /* Exit From The Inner Loop */
               p_st_db = NULL;
             }
-            /* else (nextOffset == 0) the next loop iteration will handle the
+            /* else (next_delta == 0) the next loop iteration will handle the
                first expiry point of the ST */
           } else if (p_st_db->repeated == OSEE_FALSE) {
             /* We reached the end of schedule table so we stop it */
@@ -408,35 +407,39 @@ static FUNC(void, OS_CODE)
             /* if it is the last expiry point and if this is not a repeating
                schedule table, handle next schedule table or stop it */
             if (expiry_position == (p_st_db->expiry_point_array_size - 1U)) {
+              CONST(TickType, AUTOMATIC) duration = p_st_db->duration;
               /* Schedule the final delay for original schedule table */
               p_st_cb->position = SCHEDULETABLE_FINAL_DELAY_POSITION;
               /* [SWS_Os_0427] If the schedule table is single-shot,
                   the Operating System module shall allow a Final Delay between
                   0 .. OsCounterMaxAllowedValue of the underlying counter. */
-              if (p_st_db->duration > p_expiry_point->offset) {
+              if (duration > p_expiry_point->offset) {
                 p_trigger_to_reinsert = osEE_st_get_trigger_db(p_st_db);
-                next_when = p_st_cb->start + p_st_db->duration;
+                next_delta = duration - p_expiry_point->offset;
                 /* Exit From The Inner Loop */
                 p_st_db = NULL;
               }
               /* else handle immediately the fake final delay position expiry
                  point */
             } else {
-              if (p_st_db->sync_strategy == OSEE_SCHEDTABLE_SYNC_EXPLICIT) {
-                /* *** TODO: HANDLE SYNCRONIZATION *** */
-              }
+              CONST(TickType, AUTOMATIC)  prev_offset = p_expiry_point->offset;
+              VAR(TickType, AUTOMATIC)    next_offset;
               /* Schedule the next expiry point */
               ++expiry_position;
               p_st_cb->position = expiry_position;
 
-              nextOffset = (*p_st_db->p_expiry_point_array)[expiry_position].
+              next_offset = (*p_st_db->p_expiry_point_array)[expiry_position].
                 offset;
+
+              if (p_st_db->sync_strategy == OSEE_SCHEDTABLE_SYNC_EXPLICIT) {
+                /* *** TODO: HANDLE SYNCRONIZATION *** */
+              }
 
               /* Check if new expiry point is not simultaneous of the
                  previous one */
-              if (nextOffset > p_expiry_point->offset) {
+              if (next_offset > prev_offset) {
                 p_trigger_to_reinsert = osEE_st_get_trigger_db(p_st_db);
-                next_when = p_st_cb->start + nextOffset;
+                next_delta = next_offset - prev_offset;
                 /* Exit From The Inner Loop */
                 p_st_db = NULL;
               }
@@ -455,8 +458,8 @@ static FUNC(void, OS_CODE)
       /* Reinsert the trigger in queue if needed */
       if (p_trigger_to_reinsert != NULL) {
         p_trigger_to_reinsert->p_trigger_cb->status = OSEE_TRIGGER_ACTIVE;
-        osEE_counter_insert_abs_trigger(p_counter_db, p_trigger_to_reinsert,
-          next_when);
+        osEE_counter_insert_rel_trigger(p_counter_db, p_trigger_to_reinsert,
+          next_delta);
       } else if (p_st_db == NULL) {
         /* Check and Handle Cancellation or Reenabling */
         CONSTP2VAR(OsEE_TriggerCB, AUTOMATIC, OS_APPL_DATA)

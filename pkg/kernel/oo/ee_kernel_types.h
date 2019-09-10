@@ -415,8 +415,8 @@ typedef struct {
 #if (defined(OSEE_HAS_SCHEDULE_TABLES))
 /** Invalid expiry point index */
 #define INVALID_SCHEDULETABLE_POSITION      ((MemSize)-1)
-/** Expiry point index for a ScheduleTable starting relative */
-#define SCHEDULETABLE_STARTING_REL_POSITION ((MemSize)-1)
+/** Expiry point index for a ScheduleTable starting */
+#define SCHEDULETABLE_STARTING_POSITION     ((MemSize)-1)
 /** Expiry point index for the final delay */
 #define SCHEDULETABLE_FINAL_DELAY_POSITION  (((MemSize)-1) - (MemSize)1U)
 

@@ -81,38 +81,40 @@ FUNC(StatusType, OS_CODE)
 
 /* Hold the delta value with which it is inserted in the triggers queue */
     VAR(TickType, AUTOMATIC) trigger_delta;
+    VAR(TickType, AUTOMATIC) when_start;
 
     if (offset != 0U) {
       trigger_delta     = offset;
-      p_st_cb->position = SCHEDULETABLE_STARTING_REL_POSITION;
+      p_st_cb->position = SCHEDULETABLE_STARTING_POSITION;
     } else {
       trigger_delta = (*p_st_db->p_expiry_point_array)[0].offset;
       /* Handle the extreme case of starting offset == 0 and first
          expiry point == 0 */
       if (trigger_delta == 0U) {
         trigger_delta     = 1U;
-        p_st_cb->position = SCHEDULETABLE_STARTING_REL_POSITION;
+        p_st_cb->position = SCHEDULETABLE_STARTING_POSITION;
       } else {
         p_st_cb->position = 0U;
       }
     }
 
+    when_start = osEE_counter_eval_when(p_counter_db, trigger_delta);
+
     p_st_cb->p_next_table = NULL;
-    p_st_cb->deviation  = 0;
-    p_st_cb->st_status  = SCHEDULETABLE_RUNNING;
-    p_st_cb->start      = osEE_counter_eval_when(p_counter_db, trigger_delta);
+    p_st_cb->deviation    = 0;
+    p_st_cb->st_status    = SCHEDULETABLE_RUNNING;
+    p_st_cb->start        = when_start;
 
     if (p_trigger_cb->status == OSEE_TRIGGER_CANCELED) {
       /* Re-turn on the trigger, that is in handling, since is handling I'll
          set 'here' when based on offset */
-      p_trigger_cb->when   = p_st_cb->start;
+      p_trigger_cb->when   = when_start;
       p_trigger_cb->status = OSEE_TRIGGER_REENABLED;
     } else {
       /* Turn On the Trigger */
       p_trigger_cb->status = OSEE_TRIGGER_ACTIVE;
 
-      osEE_counter_insert_rel_trigger(p_counter_db, p_trigger_db,
-        trigger_delta);
+      osEE_counter_insert_abs_trigger(p_counter_db, p_trigger_db, when_start);
     }
     ev = E_OK;
   }
@@ -147,16 +149,44 @@ FUNC(StatusType, OS_CODE)
   if (p_trigger_cb->status > OSEE_TRIGGER_CANCELED) {
     ev = E_OS_STATE;
   } else {
+    VAR(TickType, AUTOMATIC)  first_when;
+    CONST(TickType, AUTOMATIC)
+      maxallowedvalue = p_counter_db->info.maxallowedvalue;
+    CONST(OsEE_bool, AUTOMATIC)
+      modulo_valid    = (maxallowedvalue < ((TickType)-1));
+    CONST(OsEE_bool, AUTOMATIC)
+      modulo          = maxallowedvalue + 1U;
+    CONST(TickType, AUTOMATIC)
+      first_offset = (*p_st_db->p_expiry_point_array)[0U].offset;
+
 /* Initialize ST data structure
-   (Even though the ST is Reenabled it has to restart from the beginning) */
+   (Even though the ST is re-enabled it has to restart from the beginning) */
     p_st_cb->p_next_table = NULL;
-    p_st_cb->position     = 0U;
     p_st_cb->deviation    = 0;
     p_st_cb->st_status    =
       (p_st_db->sync_strategy == OSEE_SCHEDTABLE_SYNC_IMPLICIT)?
         SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS:
         SCHEDULETABLE_RUNNING;
     p_st_cb->start        = start;
+
+    if (modulo_valid) {
+      CONST(TickType, AUTOMATIC) value = p_counter_db->p_counter_cb->value;
+      if (start > value) {
+        if ((modulo - first_offset) >= (start - value)) {
+          first_when = (start + first_offset) % modulo;
+          p_st_cb->position = 0U;
+        } else {
+          first_when        = start;
+          p_st_cb->position = SCHEDULETABLE_STARTING_POSITION;
+        }
+      } else {
+        first_when = (start + first_offset) % modulo;
+        p_st_cb->position = 0U;
+      }
+    } else {
+      first_when = start + first_offset;
+      p_st_cb->position = 0U;
+    }
 
     if (p_trigger_cb->status == OSEE_TRIGGER_CANCELED) {
       /* Re-turn on the trigger, that is in handling, since is handling I'll
@@ -167,9 +197,7 @@ FUNC(StatusType, OS_CODE)
       /* Turn On the Trigger */
       p_trigger_cb->status = OSEE_TRIGGER_ACTIVE;
 
-      osEE_counter_insert_abs_trigger(p_counter_db, p_trigger_db,
-        start + (*p_st_db->p_expiry_point_array)[0].offset
-      );
+      osEE_counter_insert_abs_trigger(p_counter_db, p_trigger_db, first_when);
     }
 
     ev = E_OK;
