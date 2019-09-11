@@ -50,180 +50,233 @@
 #define OSEE_TC_CSFR_H
 
 /** Program Control 0 */
-#define OSEE_CSFR_PCON0      (0x920CU)
+#define OSEE_CSFR_PCON0       (0x920CU)
 /** Program Control 1 */
-#define OSEE_CSFR_PCON1      (0x9204U)
+#define OSEE_CSFR_PCON1       (0x9204U)
 /** Data Memory Control Register */
-#define OSEE_CSFR_DCON0      (0x9040U)
+#define OSEE_CSFR_DCON0       (0x9040U)
 /** Compatibility Control Register */
-#define OSEE_CSFR_COMPAT     (0x9400U)
+#define OSEE_CSFR_COMPAT      (0x9400U)
 
 /** Counter Control */
-#define OSEE_CSFR_CCTRL      (0xFC00U)
+#define OSEE_CSFR_CCTRL       (0xFC00U)
 /** CPU Clock Cycle Count */
-#define OSEE_CSFR_CCNT       (0xFC04U)
+#define OSEE_CSFR_CCNT        (0xFC04U)
 /** Previous Context Information Register */
-#define OSEE_CSFR_PCXI       (0xFE00U)
+#define OSEE_CSFR_PCXI        (0xFE00U)
 /** Program Status Word */
-#define OSEE_CSFR_PSW        (0xFE04U)
+#define OSEE_CSFR_PSW         (0xFE04U)
 /** Program Counter */
-#define OSEE_CSFR_PC         (0xFE08U)
+#define OSEE_CSFR_PC          (0xFE08U)
 /** System Configuration Register */
-#define OSEE_CSFR_SYSCON     (0xFE14U)
+#define OSEE_CSFR_SYSCON      (0xFE14U)
 
 /* Moved in ee_hal.h since these registers are accessible
    from user space, so they belong to the public API */
 #if 0
 /** CPUn Identification Register TC1.6P */
-#define OSEE_CSFR_CPU_ID     (0xFE18U)
+#define OSEE_CSFR_CPU_ID      (0xFE18U)
 /** CPUn Core Identification Register */
-#define OSEE_CSFR_CORE_ID    (0xFE1CU)
+#define OSEE_CSFR_CORE_ID     (0xFE1CU)
 #endif /* 0 */
 /** Base Interrupt Vector Table Pointer */
-#define OSEE_CSFR_BIV        (0xFE20U)
+#define OSEE_CSFR_BIV         (0xFE20U)
 /** Base Trap Vector Table Pointer */
-#define OSEE_CSFR_BTV        (0xFE24U)
+#define OSEE_CSFR_BTV         (0xFE24U)
 /** Interrupt Stack Pointer */
-#define OSEE_CSFR_ISP        (0xFE28U)
+#define OSEE_CSFR_ISP         (0xFE28U)
 /** Interrupt Control Register */
-#define OSEE_CSFR_ICR        (0xFE2CU)
+#define OSEE_CSFR_ICR         (0xFE2CU)
 /** Free CSA List Head Pointer */
-#define OSEE_CSFR_FCX        (0xFE38U)
+#define OSEE_CSFR_FCX         (0xFE38U)
 /** Free CSA List Limit Pointer */
-#define OSEE_CSFR_LCX        (0xFE3CU)
+#define OSEE_CSFR_LCX         (0xFE3CU)
 
 /** CPUn Data Protection Range 0, Lower Bound Register */
-#define OSEE_CSFR_DPR0_L     (0xC000U)
+#define OSEE_CSFR_DPR0_L      (0xC000U)
 /** CPUn Data Protection Range 1, Lower Bound Register */
-#define OSEE_CSFR_DPR1_L     (0xC008U)
+#define OSEE_CSFR_DPR1_L      (0xC008U)
 /** CPUn Data Protection Range 2, Lower Bound Register */
-#define OSEE_CSFR_DPR2_L     (0xC010U)
+#define OSEE_CSFR_DPR2_L      (0xC010U)
 /** CPUn Data Protection Range 3, Lower Bound Register */
-#define OSEE_CSFR_DPR3_L     (0xC018U)
+#define OSEE_CSFR_DPR3_L      (0xC018U)
 /** CPUn Data Protection Range 4, Lower Bound Register */
-#define OSEE_CSFR_DPR4_L     (0xC020U)
+#define OSEE_CSFR_DPR4_L      (0xC020U)
 /** CPUn Data Protection Range 5, Lower Bound Register */
-#define OSEE_CSFR_DPR5_L     (0xC028U)
+#define OSEE_CSFR_DPR5_L      (0xC028U)
 /** CPUn Data Protection Range 6, Lower Bound Register */
-#define OSEE_CSFR_DPR6_L     (0xC030U)
+#define OSEE_CSFR_DPR6_L      (0xC030U)
 /** CPUn Data Protection Range 7, Lower Bound Register */
-#define OSEE_CSFR_DPR7_L     (0xC038U)
+#define OSEE_CSFR_DPR7_L      (0xC038U)
 /** CPUn Data Protection Range 8, Lower Bound Register */
-#define OSEE_CSFR_DPR8_L     (0xC040U)
+#define OSEE_CSFR_DPR8_L      (0xC040U)
 /** CPUn Data Protection Range 9, Lower Bound Register */
-#define OSEE_CSFR_DPR9_L     (0xC048U)
+#define OSEE_CSFR_DPR9_L      (0xC048U)
 /** CPUn Data Protection Range 10, Lower Bound Register */
-#define OSEE_CSFR_DPR10_L    (0xC050U)
+#define OSEE_CSFR_DPR10_L     (0xC050U)
 /** CPUn Data Protection Range 11, Lower Bound Register */
-#define OSEE_CSFR_DPR11_L    (0xC058U)
+#define OSEE_CSFR_DPR11_L     (0xC058U)
 /** CPUn Data Protection Range 12, Lower Bound Register */
-#define OSEE_CSFR_DPR12_L    (0xC060U)
+#define OSEE_CSFR_DPR12_L     (0xC060U)
 /** CPUn Data Protection Range 13, Lower Bound Register */
-#define OSEE_CSFR_DPR13_L    (0xC068U)
+#define OSEE_CSFR_DPR13_L     (0xC068U)
 /** CPUn Data Protection Range 14, Lower Bound Register */
-#define OSEE_CSFR_DPR14_L    (0xC070U)
+#define OSEE_CSFR_DPR14_L     (0xC070U)
 /** CPUn Data Protection Range 15, Lower Bound Register */
-#define OSEE_CSFR_DPR15_L    (0xC078U)
+#define OSEE_CSFR_DPR15_L     (0xC078U)
 /** CPUn Data Protection Range 0, Upper Bound Register */
-#define OSEE_CSFR_DPR0_U     (0xC004U)
+#define OSEE_CSFR_DPR0_U      (0xC004U)
 /** CPUn Data Protection Range 1, Upper Bound Register */
-#define OSEE_CSFR_DPR1_U     (0xC00CU)
+#define OSEE_CSFR_DPR1_U      (0xC00CU)
 /** CPUn Data Protection Range 2, Upper Bound Register */
-#define OSEE_CSFR_DPR2_U     (0xC014U)
+#define OSEE_CSFR_DPR2_U      (0xC014U)
 /** CPUn Data Protection Range 3, Upper Bound Register */
-#define OSEE_CSFR_DPR3_U     (0xC01CU)
+#define OSEE_CSFR_DPR3_U      (0xC01CU)
 /** CPUn Data Protection Range 4, Upper Bound Register */
-#define OSEE_CSFR_DPR4_U     (0xC024U)
+#define OSEE_CSFR_DPR4_U      (0xC024U)
 /** CPUn Data Protection Range 5, Upper Bound Register */
-#define OSEE_CSFR_DPR5_U     (0xC02CU)
+#define OSEE_CSFR_DPR5_U      (0xC02CU)
 /** CPUn Data Protection Range 6, Upper Bound Register */
-#define OSEE_CSFR_DPR6_U     (0xC034U)
+#define OSEE_CSFR_DPR6_U      (0xC034U)
 /** CPUn Data Protection Range 7, Upper Bound Register */
-#define OSEE_CSFR_DPR7_U     (0xC03CU)
+#define OSEE_CSFR_DPR7_U      (0xC03CU)
 /** CPUn Data Protection Range 8, Upper Bound Register */
-#define OSEE_CSFR_DPR8_U     (0xC044U)
+#define OSEE_CSFR_DPR8_U      (0xC044U)
 /** CPUn Data Protection Range 9, Upper Bound Register */
-#define OSEE_CSFR_DPR9_U     (0xC04CU)
+#define OSEE_CSFR_DPR9_U      (0xC04CU)
 /** CPUn Data Protection Range 10, Upper Bound Register */
-#define OSEE_CSFR_DPR10_U    (0xC054U)
+#define OSEE_CSFR_DPR10_U     (0xC054U)
 /** CPUn Data Protection Range 11, Upper Bound Register */
-#define OSEE_CSFR_DPR11_U    (0xC05CU)
+#define OSEE_CSFR_DPR11_U     (0xC05CU)
 /** CPUn Data Protection Range 12, Upper Bound Register */
-#define OSEE_CSFR_DPR12_U    (0xC064U)
+#define OSEE_CSFR_DPR12_U     (0xC064U)
 /** CPUn Data Protection Range 13, Upper Bound Register */
-#define OSEE_CSFR_DPR13_U    (0xC06CU)
+#define OSEE_CSFR_DPR13_U     (0xC06CU)
 /** CPUn Data Protection Range 14, Upper Bound Register */
-#define OSEE_CSFR_DPR14_U    (0xC074U)
+#define OSEE_CSFR_DPR14_U     (0xC074U)
 /** CPUn Data Protection Range 15, Upper Bound Register */
-#define OSEE_CSFR_DPR15_U    (0xC07CU)
+#define OSEE_CSFR_DPR15_U     (0xC07CU)
 
 /** CPUn Code Protection Range 0 Lower Bound Register */
-#define OSEE_CSFR_CPR0_L     (0xD000U)
+#define OSEE_CSFR_CPR0_L      (0xD000U)
 /** CPUn Code Protection Range 1 Lower Bound Register */
-#define OSEE_CSFR_CPR1_L     (0xD008U)
+#define OSEE_CSFR_CPR1_L      (0xD008U)
 /** CPUn Code Protection Range 2 Lower Bound Register */
-#define OSEE_CSFR_CPR2_L     (0xD010U)
+#define OSEE_CSFR_CPR2_L      (0xD010U)
 /** CPUn Code Protection Range 3 Lower Bound Register */
-#define OSEE_CSFR_CPR3_L     (0xD018U)
+#define OSEE_CSFR_CPR3_L      (0xD018U)
 /** CPUn Code Protection Range 4 Lower Bound Register */
-#define OSEE_CSFR_CPR4_L     (0xD020U)
+#define OSEE_CSFR_CPR4_L      (0xD020U)
 /** CPUn Code Protection Range 5 Lower Bound Register */
-#define OSEE_CSFR_CPR5_L     (0xD028U)
+#define OSEE_CSFR_CPR5_L      (0xD028U)
 /** CPUn Code Protection Range 6 Lower Bound Register */
-#define OSEE_CSFR_CPR6_L     (0xD030U)
+#define OSEE_CSFR_CPR6_L      (0xD030U)
 /** CPUn Code Protection Range 7 Lower Bound Register */
-#define OSEE_CSFR_CPR7_L     (0xD038U)
+#define OSEE_CSFR_CPR7_L      (0xD038U)
 /** CPUn Code Protection Range 0 Upper Bound Register */
-#define OSEE_CSFR_CPR0_U     (0xD004U)
+#define OSEE_CSFR_CPR0_U      (0xD004U)
 /** CPUn Code Protection Range 1 Upper Bound Register */
-#define OSEE_CSFR_CPR1_U     (0xD00CU)
+#define OSEE_CSFR_CPR1_U      (0xD00CU)
 /** CPUn Code Protection Range 2 Upper Bound Register */
-#define OSEE_CSFR_CPR2_U     (0xD014U)
+#define OSEE_CSFR_CPR2_U      (0xD014U)
 /** CPUn Code Protection Range 3 Upper Bound Register */
-#define OSEE_CSFR_CPR3_U     (0xD01CU)
+#define OSEE_CSFR_CPR3_U      (0xD01CU)
 /** CPUn Code Protection Range 4 Upper Bound Register */
-#define OSEE_CSFR_CPR4_U     (0xD024U)
+#define OSEE_CSFR_CPR4_U      (0xD024U)
 /** CPUn Code Protection Range 5 Upper Bound Register */
-#define OSEE_CSFR_CPR5_U     (0xD02CU)
+#define OSEE_CSFR_CPR5_U      (0xD02CU)
 /** CPUn Code Protection Range 6 Upper Bound Register */
-#define OSEE_CSFR_CPR6_U     (0xD034U)
+#define OSEE_CSFR_CPR6_U      (0xD034U)
 /** CPUn Code Protection Range 7 Upper Bound Register */
-#define OSEE_CSFR_CPR7_U     (0xD03CU)
+#define OSEE_CSFR_CPR7_U      (0xD03CU)
 
 /** CPUn Data Protection Read Enable Register Set 0 */
-#define OSEE_CSFR_DPRE_0     (0xE010U)
+#define OSEE_CSFR_DPRE_0      (0xE010U)
 /** CPUn Data Protection Read Enable Register Set 1 */
-#define OSEE_CSFR_DPRE_1     (0xE014U)
+#define OSEE_CSFR_DPRE_1      (0xE014U)
 /** CPUn Data Protection Read Enable Register Set 2 */
-#define OSEE_CSFR_DPRE_2     (0xE018U)
+#define OSEE_CSFR_DPRE_2      (0xE018U)
 /** CPUn Data Protection Read Enable Register Set 3 */
-#define OSEE_CSFR_DPRE_3     (0xE01CU)
+#define OSEE_CSFR_DPRE_3      (0xE01CU)
 
 /** CPUn Data Protection Write Enable Register Set 0 */
-#define OSEE_CSFR_DPWE_0     (0xE020U)
+#define OSEE_CSFR_DPWE_0      (0xE020U)
 /** CPUn Data Protection Write Enable Register Set 1 */
-#define OSEE_CSFR_DPWE_1     (0xE024U)
+#define OSEE_CSFR_DPWE_1      (0xE024U)
 /** CPUn Data Protection Write Enable Register Set 2 */
-#define OSEE_CSFR_DPWE_2     (0xE028U)
+#define OSEE_CSFR_DPWE_2      (0xE028U)
 /** CPUn Data Protection Write Enable Register Set 3 */
-#define OSEE_CSFR_DPWE_3     (0xE02CU)
+#define OSEE_CSFR_DPWE_3      (0xE02CU)
 
 /** CPUn Code Protection Execute Enable Register Set 0 */
-#define OSEE_CSFR_CPXE_0     (0xE000U)
+#define OSEE_CSFR_CPXE_0      (0xE000U)
 /** CPUn Code Protection Execute Enable Register Set 1 */
-#define OSEE_CSFR_CPXE_1     (0xE004U)
+#define OSEE_CSFR_CPXE_1      (0xE004U)
 /** CPUn Code Protection Execute Enable Register Set 2 */
-#define OSEE_CSFR_CPXE_2     (0xE008U)
+#define OSEE_CSFR_CPXE_2      (0xE008U)
 /** CPUn Code Protection Execute Enable Register Set 3 */
-#define OSEE_CSFR_CPXE_3     (0xE00CU)
+#define OSEE_CSFR_CPXE_3      (0xE00CU)
 
 /** CPUn Temporal Protection System Timer Register 0 */
-#define OSEE_CSFR_TPS_TIMER0 (0xE404U)
+#define OSEE_CSFR_TPS_TIMER0  (0xE404U)
 /** CPUn Temporal Protection System Timer Register 0 */
-#define OSEE_CSFR_TPS_TIMER1 (0xE408U)
+#define OSEE_CSFR_TPS_TIMER1  (0xE408U)
 /** CPUn Temporal Protection System Timer Register 0 */
-#define OSEE_CSFR_TPS_TIMER2 (0xE40CU)
+#define OSEE_CSFR_TPS_TIMER2  (0xE40CU)
 /** CPUn Temporal Protection System Control Register */
-#define OSEE_CSFR_TPS_CON    (0xE400U)
+#define OSEE_CSFR_TPS_CON     (0xE400U)
+
+/* Debug Control Registers Summary */
+/** Debug Status Register */
+#define OSEE_CSFR_DBGSR       (0xFD00U)
+/** External Event Register */
+#define OSEE_CSFR_EXEVT       (0xFD08U)
+/** Core Register Access Event Register */
+#define OSEE_CSFR_CREVT       (0xFD0CU)
+/** Software Debug Event Register */
+#define OSEE_CSFR_SWEVT       (0xFD10U)
+/** Trigger Accumulator Register */
+#define OSEE_CSFR_TRIG_ACC    (0xFD30U)
+/** Debug Monitor Start Address Register */
+#define OSEE_CSFR_DMS         (0xFD40U)
+/** Debug Context Save Area Pointer Register */
+#define OSEE_CSFR_DCX         (0xFD44U)
+/** Debug Trap Control Register */
+#define OSEE_CSFR_DBGTCR      (0xFD48U)
+/** Application Space Idenitifier Register */
+#define OSEE_CSFR_TASK_ASI    (0x8004U)
+
+/** Trigger Event 0 Configuration Register */
+#define OSEE_CSFR_TR0EVT      (0xF000U)
+/** Trigger Event 0 Address Register */
+#define OSEE_CSFR_TR0ADR      (0xF004U)
+/** Trigger Event 1 Configuration Register */
+#define OSEE_CSFR_TR1EVT      (0xF008U)
+/** Trigger Event 1 Address Register */
+#define OSEE_CSFR_TR1ADR      (0xF00CU)
+/** Trigger Event 2 Configuration Register */
+#define OSEE_CSFR_TR2EVT      (0xF010U)
+/** Trigger Event 2 Address Register */
+#define OSEE_CSFR_TR2ADR      (0xF014U)
+/** Trigger Event 3 Configuration Register */
+#define OSEE_CSFR_TR3EVT      (0xF018U)
+/** Trigger Event 3 Address Register */
+#define OSEE_CSFR_TR3ADR      (0xF01CU)
+/** Trigger Event 4 Configuration Register */
+#define OSEE_CSFR_TR4EVT      (0xF020U)
+/** Trigger Event 4 Address Register */
+#define OSEE_CSFR_TR4ADR      (0xF024U)
+/** Trigger Event 5 Configuration Register */
+#define OSEE_CSFR_TR5EVT      (0xF028U)
+/** Trigger Event 5 Address Register */
+#define OSEE_CSFR_TR5ADR      (0xF02CU)
+/** Trigger Event 6 Configuration Register */
+#define OSEE_CSFR_TR6EVT      (0xF030U)
+/** Trigger Event 6 Address Register */
+#define OSEE_CSFR_TR6ADR      (0xF034U)
+/** Trigger Event 7 Configuration Register */
+#define OSEE_CSFR_TR7EVT      (0xF038U)
+/** Trigger Event 7 Address Register */
+#define OSEE_CSFR_TR7ADR      (0xF03CU)
 
 #endif /* OSEE_TC_CSFR_H */

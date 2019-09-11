@@ -975,8 +975,14 @@ OSEE_STATIC_INLINE OsEE_reg OSEE_ALWAYS_INLINE
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
   osEE_tc_stm_ocds_suspend_control(OsEE_reg stm_id)
 {
-  OSEE_TC_STM_REG(stm_id, OSEE_TC_STM_OCS_OFF) =
-    OSEE_TC_STM_OCS_SUS_CTRL_MASK;
+  /* Debugger Status Register Debugger Enabled. */
+  OsEE_reg const dbgsr_de =
+    osEE_tc_get_csfr(OSEE_CSFR_DBGSR) & ((OsEE_reg)0x1U);
+
+  if (dbgsr_de != 0U) {
+    OSEE_TC_STM_REG(stm_id, OSEE_TC_STM_OCS_OFF) =
+      OSEE_TC_STM_OCS_SUS_CTRL_MASK;
+  }
 }
 
 /**

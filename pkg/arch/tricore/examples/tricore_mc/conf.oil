@@ -52,7 +52,7 @@ CPU test_application {
     CPU_DATA = TRICORE {
       ID = 0x0;
       CPU_CLOCK = 200.0;
-      COMPILER = TASKING;
+      COMPILER = GCC;
       IDLEHOOK = TRUE {
         HOOKNAME = "idle_hook_core0";
       };
