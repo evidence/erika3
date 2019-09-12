@@ -1,38 +1,38 @@
 /* ###*B*###
  * Erika Enterprise, version 3
- * 
+ *
  * Copyright (C) 2017 - 2018 Evidence s.r.l.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or (at
  * your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License, version 2, for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License,
  * version 2, along with this program; if not, see
  * < www.gnu.org/licenses/old-licenses/gpl-2.0.html >.
- * 
+ *
  * This program is distributed to you subject to the following
  * clarifications and special exceptions to the GNU General Public
  * License, version 2.
- * 
+ *
  * THIRD PARTIES' MATERIALS
- * 
+ *
  * Certain materials included in this library are provided by third
  * parties under licenses other than the GNU General Public License. You
  * may only use, copy, link to, modify and redistribute this library
  * following the terms of license indicated below for third parties'
  * materials.
- * 
+ *
  * In case you make modified versions of this library which still include
  * said third parties' materials, you are obligated to grant this special
  * exception.
- * 
+ *
  * The complete list of Third party materials allowed with ERIKA
  * Enterprise version 3, together with the terms and conditions of each
  * license, is present in the file THIRDPARTY.TXT in the root of the
@@ -67,7 +67,7 @@ extern "C" {
 #endif /* !OSEE_SINGLECORE && OSEE_SCHEDULER_GLOBAL */
 
 #if (defined(OSEE_HAS_ERRORHOOK)) || (defined(OSEE_HAS_SERVICE_PROTECTION))
-/** This architecture requires the saving of a context in the CCB 
+/** This architecture requires the saving of a context in the CCB
  *  (Core Control Block)
  */
 #define OSEE_HAS_CONTEXT
@@ -117,9 +117,9 @@ typedef enum {
   OSEE_KERNEL_UNINITIALIZED,   /**< OS not yet initialized */
 #endif /* OSEE_API_DYNAMIC */
   OSEE_KERNEL_INITIALIZED,     /**< before OS initialization */
-  OSEE_KERNEL_STARTING,        /**< before the call to StartupHook() 
+  OSEE_KERNEL_STARTING,        /**< before the call to StartupHook()
                                     and autostart */
-  OSEE_KERNEL_STARTED,         /**< after the call to StartupHook() 
+  OSEE_KERNEL_STARTED,         /**< after the call to StartupHook()
                                     and autostart */
   OSEE_KERNEL_SHUTDOWN         /**< ShutdownOS() called */
 } OsEE_kernel_status;
@@ -138,7 +138,7 @@ struct OsEE_MDB_tag;
 
 /**
  *  Mutual exclusion control block. The system needs to track the order in which
- *  Resources and Spin-locks are taken in order to verify they are released in 
+ *  Resources and Spin-locks are taken in order to verify they are released in
  *  LIFO order [SWS_Os_00801]. Also the owner has to be tracked.
  */
 typedef struct {
@@ -156,13 +156,13 @@ typedef struct {
 
 #if (defined(OSEE_HAS_RESOURCES)) && (defined(OSEE_HAS_SPINLOCKS))
 /**
- *  \brief Mutual Exclusion type. 
- *  
- *  The Mutual exclusion type is only present if the application uses both 
- *  Resources and Spin locks, and is used to mark the type of the specific 
- *  object (either a Resource or a Spin Lock). The idea is that when the 
- *  application only has one type of these objects (either only Resources 
- *  or only Spin Locks), the system is optimized reducing the overhead of 
+ *  \brief Mutual Exclusion type.
+ *
+ *  The Mutual exclusion type is only present if the application uses both
+ *  Resources and Spin locks, and is used to mark the type of the specific
+ *  object (either a Resource or a Spin Lock). The idea is that when the
+ *  application only has one type of these objects (either only Resources
+ *  or only Spin Locks), the system is optimized reducing the overhead of
  *  the additional indirection.
  */
 typedef enum {
@@ -173,8 +173,8 @@ typedef enum {
 
 /**
  *  \brief Mutual exclusion descriptor block.
- *  
- *  The descriptor block tracks the specific mutual exclusion object, which 
+ *
+ *  The descriptor block tracks the specific mutual exclusion object, which
  *  can be either a Resource or a Spin Lock. They are handled together because
  *  they have to be released in LIFO order [SWS_Os_00801].
  */
@@ -184,7 +184,7 @@ typedef struct OsEE_MDB_tag {
 #if (defined(OSEE_HAS_SPINLOCKS))
   /** HAL part of the spinlock. a register if the spinlock is hardware,
    *  or a data structure if done in memory */
-  P2VAR(OsEE_spin_lock, TYPEDEF, OS_APPL_DATA)  p_spinlock_arch; 
+  P2VAR(OsEE_spin_lock, TYPEDEF, OS_APPL_DATA)  p_spinlock_arch;
 #endif /* OSEE_HAS_SPINLOCKS */
 #if (defined(OSEE_HAS_RESOURCES)) || (defined(OSEE_SPINLOCKS_HAS_LOCK_METHOD))
   /** ceiling priority of the resource or of the spinlock (note that
@@ -257,7 +257,7 @@ typedef struct {
 } OsEE_TCB;
 
 /**
- *  The Task Descriptor Block. It stores all the information related to the 
+ *  The Task Descriptor Block. It stores all the information related to the
  *  task that is configured statically, such as: priority, task type, task body
  *  pointer, maximum number of activations, core id, ...
  */
@@ -265,7 +265,7 @@ typedef struct OsEE_TDB_tag
 {
   /** Hardware dependednt structure for the task (not a pointer!) */
   VAR(OsEE_HDB, TYPEDEF)                  hdb;
-  /** pointer to the task control block, containing the RAM information 
+  /** pointer to the task control block, containing the RAM information
    *  about a task */
   P2VAR(OsEE_TCB, TYPEDEF, OS_APPL_DATA)  p_tcb;
   /** Task ID. it is a number, allocated one per task by RT-Druid */
@@ -277,7 +277,7 @@ typedef struct OsEE_TDB_tag
   /** Task ready priority (which is a priority specified based on the
    *  PRIORITY OIL field) */
   VAR(TaskPrio, TYPEDEF)                  ready_prio;
-  /** Task dispatch priority (which is computed based on the fact the task 
+  /** Task dispatch priority (which is computed based on the fact the task
    *  is non preemptive and based to the internal resources used */
   VAR(TaskPrio, TYPEDEF)                  dispatch_prio;
   /** Maximum number of activations, as specified in the OIL file. */
@@ -292,8 +292,8 @@ typedef struct OsEE_TDB_tag
 /**
  *  This is the generic definition of a task wrapper. A Task wrapper is useful
  *  every time some actions have to be performed before we need to execute the
- *  task. For example, it is useful on some architecture's system timer to 
- *  perform actions on the peripheral registers before calling the ISR2 
+ *  task. For example, it is useful on some architecture's system timer to
+ *  perform actions on the peripheral registers before calling the ISR2
  *  (remember that ISR2 and Tasks in ERIKA3 are handled in a similar way)
  */
 typedef struct {
@@ -306,9 +306,9 @@ typedef struct {
 #if (defined(OSEE_HAS_COUNTERS))
 #if (defined(OSEE_HAS_ALARMS)) && (defined(OSEE_HAS_SCHEDULE_TABLES))
 /**
- *  If the application contains both Alarms and Schedule Tables, then the 
+ *  If the application contains both Alarms and Schedule Tables, then the
  *  Trigger queue OsEE_TriggerQ will distinguis among the two types of objects.
- *  If there is only one kind of object, then we use an optimized 
+ *  If there is only one kind of object, then we use an optimized
  *  implementation.
  */
 #define OSEE_COUNTER_TRIGGER_TYPES
@@ -320,26 +320,26 @@ struct OsEE_TriggerDB_tag;
 
 /**
  *  This is the type used for the trigger queue.
- *  
+ *
  *  The trigger queue represents a queue of expiry points which could come
  *  either from Alarms or from Schedule Tables. If both (Alarms and Schedule
  *  Tables) are present inside an application, then the trigger queue has two
  *  pointers, one to the Alarm data, one to the Schedule Table data, and only
- *  one of them will be set, implicitly stating the type of object. If only 
- *  one kind of object is present in the Application, then we avoid the 
- *  indirection and the specific item data is put inside the OsEE_TriggerCB and 
+ *  one of them will be set, implicitly stating the type of object. If only
+ *  one kind of object is present in the Application, then we avoid the
+ *  indirection and the specific item data is put inside the OsEE_TriggerCB and
  *  inside the OsEE_TriggerDB.
- *  
+ *
  *  Also note that the Trigger Queue is a Linked List, but in theory we could
  *  implement any priority queue data structure (Heap for example)
  */
 typedef P2VAR(struct OsEE_TriggerDB_tag OSEE_CONST, TYPEDEF, OS_APPL_DATA)
   OsEE_TriggerQ;
 
-/** Counter Control Block. It stores the reference trigger queue, the counter 
+/** Counter Control Block. It stores the reference trigger queue, the counter
   * value and the prescaler (if configured) */
 typedef struct {
-  /** the trigger list attached to this counter */ 
+  /** the trigger list attached to this counter */
   VAR(OsEE_TriggerQ, TYPEDEF) trigger_queue;
   /** the value of the counter */
   VAR(TickType, TYPEDEF)      value;
@@ -387,7 +387,7 @@ typedef enum {
   OSEE_ACTION_CALLBACK
 } OsEE_action_type;
 
-/** Parameters of an Alarm/Schedule Table expiration (function callback, 
+/** Parameters of an Alarm/Schedule Table expiration (function callback,
  *  task, event mask, and counter)
  */
 typedef struct {
@@ -453,8 +453,8 @@ typedef struct OsEE_st_exipiry_point_tag{
 
 #if (defined(OSEE_COUNTER_TRIGGER_TYPES))
 /** Alarm Control Block. It stores the RAM information about the alarm.
- *  This data structure is present only if both Alarms and Schedule Tables 
- *  are present in the application. Otherwise, the content of this data 
+ *  This data structure is present only if both Alarms and Schedule Tables
+ *  are present in the application. Otherwise, the content of this data
  *  structure is integrated inside the trigger.
  */
 typedef struct OsEE_AlarmCB_tag {
@@ -464,8 +464,8 @@ typedef struct OsEE_AlarmCB_tag {
 
 /**
  *  Alarm descriptor block. It stores the Flash information about an alarm.
- *  This data structure is present only if both Alarms and Schedule Tables 
- *  are present in the application. Otherwise, the content of this data 
+ *  This data structure is present only if both Alarms and Schedule Tables
+ *  are present in the application. Otherwise, the content of this data
  *  structure is integrated inside the trigger.
  */
 typedef struct OsEE_AlarmDB_tag {
@@ -529,30 +529,30 @@ typedef struct OsEE_SchedTabDB_tag {
 /**
  *  \brief This is the trigger status enumerate.
  *
- *  The trigger statuses have been made to consistently handle race conditions 
+ *  The trigger statuses have been made to consistently handle race conditions
  *  on the update of Alarms and Schedule Tables.
  *
- *  In particular, in the multicore case we have a potential race condition 
+ *  In particular, in the multicore case we have a potential race condition
  *  due to the following:
  *  - the handling of the trigger data structure is done in mutual exclusion
  *    using a spin lock.
- *  - the spinlock is released during the handling of the notifications. 
+ *  - the spinlock is released during the handling of the notifications.
  *    This is done because the time spent in handling notifications may be long
  *    (e.g., a Schedule Table  activating a number of tasks at an expiry point.
  *  - when a core is handling the notifications at an expiry point related to an
- *    Alarm (Schedule Table), with the spin lock unlocked, a CancelAlarm() 
- *    (StopScheduleTable()) could be issued by another core on the same Alarm 
- *    (Schedule Table). Once canceled (stopped), the Alarm (Schedule Table) 
+ *    Alarm (Schedule Table), with the spin lock unlocked, a CancelAlarm()
+ *    (StopScheduleTable()) could be issued by another core on the same Alarm
+ *    (Schedule Table). Once canceled (stopped), the Alarm (Schedule Table)
  *    could be restarted again.
  *
  *  Therefore, the status transitions of a trigger will be the following:
  *  - OSEE_TRIGGER_INACTIVE: Initial status, trigger inactive
  *  - OSEE_TRIGGER_ACTIVE: Alarm or Schedule Table started
- *  - OSEE_TRIGGER_EXPIRED: The trigger fired. The status is changed to expired 
+ *  - OSEE_TRIGGER_EXPIRED: The trigger fired. The status is changed to expired
  *    before leaving the critical section.
  *  - OSEE_TRIGGER_CANCELED: The status is set to canceled if while the trigger
  *    is expired and the spin lock released a CancelAlarm() or
- *    StopScheduleTable() arrives from another core. At the end of the 
+ *    StopScheduleTable() arrives from another core. At the end of the
  *    notification handling the status will be set back to OSEE_TRIGGER_INACTIVE
  *  - OSEE_TRIGGER_REENABLED: The status is set to reenabled if a canceled Alarm
  *    or ScheduleTable is reenabled while a core is still handling the actions.
@@ -569,17 +569,17 @@ typedef enum {
 
 /**
  *  The Trigger Countrol Block is the element in the trigger queue that records
- *  when the next trigger is going to expire, and what is its status 
+ *  when the next trigger is going to expire, and what is its status
  *  (see OsEE_trigger_status).
- *  
+ *
  *  The Trigger Control Block contains:
  *  - the content of the Alarm Control Block if only Alarms are present in the
  *    current application.
  *  - the content of the Schedule Table Control block if only Schedule Tables
  *    are present in the current application.
- *  
- *  If both Alarms and Schedule Tables are present, the information above are 
- *  linked through the Trigger Descriptor Block to the Alarm/Schedule Table 
+ *
+ *  If both Alarms and Schedule Tables are present, the information above are
+ *  linked through the Trigger Descriptor Block to the Alarm/Schedule Table
  *  Descriptor Block to the Alarm/Schedule Table control block.
  */
 typedef struct {
@@ -631,13 +631,13 @@ typedef struct OsEE_TriggerDB_tag {
    *  table are there. !=0 if the trigger is related to an alarm. */
   P2VAR(struct OsEE_AlarmDB_tag OSEE_CONST, TYPEDEF, OS_APPL_CONST)
                                                             p_alarm_db;
-  /** pointer to the schedule table descriptor block. present if both alarms 
-   *  and schedule tables are there. !=0 if the trigger is related to a 
+  /** pointer to the schedule table descriptor block. present if both alarms
+   *  and schedule tables are there. !=0 if the trigger is related to a
    *  schedule table. */
   P2VAR(struct OsEE_SchedTabDB_tag OSEE_CONST, TYPEDEF, OS_APPL_CONST)
                                                             p_st_db;
 #elif (defined(OSEE_HAS_ALARMS))
-  /** if the application only has alarms, this is the notification action 
+  /** if the application only has alarms, this is the notification action
    *  of the alarm */
   VAR(OsEE_action, TYPEDEF)                                 action;
 #elif (defined(OSEE_HAS_SCHEDULE_TABLES))
@@ -697,7 +697,7 @@ typedef struct {
   VAR(TickType, TYPEDEF)                          second_tick_parameter;
 #endif /* OSEE_HAS_ALARMS */
 #if (defined(OSEE_HAS_SCHEDULE_TABLES))
-  /** type of autostart (alarm, schedule table abs, ... ) */	
+  /** type of autostart (alarm, schedule table abs, ... ) */
   VAR(osEE_autostart_trigger_info_type, TYPEDEF)  autostart_type;
 #endif /* OSEE_HAS_SCHEDULE_TABLES */
 } OSEE_CONST OsEE_autostart_trigger_info;
@@ -734,12 +734,12 @@ typedef struct OsEE_autostart_tdb_tag {
  *  - ORTI core informations
  */
 typedef struct {
-  /** current running task or ISR2 on the specific core. note that this is a 
+  /** current running task or ISR2 on the specific core. note that this is a
    *  shortcut for the task pointed by the first sn of the p_stk_sn */
   P2VAR(OsEE_TDB, TYPEDEF, OS_APPL_CONST)         p_curr;
 #if (!defined(OSEE_SINGLECORE)) && (defined(OSEE_SCHEDULER_GLOBAL))
   /**
-   *  p_lock_to_be released is related to multicore configurations with global 
+   *  p_lock_to_be released is related to multicore configurations with global
    *  scheduling. The reason is as follows:
    *  - in multicore configurations, there is a spin-lock protecting the kernel
    *    data structures from concurrent access and modifications by other cores.
@@ -759,7 +759,7 @@ typedef struct {
   P2VAR(OsEE_SN, TYPEDEF, OS_APPL_DATA)           p_free_sn;
 #if (defined(OSEE_API_DYNAMIC))
   /** Total number of pending activations remaining on the core.
-   *  Needed on dynamic API because the task activations are reserved 
+   *  Needed on dynamic API because the task activations are reserved
    *  dynamically, but the free list is allocated statically.
    */
   VAR(MemSize, TYPEDEF)                           free_sn_counter;
@@ -774,7 +774,7 @@ typedef struct {
   P2VAR(OsEE_SN, TYPEDEF, OS_APPL_DATA)           p_stk_sn;
   /** kernel status */
   VAR(OsEE_kernel_status volatile, TYPEDEF)       os_status;
-  /** application mode for the core. it is local to the core because in 
+  /** application mode for the core. it is local to the core because in
    *  multicore systems you can initialize the system with different parameters
    *  on the StartOS(). */
   VAR(AppModeType, TYPEDEF)                       app_mode;
@@ -795,8 +795,8 @@ typedef struct {
 #endif /* OSEE_USEPARAMETERACCESS */
 #if (defined(OSEE_HAS_CONTEXT))
   /** The running "item" (task, isr2, hook, ...) context. Nededed to
-   *  discriminate what subset of primitives are legal to be executed at a 
-   *  given time. The list of permission is noted in the table in section 
+   *  discriminate what subset of primitives are legal to be executed at a
+   *  given time. The list of permission is noted in the table in section
    *  \ref api-primitives . This feature is part of the service protection */
   VAR(OsEE_os_context, TYPEDEF)                   os_context;
 #endif /* OSEE_HAS_CONTEXT */
@@ -820,13 +820,13 @@ typedef struct {
   VAR(OsEE_byte, TYPEDEF)                         s_isr_os_cnt;
   /** This flag marks whether, at the end of a task, a DisableAllInterrupts()
    *  was called without a matching call to EnableAllInterrupts() */
-  VAR(OsEE_byte, TYPEDEF)                         d_isr_all_cnt; 
+  VAR(OsEE_byte, TYPEDEF)                         d_isr_all_cnt;
 #if (defined(OSEE_HAS_ORTI))
-  /** The ORTI service ID marks the beginning (enter) and the end (exit) 
-   *  of primitives. This is a flag needed to avoid setting the exit of a 
+  /** The ORTI service ID marks the beginning (enter) and the end (exit)
+   *  of primitives. This is a flag needed to avoid setting the exit of a
    *  primitive which caused a rescheduling. This avoid, for example, that an
-   *  Activatetask/schedule/waitevent/releaseresource/... implementing a 
-   *  preemption sets the last primitive to Activatetask at its exit 
+   *  Activatetask/schedule/waitevent/releaseresource/... implementing a
+   *  preemption sets the last primitive to Activatetask at its exit
    *  if there was a rescheduling */
   VAR(OsEE_bool, TYPEDEF)                         orti_service_id_valid;
 #endif /* OSEE_HAS_ORTI */
@@ -881,7 +881,7 @@ typedef struct {
 } OSEE_CONST OsEE_CDB;
 
 /**
- *  This is the Kernel Control Block. This is the main global data structure, 
+ *  This is the Kernel Control Block. This is the main global data structure,
  *  which contains overall RAM information for the kernel */
 typedef struct {
 #if (defined(OSEE_SCHEDULER_GLOBAL))
@@ -891,7 +891,7 @@ typedef struct {
   P2VAR(OsEE_SN, TYPEDEF, OS_APPL_DATA)   p_free_sn;
 #if (defined(OSEE_API_DYNAMIC))
   /** Total number of pending activations remaining on the core.
-   *  Needed on dynamic API because the task activations are reserved 
+   *  Needed on dynamic API because the task activations are reserved
    *  dynamically, but the free list is allocated statically.
    */
   VAR(MemSize, TYPEDEF)                   free_sn_counter;
@@ -980,7 +980,7 @@ typedef struct {
   /* EG: No AUTOSAR Compiler Abstraction For Pointer To Array !!!
          ==> I need to invent one */
   /** this is the global list of tasks, including the idle task
-   *  (one per core), and all ISR2 */ 
+   *  (one per core), and all ISR2 */
   P2SYM_CONSTP2VAR(OsEE_TDB, OS_APPL_CONST,         p_tdb_ptr_array)
     [/*OSEE_TASK_ARRAY_SIZE + OsNumberOfCores*/];
   /** size of the array pointed by p_tdb_ptr_array */
@@ -1029,19 +1029,19 @@ typedef struct {
 #if (!defined(OSEE_ISR2_INLINE))
 /**
  *  \brief Handles the ISR2 termination.
- *  
+ *
  *  This function handles the context change at ISR2 termination.
- *  
+ *
  *  This is an internal function of the ERIKA3 Hardware Abstraction Layer,
  *  called by the Kernel, provided by each porting in an architecture dependent
- *  way. The typical implementation acknowledges the interrupt controller and 
+ *  way. The typical implementation acknowledges the interrupt controller and
  *  then calls afterwards the osEE_change_context_from_task_end.
- *  
+ *
  *  Note: this include file is not the "best" place to place this function.
  *  ... but is a good point because it is visible to teh HAL implementation.
  *  Likely this  declaration will move soon or later to another
  *  include file.
- *  
+ *
  *  \param [in] p_from Current ISR2 in execution
  *  \param [in] p_to   New task to execute
  */
@@ -1055,18 +1055,18 @@ extern FUNC(void, OS_CODE)
 
 /**
  *  \brief Handles the Task termination.
- *  
+ *
  *  This function handles the context change at Task termination.
- *  
+ *
  *  This is an internal function of the ERIKA3 Hardware Abstraction Layer,
  *  called by the Kernel, provided by each porting in an architecture dependent
  *  way.
- *  
+ *
  *  Note: this include file is not the "best" place to place this function.
  *  ... but is a good point because it is visible to teh HAL implementation.
  *  Likely this  declaration will move soon or later to another
  *  include file.
- *  
+ *
  *  \param [in] p_from Current ISR2 in execution
  *  \param [in] p_to   New task to execute
  */
@@ -1079,7 +1079,7 @@ extern FUNC(void, OS_CODE)
 
 /**
  *  \brief Task Body of the Idle Task.
- *  
+ *
  *  This is the Task Body of the Idle task.
  */
 extern FUNC(void, OS_CODE)
@@ -1090,20 +1090,20 @@ extern FUNC(void, OS_CODE)
 
  /**
  *  \brief Terminate callback definition.
- *  
- *  This is the definition of the callback used to terminate a single task 
- *  activation at the end of the task (typically is the TerminateTask() 
+ *
+ *  This is the definition of the callback used to terminate a single task
+ *  activation at the end of the task (typically is the TerminateTask()
  *  or ChainTask() primitive).
- *  
- *  After the termination of the current activation, the task will go either 
- *  in SUSPENDED state (if it has no more pending activations, or READY in 
+ *
+ *  After the termination of the current activation, the task will go either
+ *  in SUSPENDED state (if it has no more pending activations, or READY in
  *  case it has pending activations.
- *  
+ *
  *  The function is mainly responsible for the stack unwinding at the end of
  *  the task (if needed), and after that the call to the scheduler.
- *  
+ *
  *  ''CB'' stands for Callback.
- *  
+ *
  *  Note: this include file is not the "best" place to place this function.
  *  ... but is a good point because it is visible to teh HAL implementation.
  *  Likely this declaration will move soon or later to another

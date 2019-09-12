@@ -1,38 +1,38 @@
 /* ###*B*###
  * Erika Enterprise, version 3
- * 
+ *
  * Copyright (C) 2017 - 2018 Evidence s.r.l.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or (at
  * your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License, version 2, for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License,
  * version 2, along with this program; if not, see
  * < www.gnu.org/licenses/old-licenses/gpl-2.0.html >.
- * 
+ *
  * This program is distributed to you subject to the following
  * clarifications and special exceptions to the GNU General Public
  * License, version 2.
- * 
+ *
  * THIRD PARTIES' MATERIALS
- * 
+ *
  * Certain materials included in this library are provided by third
  * parties under licenses other than the GNU General Public License. You
  * may only use, copy, link to, modify and redistribute this library
  * following the terms of license indicated below for third parties'
  * materials.
- * 
+ *
  * In case you make modified versions of this library which still include
  * said third parties' materials, you are obligated to grant this special
  * exception.
- * 
+ *
  * The complete list of Third party materials allowed with ERIKA
  * Enterprise version 3, together with the terms and conditions of each
  * license, is present in the file THIRDPARTY.TXT in the root of the
@@ -81,11 +81,11 @@ typedef struct OsEE_SN_tag {
 
 /**
  *  \brief Removes the first node from a node list.
- *  
- *  Removes the first node in a task list. Typically called on the free 
+ *
+ *  Removes the first node in a task list. Typically called on the free
  *  node list.
- *  
- *  \param [in,out] pp_first Pointer to (the pointer to the first node 
+ *
+ *  \param [in,out] pp_first Pointer to (the pointer to the first node
  *                  of a queue)
  *  \return Returns a pointer to a node.
  */
@@ -98,7 +98,7 @@ LOCAL_INLINE FUNC_P2VAR(OsEE_SN, OS_APPL_DATA, OS_CODE)
   P2VAR(OsEE_SN, AUTOMATIC, OS_APPL_DATA) p_sn_allocated;
 
   p_sn_allocated          = (*pp_first);
-  (*pp_first)              = p_sn_allocated->p_next;
+  (*pp_first)             = p_sn_allocated->p_next;
   p_sn_allocated->p_next  = NULL;
 
   return p_sn_allocated;
@@ -106,11 +106,11 @@ LOCAL_INLINE FUNC_P2VAR(OsEE_SN, OS_APPL_DATA, OS_CODE)
 
 /**
  *  \brief Inserts a node as the first of a list.
- *  
- *  Inserts a node as the first of a list. Typically called on the free 
+ *
+ *  Inserts a node as the first of a list. Typically called on the free
  *  node list to "release" a scheduler node.
- *  
- *  \param [in,out] pp_first Pointer to (the pointer to the first node of a 
+ *
+ *  \param [in,out] pp_first Pointer to (the pointer to the first node of a
  *                 queue)
  *  \param [in,out] p_to_free Node to be inserted in the list
  */
@@ -127,19 +127,19 @@ LOCAL_INLINE FUNC(void, OS_CODE)
 
 /**
  *  \brief Ordered insertion in a queue.
- *  
+ *
  *  This functon inserts a task inside a task queue, following the order of the
  *  task.
- *  
- *  \param [in,out] pp_first Pointer to (the pointer to the first node of a 
+ *
+ *  \param [in,out] pp_first Pointer to (the pointer to the first node of a
  *                 queue)
- *  \param [in]    p_sn_new Node to be inserted in the list following the 
+ *  \param [in]    p_sn_new Node to be inserted in the list following the
  *                 priority of its task
- *  \param [in]    as_ready If OSEE_TRUE, use the ready_priority and not the 
+ *  \param [in]    as_ready If OSEE_TRUE, use the ready_priority and not the
  *                 current priority to queue the task. The usage of the ready
  *                 priority is useful when doing global schedulng. In AUTOSAR
  *                 conformance classes, onlt the current priority is used.
- *  
+ *
  *  \return The function returns OSEE_TRUE if the head pp_first changed.
  */
 FUNC(OsEE_bool, OS_CODE)
@@ -207,14 +207,14 @@ typedef struct {
  */
 #define OSEE_RQ_LL
 #endif /* !OSEE_RQ_LL */
-/** When implemented with a linked list, a ready queue is a list of scheduler 
+/** When implemented with a linked list, a ready queue is a list of scheduler
  *  nodes.
  */
 typedef OsEE_SN * OsEE_RQ;
 #endif /* RQ Data Structures */
 
 #if (defined(OSEE_API_EXTENSION))
-/** Semaphore Data structure. A counter, a blocked queue, and a spinlock in 
+/** Semaphore Data structure. A counter, a blocked queue, and a spinlock in
   * case of multicores. */
 typedef struct OsEE_sem_tag {
 #if (!defined(OSEE_SINGLECORE))
