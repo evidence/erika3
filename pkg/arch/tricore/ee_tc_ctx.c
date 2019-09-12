@@ -1,38 +1,38 @@
 /* ###*B*###
  * Erika Enterprise, version 3
- * 
+ *
  * Copyright (C) 2017 - 2018 Evidence s.r.l.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or (at
  * your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License, version 2, for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License,
  * version 2, along with this program; if not, see
  * < www.gnu.org/licenses/old-licenses/gpl-2.0.html >.
- * 
+ *
  * This program is distributed to you subject to the following
  * clarifications and special exceptions to the GNU General Public
  * License, version 2.
- * 
+ *
  * THIRD PARTIES' MATERIALS
- * 
+ *
  * Certain materials included in this library are provided by third
  * parties under licenses other than the GNU General Public License. You
  * may only use, copy, link to, modify and redistribute this library
  * following the terms of license indicated below for third parties'
  * materials.
- * 
+ *
  * In case you make modified versions of this library which still include
  * said third parties' materials, you are obligated to grant this special
  * exception.
- * 
+ *
  * The complete list of Third party materials allowed with ERIKA
  * Enterprise version 3, together with the terms and conditions of each
  * license, is present in the file THIRDPARTY.TXT in the root of the
@@ -240,13 +240,13 @@ FUNC(void, OS_CODE_NO_RETURN)
 #if 0
 /* Not needed to restore "osEE_hal_ready2stacked" RA since it will be next
    context restoring to set the right RA.
-   N.B. Next context restoring could not happens immediatly,
+   N.B. Next context restoring could not happens immediately,
    since a TASK, not yet started with higher priority of the stacked ones,
    could have been activated. */
    osEE_tc_set_RA(p_term_scb->p_tos->ra);
 #endif /* 0 */
 /* Pop ERIKA's context */
-   p_term_scb->p_tos = p_term_scb->p_tos->p_ctx;
+    p_term_scb->p_tos = p_term_scb->p_tos->p_ctx;
   }
 /* Try to prevent any instruction scheduling between these two steps of the
    function */
@@ -260,6 +260,9 @@ FUNC(void, OS_CODE_NO_RETURN)
     p_to = osEE_scheduler_task_terminated(osEE_get_kernel(), &p_from);
 
     if (p_from->task_type == OSEE_TASK_TYPE_ISR2) {
+/* Re-enable Interrupts, if already aren't enabled, to allow have PCXI.PIE = 1
+   inside osEE_tc_change_context_from_isr2_end */
+      osEE_hal_enableIRQ();
 /* Call osEE_tc_change_context_from_isr2_end to give it a CSA to return from */
       osEE_tc_change_context_from_isr2_end(p_to);
     } else {
