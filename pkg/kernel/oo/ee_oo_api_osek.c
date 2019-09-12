@@ -1197,17 +1197,26 @@ FUNC(StatusType, OS_CODE)
       p_reso_cb   = p_reso_db->p_cb;
 
 #if (defined(OSEE_HAS_CHECKS))
-    if (p_curr->ready_prio > p_reso_db->prio) {
+/* XXX: This Horror is needed since two official testsuites expect different
+        order of evaluation of checks, and the the E_OS_ACCESS check,
+        required by specification, it's just useless since it is a
+        subcase of the E_OS_NOFUNC. */
+    if ((p_curr->task_type > OSEE_TASK_TYPE_EXTENDED) &&
+        (p_curr->ready_prio > p_reso_db->prio))
+    {
       ev = E_OS_ACCESS;
     } else
     if ((p_reso_cb->p_owner == NULL) ||\
         (p_curr_tcb->p_last_m != p_reso_db))
     {
-/* [SWS_Os_00801] If Spinlocks and Resources are locked by a Task/ISR they
-    have to be unlocked in strict LIFO order. ReleaseResource() shall return
-    E_OS_NOFUNC if the unlock order is violated.
-    No other functionality shall be performed. (SRS_Os_80021) */
-      ev = E_OS_NOFUNC;
+/*  [SWS_Os_00801] If Spinlocks and Resources are locked by a Task/ISR they
+      have to be unlocked in strict LIFO order. ReleaseResource() shall return
+      E_OS_NOFUNC if the unlock order is violated.
+      No other functionality shall be performed. (SRS_Os_80021) */
+        ev = E_OS_NOFUNC;
+    } else
+    if (p_curr->ready_prio > p_reso_db->prio) {
+      ev = E_OS_ACCESS;
     } else
 #endif /* OSEE_HAS_CHECKS */
     {
